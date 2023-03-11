@@ -413,9 +413,11 @@
 </template>
 
 <script>
+import { onMounted } from "vue";
+import { useIntegrationsApi } from "@/api/core_ts";
 import mixins from "@/mixins/mixins";
 import { openURL } from "quasar";
-import { mapState } from "vuex";
+import { mapState, useStore } from "vuex";
 import FileBar from "@/components/FileBar.vue";
 import AgentTable from "@/components/AgentTable.vue";
 import SubTableTabs from "@/components/SubTableTabs.vue";
@@ -425,8 +427,8 @@ import SitesForm from "@/components/clients/SitesForm.vue";
 import DeleteClient from "@/components/clients/DeleteClient.vue";
 import InstallAgent from "@/components/modals/agents/InstallAgent.vue";
 import AlertTemplateAdd from "@/components/modals/alerts/AlertTemplateAdd.vue";
-
 import { removeClient, removeSite } from "@/api/clients";
+import { watchOnce } from "@vueuse/shared";
 
 export default {
   name: "DashboardView",
@@ -435,6 +437,28 @@ export default {
     AgentTable,
     SubTableTabs,
     InstallAgent,
+  },
+  setup() {
+    const store = useStore();
+    const { integrations, getIntegrations, getIntegrationFrontend } =
+      useIntegrationsApi();
+
+    watchOnce(integrations, (loadedIntegrations) => {
+      if (loadedIntegrations && loadedIntegrations.length > 0) {
+        loadedIntegrations.forEach(async (integration) => {
+          if (integration.frontend_module_url) {
+            const content = await getIntegrationFrontend(integration.id);
+            const blob = new Blob([content], { type: "text/javascript" });
+            const url = URL.createObjectURL(blob);
+            mod = await import(url);
+            URL.revokeObjectURL(url)
+            // pass quasar boot items to allow integration to hook into the app
+            mod({ store });
+          }
+        });
+      }
+    });
+    onMounted(getIntegrations);
   },
   // allow child components to refresh table
   provide() {

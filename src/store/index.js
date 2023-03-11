@@ -33,6 +33,10 @@ export default function () {
         currentTRMMVersion: null,
         latestTRMMVersion: null,
         dateFormat: "MMM-DD-YYYY - HH:mm",
+        fileBarIntegrations: [],
+        agentContextMenuIntegrations: [],
+        clientContextMenuIntegrations: [],
+        siteContextMenuIntegrations: [],
       };
     },
     getters: {

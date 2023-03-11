@@ -149,6 +149,31 @@
             </q-list>
           </q-menu>
         </q-btn>
+        <!-- integrations -->
+        <q-btn size="md" dense no-caps flat label="Integrations">
+          <q-menu auto-close>
+            <q-list dense style="min-width: 100px">
+              <q-item
+                v-for="integration in fileBarIntegrations"
+                :key="integration.title"
+                @click="
+                  integration.type === 'dialog'
+                    ? $q.dialog({ component: integration.component })
+                    : undefined
+                "
+                :to="integration.type === 'route' ? integration.uri : undefined"
+                clickable
+                v-close-popup
+              >
+                <q-item-section>{{ integration.name }}</q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item @click="showIntegrationManager" clickable v-close-popup>
+                <q-item-section>Manage Integrations</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
         <!-- help -->
         <q-btn v-if="!hosted" size="md" dense no-caps flat label="Help">
           <q-menu auto-close>
@@ -213,6 +238,9 @@
 </template>
 
 <script>
+import { computed } from "vue";
+import { useStore } from "vuex";
+
 import mixins from "@/mixins/mixins";
 import DialogWrapper from "@/components/ui/DialogWrapper.vue";
 import DebugLog from "@/components/logs/DebugLog.vue";
@@ -233,6 +261,7 @@ import DeploymentTable from "@/components/clients/DeploymentTable.vue";
 import ServerMaintenance from "@/components/modals/core/ServerMaintenance.vue";
 import CodeSign from "@/components/modals/coresettings/CodeSign.vue";
 import PermissionsManager from "@/components/accounts/PermissionsManager.vue";
+import IntegrationManager from "@/components/core/IntegrationManager.vue";
 
 export default {
   name: "FileBar",
@@ -244,6 +273,13 @@ export default {
     AdminManager,
     ServerMaintenance,
     CodeSign,
+  },
+  setup() {
+    const store = useStore();
+
+    return {
+      fileBarIntegrations: computed(() => store.state.fileBarIntegrations),
+    };
   },
   data() {
     return {
@@ -394,6 +430,11 @@ export default {
     showDeployments() {
       this.$q.dialog({
         component: DeploymentTable,
+      });
+    },
+    showIntegrationManager() {
+      this.$q.dialog({
+        component: IntegrationManager,
       });
     },
   },

@@ -1,0 +1,24 @@
+{
+  "folders": [
+	{
+		"name": "tacticalrmm",
+		"path": "../../../tacticalrmm"
+	},
+	{
+		"name": "trmm-web",
+		"path": "../.."
+	},
+	{
+		"name": "reporting-addon",
+		"path": "../../../reporting-addon"
+	}
+],
+  "settings": {
+    "python.languageServer": "Pylance",
+    "files.associations": {
+      "**/ansible/**/*.yml": "ansible",
+      "**/docker/**/docker-compose*.yml": "dockercompose"
+    },
+    "go.useLanguageServer": true
+  }
+}
