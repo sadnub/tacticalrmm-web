@@ -451,6 +451,8 @@ export default {
             const blob = new Blob([content], { type: "text/javascript" });
             const url = URL.createObjectURL(blob);
             mod = await import(url);
+            console.log(blob)
+            console.log(mod)
             URL.revokeObjectURL(url)
             // pass quasar boot items to allow integration to hook into the app
             mod({ store });
