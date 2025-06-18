@@ -98,10 +98,7 @@
           </q-menu>
           <q-td>
             <q-checkbox
-              v-if="
-                props.row.alert_template &&
-                props.row.alert_template.always_text !== null
-              "
+              v-if="props.row.alert_template && props.row.alert_template.always_text !== null"
               v-model="props.row.alert_template.always_text"
               disable
               dense
@@ -115,9 +112,7 @@
             <q-checkbox
               v-else
               dense
-              @update:model-value="
-                overdueAlert('text', props.row, props.row.overdue_text_alert)
-              "
+              @update:model-value="overdueAlert('text', props.row, props.row.overdue_text_alert)"
               v-model="props.row.overdue_text_alert"
             >
               <q-tooltip>{{ sms_overdue_text }}</q-tooltip>
@@ -125,10 +120,7 @@
           </q-td>
           <q-td>
             <q-checkbox
-              v-if="
-                props.row.alert_template &&
-                props.row.alert_template.always_email !== null
-              "
+              v-if="props.row.alert_template && props.row.alert_template.always_email !== null"
               v-model="props.row.alert_template.always_email"
               disable
               dense
@@ -142,9 +134,7 @@
             <q-checkbox
               v-else
               dense
-              @update:model-value="
-                overdueAlert('email', props.row, props.row.overdue_email_alert)
-              "
+              @update:model-value="overdueAlert('email', props.row, props.row.overdue_email_alert)"
               v-model="props.row.overdue_email_alert"
             >
               <q-tooltip>{{ email_overdue_text }}</q-tooltip>
@@ -152,10 +142,7 @@
           </q-td>
           <q-td>
             <q-checkbox
-              v-if="
-                props.row.alert_template &&
-                props.row.alert_template.always_alert !== null
-              "
+              v-if="props.row.alert_template && props.row.alert_template.always_alert !== null"
               v-model="props.row.alert_template.always_alert"
               disable
               dense
@@ -170,11 +157,7 @@
               v-else
               dense
               @update:model-value="
-                overdueAlert(
-                  'dashboard',
-                  props.row,
-                  props.row.overdue_dashboard_alert,
-                )
+                overdueAlert('dashboard', props.row, props.row.overdue_dashboard_alert)
               "
               v-model="props.row.overdue_dashboard_alert"
             >
@@ -256,28 +239,17 @@
             >
               <q-tooltip>Checks info</q-tooltip>
             </q-icon>
-            <q-icon
-              v-else
-              name="fas fa-check-double"
-              size="1.2em"
-              :color="dash_positive_color"
-            >
+            <q-icon v-else name="fas fa-check-double" size="1.2em" :color="dash_positive_color">
               <q-tooltip>Checks passing</q-tooltip>
             </q-icon>
           </q-td>
 
-          <q-td key="client_name" :props="props">{{
-            props.row.client_name
-          }}</q-td>
+          <q-td key="client_name" :props="props">{{ props.row.client_name }}</q-td>
           <q-td key="site_name" :props="props">{{ props.row.site_name }}</q-td>
           <q-td key="hostname" :props="props">{{ props.row.hostname }}</q-td>
-          <q-td key="description" :props="props">{{
-            props.row.description
-          }}</q-td>
+          <q-td key="description" :props="props">{{ props.row.description }}</q-td>
           <q-td key="user" :props="props">
-            <span class="text-italic" v-if="props.row.italic">{{
-              props.row.logged_username
-            }}</span>
+            <span class="text-italic" v-if="props.row.italic">{{ props.row.logged_username }}</span>
             <span v-else>{{ props.row.logged_username }}</span>
           </q-td>
           <q-td :props="props" key="patchespending">
@@ -299,19 +271,12 @@
               :color="dash_warning_color"
               class="cursor-pointer"
             >
-              <q-tooltip
-                >Pending Action Count:
-                {{ props.row.pending_actions_count }}</q-tooltip
-              >
+              <q-tooltip>Pending Action Count: {{ props.row.pending_actions_count }}</q-tooltip>
             </q-icon>
           </q-td>
           <!-- needs reboot -->
           <q-td key="needsreboot">
-            <q-icon
-              v-if="props.row.needs_reboot"
-              name="fas fa-power-off"
-              color="primary"
-            >
+            <q-icon v-if="props.row.needs_reboot" name="fas fa-power-off" color="primary">
               <q-tooltip>Reboot required</q-tooltip>
             </q-icon>
           </q-td>
@@ -332,21 +297,12 @@
             >
               <q-tooltip>Agent offline</q-tooltip>
             </q-icon>
-            <q-icon
-              v-else
-              name="fas fa-signal"
-              size="1.2em"
-              :color="dash_positive_color"
-            >
+            <q-icon v-else name="fas fa-signal" size="1.2em" :color="dash_positive_color">
               <q-tooltip>Agent online</q-tooltip>
             </q-icon>
           </q-td>
-          <q-td key="last_seen" :props="props">{{
-            formatDate(props.row.last_seen)
-          }}</q-td>
-          <q-td key="boot_time" :props="props">{{
-            bootTime(props.row.boot_time)
-          }}</q-td>
+          <q-td key="last_seen" :props="props">{{ formatDate(props.row.last_seen) }}</q-td>
+          <q-td key="boot_time" :props="props">{{ bootTime(props.row.boot_time) }}</q-td>
         </q-tr>
       </template>
     </q-table>
@@ -358,7 +314,7 @@ import mixins from "@/mixins/mixins";
 import { mapState } from "vuex";
 import { date } from "quasar";
 import EditAgent from "@/components/modals/agents/EditAgent.vue";
-import PendingActions from "@/components/logs/PendingActions.vue";
+import PendingActions from "../core/logs/components/PendingActions.vue";
 import AgentActionMenu from "@/components/agents/AgentActionMenu.vue";
 import { runURLAction } from "@/api/core";
 import { runTakeControl, runRemoteBackground } from "@/api/agents";
@@ -440,12 +396,9 @@ export default {
           if (patches && !row.has_patches_pending) return false;
           if (actions && row.pending_actions_count === 0) return false;
           if (reboot && !row.needs_reboot) return false;
-          if (availability === "online" && row.status !== "online")
-            return false;
-          else if (availability === "offline" && row.status !== "offline")
-            return false;
-          else if (availability === "overdue" && row.status !== "overdue")
-            return false;
+          if (availability === "online" && row.status !== "online") return false;
+          else if (availability === "offline" && row.status !== "offline") return false;
+          else if (availability === "overdue" && row.status !== "overdue") return false;
           else if (availability === "expired") {
             let now = new Date();
             let last_seen = new Date(row.last_seen);
@@ -461,8 +414,7 @@ export default {
             valObj = valObj.map((item) => (item.value ? item.value : item));
           }
           const val = valObj + "";
-          const haystack =
-            val === "undefined" || val === "null" ? "" : val.toLowerCase();
+          const haystack = val === "undefined" || val === "null" ? "" : val.toLowerCase();
           return haystack.indexOf(search) !== -1;
         });
       });
@@ -511,9 +463,7 @@ export default {
       const data = {
         [db_field]: !alert_action,
       };
-      const alertColor = !alert_action
-        ? this.dash_positive_color
-        : this.dash_info_color;
+      const alertColor = !alert_action ? this.dash_positive_color : this.dash_info_color;
       this.$axios.put(`/agents/${agent.agent_id}/`, data).then(() => {
         this.$q.notify({
           color: alertColor,

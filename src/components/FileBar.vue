@@ -51,11 +51,7 @@
               <q-item clickable v-close-popup @click="showDeployments">
                 <q-item-section>Manage Deployments</q-item-section>
               </q-item>
-              <q-item
-                clickable
-                v-close-popup
-                @click="showUpdateAgentsModal = true"
-              >
+              <q-item clickable v-close-popup @click="showUpdateAgentsModal = true">
                 <q-item-section>Update Agents</q-item-section>
               </q-item>
             </q-list>
@@ -91,20 +87,11 @@
                 <q-item-section>User Administration</q-item-section>
               </q-item>
               <!-- core settings -->
-              <q-item
-                clickable
-                v-close-popup
-                @click="showEditCoreSettingsModal = true"
-              >
+              <q-item clickable v-close-popup @click="showEditCoreSettingsModal = true">
                 <q-item-section>Global Settings</q-item-section>
               </q-item>
               <!-- code sign -->
-              <q-item
-                v-if="!hosted"
-                clickable
-                v-close-popup
-                @click="showCodeSign = true"
-              >
+              <q-item v-if="!hosted" clickable v-close-popup @click="showCodeSign = true">
                 <q-item-section>Code Signing</q-item-section>
               </q-item>
             </q-list>
@@ -115,11 +102,7 @@
           <q-menu auto-close>
             <q-list dense style="min-width: 100px">
               <!-- bulk command -->
-              <q-item
-                clickable
-                v-close-popup
-                @click="showBulkAction('command')"
-              >
+              <q-item clickable v-close-popup @click="showBulkAction('command')">
                 <q-item-section>Bulk Command</q-item-section>
               </q-item>
               <!-- bulk script -->
@@ -131,11 +114,7 @@
                 <q-item-section>Bulk Patch Management</q-item-section>
               </q-item>
               <!-- server maintenance -->
-              <q-item
-                clickable
-                v-close-popup
-                @click="showServerMaintenance = true"
-              >
+              <q-item clickable v-close-popup @click="showServerMaintenance = true">
                 <q-item-section>Server Maintenance</q-item-section>
               </q-item>
               <!-- clear cache -->
@@ -258,8 +237,8 @@
 <script>
 import mixins from "@/mixins/mixins";
 import DialogWrapper from "@/components/ui/DialogWrapper.vue";
-import DebugLog from "@/components/logs/DebugLog.vue";
-import PendingActions from "@/components/logs/PendingActions.vue";
+import DebugLog from "../core/logs/components/DebugLog.vue";
+import PendingActions from "../core/logs/components/PendingActions.vue";
 import ClientsManager from "@/components/clients/ClientsManager.vue";
 import ClientsForm from "@/components/clients/ClientsForm.vue";
 import SitesForm from "@/components/clients/SitesForm.vue";
@@ -270,7 +249,7 @@ import AlertsManager from "@/components/AlertsManager.vue";
 import AutomationManager from "@/components/automation/AutomationManager.vue";
 import AdminManager from "@/components/AdminManager.vue";
 import InstallAgent from "@/components/modals/agents/InstallAgent.vue";
-import AuditManager from "@/components/logs/AuditManager.vue";
+import AuditManager from "../core/logs/components/AuditManager.vue";
 import BulkAction from "@/components/modals/agents/BulkAction.vue";
 import DeploymentTable from "@/components/clients/DeploymentTable.vue";
 import ServerMaintenance from "@/components/modals/core/ServerMaintenance.vue";
@@ -308,22 +287,17 @@ export default {
   },
   methods: {
     clearCache() {
-      this.$axios
-        .get("/core/clearcache/")
-        .then((r) => this.notifySuccess(r.data));
+      this.$axios.get("/core/clearcache/").then((r) => this.notifySuccess(r.data));
     },
     bulkRecoverAgents() {
       this.$q
         .dialog({
           title: "Bulk Recover All Agents?",
-          message:
-            "This will restart the Tactical and Mesh Agent services on all agents",
+          message: "This will restart the Tactical and Mesh Agent services on all agents",
           cancel: true,
         })
         .onOk(() => {
-          this.$axios
-            .get("/agents/bulkrecovery/")
-            .then((r) => this.notifySuccess(r.data));
+          this.$axios.get("/agents/bulkrecovery/").then((r) => this.notifySuccess(r.data));
         });
     },
     openHelp(mode) {
@@ -336,12 +310,10 @@ export default {
           url = "https://docs.tacticalrmm.com";
           break;
         case "bug":
-          url =
-            "https://github.com/amidaware/tacticalrmm/issues/new?template=bug_report.md";
+          url = "https://github.com/amidaware/tacticalrmm/issues/new?template=bug_report.md";
           break;
         case "feature":
-          url =
-            "https://github.com/amidaware/tacticalrmm/issues/new?template=feature_request.md";
+          url = "https://github.com/amidaware/tacticalrmm/issues/new?template=feature_request.md";
           break;
         case "discord":
           url = "https://discord.gg/upGTkWp";

@@ -3,11 +3,14 @@
   "version": "0.101.55",
   "private": true,
   "productName": "Tactical RMM",
+  "type": "module",
   "scripts": {
-    "serve": "quasar dev",
+    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "quasar dev",
     "build": "quasar build",
-    "lint": "eslint --ext .js,.ts,.vue ./",
-    "format": "prettier --write \"**/*.{js,ts,vue,,html,md,json}\" --ignore-path .gitignore"
+    "postinstall": "quasar prepare"
   },
   "dependencies": {
     "@quasar/extras": "1.16.17",
@@ -19,7 +22,6 @@
     "apexcharts": "3.54.1",
     "axios": "1.8.4",
     "dompurify": "3.2.5",
-    "dotenv": "16.4.5",
     "monaco-editor": "0.50.0",
     "pinia": "2.2.6",
     "qrcode": "1.5.4",
@@ -32,17 +34,24 @@
     "yaml": "2.6.0"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "4.0.0",
-    "@quasar/app-vite": "1.10.2",
-    "@quasar/cli": "2.4.1",
-    "@types/node": "22.7.5",
-    "@typescript-eslint/eslint-plugin": "7.16.0",
-    "@typescript-eslint/parser": "7.16.0",
-    "autoprefixer": "10.4.20",
-    "eslint": "8.57.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-vue": "8.7.1",
-    "prettier": "3.3.3",
-    "typescript": "5.6.2"
+    "@eslint/js": "^9.14.0",
+    "@intlify/unplugin-vue-i18n": "^4.0.0",
+    "@quasar/app-vite": "^2.1.0",
+    "@types/node": "^20.5.9",
+    "@vue/eslint-config-typescript": "^14.4.0",
+    "vite-plugin-checker": "^0.9.0",
+    "@vue/eslint-config-prettier": "^10.1.0",
+    "autoprefixer": "^10.4.2",
+    "eslint": "^9.14.0",
+    "eslint-plugin-vue": "^9.30.0",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3",
+    "typescript": "~5.5.3",
+    "vue-tsc": "^2.0.29"
+  },
+  "engines": {
+    "node": "^28 || ^26 || ^24 || ^22 || ^20 || ^18",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
   }
 }

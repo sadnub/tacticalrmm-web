@@ -15,12 +15,7 @@
       <q-item-section>Pending Agent Actions</q-item-section>
     </q-item>
     <!-- take control -->
-    <q-item
-      clickable
-      v-ripple
-      v-close-popup
-      @click="runTakeControl(agent.agent_id)"
-    >
+    <q-item clickable v-ripple v-close-popup @click="runTakeControl(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-desktop" />
       </q-item-section>
@@ -29,12 +24,7 @@
     </q-item>
 
     <!-- vnc -->
-    <q-item
-      clickable
-      v-ripple
-      v-close-popup
-      @click="launchWebVNC(agent.agent_id)"
-    >
+    <q-item clickable v-ripple v-close-popup @click="launchWebVNC(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="screen_share" />
       </q-item-section>
@@ -58,9 +48,7 @@
             dense
             clickable
             v-close-popup
-            @click="
-              runURLAction({ agent_id: agent.agent_id, action: action.id })
-            "
+            @click="runURLAction({ agent_id: agent.agent_id, action: action.id })"
           >
             {{ action.name }}
           </q-item>
@@ -106,11 +94,7 @@
       </q-menu>
     </q-item>
 
-    <q-item
-      clickable
-      v-close-popup
-      @click="runRemoteBackground(agent.agent_id, agent.plat)"
-    >
+    <q-item clickable v-close-popup @click="runRemoteBackground(agent.agent_id, agent.plat)">
       <q-item-section side>
         <q-icon size="xs" name="terminal" />
       </q-item-section>
@@ -123,11 +107,7 @@
         <q-icon size="xs" name="construction" />
       </q-item-section>
       <q-item-section>
-        {{
-          agent.maintenance_mode
-            ? "Disable Maintenance Mode"
-            : "Enable Maintenance Mode"
-        }}
+        {{ agent.maintenance_mode ? "Disable Maintenance Mode" : "Enable Maintenance Mode" }}
       </q-item-section>
     </q-item>
 
@@ -266,7 +246,7 @@ import { fetchScripts } from "@/api/scripts";
 import { notifySuccess, notifyWarning, notifyError } from "@/utils/notify";
 
 // ui imports
-import PendingActions from "@/components/logs/PendingActions.vue";
+import PendingActions from "../../core/logs/components/PendingActions.vue";
 import AgentRecovery from "@/components/modals/agents/AgentRecovery.vue";
 import PolicyAdd from "@/components/automation/modals/PolicyAdd.vue";
 import RebootLater from "@/components/modals/agents/RebootLater.vue";
@@ -575,10 +555,7 @@ export default {
         try {
           const data = await removeAgent(agent.agent_id);
           notifySuccess(data);
-          refreshDashboard(
-            false /* clearTreeSelected */,
-            true /* clearSubTable */,
-          );
+          refreshDashboard(false /* clearTreeSelected */, true /* clearSubTable */);
         } catch (e) {
           console.error(e);
         }
