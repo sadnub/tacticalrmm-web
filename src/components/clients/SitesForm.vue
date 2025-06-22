@@ -30,24 +30,14 @@
           />
         </q-card-section>
 
-        <div class="q-pl-sm text-h6" v-if="customFields.length > 0">
-          Custom Fields
-        </div>
+        <div class="q-pl-sm text-h6" v-if="customFields.length > 0">Custom Fields</div>
         <q-card-section v-for="field in customFields" :key="field.id">
           <CustomField v-model="custom_fields[field.name]" :field="field" />
         </q-card-section>
 
         <q-card-actions align="right">
           <q-btn dense flat push label="Cancel" v-close-popup />
-          <q-btn
-            :loading="loading"
-            dense
-            flat
-            push
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="loading" dense flat push label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -58,15 +48,15 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useClientDropdown } from "@/composables/clients";
-import { fetchSite, saveSite, editSite } from "@/api/clients";
-import { fetchCustomFields } from "@/api/core";
-import { formatCustomFields } from "@/utils/format";
-import { notifySuccess } from "@/utils/notify";
+import { useClientDropdown } from "src/composables/clients";
+import { fetchSite, saveSite, editSite } from "src/api/clients";
+import { fetchCustomFields } from "src/api/core";
+import { formatCustomFields } from "src/utils/format";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
-import CustomField from "@/components/ui/CustomField.vue";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import CustomField from "src/components/ui/CustomField.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   name: "SitesForm",
@@ -99,15 +89,10 @@ export default {
       loading.value = true;
       const data = {
         site: state.value,
-        custom_fields: formatCustomFields(
-          customFields.value,
-          custom_fields.value
-        ),
+        custom_fields: formatCustomFields(customFields.value, custom_fields.value),
       };
       try {
-        const result = !!props.site
-          ? await editSite(props.site.id, data)
-          : await saveSite(data);
+        const result = !!props.site ? await editSite(props.site.id, data) : await saveSite(data);
         notifySuccess(result);
         onDialogOK();
       } catch (e) {
@@ -121,9 +106,7 @@ export default {
       const data = await fetchSite(props.site.id);
 
       for (let field of customFields.value) {
-        const value = data.custom_fields.find(
-          (value) => value.field === field.id
-        );
+        const value = data.custom_fields.find((value) => value.field === field.id);
 
         if (field.type === "multiple") {
           if (value) custom_fields.value[field.name] = value.value;

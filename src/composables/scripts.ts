@@ -1,12 +1,9 @@
 import { ref, watch, computed, onMounted } from "vue";
 import { useStore } from "vuex";
-import { fetchScripts } from "@/api/scripts";
-import {
-  formatScriptOptions,
-  removeExtraOptionCategories,
-} from "@/utils/format";
-import type { Script } from "@/types/scripts";
-import { AgentPlatformType } from "@/types/agents";
+import { fetchScripts } from "src/api/scripts";
+import { formatScriptOptions, removeExtraOptionCategories } from "src/utils/format";
+import type { Script } from "src/types/scripts";
+import { AgentPlatformType } from "src/types/agents";
 
 export interface ScriptOption extends Script {
   label: string;
@@ -30,8 +27,7 @@ export function useScriptDropdown(opts?: useScriptDropdownParams) {
   const syntax = ref<string | undefined>("");
   const link = ref<string | undefined>("");
   const plat = ref<AgentPlatformType | undefined>(opts?.plat);
-  const baseUrl =
-    "https://github.com/amidaware/community-scripts/blob/main/scripts/";
+  const baseUrl = "https://github.com/amidaware/community-scripts/blob/main/scripts/";
 
   // specify parameters to filter out community scripts
   async function getScriptOptions() {
@@ -47,9 +43,7 @@ export function useScriptDropdown(opts?: useScriptDropdownParams) {
   // watch scriptPk for changes and update the default timeout and args
   watch([script, scriptOptions], () => {
     if (script.value && scriptOptions.value.length > 0) {
-      const tmpScript = scriptOptions.value.find(
-        (i) => i.value === script.value,
-      );
+      const tmpScript = scriptOptions.value.find((i) => i.value === script.value);
 
       if (tmpScript) {
         defaultTimeout.value = tmpScript.default_timeout;
@@ -58,9 +52,7 @@ export function useScriptDropdown(opts?: useScriptDropdownParams) {
         syntax.value = tmpScript.syntax;
         scriptName.value = tmpScript.label;
         link.value =
-          tmpScript.script_type === "builtin"
-            ? `${baseUrl}${tmpScript.filename}`
-            : undefined;
+          tmpScript.script_type === "builtin" ? `${baseUrl}${tmpScript.filename}` : undefined;
       }
     }
   });

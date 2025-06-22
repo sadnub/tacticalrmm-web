@@ -3,12 +3,7 @@
     <q-card class="q-dialog-plugin" :style="dialogStyle">
       <q-card-section>
         <div class="text-h6">{{ title }}</div>
-        <q-btn
-          dense
-          flat
-          size="md"
-          icon="content_copy"
-          @click="copyOutput(message)"
+        <q-btn dense flat size="md" icon="content_copy" @click="copyOutput(message)"
           ><q-tooltip>Copy to Clipboard</q-tooltip></q-btn
         >
       </q-card-section>
@@ -26,7 +21,7 @@
 
 <script setup>
 import { useDialogPluginComponent } from "quasar";
-import { copyOutput } from "@/utils/helpers";
+import { copyOutput } from "src/utils/helpers";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
@@ -47,8 +42,7 @@ const props = defineProps({
 defineEmits([...useDialogPluginComponent.emits]);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
-  useDialogPluginComponent();
+const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
 function onOKClick() {
   onDialogOK();

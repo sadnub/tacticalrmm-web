@@ -5,15 +5,11 @@ For details, see: https://license.tacticalrmm.com/ee
 */
 
 import axios from "axios";
-import { getCookie } from "@/ee/sso/utils/cookies";
-import { getBaseUrl } from "@/boot/axios";
+import { getCookie } from "src/ee/sso/utils/cookies";
+import { getBaseUrl } from "src/boot/axios";
 import { useStorage } from "@vueuse/core";
 
-import type {
-  SSOAccount,
-  SSOProvider,
-  SSOSettingsType,
-} from "@/ee/sso/types/sso";
+import type { SSOAccount, SSOProvider, SSOSettingsType } from "src/ee/sso/types/sso";
 
 const baseUrl = "accounts";
 
@@ -73,10 +69,7 @@ export async function fetchSSOSettings(): Promise<SSOSettingsType> {
 }
 
 export async function updateSSOSettings(settings: SSOSettingsType) {
-  const { data } = await axios.post(
-    `${baseUrl}/ssoproviders/settings/`,
-    settings,
-  );
+  const { data } = await axios.post(`${baseUrl}/ssoproviders/settings/`, settings);
   return data;
 }
 
@@ -91,10 +84,7 @@ export async function getSSOProviderToken() {
   return data;
 }
 
-export async function disconnectSSOAccount(
-  provider: string,
-  account: string,
-): Promise<SSOAccount> {
+export async function disconnectSSOAccount(provider: string, account: string): Promise<SSOAccount> {
   const { data } = await axios.delete(`${baseUrl}/ssoproviders/account/`, {
     data: { provider, account },
   });
@@ -125,9 +115,7 @@ export interface SSOConfigResponse {
   };
 }
 
-export async function getSSOConfig(): Promise<
-  AllAuthResponse<SSOConfigResponse>
-> {
+export async function getSSOConfig(): Promise<AllAuthResponse<SSOConfigResponse>> {
   const { data } = await axios.get(`${allauthBase}/config/`);
   return data;
 }

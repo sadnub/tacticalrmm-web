@@ -1,14 +1,6 @@
 <template>
-  <q-dialog
-    ref="dialogRef"
-    @hide="onDialogHide"
-    persistent
-    @keydown.esc="onDialogHide"
-  >
-    <q-card
-      class="q-dialog-plugin"
-      :style="{ 'min-width': !ret ? '40vw' : '70vw' }"
-    >
+  <q-dialog ref="dialogRef" @hide="onDialogHide" persistent @keydown.esc="onDialogHide">
+    <q-card class="q-dialog-plugin" :style="{ 'min-width': !ret ? '40vw' : '70vw' }">
       <q-bar>
         Send command on {{ agent.hostname }}
         <q-space />
@@ -122,8 +114,8 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useStore } from "vuex";
 import { useDialogPluginComponent } from "quasar";
-import { cmdPlaceholder } from "@/composables/agents";
-import { getWSUrl } from "@/websocket/channels";
+import { cmdPlaceholder } from "src/composables/agents";
+import { getWSUrl } from "src/websocket/channels";
 
 export default {
   name: "SendCommand",

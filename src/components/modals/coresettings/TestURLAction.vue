@@ -10,12 +10,7 @@
       </q-bar>
 
       <q-card-section>
-        <q-option-group
-          v-model="runAgainst"
-          :options="runAgainstOptions"
-          inline
-          dense
-        />
+        <q-option-group v-model="runAgainst" :options="runAgainstOptions" inline dense />
       </q-card-section>
 
       <q-card-section v-if="runAgainst === 'agent'">
@@ -75,13 +70,7 @@
 
       <q-card-actions align="right">
         <q-btn flat label="Close" v-close-popup />
-        <q-btn
-          :loading="loading"
-          flat
-          label="Run"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="loading" flat label="Run" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -91,13 +80,13 @@
 // composition imports
 import { ref, reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAgentDropdown } from "@/composables/agents";
-import { useSiteDropdown, useClientDropdown } from "@/composables/clients";
-import { runTestURLAction } from "@/api/core";
-import { URLAction } from "@/types/core/urlactions";
+import { useAgentDropdown } from "src/composables/agents";
+import { useSiteDropdown, useClientDropdown } from "src/composables/clients";
+import { runTestURLAction } from "src/api/core";
+import { URLAction } from "src/types/core/urlactions";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // define emits
 defineEmits([...useDialogPluginComponent.emits]);

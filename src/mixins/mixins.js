@@ -1,7 +1,7 @@
 import { Notify, date } from "quasar";
 import axios from "axios";
 
-import { formatAgentOptions } from "@/utils/format";
+import { formatAgentOptions } from "src/utils/format";
 
 function getTimeLapse(unixtime) {
   var previous = unixtime * 1000;

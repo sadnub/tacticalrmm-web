@@ -2,9 +2,7 @@
   <q-layout>
     <q-page-container>
       <q-page class="flex bg-image flex-center">
-        <q-card
-          v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
-        >
+        <q-card v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }">
           <q-card-section>
             <div class="text-center q-pt-lg">
               <div class="col text-h4 ellipsis">Tactical RMM</div>
@@ -17,9 +15,7 @@
                 v-model="credentials.username"
                 label="Username"
                 lazy-rules
-                :rules="[
-                  (val) => (val && val.length > 0) || 'This field is required',
-                ]"
+                :rules="[(val) => (val && val.length > 0) || 'This field is required']"
               />
               <q-input
                 v-model="credentials.password"
@@ -27,9 +23,7 @@
                 :type="showPassword ? 'password' : 'text'"
                 label="Password"
                 lazy-rules
-                :rules="[
-                  (val) => (val && val.length > 0) || 'This field is required',
-                ]"
+                :rules="[(val) => (val && val.length > 0) || 'This field is required']"
               >
                 <template v-slot:append>
                   <q-icon
@@ -40,12 +34,7 @@
                 </template>
               </q-input>
               <div>
-                <q-btn
-                  label="Login"
-                  type="submit"
-                  color="primary"
-                  class="full-width"
-                />
+                <q-btn label="Login" type="submit" color="primary" class="full-width" />
               </div>
             </q-form>
           </q-card-section>
@@ -63,11 +52,7 @@
                 class="q-pa-xs hover-bg"
               >
                 <q-item-section avatar>
-                  <q-icon
-                    :name="provider.icon ?? 'mdi-key'"
-                    size="sm"
-                    class="text-primary"
-                  />
+                  <q-icon :name="provider.icon ?? 'mdi-key'" size="sm" class="text-primary" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ provider.name }}</q-item-label>
@@ -81,9 +66,7 @@
         <q-dialog persistent v-model="prompt">
           <q-card style="min-width: 400px">
             <q-form ref="formToken" @submit.prevent="onSubmit">
-              <q-card-section class="text-center text-h6"
-                >Two-Factor Token</q-card-section
-              >
+              <q-card-section class="text-center text-h6">Two-Factor Token</q-card-section>
 
               <q-card-section>
                 <q-input
@@ -91,10 +74,7 @@
                   outlined
                   autocomplete="one-time-code"
                   v-model="twofactor"
-                  :rules="[
-                    (val) =>
-                      (val && val.length > 0) || 'This field is required',
-                  ]"
+                  :rules="[(val) => (val && val.length > 0) || 'This field is required']"
                 />
               </q-card-section>
 
@@ -113,13 +93,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { type QForm, useQuasar } from "quasar";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "src/stores/auth";
 import { useRouter } from "vue-router";
-import {
-  openSSOProviderRedirect,
-  getSSOConfig,
-  type SSOProviderConfig,
-} from "@/ee/sso/api/sso";
+import { openSSOProviderRedirect, getSSOConfig, type SSOProviderConfig } from "src/ee/sso/api/sso";
 
 // setup quasar
 const $q = useQuasar();

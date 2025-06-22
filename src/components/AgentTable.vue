@@ -22,62 +22,62 @@
       :loading="agentTableLoading"
     >
       <!-- header slots -->
-      <template v-slot:header-cell-smsalert="props">
+      <template #header-cell-smsalert="props">
         <q-th auto-width :props="props">
           <q-icon name="phone_android" size="1.5em">
             <q-tooltip>{{ sms_overdue_text }}</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-emailalert="props">
+      <template #header-cell-emailalert="props">
         <q-th auto-width :props="props">
           <q-icon name="email" size="1.5em">
             <q-tooltip>{{ email_overdue_text }}</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-dashboardalert="props">
+      <template #header-cell-dashboardalert="props">
         <q-th auto-width :props="props">
           <q-icon name="notifications" size="1.5em">
             <q-tooltip>{{ dashboard_overdue_text }}</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-plat="props">
+      <template #header-cell-plat="props">
         <q-th auto-width :props="props"></q-th>
       </template>
-      <template v-slot:header-cell-mon-type="props">
+      <template #header-cell-mon-type="props">
         <q-th auto-width :props="props"></q-th>
       </template>
-      <template v-slot:header-cell-checks-status="props">
+      <template #header-cell-checks-status="props">
         <q-th :props="props">
           <q-icon name="fas fa-check-double" size="1.2em">
             <q-tooltip>Checks Status</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-patchespending="props">
+      <template #header-cell-patchespending="props">
         <q-th auto-width :props="props">
           <q-icon name="verified_user" size="1.5em">
             <q-tooltip>Patches Pending</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-pendingactions="props">
+      <template #header-cell-pendingactions="props">
         <q-th auto-width :props="props">
           <q-icon name="far fa-clock" size="1.5em">
             <q-tooltip>Pending Actions</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-agentstatus="props">
+      <template #header-cell-agentstatus="props">
         <q-th auto-width :props="props">
           <q-icon name="fas fa-signal" size="1.2em">
             <q-tooltip>Agent Status</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template v-slot:header-cell-needs_reboot="props">
+      <template #header-cell-needs_reboot="props">
         <q-th auto-width :props="props">
           <q-icon name="fas fa-power-off" size="1.2em">
             <q-tooltip>Reboot</q-tooltip>
@@ -85,7 +85,7 @@
         </q-th>
       </template>
       <!-- body slots -->
-      <template v-slot:body="props">
+      <template #body="props">
         <q-tr
           @contextmenu="agentRowSelected(props.row.agent_id, props.row.plat)"
           :props="props"
@@ -310,15 +310,15 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 import { mapState } from "vuex";
 import { date } from "quasar";
-import EditAgent from "@/components/modals/agents/EditAgent.vue";
+import EditAgent from "src/components/modals/agents/EditAgent.vue";
 import PendingActions from "../core/logs/components/PendingActions.vue";
-import AgentActionMenu from "@/components/agents/AgentActionMenu.vue";
-import { runURLAction } from "@/api/core";
-import { runTakeControl, runRemoteBackground } from "@/api/agents";
-import { capitalize } from "@vue/shared";
+import AgentActionMenu from "src/components/agents/AgentActionMenu.vue";
+import { runURLAction } from "src/api/core";
+import { runTakeControl, runRemoteBackground } from "src/api/agents";
+import { capitalize } from "vue";
 
 export default {
   name: "AgentTable",
@@ -373,7 +373,7 @@ export default {
       params.forEach((param) => {
         if (param.includes("is:")) {
           advancedFilter = true;
-          let filter = param.split(":")[1];
+          const filter = param.split(":")[1];
           if (filter === "patchespending") patches = true;
           if (filter === "actionspending") actions = true;
           else if (filter === "checksfailing") checks = true;
@@ -400,9 +400,9 @@ export default {
           else if (availability === "offline" && row.status !== "offline") return false;
           else if (availability === "overdue" && row.status !== "overdue") return false;
           else if (availability === "expired") {
-            let now = new Date();
-            let last_seen = new Date(row.last_seen);
-            let diff = date.getDateDiff(now, last_seen, "days");
+            const now = new Date();
+            const last_seen = new Date(row.last_seen);
+            const diff = date.getDateDiff(now, last_seen, "days");
             if (diff < 30) return false;
           }
         }
@@ -501,6 +501,7 @@ export default {
           },
         })
         .onOk(() => {
+          // TODO: Just update the selectedAgent in agent store
           this.refreshDashboard();
           this.$store.commit("setRefreshSummaryTab", true);
         });

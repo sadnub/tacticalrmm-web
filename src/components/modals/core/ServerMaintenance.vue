@@ -29,11 +29,7 @@
           <q-checkbox v-model="prune_tables" val="audit_logs" label="Audit Log">
             <q-tooltip>Removes agent check results</q-tooltip>
           </q-checkbox>
-          <q-checkbox
-            v-model="prune_tables"
-            val="pending_actions"
-            label="Pending Actions"
-          >
+          <q-checkbox v-model="prune_tables" val="pending_actions" label="Pending Actions">
             <q-tooltip>Removes completed pending actions</q-tooltip>
           </q-checkbox>
           <q-checkbox v-model="prune_tables" val="alerts" label="Alerts">
@@ -42,12 +38,7 @@
         </q-card-section>
 
         <q-card-actions align="left">
-          <q-btn
-            label="Submit"
-            color="primary"
-            type="submit"
-            class="full-width"
-          />
+          <q-btn label="Submit" color="primary" type="submit" class="full-width" />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -55,7 +46,7 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "ServerMaintenance",

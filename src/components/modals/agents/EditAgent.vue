@@ -53,12 +53,7 @@
                   <q-card-section class="row">
                     <div class="col-2">Description:</div>
                     <div class="col-2"></div>
-                    <q-input
-                      outlined
-                      dense
-                      v-model="agent.description"
-                      class="col-8"
-                    />
+                    <q-input outlined dense v-model="agent.description" class="col-8" />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-2">Timezone:</div>
@@ -98,8 +93,7 @@
                         :color="dash_warning_color"
                       />
                       Mark an agent as
-                      <span class="text-weight-bold">offline</span> if it has
-                      not checked in after:
+                      <span class="text-weight-bold">offline</span> if it has not checked in after:
                     </div>
                     <q-input
                       dense
@@ -124,8 +118,7 @@
                         :color="dash_negative_color"
                       />
                       Mark an agent as
-                      <span class="text-weight-bold">overdue</span> if it has
-                      not checked in after:
+                      <span class="text-weight-bold">overdue</span> if it has not checked in after:
                     </div>
                     <q-input
                       dense
@@ -146,10 +139,7 @@
                       v-model="agent.overdue_email_alert"
                       label="Get overdue email alerts"
                     />
-                    <q-checkbox
-                      v-model="agent.overdue_text_alert"
-                      label="Get overdue sms alerts"
-                    />
+                    <q-checkbox v-model="agent.overdue_text_alert" label="Get overdue sms alerts" />
                     <q-checkbox
                       v-model="agent.overdue_dashboard_alert"
                       label="Get overdue dashboard alerts"
@@ -160,14 +150,11 @@
                 <!-- custom fields -->
                 <q-tab-panel name="customfields">
                   <div class="text-subtitle" v-if="customFields.length === 0">
-                    No agent custom fields found. Go to **Settings > Global
-                    Settings > Custom Settings**
+                    No agent custom fields found. Go to **Settings > Global Settings > Custom
+                    Settings**
                   </div>
                   <q-card-section v-for="field in customFields" :key="field.id">
-                    <CustomField
-                      v-model="custom_fields[field.name]"
-                      :field="field"
-                    />
+                    <CustomField v-model="custom_fields[field.name]" :field="field" />
                   </q-card-section>
                 </q-tab-panel>
 
@@ -180,17 +167,12 @@
                 <q-tab-panel name="policies">
                   <div class="text-subtitle2">Policies</div>
                   <q-list separator padding dense>
-                    <q-item
-                      v-for="(policy, key) in agent.applied_policies"
-                      :key="key"
-                    >
+                    <q-item v-for="(policy, key) in agent.applied_policies" :key="key">
                       <q-item-section>
                         <q-item-label overline>
                           {{ capitalize(key).split("_").join(" ") }}
                         </q-item-label>
-                        <q-item-label>{{
-                          policy ? policy.name : "None"
-                        }}</q-item-label>
+                        <q-item-label>{{ policy ? policy.name : "None" }}</q-item-label>
                       </q-item-section>
                       <q-item-section side v-if="policy">
                         <q-item-label>
@@ -205,16 +187,12 @@
                     <q-item>
                       <q-item-section>
                         <q-item-label>{{
-                          agent.alert_template
-                            ? agent.alert_template.name
-                            : "None"
+                          agent.alert_template ? agent.alert_template.name : "None"
                         }}</q-item-label>
                       </q-item-section>
                       <q-item-section side v-if="agent.alert_template">
                         <q-item-label>
-                          <i>{{
-                            agent.alert_template.is_active ? "" : "disabled"
-                          }}</i>
+                          <i>{{ agent.alert_template.is_active ? "" : "disabled" }}</i>
                         </q-item-label>
                       </q-item-section>
                     </q-item>
@@ -275,33 +253,21 @@
                       <q-item-section>
                         <q-item-label overline>Run Time Frequency</q-item-label>
                         <q-item-label>{{
-                          capitalize(
-                            agent.effective_patch_policy.run_time_frequency,
-                          )
+                          capitalize(agent.effective_patch_policy.run_time_frequency)
                         }}</q-item-label>
                       </q-item-section>
                       <q-item-section
-                        v-if="
-                          agent.effective_patch_policy.run_time_frequency ===
-                          'daily'
-                        "
+                        v-if="agent.effective_patch_policy.run_time_frequency === 'daily'"
                       >
                         <q-item-label>
                           <b>week days:</b>
-                          {{
-                            weekDaystoString(
-                              agent.effective_patch_policy.run_time_days,
-                            )
-                          }}
+                          {{ weekDaystoString(agent.effective_patch_policy.run_time_days) }}
                           <b>at hour:</b>
                           {{ agent.effective_patch_policy.run_time_hour }}
                         </q-item-label>
                       </q-item-section>
                       <q-item-section
-                        v-else-if="
-                          agent.effective_patch_policy.run_time_frequency ===
-                          'monthly'
-                        "
+                        v-else-if="agent.effective_patch_policy.run_time_frequency === 'monthly'"
                       >
                         <q-item-label>
                           <b>Every month on day:</b>
@@ -316,46 +282,29 @@
                     </q-item>
                     <q-item>
                       <q-item-section>
-                        <q-item-label overline
-                          >Reboot after installation</q-item-label
-                        >
+                        <q-item-label overline>Reboot after installation</q-item-label>
                         <q-item-label>{{
-                          agent.effective_patch_policy.reboot_after_install !==
-                          "inherit"
-                            ? capitalize(
-                                agent.effective_patch_policy
-                                  .reboot_after_install,
-                              )
+                          agent.effective_patch_policy.reboot_after_install !== "inherit"
+                            ? capitalize(agent.effective_patch_policy.reboot_after_install)
                             : "Do Nothing"
                         }}</q-item-label>
                       </q-item-section>
                     </q-item>
                     <q-item>
                       <q-item-section>
-                        <q-item-label overline
-                          >Failed patch options</q-item-label
-                        >
-                        <q-item-label
-                          v-if="
-                            agent.effective_patch_policy
-                              .reprocess_failed_inherit
-                          "
+                        <q-item-label overline>Failed patch options</q-item-label>
+                        <q-item-label v-if="agent.effective_patch_policy.reprocess_failed_inherit"
                           >Do Nothing</q-item-label
                         >
                         <q-item-label v-else>
                           <b>Reprocess failed patches:</b>
                           {{
                             agent.effective_patch_policy.reprocess_failed
-                              ? agent.effective_patch_policy
-                                  .reprocess_failed_times
+                              ? agent.effective_patch_policy.reprocess_failed_times
                               : "Never"
                           }}
                           <b>Email on fail:</b>
-                          {{
-                            agent.effective_patch_policy.email_if_fail
-                              ? "Yes"
-                              : "Never"
-                          }}
+                          {{ agent.effective_patch_policy.email_if_fail ? "Yes" : "Never" }}
                         </q-item-label>
                       </q-item-section>
                     </q-item>
@@ -376,11 +325,11 @@
 <script>
 import { mapState } from "vuex";
 import { useDialogPluginComponent } from "quasar";
-import mixins from "@/mixins/mixins";
-import PatchPolicyForm from "@/components/modals/agents/PatchPolicyForm.vue";
-import CustomField from "@/components/ui/CustomField.vue";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
-import { capitalize } from "@/utils/format";
+import mixins from "src/mixins/mixins";
+import PatchPolicyForm from "src/components/modals/agents/PatchPolicyForm.vue";
+import CustomField from "src/components/ui/CustomField.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import { capitalize } from "src/utils/format";
 
 export default {
   name: "EditAgent",
@@ -439,9 +388,7 @@ export default {
         }
 
         for (let field of this.customFields) {
-          const value = r.data.custom_fields.find(
-            (value) => value.field === field.id,
-          );
+          const value = r.data.custom_fields.find((value) => value.field === field.id);
 
           if (field.type === "multiple") {
             if (value) this.custom_fields[field.name] = value.value;
@@ -527,10 +474,7 @@ export default {
       this.$axios
         .put(`/agents/${this.agent_id}/`, {
           ...this.agent,
-          custom_fields: this.formatCustomFields(
-            this.customFields,
-            this.custom_fields,
-          ),
+          custom_fields: this.formatCustomFields(this.customFields, this.custom_fields),
         })
         .then(() => {
           this.$refs.dialogRef.hide();

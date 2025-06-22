@@ -1,7 +1,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
-import { fetchAgents } from "@/api/agents";
-import { formatAgentOptions } from "@/utils/format";
+import { fetchAgents } from "src/api/agents";
+import { formatAgentOptions } from "src/utils/format";
 
 // agent dropdown
 export function useAgentDropdown(opts = {}) {
@@ -11,10 +11,7 @@ export function useAgentDropdown(opts = {}) {
 
   // specifing flat returns an array of hostnames versus {value:id, label: hostname}
   async function getAgentOptions(flat = false) {
-    agentOptions.value = formatAgentOptions(
-      await fetchAgents({ detail: false }),
-      flat,
-    );
+    agentOptions.value = formatAgentOptions(await fetchAgents({ detail: false }), flat);
   }
 
   if (opts.onMount) {

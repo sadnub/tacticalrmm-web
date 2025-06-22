@@ -2,11 +2,7 @@
   <div>
     <div class="row">
       <div class="text-subtitle2">
-        {{
-          props.type === "web"
-            ? "URL Actions"
-            : "Web Hooks for Alert Failure/Resolved Actions"
-        }}
+        {{ props.type === "web" ? "URL Actions" : "Web Hooks for Alert Failure/Resolved Actions" }}
       </div>
       <q-space />
       <q-btn
@@ -34,11 +30,7 @@
     >
       <!-- body slots -->
       <template v-slot:body="props">
-        <q-tr
-          :props="props"
-          class="cursor-pointer"
-          @dblclick="editURLAction(props.row)"
-        >
+        <q-tr :props="props" class="cursor-pointer" @dblclick="editURLAction(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
@@ -48,11 +40,7 @@
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item
-                clickable
-                v-close-popup
-                @click="deleteURLAction(props.row)"
-              >
+              <q-item clickable v-close-popup @click="deleteURLAction(props.row)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -88,15 +76,15 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { QTableColumn, useQuasar } from "quasar";
-import { fetchURLActions, removeURLAction } from "@/api/core";
-import { notifySuccess } from "@/utils/notify";
-import { truncateText } from "@/utils/format";
+import { fetchURLActions, removeURLAction } from "src/api/core";
+import { notifySuccess } from "src/utils/notify";
+import { truncateText } from "src/utils/format";
 
 // ui imports
-import URLActionsForm from "@/components/modals/coresettings/URLActionsForm.vue";
+import URLActionsForm from "src/components/modals/coresettings/URLActionsForm.vue";
 
 // types
-import { type URLActionType, type URLAction } from "@/types/core/urlactions";
+import { type URLActionType, type URLAction } from "src/types/core/urlactions";
 
 // define props
 const props = defineProps<{ type: URLActionType }>();
@@ -136,9 +124,7 @@ async function getURLActions() {
   $q.loading.show();
   try {
     const result = await fetchURLActions();
-    actions.value = result.filter(
-      (action) => action.action_type === props.type,
-    );
+    actions.value = result.filter((action) => action.action_type === props.type);
   } catch (e) {
     console.error(e);
   }

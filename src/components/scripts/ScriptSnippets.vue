@@ -10,14 +10,7 @@
       }"
     >
       <q-bar>
-        <q-btn
-          @click="getSnippets"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />Script Snippets
+        <q-btn @click="getSnippets" class="q-mr-sm" dense flat push icon="refresh" />Script Snippets
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -41,14 +34,7 @@
         :rows-per-page-options="[0]"
       >
         <template v-slot:top>
-          <q-btn
-            dense
-            flat
-            no-caps
-            icon="add"
-            label="New"
-            @click="newSnippetModal"
-          />
+          <q-btn dense flat no-caps icon="add" label="New" @click="newSnippetModal" />
         </template>
         <template v-slot:header-cell-shell="props">
           <q-th :props="props" auto-width> Shell </q-th>
@@ -56,30 +42,18 @@
 
         <template v-slot:body="props">
           <!-- Table View -->
-          <q-tr
-            :props="props"
-            @dblclick="editSnippetModal(props.row)"
-            class="cursor-pointer"
-          >
+          <q-tr :props="props" @dblclick="editSnippetModal(props.row)" class="cursor-pointer">
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="editSnippetModal(props.row)"
-                >
+                <q-item clickable v-close-popup @click="editSnippetModal(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="deleteSnippet(props.row)"
-                >
+                <q-item clickable v-close-popup @click="deleteSnippet(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -155,11 +129,11 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { fetchScriptSnippets, removeScriptSnippet } from "@/api/scripts";
-import { notifySuccess } from "@/utils/notify";
+import { fetchScriptSnippets, removeScriptSnippet } from "src/api/scripts";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
-import ScriptSnippetFormModal from "@/components/scripts/ScriptSnippetFormModal.vue";
+import ScriptSnippetFormModal from "src/components/scripts/ScriptSnippetFormModal.vue";
 
 // static data
 const columns = [

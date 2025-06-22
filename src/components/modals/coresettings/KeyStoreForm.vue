@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "KeyStoreForm",

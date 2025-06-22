@@ -1,7 +1,7 @@
 import { createStore } from "vuex";
 import { Screen, Dark, LoadingBar } from "quasar";
 import axios from "axios";
-import { formatDate } from "@/utils/format";
+import { formatDate } from "src/utils/format";
 
 export default function () {
   const Store = new createStore({
@@ -179,11 +179,9 @@ export default function () {
           });
       },
       setShowCommunityScripts(context, data) {
-        axios
-          .patch("/accounts/users/ui/", { show_community_scripts: data })
-          .then(() => {
-            context.commit("setShowCommunityScripts", data);
-          });
+        axios.patch("/accounts/users/ui/", { show_community_scripts: data }).then(() => {
+          context.commit("setShowCommunityScripts", data);
+        });
       },
       refreshDashboard({ state, commit, dispatch }, clearTreeSelected = false) {
         if (clearTreeSelected || !state.selectedTree) {
@@ -200,24 +198,19 @@ export default function () {
 
         let localParams = null;
         if (state.defaultAgentTblTab !== "mixed") {
-          if (localParams)
-            localParams += `&monitoring_type=${state.defaultAgentTblTab}`;
+          if (localParams) localParams += `&monitoring_type=${state.defaultAgentTblTab}`;
           else localParams = `?monitoring_type=${state.defaultAgentTblTab}`;
         }
 
         if (state.selectedTree.includes("Client")) {
-          if (localParams)
-            localParams += `&client=${state.selectedTree.split("|")[1]}`;
+          if (localParams) localParams += `&client=${state.selectedTree.split("|")[1]}`;
           else localParams = `?client=${state.selectedTree.split("|")[1]}`;
         } else if (state.selectedTree.includes("Site")) {
-          if (localParams)
-            localParams += `&site=${state.selectedTree.split("|")[1]}`;
+          if (localParams) localParams += `&site=${state.selectedTree.split("|")[1]}`;
           else localParams = `?site=${state.selectedTree.split("|")[1]}`;
         }
         try {
-          const { data } = await axios.get(
-            `/agents/${localParams ? localParams : ""}`,
-          );
+          const { data } = await axios.get(`/agents/${localParams ? localParams : ""}`);
           commit("setAgents", data);
         } catch (e) {
           console.error(e);
@@ -233,10 +226,7 @@ export default function () {
         commit("setDashWarningColor", data.dash_warning_color);
         if (edited) {
           LoadingBar.setDefaults({ color: data.loading_bar_color });
-          commit(
-            "setClearSearchWhenSwitching",
-            data.clear_search_when_switching,
-          );
+          commit("setClearSearchWhenSwitching", data.clear_search_when_switching);
           commit("SET_DEFAULT_AGENT_TBL_TAB", data.default_agent_tbl_tab);
           commit("SET_CLIENT_TREE_SORT", data.client_tree_sort);
           commit("SET_CLIENT_SPLITTER", data.client_tree_splitter);
@@ -312,17 +302,13 @@ export default function () {
                 output.push(clientNode);
               }
 
-              const sorted = output.sort((a, b) =>
-                a.label.localeCompare(b.label),
-              );
+              const sorted = output.sort((a, b) => a.label.localeCompare(b.label));
               if (state.clientTreeSort === "alphafail") {
                 // move failing clients to the top
                 const failing = sorted.filter(
                   (i) => i.color === "negative" || i.color === "warning",
                 );
-                const ok = sorted.filter(
-                  (i) => i.color !== "negative" && i.color !== "warning",
-                );
+                const ok = sorted.filter((i) => i.color !== "negative" && i.color !== "warning");
                 const sortedByFailing = [...failing, ...ok];
                 commit("loadTree", sortedByFailing);
               } else {

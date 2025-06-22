@@ -49,8 +49,8 @@
                     label="Enable server side scripts"
                   >
                     <q-tooltip
-                      >Allow running scripts on TRMM server for alert
-                      failure/resolve actions</q-tooltip
+                      >Allow running scripts on TRMM server for alert failure/resolve
+                      actions</q-tooltip
                     >
                   </q-checkbox>
                   <q-btn
@@ -104,12 +104,7 @@
                 <q-card-section class="row">
                   <div class="col-4">Default date format:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="settings.date_format"
-                    class="col-6"
-                  >
+                  <q-input outlined dense v-model="settings.date_format" class="col-6">
                     <template v-slot:after>
                       <q-btn
                         round
@@ -118,9 +113,7 @@
                         size="sm"
                         icon="info"
                         @click="
-                          openURL(
-                            'https://quasar.dev/quasar-utils/date-utils#format-for-display',
-                          )
+                          openURL('https://quasar.dev/quasar-utils/date-utils#format-for-display')
                         "
                       >
                         <q-tooltip>Click to see formatting options</q-tooltip>
@@ -174,9 +167,7 @@
                   />
                 </q-card-section>
                 <q-card-section class="row">
-                  <div class="col-4 flex items-center">
-                    Receive notifications on:
-                  </div>
+                  <div class="col-4 flex items-center">Receive notifications on:</div>
                   <div class="col-2"></div>
                   <q-checkbox
                     dense
@@ -222,11 +213,7 @@
                 <q-card-section class="row">
                   <div class="col-4">Reset Patch Policy on Agents:</div>
                   <div class="col-2"></div>
-                  <q-btn
-                    color="negative"
-                    label="Reset"
-                    @click="showResetPatchPolicy"
-                  />
+                  <q-btn color="negative" label="Reset" @click="showResetPatchPolicy" />
                 </q-card-section>
               </q-tab-panel>
               <!-- email alerts -->
@@ -250,12 +237,7 @@
                   <div class="col-3">Recipients</div>
                   <div class="col-4"></div>
                   <div class="col-5">
-                    <q-list
-                      dense
-                      v-if="
-                        ready && settings.email_alert_recipients.length !== 0
-                      "
-                    >
+                    <q-list dense v-if="ready && settings.email_alert_recipients.length !== 0">
                       <q-item
                         v-for="email in settings.email_alert_recipients"
                         :key="email"
@@ -305,12 +287,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Host:</div>
                   <div class="col-4"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="settings.smtp_host"
-                    class="col-6 q-pa-none"
-                  />
+                  <q-input outlined dense v-model="settings.smtp_host" class="col-6 q-pa-none" />
                 </q-card-section>
                 <q-card-section class="row">
                   <div class="col-2">Port:</div>
@@ -321,9 +298,7 @@
                     type="number"
                     filled
                     class="q-pa-none"
-                    :rules="[
-                      (val) => (val > 0 && val <= 65535) || 'Invalid Port',
-                    ]"
+                    :rules="[(val) => (val > 0 && val <= 65535) || 'Invalid Port']"
                   />
                 </q-card-section>
                 <q-card-section class="row">
@@ -333,10 +308,7 @@
                     class="q-pa-none"
                   />
                 </q-card-section>
-                <q-card-section
-                  class="row"
-                  v-show="settings.smtp_requires_auth"
-                >
+                <q-card-section class="row" v-show="settings.smtp_requires_auth">
                   <div class="col-2">Username:</div>
                   <div class="col-4"></div>
                   <q-input
@@ -346,10 +318,7 @@
                     class="col-6 q-pa-none"
                   />
                 </q-card-section>
-                <q-card-section
-                  class="row"
-                  v-show="settings.smtp_requires_auth"
-                >
+                <q-card-section class="row" v-show="settings.smtp_requires_auth">
                   <div class="col-2">Password:</div>
                   <div class="col-4"></div>
                   <q-input
@@ -390,10 +359,7 @@
                   <div class="col-3">Recipients</div>
                   <div class="col-4"></div>
                   <div class="col-5">
-                    <q-list
-                      dense
-                      v-if="ready && settings.sms_alert_recipients.length !== 0"
-                    >
+                    <q-list dense v-if="ready && settings.sms_alert_recipients.length !== 0">
                       <q-item
                         v-for="num in settings.sms_alert_recipients"
                         :key="num"
@@ -465,8 +431,7 @@
                     class="col-6"
                     :rules="[
                       (val) =>
-                        (val == val.toLowerCase() &&
-                          val != val.toUpperCase()) ||
+                        (val == val.toLowerCase() && val != val.toUpperCase()) ||
                         'Username must be all lowercase',
                     ]"
                   />
@@ -474,32 +439,17 @@
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4">Mesh Site:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    dense
-                    outlined
-                    v-model="settings.mesh_site"
-                    class="col-6"
-                  />
+                  <q-input dense outlined v-model="settings.mesh_site" class="col-6" />
                 </q-card-section>
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4">Mesh Token:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    dense
-                    outlined
-                    v-model="settings.mesh_token"
-                    class="col-6"
-                  />
+                  <q-input dense outlined v-model="settings.mesh_token" class="col-6" />
                 </q-card-section>
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4">Mesh Device Group Name:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    dense
-                    outlined
-                    v-model="settings.mesh_device_group"
-                    class="col-6"
-                  />
+                  <q-input dense outlined v-model="settings.mesh_device_group" class="col-6" />
                 </q-card-section>
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4 flex items-center">
@@ -511,9 +461,9 @@
                       class="cursor-pointer"
                     >
                       <q-tooltip class="text-caption">
-                        It is recommended to keep this option enabled;
-                        otherwise, all TRMM users will have full permissions in
-                        MeshCentral regardless of their permissions in TRMM.
+                        It is recommended to keep this option enabled; otherwise, all TRMM users
+                        will have full permissions in MeshCentral regardless of their permissions in
+                        TRMM.
                       </q-tooltip>
                     </q-icon>
                   </div>
@@ -535,22 +485,16 @@
                       class="q-ml-sm cursor-pointer"
                     >
                       <q-tooltip class="text-caption">
-                        Adding your company name here will append it to the
-                        user's full name that appears when doing a remote
-                        control session, for example: 'John Doe - Amidaware
-                        Inc.'
+                        Adding your company name here will append it to the user's full name that
+                        appears when doing a remote control session, for example: 'John Doe -
+                        Amidaware Inc.'
                       </q-tooltip>
                     </q-icon>
                   </div>
 
                   <div class="col-2"></div>
 
-                  <q-input
-                    dense
-                    outlined
-                    v-model="settings.mesh_company_name"
-                    class="col-6"
-                  >
+                  <q-input dense outlined v-model="settings.mesh_company_name" class="col-6">
                   </q-input>
                 </q-card-section>
               </q-tab-panel>
@@ -724,14 +668,14 @@
 
 <script>
 import { openURL } from "quasar";
-import mixins from "@/mixins/mixins";
-import ResetPatchPolicy from "@/components/modals/coresettings/ResetPatchPolicy.vue";
-import CustomFields from "@/components/modals/coresettings/CustomFields.vue";
-import KeyStoreTable from "@/components/modals/coresettings/KeyStoreTable.vue";
-import URLActionsTable from "@/components/modals/coresettings/URLActionsTable.vue";
-import APIKeysTable from "@/components/core/APIKeysTable.vue";
-import SSOProvidersTable from "@/ee/sso/components/SSOProvidersTable.vue";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import mixins from "src/mixins/mixins";
+import ResetPatchPolicy from "src/components/modals/coresettings/ResetPatchPolicy.vue";
+import CustomFields from "src/components/modals/coresettings/CustomFields.vue";
+import KeyStoreTable from "src/components/modals/coresettings/KeyStoreTable.vue";
+import URLActionsTable from "src/components/modals/coresettings/URLActionsTable.vue";
+import APIKeysTable from "src/components/core/APIKeysTable.vue";
+import SSOProvidersTable from "src/ee/sso/components/SSOProvidersTable.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   name: "EditCoreSettings",
@@ -873,15 +817,11 @@ export default {
         });
     },
     removeEmail(email) {
-      const removed = this.settings.email_alert_recipients.filter(
-        (k) => k !== email,
-      );
+      const removed = this.settings.email_alert_recipients.filter((k) => k !== email);
       this.settings.email_alert_recipients = removed;
     },
     removeSMSNumber(num) {
-      const removed = this.settings.sms_alert_recipients.filter(
-        (k) => k !== num,
-      );
+      const removed = this.settings.sms_alert_recipients.filter((k) => k !== num);
       this.settings.sms_alert_recipients = removed;
     },
     editSettings() {

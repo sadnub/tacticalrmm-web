@@ -1,15 +1,12 @@
 import { ref, watch } from "vue";
-import { UseWebSocketReturn, useWebSocket } from "@vueuse/core";
-import { getBaseUrl } from "@/boot/axios";
-import { useAuthStore } from "@/stores/auth";
+import { type UseWebSocketReturn, useWebSocket } from "@vueuse/core";
+import { getBaseUrl } from "src/boot/axios";
+import { useAuthStore } from "src/stores/auth";
 
 export function getWSUrl(path: string, token: string | null) {
   const url = getBaseUrl().split("://")[1];
 
-  const proto =
-    process.env.NODE_ENV === "production" || process.env.DOCKER_BUILD
-      ? "wss"
-      : "ws";
+  const proto = process.env.NODE_ENV === "production" || process.env.DOCKER_BUILD ? "wss" : "ws";
   return `${proto}://${url}/ws/${path}/?access_token=${token}`;
 }
 

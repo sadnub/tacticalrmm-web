@@ -32,11 +32,7 @@
 
       <!-- body slots -->
       <template v-slot:body="props">
-        <q-tr
-          :props="props"
-          class="cursor-pointer"
-          @dblclick="editAPIKey(props.row)"
-        >
+        <q-tr :props="props" class="cursor-pointer" @dblclick="editAPIKey(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
@@ -76,11 +72,7 @@
             {{ formatDate(props.row.created_time) }}
           </q-td>
           <q-td>
-            <q-icon
-              size="sm"
-              name="content_copy"
-              @click="copyKeyToClipboard(props.row.key)"
-            >
+            <q-icon size="sm" name="content_copy" @click="copyKeyToClipboard(props.row.key)">
               <q-tooltip>Copy API Key to clipboard</q-tooltip>
             </q-icon>
           </q-td>
@@ -94,10 +86,10 @@
 // composition imports
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
-import { fetchAPIKeys, removeAPIKey } from "@/api/accounts";
+import { fetchAPIKeys, removeAPIKey } from "src/api/accounts";
 import { useQuasar, copyToClipboard } from "quasar";
-import { notifySuccess, notifyError } from "@/utils/notify";
-import APIKeysForm from "@/components/core/APIKeysForm.vue";
+import { notifySuccess, notifyError } from "src/utils/notify";
+import APIKeysForm from "src/components/core/APIKeysForm.vue";
 
 const columns = [
   {

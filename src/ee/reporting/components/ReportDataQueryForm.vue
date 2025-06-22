@@ -21,31 +21,15 @@ For details, see: https://license.tacticalrmm.com/ee
         </q-btn>
       </q-bar>
       <q-toolbar>
-        <q-input
-          v-model="state.name"
-          label="Data Query Name"
-          filled
-          dense
-          style="width: 400px"
-        />
+        <q-input v-model="state.name" label="Data Query Name" filled dense style="width: 400px" />
         <q-space />
       </q-toolbar>
 
-      <div
-        ref="queryEditor"
-        :style="{ height: `${$q.screen.height - 126}px` }"
-      ></div>
+      <div ref="queryEditor" :style="{ height: `${$q.screen.height - 126}px` }"></div>
 
       <q-card-actions align="right">
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn
-          :loading="isLoading"
-          dense
-          flat
-          label="Save"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="isLoading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -64,7 +48,7 @@ const $q = useQuasar();
 
 // type imports
 import { type ReportDataQuery } from "../types/reporting";
-import { notifyError } from "@/utils/notify";
+import { notifyError } from "src/utils/notify";
 
 // props
 const props = defineProps<{
@@ -89,8 +73,7 @@ const state: ReportDataQuery = props.dataQuery
 
 const json_string = ref(JSON.stringify(state.json_query, null, 4));
 
-const { isLoading, isError, addReportDataQuery, editReportDataQuery } =
-  useSharedReportDataQueries;
+const { isLoading, isError, addReportDataQuery, editReportDataQuery } = useSharedReportDataQueries;
 
 async function submit() {
   try {
@@ -101,9 +84,7 @@ async function submit() {
   }
 
   if (!props.editInTemplate) {
-    props.dataQuery
-      ? editReportDataQuery(state.id, state)
-      : addReportDataQuery(state);
+    props.dataQuery ? editReportDataQuery(state.id, state) : addReportDataQuery(state);
 
     await until(isLoading).not.toBeTruthy();
     if (isError.value) return;

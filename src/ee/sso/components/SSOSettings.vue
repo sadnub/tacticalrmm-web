@@ -17,11 +17,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
       <!-- disable sso-->
       <q-card-section>
-        <q-checkbox
-          dense
-          label="Enable SSO"
-          v-model="ssoSettings.sso_enabled"
-        />
+        <q-checkbox dense label="Enable SSO" v-model="ssoSettings.sso_enabled" />
       </q-card-section>
 
       <!-- block local user logon -->
@@ -34,21 +30,15 @@ For details, see: https://license.tacticalrmm.com/ee
           hint="When enabled, only users with SSO accounts can log in, with the exception of local superuser accounts."
         >
           <q-tooltip class="text-caption"
-            >When enabled, only users with SSO accounts can log in, with the
-            exception of local superuser accounts.</q-tooltip
+            >When enabled, only users with SSO accounts can log in, with the exception of local
+            superuser accounts.</q-tooltip
           >
         </q-checkbox>
       </q-card-section>
 
       <q-card-actions align="right">
         <q-btn flat label="Cancel" v-close-popup />
-        <q-btn
-          flat
-          label="Submit"
-          color="primary"
-          :loading="loading"
-          @click="submit"
-        />
+        <q-btn flat label="Submit" color="primary" :loading="loading" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -58,8 +48,8 @@ For details, see: https://license.tacticalrmm.com/ee
 // composition imports
 import { ref, watch, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { notifySuccess, notifyWarning } from "@/utils/notify";
-import { fetchSSOSettings, updateSSOSettings } from "@/ee/sso/api/sso";
+import { notifySuccess, notifyWarning } from "src/utils/notify";
+import { fetchSSOSettings, updateSSOSettings } from "src/ee/sso/api/sso";
 
 // types
 import { SSOSettingsType } from "../types/sso";

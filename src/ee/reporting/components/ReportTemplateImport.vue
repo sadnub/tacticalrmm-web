@@ -27,23 +27,13 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-card-section>
 
       <q-card-section>
-        <q-checkbox
-          v-model="overwriteOnNameConflict"
-          label="Overwrite if name exists"
-        />
+        <q-checkbox v-model="overwriteOnNameConflict" label="Overwrite if name exists" />
       </q-card-section>
 
       <q-card-actions>
         <q-space />
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn
-          :loading="isLoading"
-          dense
-          flat
-          label="Import"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="isLoading" dense flat label="Import" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -54,7 +44,7 @@ import { ref } from "vue";
 import { until } from "@vueuse/shared";
 import { useDialogPluginComponent } from "quasar";
 import { useSharedReportTemplates } from "../api/reporting";
-import { notifyError } from "@/utils/notify";
+import { notifyError } from "src/utils/notify";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);

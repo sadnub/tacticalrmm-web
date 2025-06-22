@@ -1,54 +1,71 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
+import type {
+  PendingAction,
+  DebugLog,
+  AuditLog,
+  GetAuditLogRequest,
+  GetDebugLogRequest,
+} from "./types";
 
-export const usePendingAction = defineStore("pendingAction", () => {
-  const pendingActions = ref([]);
-  const agentPendingActions = ref([]);
+export const usePendingActionStore = defineStore("pendingActions", () => {
+  const pendingActions = ref<PendingAction[]>([]);
+  const agentPendingActions = ref<PendingAction[]>([]);
   const isLoading = ref(false);
   const isError = ref(true);
 
-  async function getPendingActions() {
+  function getPendingActions() {
     isLoading.value = true;
     isError.value = false;
-    try {
-      const { data } = await axios.get("/logs/pendingactions/");
-      pendingActions.value = data;
-      return data;
-    } catch {
-      isError.value = true;
-    } finally {
-      isLoading.value = false;
-    }
+    axios
+      .get<PendingAction[]>("/logs/pendingactions/")
+      .then(({ data }) => {
+        pendingActions.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
 
-  async function getAgentPendingActions(agentId: string) {
+  function getAgentPendingActions(agentId: string) {
     isLoading.value = true;
     isError.value = false;
-    try {
-      const { data } = await axios.get(`/agents/${agentId}/pendingactions/`);
-      agentPendingActions.value = data;
-      return data;
-    } catch {
-      isError.value = true;
-    } finally {
-      isLoading.value = false;
-    }
+    agentPendingActions.value = [];
+
+    axios
+      .get<PendingAction[]>(`/agents/${agentId}/pendingactions/`)
+      .then(({ data }) => {
+        agentPendingActions.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
 
-  async function deletePendingAction(id: number) {
+  function deletePendingAction(id: number) {
     isLoading.value = true;
     isError.value = false;
-    try {
-      await axios.delete(`/logs/pendingactions/${id}/`);
-
-      const index = pendingActions.value.findIndex((action) => action.id === id);
-      if (index !== -1) {
-        pendingActions.value.splice(index, 1);
-      }
-    } catch {
-      isError.value = true;
-    }
+    axios
+      .delete(`/logs/pendingactions/${id}/`)
+      .then(() => {
+        const index = pendingActions.value.findIndex((action) => action.id === id);
+        if (index !== -1) {
+          pendingActions.value.splice(index, 1);
+        }
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
 
   return {
@@ -62,66 +79,63 @@ export const usePendingAction = defineStore("pendingAction", () => {
   };
 });
 
-export const useAuditLog = defineStore("auditLog", () => {
-  const auditLog = ref([]);
+export const useAuditLogStore = defineStore("auditLogs", () => {
+  const auditLog = ref<AuditLog[]>([]);
+  const rowsNumber = ref(0);
   const isLoading = ref(false);
-  const isError = ref(null);
+  const isError = ref(false);
 
-  async function getAuditLog(payload) {
+  function getAuditLog(payload: GetAuditLogRequest) {
     isLoading.value = true;
     isError.value = false;
-    try {
-      const { data } = await axios.patch("/logs/audit/", payload);
-      auditLog.value = data;
-      return data;
-    } catch (e) {
-      isError.value = true;
-      console.error("Failed to fetch audit log:", e);
-      throw e;
-    } finally {
-      isLoading.value = false;
-    }
+    axios
+      .patch<AuditLog[]>("/logs/audit/", payload)
+      .then(({ data }) => {
+        auditLog.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
+
+  return {
+    auditLog,
+    rowsNumber,
+    isLoading,
+    isError,
+    getAuditLog,
+  };
 });
 
-export const useDebugLog = defineStore("debugLog", () => {
-  const debugLog = ref([]);
+export const useDebugLogStore = defineStore("debugLogs", () => {
+  const debugLog = ref<DebugLog[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
 
-  async function fetchDebugLog(payload) {
+  function getDebugLog(payload: GetDebugLogRequest) {
     isLoading.value = true;
-    error.value = null;
-    try {
-      // It's good practice to use the configured axios instance from boot files
-      const { data } = await axios.patch("/logs/debug/", payload);
-      debugLog.value = data; // Update the state
-      return data; // Optionally return the data for immediate use
-    } catch (e) {
-      error.value = e; // Store the error
-      console.error("Failed to fetch debug log:", e);
-      // It's good practice to throw the error so the calling component knows it failed
-      throw e;
-    } finally {
-      isLoading.value = false;
-    }
+    isError.value = false;
+
+    axios
+      .patch<DebugLog[]>("/logs/debug/", payload)
+      .then(({ data }) => {
+        debugLog.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
 
-  // --- RETURN ---
-  // Expose the state, getters, and actions
   return {
-    // State
     debugLog,
-    auditLog,
-    pendingActions,
-    agentPendingActions,
     isLoading,
-    error,
-    // Getters
-    hasError,
-    // Actions
-    fetchDebugLog,
-    fetchAuditLog,
-    fetchPendingActions,
-    fetchAgentPendingActions,
-    deletePendingAction,
+    isError,
+    getDebugLog,
   };
 });

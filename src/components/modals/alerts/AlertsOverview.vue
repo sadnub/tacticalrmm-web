@@ -57,18 +57,8 @@
           />
         </div>
         <div class="q-pa-sm col-2">
-          <q-checkbox
-            outlined
-            dense
-            v-model="includeSnoozed"
-            label="Include snoozed"
-          />
-          <q-checkbox
-            outlined
-            dense
-            v-model="includeResolved"
-            label="Include resolved"
-          />
+          <q-checkbox outlined dense v-model="includeSnoozed" label="Include snoozed" />
+          <q-checkbox outlined dense v-model="includeResolved" label="Include resolved" />
         </div>
         <div class="q-pa-sm col-2">
           <q-btn color="primary" label="Search" @click="search" />
@@ -106,11 +96,7 @@
               :disable="selectedAlerts.length === 0 || includeResolved"
             >
               <q-list dense>
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="snoozeAlertBulk(selectedAlerts)"
-                >
+                <q-item clickable v-close-popup @click="snoozeAlertBulk(selectedAlerts)">
                   <q-item-section avatar>
                     <q-icon name="alarm_off" />
                   </q-item-section>
@@ -118,11 +104,7 @@
                     <q-item-label>Snooze alerts</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="resolveAlertBulk(selectedAlerts)"
-                >
+                <q-item clickable v-close-popup @click="resolveAlertBulk(selectedAlerts)">
                   <q-item-section avatar>
                     <q-icon name="flag" />
                   </q-item-section>
@@ -198,8 +180,8 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import ScriptOutput from "@/components/checks/ScriptOutput.vue";
+import mixins from "src/mixins/mixins";
+import ScriptOutput from "src/components/checks/ScriptOutput.vue";
 import { computed } from "vue";
 import { useStore } from "vuex";
 
@@ -354,11 +336,9 @@ export default {
         resolvedFilter: this.includeResolved,
       };
 
-      if (this.clientFilter.length > 0)
-        data["clientFilter"] = this.clientFilter;
+      if (this.clientFilter.length > 0) data["clientFilter"] = this.clientFilter;
       if (this.timeFilter) data["timeFilter"] = this.timeFilter;
-      if (this.severityFilter.length > 0)
-        data["severityFilter"] = this.severityFilter;
+      if (this.severityFilter.length > 0) data["severityFilter"] = this.severityFilter;
 
       this.$axios
         .patch("/alerts/", data)

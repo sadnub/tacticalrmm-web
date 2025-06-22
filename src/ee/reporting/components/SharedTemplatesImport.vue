@@ -77,7 +77,7 @@ import { ref, onMounted } from "vue";
 import { until } from "@vueuse/shared";
 import { useQuasar, useDialogPluginComponent, type QTableColumn } from "quasar";
 import { useSharedReportTemplates } from "../api/reporting";
-import { truncateText } from "@/utils/format";
+import { truncateText } from "src/utils/format";
 
 const columns: QTableColumn[] = [
   {
@@ -104,13 +104,8 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // shared templates import logic
-const {
-  isLoading,
-  isError,
-  sharedTemplates,
-  importSharedTemplates,
-  getSharedTemplates,
-} = useSharedReportTemplates;
+const { isLoading, isError, sharedTemplates, importSharedTemplates, getSharedTemplates } =
+  useSharedReportTemplates;
 
 const search = ref("");
 const selected = ref([]);

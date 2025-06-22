@@ -1,4 +1,4 @@
-import type { AgentPlatformType } from "@/types/agents";
+import type { AgentPlatformType } from "src/types/agents";
 
 export type ScriptShellType = "powershell" | "cmd" | "shell" | "python" | "nushell" | "deno";
 

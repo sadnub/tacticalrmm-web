@@ -15,7 +15,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useMeta } from "quasar";
 
-import { fetchAgentWebVNCUrl } from "@/api/agents";
+import { fetchAgentWebVNCUrl } from "src/api/agents";
 
 const { params } = useRoute();
 const vnc = ref("");

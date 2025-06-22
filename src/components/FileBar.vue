@@ -235,29 +235,29 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import DialogWrapper from "@/components/ui/DialogWrapper.vue";
+import mixins from "src/mixins/mixins";
+import DialogWrapper from "src/components/ui/DialogWrapper.vue";
 import DebugLog from "../core/logs/components/DebugLog.vue";
 import PendingActions from "../core/logs/components/PendingActions.vue";
-import ClientsManager from "@/components/clients/ClientsManager.vue";
-import ClientsForm from "@/components/clients/ClientsForm.vue";
-import SitesForm from "@/components/clients/SitesForm.vue";
-import UpdateAgents from "@/components/modals/agents/UpdateAgents.vue";
-import ScriptManager from "@/components/scripts/ScriptManager.vue";
-import EditCoreSettings from "@/components/modals/coresettings/EditCoreSettings.vue";
-import AlertsManager from "@/components/AlertsManager.vue";
-import AutomationManager from "@/components/automation/AutomationManager.vue";
-import AdminManager from "@/components/AdminManager.vue";
-import InstallAgent from "@/components/modals/agents/InstallAgent.vue";
+import ClientsManager from "src/components/clients/ClientsManager.vue";
+import ClientsForm from "src/components/clients/ClientsForm.vue";
+import SitesForm from "src/components/clients/SitesForm.vue";
+import UpdateAgents from "src/components/modals/agents/UpdateAgents.vue";
+import ScriptManager from "src/components/scripts/ScriptManager.vue";
+import EditCoreSettings from "src/components/modals/coresettings/EditCoreSettings.vue";
+import AlertsManager from "src/components/AlertsManager.vue";
+import AutomationManager from "src/components/automation/AutomationManager.vue";
+import AdminManager from "src/components/AdminManager.vue";
+import InstallAgent from "src/components/modals/agents/InstallAgent.vue";
 import AuditManager from "../core/logs/components/AuditManager.vue";
-import BulkAction from "@/components/modals/agents/BulkAction.vue";
-import DeploymentTable from "@/components/clients/DeploymentTable.vue";
-import ServerMaintenance from "@/components/modals/core/ServerMaintenance.vue";
-import CodeSign from "@/components/modals/coresettings/CodeSign.vue";
-import PermissionsManager from "@/components/accounts/PermissionsManager.vue";
+import BulkAction from "src/components/modals/agents/BulkAction.vue";
+import DeploymentTable from "src/components/clients/DeploymentTable.vue";
+import ServerMaintenance from "src/components/modals/core/ServerMaintenance.vue";
+import CodeSign from "src/components/modals/coresettings/CodeSign.vue";
+import PermissionsManager from "src/components/accounts/PermissionsManager.vue";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { notifyWarning } from "@/utils/notify";
+import { notifyWarning } from "src/utils/notify";
 
 export default {
   name: "FileBar",

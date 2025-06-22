@@ -39,9 +39,7 @@
         <!-- No data Slot -->
         <template v-slot:no-data>
           <div class="full-width row flex-center q-gutter-sm">
-            <span v-if="!selectedPolicy"
-              >Click on a policy to see the tasks</span
-            >
+            <span v-if="!selectedPolicy">Click on a policy to see the tasks</span>
             <span v-else>There are no tasks added to this policy</span>
           </div>
         </template>
@@ -95,11 +93,7 @@
                   </q-item-section>
                   <q-item-section>Run task now</q-item-section>
                 </q-item>
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="showEditTask(props.row)"
-                >
+                <q-item clickable v-close-popup @click="showEditTask(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
@@ -128,9 +122,7 @@
             <q-td>
               <q-checkbox
                 dense
-                @update:model-value="
-                  editTask(props.row, { enabled: !props.row.enabled })
-                "
+                @update:model-value="editTask(props.row, { enabled: !props.row.enabled })"
                 v-model="props.row.enabled"
               />
             </q-td>
@@ -138,9 +130,7 @@
             <q-td>
               <q-checkbox
                 dense
-                @update:model-value="
-                  editTask(props.row, { text_alert: !props.row.text_alert })
-                "
+                @update:model-value="editTask(props.row, { text_alert: !props.row.text_alert })"
                 v-model="props.row.text_alert"
               />
             </q-td>
@@ -148,9 +138,7 @@
             <q-td>
               <q-checkbox
                 dense
-                @update:model-value="
-                  editTask(props.row, { email_alert: !props.row.email_alert })
-                "
+                @update:model-value="editTask(props.row, { email_alert: !props.row.email_alert })"
                 v-model="props.row.email_alert"
               />
             </q-td>
@@ -168,14 +156,8 @@
             </q-td>
             <!-- is collector task -->
             <q-td>
-              <q-icon
-                v-if="!!props.row.custom_field"
-                style="font-size: 1.3rem"
-                name="check"
-              >
-                <q-tooltip
-                  >The task updates a custom field on the agent</q-tooltip
-                >
+              <q-icon v-if="!!props.row.custom_field" style="font-size: 1.3rem" name="check">
+                <q-tooltip>The task updates a custom field on the agent</q-tooltip>
               </q-icon>
             </q-td>
             <q-td>{{ props.row.name }}</q-td>
@@ -197,9 +179,9 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import AutomatedTaskForm from "@/components/tasks/AutomatedTaskForm.vue";
-import PolicyStatus from "@/components/automation/modals/PolicyStatus.vue";
+import mixins from "src/mixins/mixins";
+import AutomatedTaskForm from "src/components/tasks/AutomatedTaskForm.vue";
+import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
 
 export default {
   name: "PolicyAutomatedTasksTab",
@@ -320,9 +302,7 @@ export default {
     },
     runTask(task) {
       if (!task.enabled) {
-        this.notifyError(
-          "Task cannot be run when it's disabled. Enable it first.",
-        );
+        this.notifyError("Task cannot be run when it's disabled. Enable it first.");
         return;
       }
 
@@ -339,9 +319,7 @@ export default {
             .post(`/automation/tasks/${task.id}/run/`)
             .then(() => {
               this.$q.loading.hide();
-              this.notifySuccess(
-                "The task was initiated on all affected agents",
-              );
+              this.notifySuccess("The task was initiated on all affected agents");
             })
             .catch(() => {
               this.$q.loading.hide();

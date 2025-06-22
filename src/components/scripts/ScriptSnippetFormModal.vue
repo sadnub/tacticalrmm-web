@@ -44,30 +44,14 @@
           emit-value
           map-options
         />
-        <q-input
-          class="q-pa-sm col-6"
-          filled
-          dense
-          v-model="snippet.desc"
-          label="Description"
-        />
+        <q-input class="q-pa-sm col-6" filled dense v-model="snippet.desc" label="Description" />
       </div>
 
-      <div
-        ref="snippetEditor"
-        :style="{ height: `${$q.screen.height - 132}px` }"
-      ></div>
+      <div ref="snippetEditor" :style="{ height: `${$q.screen.height - 132}px` }"></div>
 
       <q-card-actions align="right">
         <q-btn dense flat label="Cancel" v-close-popup />
-        <q-btn
-          :loading="loading"
-          dense
-          flat
-          label="Save"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="loading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -78,10 +62,10 @@
 import { ref, watch, reactive, computed } from "vue";
 import { useStore } from "vuex";
 import { useQuasar } from "quasar";
-import { generateScript } from "@/api/core";
+import { generateScript } from "src/api/core";
 import { useDialogPluginComponent } from "quasar";
-import { saveScriptSnippet, editScriptSnippet } from "@/api/scripts";
-import { notifySuccess } from "@/utils/notify";
+import { saveScriptSnippet, editScriptSnippet } from "src/api/scripts";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
 import * as monaco from "monaco-editor";
@@ -116,10 +100,10 @@ self.MonacoEnvironment = {
 };
 
 // types
-import type { ScriptSnippet } from "@/types/scripts";
+import type { ScriptSnippet } from "src/types/scripts";
 
 // static data
-import { shellOptions } from "@/composables/scripts";
+import { shellOptions } from "src/composables/scripts";
 
 // props
 const props = defineProps<{ snippet?: ScriptSnippet }>();

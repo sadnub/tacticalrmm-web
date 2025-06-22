@@ -1,15 +1,15 @@
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "src/stores/auth";
 
 const routes = [
   {
     path: "/",
     name: "MainLayout",
-    component: () => import("@/layouts/MainLayout.vue"),
+    component: () => import("src/layouts/MainLayout.vue"),
     children: [
       {
         path: "agents/:agent_id",
         name: "Agent",
-        component: () => import("@/views/AgentView.vue"),
+        component: () => import("src/views/AgentView.vue"),
         meta: {
           requireAuth: true,
         },
@@ -17,7 +17,7 @@ const routes = [
       {
         path: "",
         name: "Dashboard",
-        component: () => import("@/views/DashboardView.vue"),
+        component: () => import("src/views/DashboardView.vue"),
         meta: {
           requireAuth: true,
         },
@@ -27,7 +27,7 @@ const routes = [
   {
     path: "/setup",
     name: "InitialSetup",
-    component: () => import("@/views/InitialSetup.vue"),
+    component: () => import("src/views/InitialSetup.vue"),
     meta: {
       requireAuth: true,
     },
@@ -35,7 +35,7 @@ const routes = [
   {
     path: "/totp_setup",
     name: "TOTPSetup",
-    component: () => import("@/views/TOTPSetup.vue"),
+    component: () => import("src/views/TOTPSetup.vue"),
     meta: {
       requireAuth: true,
     },
@@ -43,7 +43,7 @@ const routes = [
   {
     path: "/takecontrol/:agent_id",
     name: "TakeControl",
-    component: () => import("@/views/TakeControl.vue"),
+    component: () => import("src/views/TakeControl.vue"),
     meta: {
       requireAuth: true,
     },
@@ -51,7 +51,7 @@ const routes = [
   {
     path: "/webvnc/:agent_id/:port",
     name: "VNC",
-    component: () => import("@/views/WebVNC.vue"),
+    component: () => import("src/views/WebVNC.vue"),
     meta: {
       requireAuth: true,
     },
@@ -59,7 +59,7 @@ const routes = [
   {
     path: "/webterm",
     name: "WebTerm",
-    component: () => import("@/views/WebTerminal.vue"),
+    component: () => import("src/views/WebTerminal.vue"),
     meta: {
       requireAuth: true,
     },
@@ -67,7 +67,7 @@ const routes = [
   {
     path: "/remotebackground/:agent_id",
     name: "RemoteBackground",
-    component: () => import("@/views/RemoteBackground.vue"),
+    component: () => import("src/views/RemoteBackground.vue"),
     meta: {
       requireAuth: true,
     },
@@ -75,7 +75,7 @@ const routes = [
   {
     path: "/login",
     name: "Login",
-    component: () => import("@/views/LoginView.vue"),
+    component: () => import("src/views/LoginView.vue"),
     meta: {
       requiresVisitor: true,
     },
@@ -83,13 +83,13 @@ const routes = [
   {
     path: "/expired",
     name: "SessionExpired",
-    component: () => import("@/views/SessionExpired.vue"),
+    component: () => import("src/views/SessionExpired.vue"),
     beforeEnter: (_, from) => {
       const auth = useAuthStore();
       auth.next = from.fullPath;
     },
   },
-  { path: "/:catchAll(.*)", component: () => import("@/views/NotFound.vue") },
+  { path: "/:catchAll(.*)", component: () => import("src/views/NotFound.vue") },
 ];
 
 export default routes;

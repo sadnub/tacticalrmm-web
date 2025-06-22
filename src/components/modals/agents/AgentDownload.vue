@@ -11,8 +11,8 @@
     </q-card-section>
     <q-card-section>
       <p v-if="info.plat === 'windows'" class="text-subtitle1">
-        Download the agent then run the following command from an elevated
-        command prompt on the device you want to add.
+        Download the agent then run the following command from an elevated command prompt on the
+        device you want to add.
       </p>
       <p v-else-if="info.plat === 'darwin'" class="text-subtitle1">
         Run the following command from a terminal
@@ -51,22 +51,17 @@
         </div>
         <div v-if="info.plat === 'windows'" class="q-pa-xs q-gutter-xs">
           <q-badge class="text-caption q-mr-xs" color="grey" text-color="black">
-            <code
-              >-local-mesh "C:\\&lt;some folder or
-              path&gt;\\meshagent.exe"</code
-            >
+            <code>-local-mesh "C:\\&lt;some folder or path&gt;\\meshagent.exe"</code>
           </q-badge>
           <span> To skip downloading the Mesh Agent during the install.</span>
         </div>
         <div v-if="info.plat === 'windows'" class="q-pa-xs q-gutter-xs">
           <q-badge class="text-caption q-mr-xs" color="grey" text-color="black">
-            <code
-              >-meshdir "C:\Program Files\Your Company Name\Mesh Agent"</code
-            >
+            <code>-meshdir "C:\Program Files\Your Company Name\Mesh Agent"</code>
           </q-badge>
           <span
-            >Specify full path to the directory containing MeshAgent.exe if
-            using custom agent branding</span
+            >Specify full path to the directory containing MeshAgent.exe if using custom agent
+            branding</span
           >
         </div>
         <div class="q-pa-xs q-gutter-xs">
@@ -110,8 +105,8 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import { notifySuccess } from "@/utils/notify";
+import mixins from "src/mixins/mixins";
+import { notifySuccess } from "src/utils/notify";
 import { copyToClipboard } from "quasar";
 
 export default {

@@ -36,9 +36,9 @@
 <script>
 // composition imports
 import { ref, onMounted } from "vue";
-import { testScript, testScriptOnServer } from "@/api/scripts";
+import { testScript, testScriptOnServer } from "src/api/scripts";
 import { useDialogPluginComponent } from "quasar";
-import ScriptOutputCopyClip from "@/components/scripts/ScriptOutputCopyClip.vue";
+import ScriptOutputCopyClip from "src/components/scripts/ScriptOutputCopyClip.vue";
 
 export default {
   name: "TestScriptModal",

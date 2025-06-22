@@ -36,13 +36,7 @@
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td auto-width>
-                <q-btn
-                  dense
-                  flat
-                  push
-                  icon="add"
-                  @click="installSoftware(props.row.name)"
-                />
+                <q-btn dense flat push icon="add" @click="installSoftware(props.row.name)" />
               </q-td>
               <q-td @click="showDescription(props.row.name)">
                 <span style="cursor: pointer; text-decoration: underline">{{
@@ -60,8 +54,8 @@
 <script>
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { fetchChocosSoftware, installAgentSoftware } from "@/api/software";
-import { notifySuccess } from "@/utils/notify";
+import { fetchChocosSoftware, installAgentSoftware } from "src/api/software";
+import { notifySuccess } from "src/utils/notify";
 
 // static data
 const columns = [

@@ -13,11 +13,7 @@
   >
     <!-- body slots -->
     <template v-slot:body="props">
-      <q-tr
-        :props="props"
-        class="cursor-pointer"
-        @dblclick="editCustomField(props.row)"
-      >
+      <q-tr :props="props" class="cursor-pointer" @dblclick="editCustomField(props.row)">
         <!-- context menu -->
         <q-menu context-menu>
           <q-list dense style="min-width: 200px">
@@ -27,11 +23,7 @@
               </q-item-section>
               <q-item-section>Edit</q-item-section>
             </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="deleteCustomField(props.row)"
-            >
+            <q-item clickable v-close-popup @click="deleteCustomField(props.row)">
               <q-item-section side>
                 <q-icon name="delete" />
               </q-item-section>
@@ -73,11 +65,9 @@
         </q-td>
         <q-td v-else>
           {{ truncateText(props.row.default_value_string) }}
-          <q-tooltip
-            v-if="props.row.default_value_string.length >= 60"
-            style="font-size: 12px"
-            >{{ props.row.default_value_string }}</q-tooltip
-          >
+          <q-tooltip v-if="props.row.default_value_string.length >= 60" style="font-size: 12px">{{
+            props.row.default_value_string
+          }}</q-tooltip>
         </q-td>
         <!-- required -->
         <q-td>
@@ -89,8 +79,8 @@
 </template>
 
 <script>
-import CustomFieldsForm from "@/components/modals/coresettings/CustomFieldsForm.vue";
-import mixins from "@/mixins/mixins";
+import CustomFieldsForm from "src/components/modals/coresettings/CustomFieldsForm.vue";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "CustomFieldsTable",

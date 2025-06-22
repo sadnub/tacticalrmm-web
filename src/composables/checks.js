@@ -1,42 +1,25 @@
 import { ref, onMounted } from "vue";
-import { updateCheck, saveCheck } from "@/api/checks";
-import { fetchAgentChecks } from "@/api/agents";
-import { fetchPolicyChecks } from "@/api/automation";
-import { formatCheckOptions } from "@/utils/format";
-import { fetchAgent } from "@/api/agents";
-import { isValidThreshold } from "@/utils/validation";
-import { notifySuccess } from "@/utils/notify";
+import { updateCheck, saveCheck } from "src/api/checks";
+import { fetchAgentChecks } from "src/api/agents";
+import { fetchPolicyChecks } from "src/api/automation";
+import { formatCheckOptions } from "src/utils/format";
+import { fetchAgent } from "src/api/agents";
+import { isValidThreshold } from "src/utils/validation";
+import { notifySuccess } from "src/utils/notify";
 
 // for check add/edit modals
 // pass as an object {editCheck: props.check, initialState: {default form values for adding check} }
 export function useCheckModal({ editCheck, initialState }) {
-  const check = editCheck
-    ? ref(Object.assign({}, editCheck))
-    : ref(initialState);
+  const check = editCheck ? ref(Object.assign({}, editCheck)) : ref(initialState);
 
   const loading = ref(false);
 
   // save check function
   async function submit(onOk) {
-    if (
-      check.value.check_type === "cpuload" ||
-      check.value.check_type === "memory"
-    ) {
-      if (
-        !isValidThreshold(
-          check.value.warning_threshold,
-          check.value.error_threshold
-        )
-      )
-        return;
+    if (check.value.check_type === "cpuload" || check.value.check_type === "memory") {
+      if (!isValidThreshold(check.value.warning_threshold, check.value.error_threshold)) return;
     } else if (check.value.check_type === "diskspace") {
-      if (
-        !isValidThreshold(
-          check.value.warning_threshold,
-          check.value.error_threshold,
-          true
-        )
-      )
+      if (!isValidThreshold(check.value.warning_threshold, check.value.error_threshold, true))
         return;
     }
 
@@ -69,9 +52,7 @@ export function useCheckModal({ editCheck, initialState }) {
   ];
 
   const diskOptions = ref(
-    "A:,B:,C:,D:,E:,F:,G:,H:,I:,J:,K:,L:,M:,N:,O:,P:,Q:,R:,S:,T:,U:,V:,W:,X:,Y:,Z:".split(
-      ","
-    )
+    "A:,B:,C:,D:,E:,F:,G:,H:,I:,J:,K:,L:,M:,N:,O:,P:,Q:,R:,S:,T:,U:,V:,W:,X:,Y:,Z:".split(","),
   );
 
   const serviceOptions = ref(Object.freeze(defaultServiceOptions));
@@ -89,25 +70,15 @@ export function useCheckModal({ editCheck, initialState }) {
       label: service.display_name,
       value: service.name,
     }));
-    serviceOptions.value = Object.freeze(
-      tmp.sort((a, b) => a.label.localeCompare(b.label))
-    );
+    serviceOptions.value = Object.freeze(tmp.sort((a, b) => a.label.localeCompare(b.label)));
     check.value.svc_name = serviceOptions.value[0].value;
     check.value.svc_display_name = serviceOptions.value[0].label;
   }
 
   onMounted(async () => {
-    if (
-      !editCheck &&
-      check.value.check_type === "diskspace" &&
-      check.value.agent
-    ) {
+    if (!editCheck && check.value.check_type === "diskspace" && check.value.agent) {
       await getAgentDiskOptions();
-    } else if (
-      !editCheck &&
-      check.value.check_type === "winsvc" &&
-      check.value.agent
-    ) {
+    } else if (!editCheck && check.value.check_type === "winsvc" && check.value.agent) {
       await getAgentServiceOptions();
     }
   });
@@ -135,14 +106,12 @@ export function useCheckDropdown() {
 
   async function getCheckOptions({ agent, policy }, flat = false) {
     if (!agent && !policy) {
-      console.error(
-        "Need to specify agent or policy object when calling getCheckOptions"
-      );
+      console.error("Need to specify agent or policy object when calling getCheckOptions");
       return;
     }
     checkOptions.value = formatCheckOptions(
       agent ? await fetchAgentChecks(agent) : await fetchPolicyChecks(policy),
-      flat
+      flat,
     );
   }
 
@@ -336,8 +305,7 @@ export const defaultServiceOptions = [
   },
   {
     value: "dmwappushservice",
-    label:
-      "Device Management Wireless Application Protocol (WAP) Push message Routing Service",
+    label: "Device Management Wireless Application Protocol (WAP) Push message Routing Service",
   },
   {
     value: "Dnscache",

@@ -3,18 +3,14 @@
     <q-card class="q-dialog-plugin" style="height: 70vh; min-width: 70vw">
       <q-bar>
         <q-btn
-          @click="getPendingActions"
+          @click="actionStore.getPendingActions"
           class="q-mr-sm"
           dense
           flat
           push
           icon="refresh"
         />
-        {{
-          agent
-            ? `Pending Actions for ${agent.hostname}`
-            : "All Pending Actions"
-        }}
+        {{ agent ? `Pending Actions for ${agent.hostname}` : "All Pending Actions" }}
         <q-space />
         <q-btn dense flat icon="close" v-close-popup />
       </q-bar>
@@ -36,7 +32,7 @@
         no-data-label="No Pending Actions"
         :loading="loading"
       >
-        <template v-slot:top>
+        <template #top>
           <q-space />
           <q-btn
             :label="
@@ -51,17 +47,14 @@
           />
         </template>
 
-        <template v-slot:body="props">
+        <template #body="{ row }">
           <q-tr class="cursor-pointer">
             <q-menu context-menu auto-close>
               <q-list dense>
                 <q-item
-                  :disable="
-                    props.row.status === 'completed' ||
-                    props.row.action_type === 'agentinstall'
-                  "
+                  :disable="row.status === 'completed' || row.action_type === 'agentinstall'"
                   clickable
-                  @click="cancelPendingAction(props.row)"
+                  @click="cancelPendingAction(row)"
                 >
                   <q-item-section side>
                     <q-icon name="fas fa-trash-alt" size="xs" />
@@ -74,42 +67,33 @@
                 </q-item>
               </q-list>
             </q-menu>
-            <q-td v-if="props.row.action_type === 'schedreboot'">
+            <q-td v-if="row.action_type === 'schedreboot'">
               <q-icon name="power_settings_new" size="sm" />
             </q-td>
-            <q-td v-else-if="props.row.action_type === 'agentupdate'">
+            <q-td v-else-if="row.action_type === 'agentupdate'">
               <q-icon name="update" size="sm" />
             </q-td>
-            <q-td v-else-if="props.row.action_type === 'chocoinstall'">
+            <q-td v-else-if="row.action_type === 'chocoinstall'">
               <q-icon name="download" size="sm" />
             </q-td>
-            <q-td v-if="props.row.status !== 'completed'">
-              <span v-if="props.row.action_type === 'agentupdate'">{{
-                getNextAgentUpdateTime()
-              }}</span>
+            <q-td v-if="row.status !== 'completed'">
+              <span v-if="row.action_type === 'agentupdate'">{{ getNextAgentUpdateTime() }}</span>
               <span v-else>{{
-                props.row.action_type === "schedreboot"
-                  ? formatDate(props.row.due)
-                  : props.row.due
+                row.action_type === "schedreboot" ? dashboardStore.formatDate(row.due) : row.due
               }}</span>
             </q-td>
             <q-td v-else>Completed</q-td>
-            <q-td>{{ props.row.description }}</q-td>
-            <q-td v-if="!agent">{{ props.row.hostname }}</q-td>
-            <q-td v-if="!agent">{{ props.row.client }}</q-td>
-            <q-td v-if="!agent">{{ props.row.site }}</q-td>
-            <q-td
-              v-if="
-                props.row.action_type === 'chocoinstall' &&
-                props.row.status === 'completed'
-              "
-            >
+            <q-td>{{ row.description }}</q-td>
+            <q-td v-if="!agent">{{ row.hostname }}</q-td>
+            <q-td v-if="!agent">{{ row.client }}</q-td>
+            <q-td v-if="!agent">{{ row.site }}</q-td>
+            <q-td v-if="row.action_type === 'chocoinstall' && row.status === 'completed'">
               <q-btn
                 color="primary"
                 icon="preview"
                 size="sm"
                 label="View output"
-                @click="showOutput(props.row.details.output)"
+                @click="showOutput(row.details.output)"
               />
             </q-td>
             <q-td v-else></q-td>
@@ -120,24 +104,22 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
 import { ref, computed, onMounted } from "vue";
-import { useStore } from "vuex";
-import { useQuasar, useDialogPluginComponent } from "quasar";
-import {
-  fetchPendingActions,
-  fetchAgentPendingActions,
-  deletePendingAction,
-} from "@/api/logs";
-import { getNextAgentUpdateTime } from "@/utils/format";
-import { notifySuccess } from "@/utils/notify";
-import PreDialog from "@/components/ui/PreDialog.vue";
+import { useQuasar, useDialogPluginComponent, type QTableProps } from "quasar";
+import { usePendingActionStore } from "../api";
+import { useDashboardStore } from "src/stores/dashboard";
+import { getNextAgentUpdateTime } from "src/utils/format";
+import PreDialog from "src/components/ui/PreDialog.vue";
 
+// types
+import type { Agent } from "src/core/agents/types";
+import type { PendingAction } from "../types";
 // static data
-const columns = [
-  { name: "id", field: "id" },
-  { name: "status", field: "status" },
+const columns: QTableProps["columns"] = [
+  { name: "id", field: "id", label: "" },
+  { name: "status", field: "status", label: "" },
   {
     name: "type",
     label: "Type",
@@ -168,115 +150,71 @@ const columns = [
     sortable: true,
   },
   { name: "site", label: "Site", field: "site", align: "left", sortable: true },
-  { name: "details", field: "details", align: "left", sortable: false },
+  { name: "details", field: "details", label: "", align: "left", sortable: false },
 ];
 
-export default {
-  name: "PendingActions",
-  emits: [...useDialogPluginComponent.emits],
-  props: {
-    agent: Object,
-  },
-  setup(props) {
-    // setup quasar dialog plugin
-    const { dialogRef, onDialogHide } = useDialogPluginComponent();
-    const $q = useQuasar();
+const props = defineProps<{
+  agent: Agent;
+}>();
 
-    // vuex store
-    const store = useStore();
-    const formatDate = computed(() => store.getters.formatDate);
+defineEmits(useDialogPluginComponent.emits);
 
-    // pending actions logic
-    const actions = ref([]);
-    const showCompleted = ref(false);
-    const loading = ref(false);
-    const completedCount = computed(() => {
-      try {
-        return actions.value.filter((action) => action.status === "completed")
-          .length;
-      } catch (e) {
-        console.error(e);
-        return 0;
-      }
-    });
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
+const $q = useQuasar();
 
-    const visibleColumns = computed(() => {
-      if (props.agent) return ["type", "due", "desc", "details"];
-      else return ["type", "due", "desc", "agent", "client", "site", "details"];
-    });
+// setup stores
+const actionStore = usePendingActionStore();
+const dashboardStore = useDashboardStore();
 
-    const filteredActions = computed(() => {
-      if (showCompleted.value) return actions.value;
-      else
-        return actions.value.filter((action) => action.status !== "completed");
-    });
+// pending actions logic
+const showCompleted = ref(false);
+const loading = ref(false);
+const completedCount = computed(() => {
+  try {
+    return actionStore.pendingActions.filter((action) => action.status === "completed").length;
+  } catch (e) {
+    console.error(e);
+    return 0;
+  }
+});
 
-    function showOutput(details) {
-      $q.dialog({
-        component: PreDialog,
-        componentProps: {
-          title: "Pending Action Output Details",
-          dialogStyle: "width: 75vw; max-width: 85vw; max-height: 65vh;",
-          message: details,
-        },
-      });
-    }
+const visibleColumns = computed(() => {
+  if (props.agent) return ["type", "due", "desc", "details"];
+  else return ["type", "due", "desc", "agent", "client", "site", "details"];
+});
 
-    async function getPendingActions() {
-      loading.value = true;
-      try {
-        actions.value = props.agent
-          ? await fetchAgentPendingActions(props.agent.agent_id)
-          : await fetchPendingActions();
-      } catch (e) {
-        console.error(e);
-      }
-      loading.value = false;
-    }
+const filteredActions = computed(() => {
+  if (showCompleted.value) return actionStore.pendingActions;
+  else return actionStore.pendingActions.filter((action) => action.status !== "completed");
+});
 
-    function cancelPendingAction(action) {
-      $q.dialog({
-        title: "Delete this pending action?",
-        cancel: true,
-        ok: { label: "Delete", color: "negative" },
-      }).onOk(async () => {
-        loading.value = true;
-        try {
-          const result = await deletePendingAction(action.id);
-          notifySuccess(result);
-          await getPendingActions();
-          store.dispatch("refreshDashboard");
-        } catch (e) {
-          console.error(e);
-        }
-        loading.value = false;
-      });
-    }
+function showOutput(details: string) {
+  $q.dialog({
+    component: PreDialog,
+    componentProps: {
+      title: "Pending Action Output Details",
+      dialogStyle: "width: 75vw; max-width: 85vw; max-height: 65vh;",
+      message: details,
+    },
+  });
+}
 
-    onMounted(getPendingActions);
+function cancelPendingAction(action: PendingAction) {
+  $q.dialog({
+    title: "Delete this pending action?",
+    cancel: true,
+    ok: { label: "Delete", color: "negative" },
+  }).onOk(() => {
+    loading.value = true;
 
-    return {
-      // reactive data
-      filteredActions,
-      loading,
-      showCompleted,
-      completedCount,
-      visibleColumns,
+    actionStore.deletePendingAction(action.id);
 
-      // methods
-      showOutput,
-      getPendingActions,
-      cancelPendingAction,
-      getNextAgentUpdateTime,
-      formatDate,
+    // TODO: Only update the agent and not pull every single agent
+    // store.dispatch("refreshDashboard");
 
-      // non-reactive data
-      columns,
+    loading.value = false;
+  });
+}
 
-      // quasar dialog
-      dialogRef,
-      onDialogHide,
-    };
-  },
-};
+onMounted(actionStore.getPendingActions);
 </script>

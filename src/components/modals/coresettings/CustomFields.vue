@@ -34,10 +34,7 @@
       <q-scroll-area :thumb-style="thumbStyle" style="height: 50vh">
         <q-tab-panels v-model="tab" :animated="false">
           <q-tab-panel name="client">
-            <CustomFieldsTable
-              @refresh="getCustomFields"
-              :data="clientFields"
-            />
+            <CustomFieldsTable @refresh="getCustomFields" :data="clientFields" />
           </q-tab-panel>
 
           <q-tab-panel name="site">
@@ -54,8 +51,8 @@
 </template>
 
 <script>
-import CustomFieldsTable from "@/components/modals/coresettings/CustomFieldsTable.vue";
-import CustomFieldsForm from "@/components/modals/coresettings/CustomFieldsForm.vue";
+import CustomFieldsTable from "src/components/modals/coresettings/CustomFieldsTable.vue";
+import CustomFieldsForm from "src/components/modals/coresettings/CustomFieldsForm.vue";
 
 export default {
   name: "CustomFields",

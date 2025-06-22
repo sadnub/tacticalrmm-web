@@ -13,19 +13,15 @@
     }"
     v-bind="$attrs"
   >
-    <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
+    <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
       <slot :name="slotName" v-bind="slotProps ?? {}" />
     </template>
 
-    <template v-slot:header-cell-columnSelect="props">
+    <template #header-cell-columnSelect>
       <q-th :props="props" auto-width>
         <q-btn dense flat icon="more_horiz">
           <q-menu>
-            <q-option-group
-              v-model="visibleColumns"
-              :options="columnOptions"
-              type="checkbox"
-            />
+            <q-option-group v-model="visibleColumns" :options="columnOptions" type="checkbox" />
           </q-menu>
         </q-btn>
       </q-th>
@@ -66,9 +62,7 @@ const localColumns = computed(() =>
 );
 
 const defaultNames = computed(() =>
-  localColumns.value
-    .map((c) => c.name)
-    .filter((n) => !props.excludeColumns.includes(n)),
+  localColumns.value.map((c) => c.name).filter((n) => !props.excludeColumns.includes(n)),
 );
 
 const storedNames = props.storageKey
@@ -77,9 +71,7 @@ const storedNames = props.storageKey
 
 const visibleColumns = computed<string[]>({
   get() {
-    const valid = storedNames.value.filter((n) =>
-      localColumns.value.some((c) => c.name === n),
-    );
+    const valid = storedNames.value.filter((n) => localColumns.value.some((c) => c.name === n));
     return valid.length ? valid : defaultNames.value;
   },
   set(v) {
@@ -89,10 +81,7 @@ const visibleColumns = computed<string[]>({
 
 const columnOptions = computed(() =>
   localColumns.value
-    .filter(
-      (c) =>
-        c.name !== "columnSelect" && !props.excludeColumns.includes(c.name),
-    )
+    .filter((c) => c.name !== "columnSelect" && !props.excludeColumns.includes(c.name))
     .map((c) => ({ label: c.label, value: c.name })),
 );
 </script>

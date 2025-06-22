@@ -82,11 +82,7 @@ For details, see: https://license.tacticalrmm.com/ee
                 <q-item-section>Download</q-item-section>
               </q-item>
 
-              <q-item
-                v-close-popup
-                clickable
-                @click="deleteFiles([item], selectedTreeNode)"
-              >
+              <q-item v-close-popup clickable @click="deleteFiles([item], selectedTreeNode)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -109,7 +105,7 @@ For details, see: https://license.tacticalrmm.com/ee
 <script lang="ts" setup>
 // composition imports
 import { ref } from "vue";
-import { useFileBrowser } from "@/composables/filebrowser";
+import { useFileBrowser } from "src/composables/filebrowser";
 import {
   fetchReportAssets,
   renameReportAsset,
@@ -120,7 +116,7 @@ import {
 import { useQuasar, useDialogPluginComponent, exportFile } from "quasar";
 
 // ui imports
-import FileBrowser from "@/components/FileBrowser.vue";
+import FileBrowser from "src/components/FileBrowser.vue";
 import AssetFileUpload from "./AssetFileUpload.vue";
 
 // type imports
@@ -128,7 +124,7 @@ import type {
   LazyLoadCallbackParams,
   FileSystemNodeTable,
   QTreeFileNode,
-} from "@/types/filebrowser";
+} from "src/types/filebrowser";
 import { UploadAssetsResponse } from "../types/reporting";
 
 // emits
@@ -144,9 +140,7 @@ const { dialogRef, onDialogHide /* onDialogOK */ } = useDialogPluginComponent();
 const { createFileNode, createFolderNode, getFile } = useFileBrowser();
 
 // data
-const nodes = ref([
-  createFolderNode("Assets", "/", "storage", "primary"),
-] as QTreeFileNode[]);
+const nodes = ref([createFolderNode("Assets", "/", "storage", "primary")] as QTreeFileNode[]);
 const fileBrowser = ref<InstanceType<typeof FileBrowser> | null>(null);
 const isLoading = ref(false);
 
@@ -165,32 +159,19 @@ function uploadFiles(node: QTreeFileNode) {
     componentProps: {
       parentPath: node.path,
     },
-  }).onOk(
-    ({
-      files,
-      response,
-    }: {
-      files: File[];
-      response: UploadAssetsResponse;
-    }) => {
-      // the upload view returns an object with the old filename as the key and the
-      // new filename as the value in case there are name conflicts
-      files.forEach((file) => {
-        const path = response[file.name].filename;
-        const asset_id = response[file.name].id;
-        const name = getFile(path);
-        const fileNode = createFileNode(
-          name,
-          path,
-          file.size.toString(),
-          asset_id
-        );
-        node.children?.push(fileNode);
-      });
+  }).onOk(({ files, response }: { files: File[]; response: UploadAssetsResponse }) => {
+    // the upload view returns an object with the old filename as the key and the
+    // new filename as the value in case there are name conflicts
+    files.forEach((file) => {
+      const path = response[file.name].filename;
+      const asset_id = response[file.name].id;
+      const name = getFile(path);
+      const fileNode = createFileNode(name, path, file.size.toString(), asset_id);
+      node.children?.push(fileNode);
+    });
 
-      fileBrowser.value?.reloadTable();
-    }
-  );
+    fileBrowser.value?.reloadTable();
+  });
 }
 
 function newFolder(node: QTreeFileNode) {
@@ -264,8 +245,7 @@ async function downloadFile(node: FileSystemNodeTable) {
   isLoading.value = true;
   try {
     const result = await downloadAsset(node.path);
-    if (result.type === "application/zip")
-      exportFile(`${node.name}.zip`, result);
+    if (result.type === "application/zip") exportFile(`${node.name}.zip`, result);
     else exportFile(node.name, result);
     isLoading.value = false;
   } catch (e) {
@@ -273,10 +253,7 @@ async function downloadFile(node: FileSystemNodeTable) {
   }
 }
 
-function deleteFiles(
-  nodes: FileSystemNodeTable[],
-  selectedTreeNode: QTreeFileNode
-) {
+function deleteFiles(nodes: FileSystemNodeTable[], selectedTreeNode: QTreeFileNode) {
   $q.dialog({
     title: "Are you sure?",
     message: `You are about to delete ${
@@ -290,7 +267,7 @@ function deleteFiles(
       await deleteAssets(paths);
 
       selectedTreeNode.children = selectedTreeNode.children?.filter(
-        (node) => !paths.includes(node.path)
+        (node) => !paths.includes(node.path),
       );
 
       fileBrowser.value?.reloadTable();
@@ -303,11 +280,7 @@ function deleteFiles(
 }
 
 // recursive function to update path on child nodes
-function updatePathOnChildNodes(
-  nodes: QTreeFileNode[],
-  oldPath: string,
-  newPath: string
-) {
+function updatePathOnChildNodes(nodes: QTreeFileNode[], oldPath: string, newPath: string) {
   nodes.forEach((node) => {
     node.path = node.path.replace(oldPath, newPath);
 

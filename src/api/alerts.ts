@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import type { AlertTemplate } from "@/types/alerts";
+import type { AlertTemplate } from "src/types/alerts";
 
 export async function saveAlertTemplate(id: number, payload: AlertTemplate) {
   const { data } = await axios.put(`alerts/templates/${id}/`, payload);

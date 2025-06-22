@@ -26,8 +26,8 @@ import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 
 // ui imports
-import SummaryTab from "@/components/agents/SummaryTab.vue";
-import SubTableTabs from "@/components/SubTableTabs.vue";
+import SummaryTab from "src/components/agents/SummaryTab.vue";
+import SubTableTabs from "src/components/SubTableTabs.vue";
 
 export default defineComponent({
   name: "AgentView",
@@ -56,7 +56,7 @@ export default defineComponent({
       () => route.params.agent_id,
       () => {
         store.commit("setActiveRow", route.params.agent_id);
-      }
+      },
     );
 
     return {

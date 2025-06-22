@@ -14,10 +14,7 @@
         @click="doCodeSign"
         :loading="loading"
       >
-        <q-tooltip
-          >Force all existing agents to be updated to the code-signed
-          version</q-tooltip
-        >
+        <q-tooltip>Force all existing agents to be updated to the code-signed version</q-tooltip>
         <template v-slot:loading>
           <q-spinner-facebook />
         </template>
@@ -48,7 +45,7 @@
 import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import axios from "axios";
-import { notifySuccess } from "@/utils/notify";
+import { notifySuccess } from "src/utils/notify";
 
 const endpoint = "/core/codesign/";
 

@@ -2,7 +2,7 @@
   <q-card>
     <q-bar v-if="modal">
       <q-btn
-        @click="getDebugLog"
+        @click="debugLogStore.getDebugLog(requestData)"
         class="q-mr-sm"
         dense
         flat
@@ -21,9 +21,9 @@
       }"
       class="tabs-tbl-sticky"
       :style="{
-        'max-height': tabHeight ? tabHeight : `${$q.screen.height - 33}px`,
+        'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
       }"
-      :rows="debugLog"
+      :rows="debugLogStore.debugLog"
       :columns="columns"
       :title="modal ? 'Debug Logs' : ''"
       :pagination="{ sortBy: 'entry_time', descending: true, rowsPerPage: 0 }"
@@ -34,24 +34,24 @@
       binary-state-sort
       :rows-per-page-options="[0]"
     >
-      <template v-slot:top>
+      <template #top>
         <q-btn
           v-if="agent"
           class="q-pr-sm"
           dense
           flat
           push
-          @click="getDebugLog"
+          @click="debugLogStore.getDebugLog(requestData)"
           icon="refresh"
         />
         <tactical-dropdown
           v-if="!agent"
           class="q-pr-sm"
           style="width: 250px"
-          v-model="agentFilter"
+          v-model="requestData.agentFilter"
           label="Agents Filter"
           :options="agentOptions"
-          mapOptions
+          map-options
           outlined
           clearable
           filterable
@@ -59,82 +59,73 @@
         <tactical-dropdown
           class="q-pr-sm"
           style="width: 250px"
-          v-model="logTypeFilter"
+          v-model="requestData.logTypeFilter"
           label="Log Type Filter"
           :options="logTypeOptions"
-          mapOptions
+          map-options
           outlined
           clearable
         />
         <q-radio
-          v-model="logLevelFilter"
-          :color="dash_info_color"
+          v-model="requestData.logLevelFilter"
+          :color="dashInfoColor"
           val="info"
           label="Info"
         />
         <q-radio
-          v-model="logLevelFilter"
-          :color="dash_negative_color"
+          v-model="requestData.logLevelFilter"
+          :color="dashNegativeColor"
           val="critical"
           label="Critical"
         />
         <q-radio
-          v-model="logLevelFilter"
-          :color="dash_negative_color"
+          v-model="requestData.logLevelFilter"
+          :color="dashNegativeColor"
           val="error"
           label="Error"
         />
         <q-radio
-          v-model="logLevelFilter"
-          :color="dash_warning_color"
+          v-model="requestData.logLevelFilter"
+          :color="dashWarningColor"
           val="warning"
           label="Warning"
         />
         <q-space />
-        <q-input
-          v-model="filter"
-          outlined
-          label="Search"
-          dense
-          clearable
-          class="q-pr-sm"
-        >
-          <template v-slot:prepend>
+        <q-input v-model="filter" outlined label="Search" dense clearable class="q-pr-sm">
+          <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
-        <export-table-btn :data="debugLog" :columns="columns" />
+        <export-table-btn :data="debugLogStore.debugLog" :columns="columns" />
       </template>
 
-      <template v-slot:top-row>
-        <q-tr v-if="Array.isArray(debugLog) && debugLog.length === 1000">
+      <template #top-row>
+        <q-tr v-if="debugLogStore.debugLog.length === 1000">
           <q-td colspan="100%">
-            <q-icon name="warning" :color="dash_warning_color" />
+            <q-icon name="warning" :color="dashWarningColor" />
             Results are limited to 1000 rows.
           </q-td>
         </q-tr>
-      </template>
-
-      <template v-slot:body-cell-entry_time="props">
-        <q-td :props="props">
-          {{ formatDate(props.value) }}
-        </q-td>
       </template>
     </q-table>
   </q-card>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition api
-import { ref, toRef, watch, computed, onMounted } from "vue";
-import { useStore } from "vuex";
-import { useAgentDropdown } from "@/composables/agents";
-import { fetchDebugLog } from "@/api/logs";
-import { formatTableColumnText } from "@/utils/format";
+import { ref, reactive, watch, computed, onMounted } from "vue";
+import { type QTableProps } from "quasar";
+import { useDebugLogStore } from "../api";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentDropdown } from "src/core/agents/composables";
+import { formatTableColumnText } from "src/utils/format";
 
 // ui components
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
-import ExportTableBtn from "@/components/ui/ExportTableBtn.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+
+// types
+import type { GetDebugLogRequest } from "../types";
 
 // static data
 const logTypeOptions = [
@@ -145,13 +136,14 @@ const logTypeOptions = [
   { label: "Scripting", value: "scripting" },
 ];
 
-const columns = [
+const columns: QTableProps["columns"] = [
   {
     name: "entry_time",
     label: "Time",
     field: "entry_time",
     align: "left",
     sortable: true,
+    format: (val: string) => dashboardStore.formatDate(val),
   },
   {
     name: "log_level",
@@ -173,7 +165,7 @@ const columns = [
     field: "log_type",
     align: "left",
     sortable: true,
-    format: (val) => formatTableColumnText(val),
+    format: (val: string) => formatTableColumnText(val),
   },
   {
     name: "message",
@@ -184,100 +176,49 @@ const columns = [
   },
 ];
 
-export default {
-  name: "LogModal",
-  components: {
-    TacticalDropdown,
-    ExportTableBtn,
-  },
-  props: {
-    agent: String,
-    tabHeight: String,
-    modal: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup(props) {
-    // setup vuex
-    const store = useStore();
+const props = defineProps<{
+  agent: string;
+  modal: boolean;
+}>();
 
-    const formatDate = computed(() => store.getters.formatDate);
-    const dash_info_color = computed(() => store.state.dash_info_color);
-    const dash_positive_color = computed(() => store.state.dash_positive_color);
-    const dash_negative_color = computed(() => store.state.dash_negative_color);
-    const dash_warning_color = computed(() => store.state.dash_warning_color);
+// setup stores
+const dashboardStore = useDashboardStore();
+const debugLogStore = useDebugLogStore();
 
-    // setup dropdowns
-    const { agentOptions, getAgentOptions } = useAgentDropdown();
+const tabHeight = computed(() => dashboardStore.tabHeight);
+const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
+const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
 
-    // set main debug log functionality
-    const debugLog = ref([]);
-    const agentFilter = props.agent ? toRef(props, "agent") : ref(null);
-    const logLevelFilter = ref("info");
-    const logTypeFilter = ref(null);
-    const loading = ref(false);
-    const filter = ref("");
+// setup dropdowns
+const { agentOptions } = useAgentDropdown();
 
-    async function getDebugLog() {
-      loading.value = true;
-      try {
-        const data = {
-          logLevelFilter: logLevelFilter.value,
-        };
-        if (agentFilter.value) data["agentFilter"] = agentFilter.value;
-        if (logTypeFilter.value) data["logTypeFilter"] = logTypeFilter.value;
+const requestData = reactive<GetDebugLogRequest>({
+  agentFilter: props.agent ? props.agent : null,
+  logLevelFilter: "info",
+  logTypeFilter: null,
+});
 
-        debugLog.value = await fetchDebugLog(data);
-      } catch (e) {
-        console.error(e);
+const loading = ref(false);
+const filter = ref("");
+
+if (props.agent) {
+  watch(
+    () => props.agent,
+    (newValue) => {
+      if (newValue) {
+        requestData.agentFilter = props.agent;
+        debugLogStore.getDebugLog(requestData);
       }
-      loading.value = false;
-    }
+    },
+  );
+}
 
-    if (props.agent) {
-      watch(
-        () => props.agent,
-        (newValue) => {
-          if (newValue) {
-            agentFilter.value = props.agent;
-            getDebugLog();
-          }
-        }
-      );
-    }
+// watchers
+watch(requestData, () => debugLogStore.getDebugLog(requestData), { deep: true });
 
-    // watchers
-    watch([logLevelFilter, agentFilter, logTypeFilter], getDebugLog);
-
-    // vue component hooks
-    onMounted(() => {
-      if (!props.agent) getAgentOptions();
-      getDebugLog();
-    });
-
-    return {
-      // data
-      debugLog,
-      logLevelFilter,
-      logTypeFilter,
-      agentFilter,
-      agentOptions,
-      loading,
-      filter,
-      dash_info_color,
-      dash_positive_color,
-      dash_warning_color,
-      dash_negative_color,
-
-      // non-reactive data
-      columns,
-      logTypeOptions,
-
-      // methods
-      getDebugLog,
-      formatDate,
-    };
-  },
-};
+// vue component hooks
+onMounted(() => {
+  debugLogStore.getDebugLog(requestData);
+});
 </script>

@@ -34,9 +34,9 @@
       >
         <template v-slot:avatar>
           <q-icon class="text-center" name="warning" color="black" /> </template
-        >Shell/Python scripts on Linux/Mac need a shebang at the top of the
-        script e.g. <code>#!/bin/bash</code> or <code>#!/usr/bin/python3</code
-        ><br />Add one to get rid of this warning. Ignore if windows.
+        >Shell/Python scripts on Linux/Mac need a shebang at the top of the script e.g.
+        <code>#!/bin/bash</code> or <code>#!/usr/bin/python3</code><br />Add one to get rid of this
+        warning. Ignore if windows.
       </q-banner>
       <div class="row q-pa-sm">
         <q-scroll-area
@@ -139,15 +139,11 @@
               :rules="[(val) => val >= 5 || 'Minimum is 5']"
               hide-bottom-space
             />
-            <q-checkbox
-              v-model="script.run_as_user"
-              label="Run As User (Windows only)"
-            >
+            <q-checkbox v-model="script.run_as_user" label="Run As User (Windows only)">
               <q-tooltip
-                >Setting this value on the script model will always override any
-                'Run As User' checkboxes in the UI and force this script to
-                always be run in the context of the logged in user. If no user
-                is logged in, the script will run as SYSTEM.
+                >Setting this value on the script model will always override any 'Run As User'
+                checkboxes in the UI and force this script to always be run in the context of the
+                logged in user. If no user is logged in, the script will run as SYSTEM.
               </q-tooltip>
             </q-checkbox>
             <q-input
@@ -186,9 +182,7 @@
               dense
               flat
               label="Test Script"
-              :disable="
-                !agent || !script.script_body || !script.default_timeout
-              "
+              :disable="!agent || !script.script_body || !script.default_timeout"
               @click="openTestScriptModal('agent')"
             />
             <q-btn
@@ -198,11 +192,7 @@
               dense
               flat
               label="Test on Tactical's Server"
-              :disable="
-                !script.script_body ||
-                !script.default_timeout ||
-                !server_scripts_enabled
-              "
+              :disable="!script.script_body || !script.default_timeout || !server_scripts_enabled"
               @click="openTestScriptModal('server')"
             >
               <q-tooltip
@@ -212,11 +202,10 @@
                 transition-hide="fade"
               >
                 <div>
-                  <strong>Runs on Tactical RMM local Linux Server.</strong
-                  ><br />
+                  <strong>Runs on Tactical RMM local Linux Server.</strong><br />
                   Only available interpreters or frameworks will be used.<br />
-                  <em>Example:</em> PowerShell scripts require PowerShell to be
-                  installed on the system.
+                  <em>Example:</em> PowerShell scripts require PowerShell to be installed on the
+                  system.
                 </div>
               </q-tooltip>
             </q-btn>
@@ -243,14 +232,14 @@
 import { ref, reactive, watch, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { saveScript, editScript, downloadScript } from "@/api/scripts";
-import { useAgentDropdown, agentPlatformOptions } from "@/composables/agents";
-import { generateScript } from "@/api/core";
-import { notifyError, notifySuccess } from "@/utils/notify";
+import { saveScript, editScript, downloadScript } from "src/api/scripts";
+import { useAgentDropdown, agentPlatformOptions } from "src/composables/agents";
+import { generateScript } from "src/api/core";
+import { notifyError, notifySuccess } from "src/utils/notify";
 
 // ui imports
-import TestScriptModal from "@/components/scripts/TestScriptModal.vue";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TestScriptModal from "src/components/scripts/TestScriptModal.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 import * as monaco from "monaco-editor";
 
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
@@ -283,11 +272,11 @@ self.MonacoEnvironment = {
 };
 
 // types
-import type { Script } from "@/types/scripts";
+import type { Script } from "src/types/scripts";
 
 // static data
-import { shellOptions } from "@/composables/scripts";
-import { envVarsLabel } from "@/constants/constants";
+import { shellOptions } from "src/composables/scripts";
+import { envVarsLabel } from "src/constants/constants";
 
 // props
 const props = withDefaults(
@@ -317,9 +306,7 @@ const openAIEnabled = computed(() => store.state.openAIIntegrationEnabled);
 // setup agent dropdown
 const { agent, agentOptions, getAgentOptions } = useAgentDropdown();
 const hosted = computed(() => store.state.hosted);
-const server_scripts_enabled = computed(
-  () => store.state.server_scripts_enabled,
-);
+const server_scripts_enabled = computed(() => store.state.server_scripts_enabled);
 
 // script form logic
 const script: Script = props.script

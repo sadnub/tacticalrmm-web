@@ -11,7 +11,7 @@
     <q-table
       @request="onRequest"
       :title="modal ? 'Audit Logs' : ''"
-      :rows="auditLogs"
+      :rows="auditLogStore.auditLog"
       :columns="columns"
       class="tabs-tbl-sticky"
       :table-class="{
@@ -19,28 +19,20 @@
         'table-bgcolor-dark': $q.dark.isActive,
       }"
       :style="{
-        'max-height': tabHeight ? tabHeight : `${$q.screen.height - 33}px`,
+        'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
       }"
       row-key="id"
       dense
       binary-state-sort
-      v-model:pagination="pagination"
+      v-model:pagination="requestData.pagination"
       :rows-per-page-options="[25, 50, 100, 500, 1000]"
-      :no-data-label="tableNoDataText"
+      no-data-label="No data found"
       @row-click="openAuditDetail"
       virtual-scroll
       :loading="loading"
     >
-      <template v-slot:top>
-        <q-btn
-          v-if="agent"
-          class="q-pr-sm"
-          dense
-          flat
-          push
-          @click="search"
-          icon="refresh"
-        />
+      <template #top>
+        <q-btn v-if="agent" class="q-pr-sm" dense flat push @click="search" icon="refresh" />
         <q-option-group
           v-if="!agent"
           class="q-pr-sm"
@@ -52,11 +44,11 @@
           v-if="filterType === 'agents' && !agent"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="agentFilter"
+          v-model="requestData.agentFilter"
           :options="agentOptions"
           label="Agent"
           clearable
-          mapOptions
+          map-options
           multiple
           filled
           filterable
@@ -65,19 +57,19 @@
           v-if="filterType === 'clients' && !agent"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="clientFilter"
+          v-model="requestData.clientFilter"
           :options="clientOptions"
           label="Clients"
           clearable
           multiple
           filled
-          mapOptions
+          map-options
           filterable
         />
         <tactical-dropdown
           class="q-pr-sm"
           style="width: 200px"
-          v-model="userFilter"
+          v-model="requestData.userFilter"
           :options="userOptions"
           label="Users"
           clearable
@@ -87,94 +79,79 @@
         <tactical-dropdown
           class="q-pr-sm"
           style="width: 200px"
-          v-model="actionFilter"
+          v-model="requestData.actionFilter"
           :options="actionOptions"
           label="Action"
           clearable
           filled
           multiple
-          mapOptions
+          map-options
         />
         <tactical-dropdown
           class="q-pr-sm"
           style="width: 200px"
           v-if="!agent"
-          v-model="objectFilter"
+          v-model="requestData.objectFilter"
           :options="objectOptions"
           label="Object"
           clearable
           filled
           multiple
-          mapOptions
+          map-options
         />
         <tactical-dropdown
           class="q-pr-sm"
           style="width: 200px"
-          v-model="timeFilter"
+          v-model="requestData.timeFilter"
           :options="timeOptions"
           label="Time"
           filled
-          mapOptions
+          map-options
         />
         <q-btn v-if="!agent" color="primary" label="Search" @click="search" />
 
         <q-space />
-        <export-table-btn :data="auditLogs" :columns="columns" />
+        <export-table-btn :data="auditLogStore.auditLog" :columns="columns" />
       </template>
-      <template v-slot:body-cell-action="props">
-        <q-td :props="props">
+      <template #body-cell-action="{ value }">
+        <q-td>
           <div>
-            <q-badge
-              :color="formatActionColor(props.value)"
-              :label="props.value"
-            />
+            <q-badge :color="formatActionColor(value)" :label="value" />
           </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-client="props">
-        <q-td :props="props">
-          <span v-if="props.value">{{ props.value.client_name }}</span>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-site="props">
-        <q-td :props="props">
-          <span v-if="props.value">{{ props.value.name }}</span>
-        </q-td>
-      </template>
-
-      <template v-slot:body-cell-entry_time="props">
-        <q-td :props="props">
-          {{ formatDate(props.value) }}
         </q-td>
       </template>
     </q-table>
   </q-card>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref, computed, watch, onMounted } from "vue";
-import { useStore } from "vuex";
-import { useClientDropdown } from "@/composables/clients";
-import { useAgentDropdown } from "@/composables/agents";
-import { useUserDropdown } from "@/composables/accounts";
-import { useQuasar } from "quasar";
-import { fetchAuditLog } from "@/api/logs";
-import { formatTableColumnText } from "@/utils/format";
+import { ref, computed, reactive, watch, onMounted } from "vue";
+import { type QTableProps, useQuasar } from "quasar";
+import { useClientDropdown } from "src/core/clients/composables";
+import { useAgentDropdown } from "src/core/agents/composables";
+import { useUserDropdown } from "src/core/accounts/composables";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useAuditLogStore } from "../api";
+import { formatDate, formatTableColumnText } from "src/utils/format";
 
 // ui imported
-import AuditLogDetailModal from "@/components/logs/AuditLogDetailModal.vue";
-import ExportTableBtn from "@/components/ui/ExportTableBtn.vue";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import AuditLogDetailModal from "src/components/logs/AuditLogDetailModal.vue";
+import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+
+// types
+import type { AuditAction, AuditLog, GetAuditLogRequest, Pagination } from "../types";
 
 // static data
-const columns = [
+const columns: QTableProps["columns"] = [
   {
     name: "entry_time",
     label: "Time",
     field: "entry_time",
     align: "left",
     sortable: true,
+    format: (val: string) => formatDate(val),
   },
   {
     name: "username",
@@ -196,15 +173,23 @@ const columns = [
     field: "site",
     align: "left",
     sortable: true,
+    format: (val: string) => (val ? val : ""),
   },
-  { name: "site", label: "Site", field: "site", align: "left", sortable: true },
+  {
+    name: "site",
+    label: "Site",
+    field: "site",
+    align: "left",
+    sortable: true,
+    format: (val: string) => (val ? val : ""),
+  },
   {
     name: "action",
     label: "Action",
     field: "action",
     align: "left",
     sortable: true,
-    format: (val) => formatTableColumnText(val),
+    format: (val: string) => formatTableColumnText(val),
   },
   {
     name: "object_type",
@@ -212,7 +197,7 @@ const columns = [
     field: "object_type",
     align: "left",
     sortable: true,
-    format: (val) => formatTableColumnText(val),
+    format: (val: string) => formatTableColumnText(val),
   },
   {
     name: "message",
@@ -239,7 +224,7 @@ const agentActionOptions = [
   { value: "url_action", label: "URL Action" },
 ];
 
-const actionOptions = [
+const systemActionOptions = [
   { value: "agent_install", label: "Agent Installs" },
   { value: "bulk_action", label: "Bulk Actions" },
   { value: "delete", label: "Delete Object" },
@@ -289,187 +274,112 @@ const filterTypeOptions = [
   },
 ];
 
-export default {
-  name: "AuditManager",
-  components: { TacticalDropdown, ExportTableBtn },
-  props: {
-    agent: String,
-    tabHeight: String,
-    modal: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps<{
+  agent: string;
+  modal: boolean;
+}>();
+
+// setup stores
+const auditLogStore = useAuditLogStore();
+const dashboardStore = useDashboardStore();
+
+const tabHeight = computed(() => dashboardStore.tabHeight);
+
+// setup dropdowns
+const { clientOptions } = useClientDropdown();
+const { agentOptions } = useAgentDropdown();
+const { userOptions } = useUserDropdown();
+
+const actionOptions = computed(() =>
+  props.agent ? agentActionOptions : agentActionOptions.concat(systemActionOptions),
+);
+
+// setup main audit log functionality
+const requestData = reactive<GetAuditLogRequest>({
+  agentFilter: [],
+  userFilter: [],
+  actionFilter: [],
+  clientFilter: [],
+  objectFilter: [],
+  timeFilter: 7,
+  pagination: {
+    rowsPerPage: 25,
+    rowsNumber: auditLogStore.rowsNumber,
+    sortBy: "entry_time",
+    descending: true,
+    page: 1,
   },
-  setup(props) {
-    // setup vuex
-    const store = useStore();
-    const formatDate = computed(() => store.getters.formatDate);
-    const dash_positive_color = computed(() => store.state.dash_positive_color);
-    const dash_negative_color = computed(() => store.state.dash_negative_color);
-    const dash_warning_color = computed(() => store.state.dash_warning_color);
+});
 
-    // setup dropdowns
-    const { clientOptions, getClientOptions } = useClientDropdown();
-    const { agentOptions, getAgentOptions } = useAgentDropdown();
-    const { userOptions, getUserOptions } = useUserDropdown();
+const filterType = ref<"clients" | "agents">("clients");
+const loading = ref(false);
+const searched = ref(false);
 
-    // setup main audit log functionality
-    const auditLogs = ref([]);
-    const agentFilter = ref(null);
-    const userFilter = ref(null);
-    const actionFilter = ref(null);
-    const clientFilter = ref(null);
-    const objectFilter = ref(null);
-    const timeFilter = ref(7);
-    const filterType = ref("clients");
-    const loading = ref(false);
-    const searched = ref(false);
+function search() {
+  loading.value = true;
+  searched.value = true;
 
-    const pagination = ref({
-      rowsPerPage: 25,
-      rowsNumber: null,
-      sortBy: "entry_time",
-      descending: true,
-      page: 1,
-    });
+  auditLogStore.getAuditLog(requestData);
 
-    async function search() {
-      loading.value = true;
-      searched.value = true;
+  loading.value = false;
+}
 
-      const data = {
-        pagination: pagination.value,
-      };
+function onRequest(data: { pagination: Pagination }) {
+  if (data) {
+    requestData.pagination = data.pagination;
 
-      if (agentFilter.value && agentFilter.value.length > 0)
-        data["agentFilter"] = agentFilter.value;
-      else if (clientFilter.value && clientFilter.value.length > 0)
-        data["clientFilter"] = clientFilter.value;
-      if (userFilter.value && userFilter.value.length > 0)
-        data["userFilter"] = userFilter.value;
-      if (timeFilter.value) data["timeFilter"] = timeFilter.value;
-      if (actionFilter.value && actionFilter.value.length > 0)
-        data["actionFilter"] = actionFilter.value;
-      if (objectFilter.value && objectFilter.value.length > 0)
-        data["objectFilter"] = objectFilter.value;
-      try {
-        const { audit_logs, total } = await fetchAuditLog(data);
-        auditLogs.value = audit_logs;
-        pagination.value.rowsNumber = total;
-      } catch (e) {}
+    search();
+  }
+}
 
-      loading.value = false;
-    }
+// audit detail modal
+const { dialog } = useQuasar();
+function openAuditDetail(_: Event, log: AuditLog) {
+  dialog({
+    component: AuditLogDetailModal,
+    componentProps: {
+      log,
+    },
+  });
+}
 
-    function onRequest(data) {
-      const { page, rowsPerPage, sortBy, descending } = data.pagination;
+function formatActionColor(action: AuditAction) {
+  switch (action.toLowerCase()) {
+    case "modify":
+      return dashboardStore.dashboardSettings.dashWarningColor;
+    case "add":
+    case "agent_install":
+      return dashboardStore.dashboardSettings.dashPositiveColor;
+    case "delete":
+    case "failed_login":
+      return dashboardStore.dashboardSettings.dashNegativeColor;
+    default:
+      return "primary";
+  }
+}
 
-      pagination.value.page = page;
-      pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
+watch(filterType, () => {
+  requestData.agentFilter = [];
+  requestData.clientFilter = [];
+});
 
-      search();
-    }
-
-    // audit detail modal
-    const { dialog } = useQuasar();
-    function openAuditDetail(evt, log) {
-      dialog({
-        component: AuditLogDetailModal,
-        componentProps: {
-          log,
-        },
-      });
-    }
-
-    function formatActionColor(action) {
-      switch (action.toLowerCase()) {
-        case "modify":
-          return dash_warning_color.value;
-        case "add":
-        case "agent_install":
-          return dash_positive_color.value;
-        case "delete":
-        case "failed_login":
-          return dash_negative_color.value;
-        default:
-          return "primary";
-      }
-    }
-
-    // watchers
-    watch(filterType, () => {
-      agentFilter.value = null;
-      clientFilter.value = null;
-    });
-
-    if (props.agent) {
-      agentFilter.value = [props.agent];
-      watch([userFilter, actionFilter, timeFilter], search);
-      watch(
-        () => props.agent,
-        (newValue) => {
-          if (newValue) {
-            agentFilter.value = [props.agent];
-            search();
-          }
-        }
-      );
-    }
-
-    // vue component hooks
-    onMounted(() => {
-      if (!props.agent) {
-        getClientOptions();
-        getAgentOptions();
-      } else {
+if (props.agent) {
+  requestData.agentFilter = [props.agent];
+  watch([requestData.userFilter, requestData.actionFilter, requestData.timeFilter], search);
+  watch(
+    () => props.agent,
+    (newValue) => {
+      if (newValue) {
+        requestData.agentFilter = [props.agent];
         search();
       }
+    },
+  );
+}
 
-      getUserOptions(true);
-    });
-
-    return {
-      // data
-      auditLogs,
-      agentFilter,
-      userFilter,
-      actionFilter,
-      clientFilter,
-      objectFilter,
-      timeFilter,
-      filterType,
-      loading,
-      searched,
-      pagination,
-      userOptions,
-
-      // non-reactive data
-      clientOptions,
-      agentOptions,
-      columns,
-      actionOptions: props.agent
-        ? [...agentActionOptions]
-        : [...agentActionOptions, ...actionOptions],
-      objectOptions,
-      timeOptions,
-      filterTypeOptions,
-
-      //computed
-      tableNoDataText: computed(() =>
-        searched.value
-          ? "No data found. Try to refine you search"
-          : "Click search to find audit logs"
-      ),
-
-      // methods
-      search,
-      onRequest,
-      openAuditDetail,
-      formatActionColor,
-      formatDate,
-    };
-  },
-};
+onMounted(() => {
+  if (props.agent) {
+    search();
+  }
+});
 </script>

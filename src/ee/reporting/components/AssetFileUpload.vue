@@ -42,14 +42,7 @@ For details, see: https://license.tacticalrmm.com/ee
       </div>
       <q-card-actions align="right">
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn
-          color="primary"
-          label="Upload"
-          dense
-          flat
-          :loading="loading"
-          @click="upload"
-        />
+        <q-btn color="primary" label="Upload" dense flat :loading="loading" @click="upload" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -60,7 +53,7 @@ For details, see: https://license.tacticalrmm.com/ee
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { uploadAssets } from "../api/reporting";
-import { notifySuccess } from "@/utils/notify";
+import { notifySuccess } from "src/utils/notify";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);

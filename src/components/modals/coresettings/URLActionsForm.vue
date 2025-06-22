@@ -1,10 +1,5 @@
 <template>
-  <q-dialog
-    ref="dialogRef"
-    @hide="onDialogHide"
-    @show="loadEditor"
-    @before-hide="cleanupEditors"
-  >
+  <q-dialog ref="dialogRef" @hide="onDialogHide" @show="loadEditor" @before-hide="cleanupEditors">
     <q-card
       class="q-dialog-plugin"
       :style="`width: ${props.type === 'web' ? 50 : 60}vw; max-width: ${props.type === 'web' ? 60 : 70}vw`"
@@ -75,12 +70,7 @@
         <q-card-section v-show="type === 'rest'">
           <q-toolbar>
             <q-tabs v-model="tab" dense shrink>
-              <q-tab
-                name="body"
-                label="Request Body"
-                :ripple="false"
-                :disable="disableBodyTab"
-              />
+              <q-tab name="body" label="Request Body" :ripple="false" :disable="disableBodyTab" />
               <q-tab name="headers" label="Request Headers" :ripple="false" />
             </q-tabs>
           </q-toolbar>
@@ -89,13 +79,7 @@
       </div>
 
       <q-card-actions align="right">
-        <q-btn
-          v-if="type === 'rest'"
-          flat
-          label="Test"
-          color="primary"
-          @click="testWebHook"
-        />
+        <q-btn v-if="type === 'rest'" flat label="Test" color="primary" @click="testWebHook" />
         <q-btn flat label="Cancel" v-close-popup />
         <q-btn flat label="Submit" color="primary" @click="submit" />
       </q-card-actions>
@@ -107,12 +91,12 @@
 // composition imports
 import { ref, computed, reactive, watch } from "vue";
 import { useDialogPluginComponent, useQuasar, extend } from "quasar";
-import { editURLAction, saveURLAction } from "@/api/core";
-import { notifySuccess } from "@/utils/notify";
-import { URLAction, URLActionType } from "@/types/core/urlactions";
+import { editURLAction, saveURLAction } from "src/api/core";
+import { notifySuccess } from "src/utils/notify";
+import { URLAction, URLActionType } from "src/types/core/urlactions";
 
 // ui imports
-import TestURLAction from "@/components/modals/coresettings/TestURLAction.vue";
+import TestURLAction from "src/components/modals/coresettings/TestURLAction.vue";
 
 import * as monaco from "monaco-editor";
 
@@ -147,9 +131,7 @@ const localAction: URLAction = props.action
       rest_headers: `{\n  "Content-Type": "application/json"\n}`, // eslint-disable-line
     } as URLAction);
 
-const disableBodyTab = computed(() =>
-  ["get", "delete"].includes(localAction.rest_method),
-);
+const disableBodyTab = computed(() => ["get", "delete"].includes(localAction.rest_method));
 const tab = ref(disableBodyTab.value ? "headers" : "body");
 
 watch(
@@ -177,17 +159,9 @@ const editorDiv = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor;
 var modelBodyUri = monaco.Uri.parse("model://body"); // a made up unique URI for our model
 var modelHeadersUri = monaco.Uri.parse("model://headers"); // a made up unique URI for our model
-var modelBody = monaco.editor.createModel(
-  localAction.rest_body,
-  "json",
-  modelBodyUri,
-);
+var modelBody = monaco.editor.createModel(localAction.rest_body, "json", modelBodyUri);
 
-var modelHeaders = monaco.editor.createModel(
-  localAction.rest_headers,
-  "json",
-  modelHeadersUri,
-);
+var modelHeaders = monaco.editor.createModel(localAction.rest_headers, "json", modelHeadersUri);
 
 function testWebHook() {
   $q.dialog({

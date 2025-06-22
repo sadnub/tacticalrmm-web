@@ -5,11 +5,11 @@ import {
   createWebHashHistory,
 } from "vue-router";
 
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "src/stores/auth";
 import routes from "./routes";
 
 // useful for importing router outside of vue components
-// import {router} from "@/router"
+// import {router} from "src/router"
 export const router = new createRouter({
   routes,
   history: createWebHistory(process.env.VUE_ROUTER_BASE),
@@ -25,9 +25,7 @@ export default function (/* { store } */) {
   const Router = new createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
-    history: createHistory(
-      process.env.MODE === "ssr" ? void 0 : process.env.VUE_ROUTER_BASE,
-    ),
+    history: createHistory(process.env.MODE === "ssr" ? void 0 : process.env.VUE_ROUTER_BASE),
   });
 
   Router.beforeEach((to, from, next) => {

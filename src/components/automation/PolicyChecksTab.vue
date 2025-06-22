@@ -10,14 +10,7 @@
         @click="getChecks"
         icon="refresh"
       />
-      <q-btn-dropdown
-        v-if="!!selectedPolicy"
-        icon="add"
-        label="New"
-        no-caps
-        dense
-        flat
-      >
+      <q-btn-dropdown v-if="!!selectedPolicy" icon="add" label="New" no-caps dense flat>
         <q-list dense style="min-width: 200px">
           <q-item clickable v-close-popup @click="showCheckModal('diskspace')">
             <q-item-section side>
@@ -83,9 +76,7 @@
         <!-- No data Slot -->
         <template v-slot:no-data>
           <div class="full-width row flex-center q-gutter-sm">
-            <span v-if="!selectedPolicy"
-              >Click on a policy to see the checks</span
-            >
+            <span v-if="!selectedPolicy">Click on a policy to see the checks</span>
             <span v-else>There are no checks added to this policy</span>
           </div>
         </template>
@@ -143,11 +134,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="showPolicyStatus(props.row)"
-                >
+                <q-item clickable v-close-popup @click="showPolicyStatus(props.row)">
                   <q-item-section side>
                     <q-icon name="sync" />
                   </q-item-section>
@@ -165,18 +152,14 @@
             <q-td>
               <q-checkbox
                 dense
-                @update:model-value="
-                  checkAlert(props.row.id, 'Text', props.row.text_alert)
-                "
+                @update:model-value="checkAlert(props.row.id, 'Text', props.row.text_alert)"
                 v-model="props.row.text_alert"
               />
             </q-td>
             <q-td>
               <q-checkbox
                 dense
-                @update:model-value="
-                  checkAlert(props.row.id, 'Email', props.row.email_alert)
-                "
+                @update:model-value="checkAlert(props.row.id, 'Email', props.row.email_alert)"
                 v-model="props.row.email_alert"
               />
             </q-td>
@@ -184,11 +167,7 @@
               <q-checkbox
                 dense
                 @update:model-value="
-                  checkAlert(
-                    props.row.id,
-                    'Dashboard',
-                    props.row.dashboard_alert
-                  )
+                  checkAlert(props.row.id, 'Dashboard', props.row.dashboard_alert)
                 "
                 v-model="props.row.dashboard_alert"
               />
@@ -218,15 +197,15 @@
 
 <script>
 import { mapState } from "vuex";
-import mixins from "@/mixins/mixins";
-import PolicyStatus from "@/components/automation/modals/PolicyStatus.vue";
-import DiskSpaceCheck from "@/components/checks/DiskSpaceCheck.vue";
-import PingCheck from "@/components/checks/PingCheck.vue";
-import CpuLoadCheck from "@/components/checks/CpuLoadCheck.vue";
-import MemCheck from "@/components/checks/MemCheck.vue";
-import WinSvcCheck from "@/components/checks/WinSvcCheck.vue";
-import ScriptCheck from "@/components/checks/ScriptCheck.vue";
-import EventLogCheck from "@/components/checks/EventLogCheck.vue";
+import mixins from "src/mixins/mixins";
+import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
+import DiskSpaceCheck from "src/components/checks/DiskSpaceCheck.vue";
+import PingCheck from "src/components/checks/PingCheck.vue";
+import CpuLoadCheck from "src/components/checks/CpuLoadCheck.vue";
+import MemCheck from "src/components/checks/MemCheck.vue";
+import WinSvcCheck from "src/components/checks/WinSvcCheck.vue";
+import ScriptCheck from "src/components/checks/ScriptCheck.vue";
+import EventLogCheck from "src/components/checks/EventLogCheck.vue";
 
 export default {
   name: "PolicyChecksTab",
@@ -299,9 +278,7 @@ export default {
 
       data.check_alert = true;
       const act = !action ? "enabled" : "disabled";
-      const color = !action
-        ? this.dash_positive_color
-        : this.dash_warning_color;
+      const color = !action ? this.dash_positive_color : this.dash_warning_color;
       this.$axios
         .put(`/checks/${id}/`, data)
         .then(() => {

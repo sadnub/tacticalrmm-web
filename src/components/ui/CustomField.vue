@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { truncateText } from "@/utils/format";
+import { truncateText } from "src/utils/format";
 export default {
   name: "CustomField",
   props: ["field", "modelValue"],
@@ -73,13 +73,8 @@ export default {
             ? `Default value: ${field.default_values_multiple}`
             : "";
       else if (field.type === "checkbox")
-        value = field.default_value_bool
-          ? `Default value: ${field.default_value_bool}`
-          : "";
-      else
-        value = field.default_value_string
-          ? `Default value: ${field.default_value_string}`
-          : "";
+        value = field.default_value_bool ? `Default value: ${field.default_value_bool}` : "";
+      else value = field.default_value_string ? `Default value: ${field.default_value_string}` : "";
 
       return value.length > 100 ? truncateText(value, 100) : value;
     },

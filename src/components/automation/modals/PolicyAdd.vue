@@ -42,18 +42,12 @@
             filterable
           />
 
-          <q-checkbox
-            label="Block policy inheritance"
-            v-model="blockInheritance"
-          >
-            <q-tooltip
-              >This {{ type }} will not inherit from higher policies</q-tooltip
-            >
+          <q-checkbox label="Block policy inheritance" v-model="blockInheritance">
+            <q-tooltip>This {{ type }} will not inherit from higher policies</q-tooltip>
           </q-checkbox>
         </q-card-section>
         <q-card-section v-else>
-          No Automation Policies have been setup. Go to Settings > Automation
-          Manager
+          No Automation Policies have been setup. Go to Settings > Automation Manager
         </q-card-section>
         <q-card-actions align="right">
           <q-btn dense flat label="Cancel" v-close-popup />
@@ -72,8 +66,8 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import mixins from "src/mixins/mixins";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   name: "PolicyAdd",

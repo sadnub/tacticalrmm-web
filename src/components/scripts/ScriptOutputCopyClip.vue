@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { copyOutput } from "@/utils/helpers";
+import { copyOutput } from "src/utils/helpers";
 
 const props = defineProps({
   label: String,

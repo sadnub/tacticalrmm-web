@@ -32,12 +32,7 @@
             </q-card-section>
             <q-card-section>
               <div>Add Site:</div>
-              <q-input
-                dense
-                outlined
-                v-model="site.name"
-                :rules="[(val) => !!val || '*Required']"
-              >
+              <q-input dense outlined v-model="site.name" :rules="[(val) => !!val || '*Required']">
                 <template v-slot:prepend>
                   <q-icon name="apartment" />
                 </template>
@@ -64,9 +59,9 @@
                   class="q-ml-sm cursor-pointer"
                 >
                   <q-tooltip class="text-caption">
-                    Adding your company name here will append it to the user's
-                    full name that appears when doing a remote control session,
-                    for example: 'John Doe - Amidaware Inc.'
+                    Adding your company name here will append it to the user's full name that
+                    appears when doing a remote control session, for example: 'John Doe - Amidaware
+                    Inc.'
                   </q-tooltip>
                 </q-icon>
               </div>
@@ -75,12 +70,7 @@
             </q-card-section>
 
             <q-card-actions align="center">
-              <q-btn
-                label="Finish"
-                color="primary"
-                class="full-width"
-                type="submit"
-              />
+              <q-btn label="Finish" color="primary" class="full-width" type="submit" />
             </q-card-actions>
           </q-form>
         </q-card>
@@ -91,8 +81,8 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import mixins from "src/mixins/mixins";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   name: "InitialSetup",

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { exportTableToCSV } from "@/utils/csv";
+import { exportTableToCSV } from "src/utils/csv";
 
 export default {
   name: "export-table-btn",

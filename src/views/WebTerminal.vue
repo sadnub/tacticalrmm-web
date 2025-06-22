@@ -22,7 +22,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { useResizeObserver, useDebounceFn } from "@vueuse/core";
-import { useCliWSConnection } from "@/websocket/websocket";
+import { useCliWSConnection } from "src/websocket/websocket";
 import "@xterm/xterm/css/xterm.css";
 
 const xtermContainer = ref<HTMLElement | null>(null);

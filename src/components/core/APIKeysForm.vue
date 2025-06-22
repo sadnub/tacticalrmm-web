@@ -54,13 +54,7 @@
 
         <q-card-actions align="right">
           <q-btn flat label="Cancel" v-close-popup />
-          <q-btn
-            flat
-            label="Submit"
-            color="primary"
-            type="submit"
-            :loading="loading"
-          />
+          <q-btn flat label="Submit" color="primary" type="submit" :loading="loading" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -71,16 +65,13 @@
 // composition imports
 import { ref, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { saveAPIKey, editAPIKey } from "@/api/accounts";
-import { useUserDropdown } from "@/composables/accounts";
-import { notifySuccess } from "@/utils/notify";
-import {
-  formatDateInputField,
-  formatDateStringwithTimezone,
-} from "@/utils/format";
+import { saveAPIKey, editAPIKey } from "src/api/accounts";
+import { useUserDropdown } from "src/composables/accounts";
+import { notifySuccess } from "src/utils/notify";
+import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   components: { TacticalDropdown },
@@ -105,9 +96,7 @@ export default {
       key.value.expiration = formatDateInputField(key.value.expiration);
     }
 
-    const title = computed(() =>
-      props.APIKey ? "Edit API Key" : "Add API Key"
-    );
+    const title = computed(() => (props.APIKey ? "Edit API Key" : "Add API Key"));
 
     async function submitForm() {
       loading.value = true;
@@ -117,13 +106,10 @@ export default {
       };
 
       // convert date to local timezone if exists
-      if (data.expiration)
-        data.expiration = formatDateStringwithTimezone(data.expiration);
+      if (data.expiration) data.expiration = formatDateStringwithTimezone(data.expiration);
 
       try {
-        const result = props.APIKey
-          ? await editAPIKey(data.id, data)
-          : await saveAPIKey(data);
+        const result = props.APIKey ? await editAPIKey(data.id, data) : await saveAPIKey(data);
         onDialogOK();
         notifySuccess(result);
         loading.value = false;

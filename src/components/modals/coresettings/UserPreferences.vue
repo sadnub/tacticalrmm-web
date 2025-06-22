@@ -39,10 +39,7 @@
                     @update:model-value="url_action = null"
                   />
                 </q-card-section>
-                <q-card-section
-                  class="row"
-                  v-if="agentDblClickAction === 'urlaction'"
-                >
+                <q-card-section class="row" v-if="agentDblClickAction === 'urlaction'">
                   <div class="col-6">URL Action:</div>
                   <div class="col-2"></div>
                   <q-select
@@ -85,12 +82,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Info Color:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="dash_info_color"
-                    class="col-8"
-                  >
+                  <q-input outlined dense v-model="dash_info_color" class="col-8">
                     <template v-slot:after>
                       <q-btn
                         round
@@ -108,12 +100,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Positive Color:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="dash_positive_color"
-                    class="col-8"
-                  >
+                  <q-input outlined dense v-model="dash_positive_color" class="col-8">
                     <template v-slot:after>
                       <q-btn
                         round
@@ -131,12 +118,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Negative Color:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="dash_negative_color"
-                    class="col-8"
-                  >
+                  <q-input outlined dense v-model="dash_negative_color" class="col-8">
                     <template v-slot:after>
                       <q-btn
                         round
@@ -154,12 +136,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Warning Color:</div>
                   <div class="col-2"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="dash_warning_color"
-                    class="col-8"
-                  >
+                  <q-input outlined dense v-model="dash_warning_color" class="col-8">
                     <template v-slot:after>
                       <q-btn
                         round
@@ -200,9 +177,7 @@
                         size="sm"
                         icon="info"
                         @click="
-                          openURL(
-                            'https://quasar.dev/quasar-utils/date-utils#format-for-display',
-                          )
+                          openURL('https://quasar.dev/quasar-utils/date-utils#format-for-display')
                         "
                       >
                         <q-tooltip>Click to see formatting options</q-tooltip>
@@ -231,8 +206,8 @@
 
 <script>
 import { openURL } from "quasar";
-import { loadingBarColors } from "@/mixins/data";
-import mixins from "@/mixins/mixins";
+import { loadingBarColors } from "src/mixins/data";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "UserPreferences",
@@ -344,10 +319,7 @@ export default {
       });
     },
     editUserPrefs() {
-      if (
-        this.agentDblClickAction === "urlaction" &&
-        this.url_action === null
-      ) {
+      if (this.agentDblClickAction === "urlaction" && this.url_action === null) {
         this.notifyError("Select a URL Action");
         return;
       }

@@ -39,39 +39,21 @@ For details, see: https://license.tacticalrmm.com/ee
       :loading="loading"
     >
       <template v-slot:top>
-        <q-btn
-          @click="openSSOSettings"
-          label="SSO Settings"
-          no-caps
-          color="primary"
-          size="md"
-        />
+        <q-btn @click="openSSOSettings" label="SSO Settings" no-caps color="primary" size="md" />
       </template>
       <!-- body slots -->
       <template v-slot:body="props">
-        <q-tr
-          :props="props"
-          class="cursor-pointer"
-          @dblclick="editSSOProvider(props.row)"
-        >
+        <q-tr :props="props" class="cursor-pointer" @dblclick="editSSOProvider(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
-              <q-item
-                clickable
-                v-close-popup
-                @click="editSSOProvider(props.row)"
-              >
+              <q-item clickable v-close-popup @click="editSSOProvider(props.row)">
                 <q-item-section side>
                   <q-icon name="edit" />
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item
-                clickable
-                v-close-popup
-                @click="deleteSSOProvider(props.row)"
-              >
+              <q-item clickable v-close-popup @click="deleteSSOProvider(props.row)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -81,11 +63,7 @@ For details, see: https://license.tacticalrmm.com/ee
               <q-separator></q-separator>
 
               <!-- callback url -->
-              <q-item
-                clickable
-                v-close-popup
-                @click="getCallbackURL(props.row.callback_url)"
-              >
+              <q-item clickable v-close-popup @click="getCallbackURL(props.row.callback_url)">
                 <q-item-section side>
                   <q-icon name="description" />
                 </q-item-section>
@@ -101,9 +79,7 @@ For details, see: https://license.tacticalrmm.com/ee
                 <q-item-section side>
                   <q-icon name="description" />
                 </q-item-section>
-                <q-item-section
-                  >Copy Authorized JavaScript origin</q-item-section
-                >
+                <q-item-section>Copy Authorized JavaScript origin</q-item-section>
               </q-item>
 
               <q-separator></q-separator>
@@ -129,11 +105,7 @@ For details, see: https://license.tacticalrmm.com/ee
             <q-tooltip>{{ props.row.client_id }}</q-tooltip>
           </q-td>
           <q-td>
-            <q-icon
-              size="sm"
-              name="content_copy"
-              @click="getCallbackURL(props.row.callback_url)"
-            >
+            <q-icon size="sm" name="content_copy" @click="getCallbackURL(props.row.callback_url)">
               <q-tooltip>Copy Callback URL to Clipboard</q-tooltip>
             </q-icon>
           </q-td>
@@ -148,20 +120,16 @@ For details, see: https://license.tacticalrmm.com/ee
 import { computed, ref, onMounted } from "vue";
 import { useStore } from "vuex";
 import { QTableColumn, useQuasar, copyToClipboard } from "quasar";
-import {
-  fetchSSOProviders,
-  removeSSOProvider,
-  fetchSSOSettings,
-} from "@/ee/sso/api/sso";
-import { notifySuccess } from "@/utils/notify";
-import { truncateText } from "@/utils/format";
+import { fetchSSOProviders, removeSSOProvider, fetchSSOSettings } from "src/ee/sso/api/sso";
+import { notifySuccess } from "src/utils/notify";
+import { truncateText } from "src/utils/format";
 
 // ui imports
-import SSOProvidersForm from "@/ee/sso/components/SSOProvidersForm.vue";
+import SSOProvidersForm from "src/ee/sso/components/SSOProvidersForm.vue";
 
 // types
-import { type SSOProvider, SSOSettingsType } from "@/ee/sso/types/sso";
-import SSOSettings from "@/ee/sso/components/SSOSettings.vue";
+import { type SSOProvider, SSOSettingsType } from "src/ee/sso/types/sso";
+import SSOSettings from "src/ee/sso/components/SSOSettings.vue";
 
 // setup quasar
 const $q = useQuasar();
@@ -212,9 +180,7 @@ const columns: QTableColumn[] = [
 ];
 
 const visibleColumns = computed(() => {
-  return columns
-    .map((column) => column.name)
-    .filter((name) => name !== "javascript_origin_url");
+  return columns.map((column) => column.name).filter((name) => name !== "javascript_origin_url");
 });
 
 async function getSSOSettings() {
@@ -278,10 +244,7 @@ function openSSOSettings() {
   $q.dialog({
     component: SSOSettings,
   }).onOk((updatedSSOSettings: SSOSettingsType) => {
-    store.commit(
-      "setBlockLocalUserLogon",
-      updatedSSOSettings.block_local_user_logon,
-    );
+    store.commit("setBlockLocalUserLogon", updatedSSOSettings.block_local_user_logon);
     ssoSettings.value = { ...updatedSSOSettings };
   });
 }

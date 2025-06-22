@@ -53,14 +53,7 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-list>
     </q-btn-dropdown>
 
-    <q-btn-dropdown
-      label="Section"
-      flat
-      dense
-      auto-close
-      :ripple="false"
-      @hide="_editor.focus()"
-    >
+    <q-btn-dropdown label="Section" flat dense auto-close :ripple="false" @hide="_editor.focus()">
       <q-list dense>
         <q-item clickable @click="insertSection('section')">
           <q-item-section>
@@ -108,42 +101,18 @@ For details, see: https://license.tacticalrmm.com/ee
     <q-btn flat dense :ripple="false" icon="format_bold" @click="insertBold">
       <q-tooltip :delay="500">Bold</q-tooltip>
     </q-btn>
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="format_italic"
-      @click="insertItalic"
-    >
+    <q-btn flat dense :ripple="false" icon="format_italic" @click="insertItalic">
       <q-tooltip :delay="500">Italic</q-tooltip>
     </q-btn>
     <q-separator vertical inset />
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="format_list_numbered"
-      @click="insertNumberedList"
-    >
+    <q-btn flat dense :ripple="false" icon="format_list_numbered" @click="insertNumberedList">
       <q-tooltip :delay="500">Numbered List</q-tooltip>
     </q-btn>
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="format_list_bulleted"
-      @click="insertBulletList"
-    >
+    <q-btn flat dense :ripple="false" icon="format_list_bulleted" @click="insertBulletList">
       <q-tooltip :delay="500">Bullet List</q-tooltip>
     </q-btn>
     <q-separator vertical inset />
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="format_quote"
-      @click="insertBlockQuote"
-    >
+    <q-btn flat dense :ripple="false" icon="format_quote" @click="insertBlockQuote">
       <q-tooltip :delay="500">Block Quote</q-tooltip>
     </q-btn>
     <q-separator vertical inset />
@@ -198,14 +167,7 @@ For details, see: https://license.tacticalrmm.com/ee
       <q-tooltip :delay="500">Jinja {% %} block</q-tooltip>
     </q-btn>
 
-    <q-btn
-      no-caps
-      flat
-      dense
-      :ripple="false"
-      label="{{ }}"
-      @click="insertJinjaData()"
-    >
+    <q-btn no-caps flat dense :ripple="false" label="{{ }}" @click="insertJinjaData()">
       <q-tooltip :delay="500">Jinja template data</q-tooltip>
     </q-btn>
 
@@ -233,43 +195,19 @@ For details, see: https://license.tacticalrmm.com/ee
 
     <q-separator vertical inset />
 
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="mdi-database-plus-outline"
-      @click="openQueryAddDialog"
-    >
+    <q-btn flat dense :ripple="false" icon="mdi-database-plus-outline" @click="openQueryAddDialog">
       <q-tooltip :delay="500">Add Data Query</q-tooltip>
     </q-btn>
 
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="mdi-database-arrow-down"
-      @click="insertDataQuery"
-    >
+    <q-btn flat dense :ripple="false" icon="mdi-database-arrow-down" @click="insertDataQuery">
       <q-tooltip :delay="500">Insert Saved Data Query</q-tooltip>
     </q-btn>
 
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="mdi-database-edit"
-      @click="editDataQuery"
-    >
+    <q-btn flat dense :ripple="false" icon="mdi-database-edit" @click="editDataQuery">
       <q-tooltip :delay="500">Edit Data Query</q-tooltip>
     </q-btn>
 
-    <q-btn
-      flat
-      dense
-      :ripple="false"
-      icon="mdi-table-large-plus"
-      @click="openTableMaker"
-    >
+    <q-btn flat dense :ripple="false" icon="mdi-table-large-plus" @click="openTableMaker">
       <q-tooltip :delay="500">Table</q-tooltip>
     </q-btn>
 
@@ -296,11 +234,11 @@ import ReportAssetSelect from "./ReportAssetSelect.vue";
 import ReportTableMaker from "./ReportTableMaker.vue";
 
 // utils
-import { convertCamelCase } from "@/utils/format";
+import { convertCamelCase } from "src/utils/format";
 
 // types
 import { ReportDataQuery, ReportTemplateType } from "../types/reporting";
-import { notifyWarning, notifySuccess } from "@/utils/notify";
+import { notifyWarning, notifySuccess } from "src/utils/notify";
 
 // props
 const props = defineProps<{
@@ -321,9 +259,7 @@ const linkText = ref("");
 onMounted(() => {
   // disable certain toolbar options if a multiline text selection is made
   _editor.onDidChangeCursorSelection((evt) => {
-    isMultiLineSelection.value = monaco.Selection.spansMultipleLines(
-      evt.selection,
-    );
+    isMultiLineSelection.value = monaco.Selection.spansMultipleLines(evt.selection);
   });
 });
 
@@ -380,24 +316,18 @@ function insertCodeBlock() {
 function _getDataSourcesInTemplate() {
   let variablesJson = parse(props.variablesEditor.getValue()) || {};
 
-  if (!("data_sources" in variablesJson) || !variablesJson.data_sources)
-    return null;
+  if (!("data_sources" in variablesJson) || !variablesJson.data_sources) return null;
   else return variablesJson["data_sources"];
 }
 
-function _saveDataSourcesInTemplate(
-  dataQuery: ReportDataQuery,
-  convertNameToCamelCase = true,
-) {
+function _saveDataSourcesInTemplate(dataQuery: ReportDataQuery, convertNameToCamelCase = true) {
   let variablesJson = parse(props.variablesEditor.getValue()) || {};
 
   if (!("data_sources" in variablesJson) || !variablesJson.data_sources) {
     variablesJson["data_sources"] = {};
   }
 
-  const dataQueryName = convertNameToCamelCase
-    ? convertCamelCase(dataQuery.name)
-    : dataQuery.name;
+  const dataQueryName = convertNameToCamelCase ? convertCamelCase(dataQuery.name) : dataQuery.name;
   variablesJson["data_sources"][dataQueryName] = dataQuery.json_query;
   props.variablesEditor?.setValue(stringify(variablesJson));
 }
@@ -468,8 +398,7 @@ function editDataQuery() {
 // }
 
 function insertLink() {
-  if (props.templateType === "markdown")
-    insert(`[${linkText.value}](${linkUrl.value})`);
+  if (props.templateType === "markdown") insert(`[${linkText.value}](${linkUrl.value})`);
   else insert(`<a href="${linkUrl.value}">${linkText.value}</a>`);
   _editor.focus();
 }
@@ -513,14 +442,7 @@ function openTableMaker() {
   _editor.focus();
 }
 
-type Section =
-  | "article"
-  | "div"
-  | "section"
-  | "header"
-  | "footer"
-  | "nav"
-  | "chapter";
+type Section = "article" | "div" | "section" | "header" | "footer" | "nav" | "chapter";
 
 function insertSection(section: Section) {
   if (props.templateType === "markdown") {
@@ -608,9 +530,7 @@ function insertPrefix(prefix: string, prefixCount = 1) {
         text = text.replace(prefix.repeat(prefixCount), "").trimStart();
       } else {
         // add prefix
-        text = `${prefix.repeat(prefixCount)} ${text
-          ?.replace(re_replace, "")
-          .trimStart()}`;
+        text = `${prefix.repeat(prefixCount)} ${text?.replace(re_replace, "").trimStart()}`;
       }
 
       replacementText.push(text);
@@ -660,10 +580,7 @@ function insertWrap(prefix: string, suffix: string, includeWholeLine = false) {
 
   model.pushEditOperations(selections, operations, (operations) => {
     return operations.map((operation) =>
-      monaco.Selection.fromRange(
-        operation.range,
-        monaco.SelectionDirection.LTR,
-      ),
+      monaco.Selection.fromRange(operation.range, monaco.SelectionDirection.LTR),
     );
   });
 }

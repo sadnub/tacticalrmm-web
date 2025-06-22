@@ -11,11 +11,7 @@
       narrow-indicator
     >
       <q-tab name="terminal" icon="fas fa-terminal" label="Terminal" />
-      <q-tab
-        name="filebrowser"
-        icon="far fa-folder-open"
-        label="File Browser"
-      />
+      <q-tab name="filebrowser" icon="far fa-folder-open" label="File Browser" />
       <q-tab
         v-if="$route.query.agentPlatform === 'windows'"
         name="services"
@@ -50,20 +46,14 @@
         name="services"
         class="q-pa-none"
       >
-        <ServicesManager
-          :agent_id="agent_id"
-          :agentPlatform="$route.query.agentPlatform"
-        />
+        <ServicesManager :agent_id="agent_id" :agentPlatform="$route.query.agentPlatform" />
       </q-tab-panel>
       <q-tab-panel
         v-if="$route.query.agentPlatform === 'windows'"
         name="eventlog"
         class="q-pa-none"
       >
-        <EventLogManager
-          :agent_id="agent_id"
-          :agentPlatform="$route.query.agentPlatform"
-        />
+        <EventLogManager :agent_id="agent_id" :agentPlatform="$route.query.agentPlatform" />
       </q-tab-panel>
       <q-tab-panel name="filebrowser" class="q-pa-none">
         <iframe
@@ -84,13 +74,13 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
-import { fetchAgentMeshCentralURLs } from "@/api/agents";
-import { fetchDashboardInfo } from "@/api/core";
+import { fetchAgentMeshCentralURLs } from "src/api/agents";
+import { fetchDashboardInfo } from "src/api/core";
 
 // ui imports
-import ProcessManager from "@/components/agents/remotebg/ProcessManager.vue";
-import ServicesManager from "@/components/agents/remotebg/ServicesManager.vue";
-import EventLogManager from "@/components/agents/remotebg/EventLogManager.vue";
+import ProcessManager from "src/components/agents/remotebg/ProcessManager.vue";
+import ServicesManager from "src/components/agents/remotebg/ServicesManager.vue";
+import EventLogManager from "src/components/agents/remotebg/EventLogManager.vue";
 
 export default {
   name: "RemoteBackground",

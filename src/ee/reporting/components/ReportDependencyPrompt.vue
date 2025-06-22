@@ -57,14 +57,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
       <q-card-actions align="right">
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn
-          :loading="loading"
-          dense
-          flat
-          label="Submit"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="loading" dense flat label="Submit" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -73,13 +66,13 @@ For details, see: https://license.tacticalrmm.com/ee
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { notifyError } from "@/utils/notify";
-import { capitalize } from "@/utils/format";
-import { useAgentDropdown } from "@/composables/agents";
-import { useClientDropdown, useSiteDropdown } from "@/composables/clients";
+import { notifyError } from "src/utils/notify";
+import { capitalize } from "src/utils/format";
+import { useAgentDropdown } from "src/composables/agents";
+import { useClientDropdown, useSiteDropdown } from "src/composables/clients";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);

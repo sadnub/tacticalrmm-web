@@ -39,8 +39,8 @@
 // composition imports
 import { ref } from "vue";
 import { useQuasar, useDialogPluginComponent, date } from "quasar";
-import { scheduleAgentReboot } from "@/api/agents";
-import { formatDateInputField } from "@/utils/format";
+import { scheduleAgentReboot } from "src/api/agents";
+import { formatDateInputField } from "src/utils/format";
 
 export default {
   name: "RebootLater",
@@ -63,10 +63,7 @@ export default {
       loading.value = true;
 
       try {
-        const ret = await scheduleAgentReboot(
-          props.agent.agent_id,
-          state.value,
-        );
+        const ret = await scheduleAgentReboot(props.agent.agent_id, state.value);
         $q.dialog({
           title: "Reboot pending",
           style: "width: 40vw",

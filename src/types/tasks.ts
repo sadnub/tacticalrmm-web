@@ -1,5 +1,5 @@
-import { type CustomField } from "@/types/core/customfields";
-import { type AlertSeverity } from "@/types/alerts";
+import { type CustomField } from "src/types/core/customfields";
+import { type AlertSeverity } from "src/types/alerts";
 
 export interface TaskResult {
   task: number;
@@ -31,9 +31,7 @@ export interface AutomatedTaskCommandAction {
   shell: AutomatedTaskCommandActionShellType;
 }
 
-export type AutomatedTaskAction =
-  | AutomatedTaskCommandAction
-  | AutomatedTaskScriptAction;
+export type AutomatedTaskAction = AutomatedTaskCommandAction | AutomatedTaskScriptAction;
 
 export type AgentTaskType =
   | "daily"
@@ -99,10 +97,7 @@ export interface AutomatedTaskServer extends AutomatedTaskForUIBase {
   server_task: true;
 }
 
-export type AutomatedTask =
-  | AutomatedTaskAgent
-  | AutomatedTaskPolicy
-  | AutomatedTaskServer;
+export type AutomatedTask = AutomatedTaskAgent | AutomatedTaskPolicy | AutomatedTaskServer;
 
 export interface AutomatedTaskForDBBase extends AutomatedTaskBase {
   run_time_bit_weekdays: number;

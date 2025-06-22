@@ -89,30 +89,16 @@ For details, see: https://license.tacticalrmm.com/ee
             label="Markdown"
             :ripple="false"
           />
-          <q-tab
-            v-else-if="templateType === 'html'"
-            name="html"
-            label="Html"
-            :ripple="false"
-          />
+          <q-tab v-else-if="templateType === 'html'" name="html" label="Html" :ripple="false" />
           <q-tab v-else name="plaintext" label="Plain Text" :ripple="false" />
-          <q-tab
-            v-if="templateType !== 'plaintext'"
-            name="css"
-            label="CSS"
-            :ripple="false"
-          />
+          <q-tab v-if="templateType !== 'plaintext'" name="css" label="CSS" :ripple="false" />
           <q-tab name="preview" label="Preview" :ripple="false" />
         </q-tabs>
       </q-toolbar>
 
       <!-- main editor -->
       <div v-show="tab !== 'preview'" class="q-px-sm">
-        <q-layout
-          view="lHh lpR lFf"
-          :style="{ height: `${$q.screen.height - 132}px` }"
-          container
-        >
+        <q-layout view="lHh lpR lFf" :style="{ height: `${$q.screen.height - 132}px` }" container>
           <q-drawer
             v-model="showVariablesDrawer"
             :mini="drawerMiniState"
@@ -162,20 +148,10 @@ For details, see: https://license.tacticalrmm.com/ee
           </q-drawer> -->
 
           <q-page-container>
-            <q-splitter
-              v-model="splitter"
-              emit-immediately
-              reverse
-              :limits="[3, 45]"
-            >
+            <q-splitter v-model="splitter" emit-immediately reverse :limits="[3, 45]">
               <template v-slot:before>
                 <EditorToolbar
-                  v-if="
-                    tab !== 'preview' &&
-                    tab !== 'css' &&
-                    editor &&
-                    variablesEditor
-                  "
+                  v-if="tab !== 'preview' && tab !== 'css' && editor && variablesEditor"
                   :editor="editor"
                   :variablesEditor="variablesEditor"
                   :templateType="templateType"
@@ -205,10 +181,7 @@ For details, see: https://license.tacticalrmm.com/ee
                     </q-btn>
                   </template>
                 </EditorToolbar>
-                <div
-                  ref="editorDiv"
-                  :style="{ height: `${$q.screen.height - 168}px` }"
-                ></div>
+                <div ref="editorDiv" :style="{ height: `${$q.screen.height - 168}px` }"></div>
               </template>
               <template v-slot:after>
                 <q-bar>
@@ -220,18 +193,9 @@ For details, see: https://license.tacticalrmm.com/ee
                     icon="chevron_right"
                     @click="splitter = 3"
                   ></q-btn>
-                  <q-btn
-                    v-else
-                    round
-                    dense
-                    flat
-                    icon="chevron_left"
-                    @click="splitter = 35"
-                  ></q-btn>
+                  <q-btn v-else round dense flat icon="chevron_left" @click="splitter = 35"></q-btn>
 
-                  <div v-if="splitter > 8" class="q-pl-xs text-subtitle">
-                    Variables
-                  </div>
+                  <div v-if="splitter > 8" class="q-pl-xs text-subtitle">Variables</div>
                 </q-bar>
                 <div
                   ref="variablesDiv"
@@ -261,12 +225,7 @@ For details, see: https://license.tacticalrmm.com/ee
       />
 
       <q-card-actions v-if="tab !== 'preview'">
-        <q-toggle
-          v-if="reportTemplate"
-          v-model="autoSave"
-          label="Auto-save"
-          dense
-        />
+        <q-toggle v-if="reportTemplate" v-model="autoSave" label="Auto-save" dense />
         <span class="q-pl-sm" v-if="showSaved">Template Saved!</span>
         <q-space />
         <q-btn dense flat label="Cancel" @click="openClosePrompt" />
@@ -279,14 +238,7 @@ For details, see: https://license.tacticalrmm.com/ee
           color="primary"
           @click="applyChanges"
         />
-        <q-btn
-          :loading="isLoading"
-          dense
-          flat
-          label="Save"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="isLoading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -296,17 +248,9 @@ For details, see: https://license.tacticalrmm.com/ee
 // composition imports
 import { ref, reactive, computed, watch, onBeforeMount, shallowRef } from "vue";
 import { until, useDebounceFn, useTimeoutFn } from "@vueuse/shared";
-import {
-  useQuasar,
-  useDialogPluginComponent,
-  extend,
-  type QSelectOption,
-} from "quasar";
-import {
-  useSharedReportTemplates,
-  useSharedReportHTMLTemplates,
-} from "../api/reporting";
-import { notifyError } from "@/utils/notify";
+import { useQuasar, useDialogPluginComponent, extend, type QSelectOption } from "quasar";
+import { useSharedReportTemplates, useSharedReportHTMLTemplates } from "../api/reporting";
+import { notifyError } from "src/utils/notify";
 import * as monaco from "monaco-editor";
 import { parseDocument } from "yaml";
 
@@ -350,13 +294,9 @@ const state: ReportTemplate = props.reportTemplate
       name: props.cloneTemplate ? `Copy of ${props.cloneTemplate.name}` : "",
       template_md: props.cloneTemplate ? props.cloneTemplate.template_md : "",
       template_css: props.cloneTemplate ? props.cloneTemplate.template_css : "",
-      template_html: props.cloneTemplate
-        ? props.cloneTemplate.template_html
-        : undefined,
+      template_html: props.cloneTemplate ? props.cloneTemplate.template_html : undefined,
       type: props.templateType,
-      template_variables: props.cloneTemplate
-        ? props.cloneTemplate.template_variables
-        : "",
+      template_variables: props.cloneTemplate ? props.cloneTemplate.template_variables : "",
       depends_on: props.cloneTemplate ? props.cloneTemplate?.depends_on : [],
     });
 
@@ -398,21 +338,14 @@ const drawerMiniState = ref(true);
 const splitter = ref(35);
 
 const previewFormat = ref<ReportFormat>(
-  props.templateType === "html" || props.templateType === "markdown"
-    ? "html"
-    : "plaintext",
+  props.templateType === "html" || props.templateType === "markdown" ? "html" : "plaintext",
 );
 
 const formatOptions = [
   {
-    label:
-      props.templateType === "html" || props.templateType === "markdown"
-        ? "HTML"
-        : "Text",
+    label: props.templateType === "html" || props.templateType === "markdown" ? "HTML" : "Text",
     value:
-      props.templateType === "html" || props.templateType === "markdown"
-        ? "html"
-        : "plaintext",
+      props.templateType === "html" || props.templateType === "markdown" ? "html" : "plaintext",
   },
   { label: "PDF", value: "pdf" },
 ];
@@ -478,15 +411,14 @@ const {
   getAllowedValues,
 } = useSharedReportTemplates;
 
-const { reportHTMLTemplates, getReportHTMLTemplates } =
-  useSharedReportHTMLTemplates;
+const { reportHTMLTemplates, getReportHTMLTemplates } = useSharedReportHTMLTemplates;
 
 const tab = ref(
   props.templateType === "markdown"
     ? "markdown"
     : props.templateType === "html"
-    ? "html"
-    : "plaintext",
+      ? "html"
+      : "plaintext",
 );
 
 onBeforeMount(() => {
@@ -544,9 +476,7 @@ function previewReport() {
           dependencies: dependencies.value,
           debug: debug.value,
         };
-        debug.value
-          ? runReportPreviewDebug(request)
-          : runReportPreview(request);
+        debug.value ? runReportPreviewDebug(request) : runReportPreview(request);
       });
   } else {
     const request = {
@@ -606,11 +536,7 @@ function cleanupEditors() {
 }
 
 function initializeEditor() {
-  templateModel = monaco.editor.createModel(
-    state.template_md,
-    props.templateType,
-    templateUri,
-  );
+  templateModel = monaco.editor.createModel(state.template_md, props.templateType, templateUri);
   cssModel = monaco.editor.createModel(state.template_css, "css", cssUri);
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
@@ -637,11 +563,7 @@ function initializeEditor() {
     }
   });
 
-  variablesModel = monaco.editor.createModel(
-    state.template_variables,
-    "yaml",
-    variablesUri,
-  );
+  variablesModel = monaco.editor.createModel(state.template_variables, "yaml", variablesUri);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   variablesEditor.value = monaco.editor.create(variablesDiv.value!, {
     automaticLayout: true,
@@ -692,8 +614,7 @@ function validate(dontNotify = false): boolean {
   // check if yaml is valid
   const doc = parseDocument(state.template_variables, { prettyErrors: true });
   if (doc.errors.length > 0) {
-    dontNotify ||
-      notifyError("Error in variables: " + doc.errors[0].message, 5000);
+    dontNotify || notifyError("Error in variables: " + doc.errors[0].message, 5000);
     isValid = false;
   }
 
@@ -720,9 +641,7 @@ const applyChanges = useDebounceFn(() => {
 async function submit() {
   if (validate()) {
     wrapDoubleQuotes();
-    props.reportTemplate
-      ? editReportTemplate(state.id, state)
-      : addReportTemplate(state);
+    props.reportTemplate ? editReportTemplate(state.id, state) : addReportTemplate(state);
 
     // stops the dialog from closing when there is an error
     await until(isLoading).not.toBeTruthy();

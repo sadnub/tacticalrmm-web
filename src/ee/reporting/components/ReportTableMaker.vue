@@ -15,21 +15,10 @@ For details, see: https://license.tacticalrmm.com/ee
         </q-btn>
       </q-bar>
       <q-card-section>
-        <q-option-group
-          v-model="tableType"
-          :options="tableTypeOptions"
-          dense
-          inline
-        />
+        <q-option-group v-model="tableType" :options="tableTypeOptions" dense inline />
       </q-card-section>
       <q-card-section v-if="tableType === 'variables'">
-        <q-select
-          v-model="source"
-          :options="arrayOptions"
-          outlined
-          dense
-          label="Data Source"
-        />
+        <q-select v-model="source" :options="arrayOptions" outlined dense label="Data Source" />
       </q-card-section>
       <q-card-section style="max-height: 60vh" class="scroll">
         <q-input v-model="output" filled type="textarea" autogrow />
@@ -46,7 +35,7 @@ For details, see: https://license.tacticalrmm.com/ee
 import { ref, computed, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useSharedReportTemplates } from "../api/reporting";
-import { capitalize } from "@/utils/format";
+import { capitalize } from "src/utils/format";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -82,10 +71,7 @@ const output = ref(blankOutput);
 watch(source, (newSource) => {
   let columns = [] as string[];
   for (let key in variableAnalysis.value)
-    if (
-      variableAnalysis.value[key] !== "Object" &&
-      key.startsWith(newSource + "[0]")
-    )
+    if (variableAnalysis.value[key] !== "Object" && key.startsWith(newSource + "[0]"))
       columns.push(key.replace(newSource + "[0].", ""));
 
   generateTable(columns);
@@ -99,8 +85,7 @@ watch(tableType, (newValue) => {
 const arrayOptions = computed(() => {
   let options = [];
   for (let key in variableAnalysis.value)
-    if (variableAnalysis.value[key].toLowerCase().startsWith("array"))
-      options.push(key);
+    if (variableAnalysis.value[key].toLowerCase().startsWith("array")) options.push(key);
   return options;
 });
 

@@ -1,6 +1,6 @@
 import { ref, onMounted } from "vue";
-import { fetchClients } from "@/api/clients";
-import { formatClientOptions, formatSiteOptions } from "@/utils/format";
+import { fetchClients } from "src/api/clients";
+import { formatClientOptions, formatSiteOptions } from "src/utils/format";
 
 export function useClientDropdown(onMount = false) {
   const client = ref(null);

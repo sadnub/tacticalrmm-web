@@ -16,9 +16,8 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-bar>
 
       <q-card-section v-if="reportTemplates.length === 0">
-        There are no report templates that depend on {{ capitalize(type) }}. You
-        must select a dependency in the Report Template of type {{ type }} using
-        the dependencies dropdown.
+        There are no report templates that depend on {{ capitalize(type) }}. You must select a
+        dependency in the Report Template of type {{ type }} using the dependencies dropdown.
       </q-card-section>
       <div v-else>
         <q-card-section>
@@ -33,11 +32,7 @@ For details, see: https://license.tacticalrmm.com/ee
         </q-card-section>
 
         <q-card-section>
-          <q-option-group
-            v-model="reportFormat"
-            :options="reportFormatOptions"
-            inline
-          />
+          <q-option-group v-model="reportFormat" :options="reportFormatOptions" inline />
         </q-card-section>
 
         <q-card-actions align="right">
@@ -61,12 +56,12 @@ For details, see: https://license.tacticalrmm.com/ee
 // composition imports
 import { ref, computed, onBeforeMount } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { capitalize } from "@/utils/format";
+import { capitalize } from "src/utils/format";
 import { useSharedReportTemplates } from "../api/reporting";
-import { notifyError } from "@/utils/notify";
+import { notifyError } from "src/utils/notify";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // types
 import { type ReportFormat } from "../types/reporting";
@@ -84,13 +79,8 @@ const props = defineProps<{
 // quasar dialog setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-const {
-  reportTemplates,
-  isLoading,
-  getReportTemplates,
-  openReport,
-  downloadReport,
-} = useSharedReportTemplates;
+const { reportTemplates, isLoading, getReportTemplates, openReport, downloadReport } =
+  useSharedReportTemplates;
 
 // run report logic
 const reportTemplate = ref<number | null>(null);
@@ -104,9 +94,7 @@ const reportTemplateOptions = computed(() =>
 );
 
 const selectedTemplate = computed(() => {
-  return reportTemplates.value.find(
-    (template) => template.id === reportTemplate.value,
-  );
+  return reportTemplates.value.find((template) => template.id === reportTemplate.value);
 });
 
 const reportFormatOptions = computed(() => {
@@ -132,14 +120,9 @@ async function submit() {
 
   if (selectedTemplate.value && selectedTemplate.value.depends_on) {
     if (!props.download)
-      openReport(
-        reportTemplate.value,
-        reportFormat.value,
-        selectedTemplate.value.depends_on,
-        {
-          [props.type]: props.id,
-        },
-      );
+      openReport(reportTemplate.value, reportFormat.value, selectedTemplate.value.depends_on, {
+        [props.type]: props.id,
+      });
     else
       downloadReport(selectedTemplate.value, reportFormat.value, {
         [props.type]: props.id,

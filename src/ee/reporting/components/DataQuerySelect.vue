@@ -25,14 +25,7 @@ For details, see: https://license.tacticalrmm.com/ee
       <q-card-actions>
         <q-space />
         <q-btn dense flat label="Cancel" v-close-popup />
-        <q-btn
-          :loading="loading"
-          @click="submit"
-          dense
-          flat
-          label="Select"
-          color="primary"
-        />
+        <q-btn :loading="loading" @click="submit" dense flat label="Select" color="primary" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -43,10 +36,10 @@ For details, see: https://license.tacticalrmm.com/ee
 import { ref, computed, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useSharedReportDataQueries } from "../api/reporting";
-import { notifyError } from "@/utils/notify";
+import { notifyError } from "src/utils/notify";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -63,20 +56,16 @@ const selectedQuery = ref<string | null>(null);
 const loading = ref(false);
 
 const queryOptions = computed(() => {
-  if (props.dataSources === undefined)
-    return reportDataQueries.value.map((query) => query.name);
+  if (props.dataSources === undefined) return reportDataQueries.value.map((query) => query.name);
   else return Object.keys(props.dataSources);
 });
 
 function submit() {
-  if (selectedQuery.value === null)
-    notifyError("Select a query from the dropdown");
+  if (selectedQuery.value === null) notifyError("Select a query from the dropdown");
   else {
     let dataQuery;
     if (props.dataSources === undefined) {
-      dataQuery = reportDataQueries.value.find(
-        (query) => query.name === selectedQuery.value,
-      );
+      dataQuery = reportDataQueries.value.find((query) => query.name === selectedQuery.value);
     } else {
       dataQuery = {
         id: 0,

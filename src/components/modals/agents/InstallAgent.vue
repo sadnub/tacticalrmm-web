@@ -23,14 +23,7 @@
           />
         </q-card-section>
         <q-card-section class="q-gutter-sm">
-          <q-select
-            dense
-            options-dense
-            outlined
-            label="Site"
-            v-model="site"
-            :options="sites"
-          />
+          <q-select dense options-dense outlined label="Site" v-model="site" :options="sites" />
         </q-card-section>
         <q-card-section>
           <div class="q-gutter-sm">
@@ -71,11 +64,7 @@
               label="Server"
               @update:model-value="power = false"
             />
-            <q-radio
-              v-model="agenttype"
-              val="workstation"
-              label="Workstation"
-            />
+            <q-radio v-model="agenttype" val="workstation" label="Workstation" />
           </div>
         </q-card-section>
         <q-card-section>
@@ -95,9 +84,7 @@
           <div class="q-gutter-sm">
             <q-checkbox v-model="rdp" dense label="Enable RDP" />
             <q-checkbox v-model="ping" dense label="Enable Ping">
-              <q-tooltip>
-                Enable ICMP echo requests in the local firewall
-              </q-tooltip>
+              <q-tooltip> Enable ICMP echo requests in the local firewall </q-tooltip>
             </q-checkbox>
             <q-checkbox
               v-model="power"
@@ -183,15 +170,10 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import AgentDownload from "@/components/modals/agents/AgentDownload.vue";
-import { getBaseUrl } from "@/boot/axios";
-import {
-  GOARCH_AMD64,
-  GOARCH_i386,
-  GOARCH_ARM64,
-  GOARCH_ARM32,
-} from "@/constants/constants";
+import mixins from "src/mixins/mixins";
+import AgentDownload from "src/components/modals/agents/AgentDownload.vue";
+import { getBaseUrl } from "src/boot/axios";
+import { GOARCH_AMD64, GOARCH_i386, GOARCH_ARM64, GOARCH_ARM32 } from "src/constants/constants";
 
 export default {
   name: "InstallAgent",
@@ -304,10 +286,7 @@ export default {
           .catch(() => {
             this.$q.loading.hide();
           });
-      } else if (
-        this.installMethod === "powershell" ||
-        this.installMethod === "bash"
-      ) {
+      } else if (this.installMethod === "powershell" || this.installMethod === "bash") {
         this.$q.loading.show();
         let ext = this.installMethod === "powershell" ? "ps1" : "sh";
         const scriptName = `rmm-${clientStripped}-${siteStripped}-${this.agenttype}.${ext}`;

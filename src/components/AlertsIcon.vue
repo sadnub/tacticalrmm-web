@@ -10,8 +10,7 @@
           <q-item-section>
             <q-item-label overline
               ><router-link :to="`/agents/${alert.agent_id}`"
-                >{{ alert.client }} - {{ alert.site }} -
-                {{ alert.hostname }}</router-link
+                >{{ alert.client }} - {{ alert.site }} - {{ alert.hostname }}</router-link
               ></q-item-label
             >
             <q-item-label lines="1">
@@ -25,9 +24,7 @@
           </q-item-section>
 
           <q-item-section side top>
-            <q-item-label caption>{{
-              getTimeLapse(alert.alert_time)
-            }}</q-item-label>
+            <q-item-label caption>{{ getTimeLapse(alert.alert_time) }}</q-item-label>
             <q-item-label>
               <q-icon
                 name="snooze"
@@ -60,9 +57,9 @@
 
 <script>
 import { mapState } from "vuex";
-import mixins from "@/mixins/mixins";
-import AlertsOverview from "@/components/modals/alerts/AlertsOverview.vue";
-import { getTimeLapse } from "@/utils/format";
+import mixins from "src/mixins/mixins";
+import AlertsOverview from "src/components/modals/alerts/AlertsOverview.vue";
+import { getTimeLapse } from "src/utils/format";
 
 export default {
   name: "AlertsIcon",
@@ -80,11 +77,7 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      "dash_info_color",
-      "dash_warning_color",
-      "dash_negative_color",
-    ]),
+    ...mapState(["dash_info_color", "dash_warning_color", "dash_negative_color"]),
     badgeColor() {
       const severities = this.topAlerts.map((alert) => alert.severity);
 
@@ -171,9 +164,12 @@ export default {
       else return this.alertsCount;
     },
     pollAlerts() {
-      this.poll = setInterval(() => {
-        this.getAlerts();
-      }, 60 * 1 * 1000);
+      this.poll = setInterval(
+        () => {
+          this.getAlerts();
+        },
+        60 * 1 * 1000,
+      );
     },
   },
   mounted() {

@@ -1,11 +1,8 @@
 import { ref, computed, onMounted } from "vue";
-import { fetchCustomFields, fetchURLActions } from "@/api/core";
-import {
-  formatCustomFieldOptions,
-  formatURLActionOptions,
-} from "@/utils/format";
-import type { CustomField } from "@/types/core/customfields";
-import type { URLAction } from "@/types/core/urlactions";
+import { fetchCustomFields, fetchURLActions } from "src/api/core";
+import { formatCustomFieldOptions, formatURLActionOptions } from "src/utils/format";
+import type { CustomField } from "src/types/core/customfields";
+import type { URLAction } from "src/types/core/urlactions";
 
 export interface URLActionOption extends URLAction {
   value: number;
@@ -29,10 +26,7 @@ export function useCustomFieldDropdown(opts: UseCustomFieldDropdownParams) {
     const params = {};
 
     if (model) params[model] = model;
-    customFieldOptions.value = formatCustomFieldOptions(
-      await fetchCustomFields(params),
-      flat,
-    );
+    customFieldOptions.value = formatCustomFieldOptions(await fetchCustomFields(params), flat);
   }
 
   const restActionOptions = computed(() =>
@@ -61,10 +55,7 @@ export function useURLActionDropdown(opts: UseURLActionDropdownParams) {
   async function getURLActionOptions(flat = false) {
     const params = {};
 
-    urlActionOptions.value = formatURLActionOptions(
-      await fetchURLActions(params),
-      flat,
-    );
+    urlActionOptions.value = formatURLActionOptions(await fetchURLActions(params), flat);
   }
 
   const webActionOptions = computed(() =>

@@ -1,5 +1,5 @@
 import { copyToClipboard } from "quasar";
-import { notifySuccess } from "@/utils/notify";
+import { notifySuccess } from "src/utils/notify";
 
 export function copyOutput(val: string) {
   copyToClipboard(val).then(() => {

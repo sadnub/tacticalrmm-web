@@ -89,10 +89,7 @@
         map-options
       />
     </q-card-section>
-    <q-card-section
-      class="row"
-      v-if="winupdatepolicy.run_time_frequency === 'monthly'"
-    >
+    <q-card-section class="row" v-if="winupdatepolicy.run_time_frequency === 'monthly'">
       <div class="col-3">Day of month to run:</div>
       <div class="col-4"></div>
       <q-select
@@ -106,10 +103,7 @@
         map-options
       />
     </q-card-section>
-    <q-card-section
-      class="row"
-      v-show="winupdatepolicy.run_time_frequency !== 'inherit'"
-    >
+    <q-card-section class="row" v-show="winupdatepolicy.run_time_frequency !== 'inherit'">
       <div class="col-3">Scheduled Time:</div>
       <div class="col-4"></div>
       <q-select
@@ -127,41 +121,13 @@
       v-show="winupdatepolicy.run_time_frequency !== 'inherit'"
     >
       <div class="q-gutter-sm">
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="0"
-          label="Monday"
-        />
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="1"
-          label="Tuesday"
-        />
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="2"
-          label="Wednesday"
-        />
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="3"
-          label="Thursday"
-        />
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="4"
-          label="Friday"
-        />
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="5"
-          label="Saturday"
-        />
-        <q-checkbox
-          v-model="winupdatepolicy.run_time_days"
-          :val="6"
-          label="Sunday"
-        />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="0" label="Monday" />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="1" label="Tuesday" />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="2" label="Wednesday" />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="3" label="Thursday" />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="4" label="Friday" />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="5" label="Saturday" />
+        <q-checkbox v-model="winupdatepolicy.run_time_days" :val="6" label="Sunday" />
       </div>
     </q-card-section>
     <!-- Reboot After Installation -->
@@ -191,15 +157,9 @@
         />
       </div>
     </q-card-section>
-    <q-card-section
-      class="row"
-      v-show="!winupdatepolicy.reprocess_failed_inherit"
-    >
+    <q-card-section class="row" v-show="!winupdatepolicy.reprocess_failed_inherit">
       <div class="col-5">
-        <q-checkbox
-          v-model="winupdatepolicy.reprocess_failed"
-          label="Reprocess failed patches"
-        />
+        <q-checkbox v-model="winupdatepolicy.reprocess_failed" label="Reprocess failed patches" />
       </div>
 
       <div class="col-3">
@@ -233,8 +193,8 @@
 </template>
 
 <script>
-import { scheduledTimes, monthDays } from "@/mixins/data";
-import mixins from "@/mixins/mixins";
+import { scheduledTimes, monthDays } from "src/mixins/data";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "PatchPolicyForm",
@@ -291,10 +251,7 @@ export default {
         // editing patch policy
         if (this.editing) {
           this.$axios
-            .put(
-              `/automation/patchpolicy/${this.winupdatepolicy.id}/`,
-              this.winupdatepolicy
-            )
+            .put(`/automation/patchpolicy/${this.winupdatepolicy.id}/`, this.winupdatepolicy)
             .then(() => {
               this.$q.loading.hide();
               this.$emit("close");

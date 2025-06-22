@@ -9,19 +9,12 @@
         </q-btn>
       </q-bar>
       <q-card-section class="text-subtitle3">
-        Reset the patch policies for agents in a specific client or site. You
-        can also leave the client and site blank to reset the patch policy for
-        all agents. (This might take a while)
+        Reset the patch policies for agents in a specific client or site. You can also leave the
+        client and site blank to reset the patch policy for all agents. (This might take a while)
       </q-card-section>
 
       <q-card-section>
-        <q-option-group
-          v-model="target"
-          :options="targetOptions"
-          color="primary"
-          inline
-          dense
-        />
+        <q-option-group v-model="target" :options="targetOptions" color="primary" inline dense />
       </q-card-section>
 
       <q-form @submit="submit">
@@ -56,11 +49,7 @@
             flat
             dense
             push
-            :label="
-              target == 'all'
-                ? 'Clear Policies for ALL Agents'
-                : 'Clear Policies'
-            "
+            :label="target == 'all' ? 'Clear Policies for ALL Agents' : 'Clear Policies'"
             color="primary"
             type="submit"
           />
@@ -74,12 +63,12 @@
 // composition imports
 import { ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useClientDropdown, useSiteDropdown } from "@/composables/clients";
-import { sendPatchPolicyReset } from "@/api/automation";
-import { notifySuccess } from "@/utils/notify";
+import { useClientDropdown, useSiteDropdown } from "src/composables/clients";
+import { sendPatchPolicyReset } from "src/api/automation";
+import { notifySuccess } from "src/utils/notify";
 
 //ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // static data
 const targetOptions = [

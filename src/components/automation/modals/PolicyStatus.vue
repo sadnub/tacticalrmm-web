@@ -2,15 +2,7 @@
   <q-dialog ref="dialog" @hide="onHide">
     <q-card class="q-dialog-plugin" style="min-width: 70vw">
       <q-bar>
-        <q-btn
-          ref="refresh"
-          @click="refresh"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />
+        <q-btn ref="refresh" @click="refresh" class="q-mr-sm" dense flat push icon="refresh" />
         {{ title.slice(0, 27) }}
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
@@ -48,11 +40,7 @@
               <q-td>{{ props.row.hostname }}</q-td>
               <!-- status icon -->
               <q-td v-if="props.row.status === 'passing'">
-                <q-icon
-                  style="font-size: 1.3rem"
-                  :color="dash_positive_color"
-                  name="check_circle"
-                >
+                <q-icon style="font-size: 1.3rem" :color="dash_positive_color" name="check_circle">
                   <q-tooltip>Passing</q-tooltip>
                 </q-icon>
               </q-td>
@@ -73,26 +61,17 @@
                 >
                   <q-tooltip>Warning</q-tooltip>
                 </q-icon>
-                <q-icon
-                  v-else
-                  style="font-size: 1.3rem"
-                  :color="dash_negative_color"
-                  name="error"
-                >
+                <q-icon v-else style="font-size: 1.3rem" :color="dash_negative_color" name="error">
                   <q-tooltip>Error</q-tooltip>
                 </q-icon>
               </q-td>
               <q-td v-else></q-td>
               <!-- status text -->
-              <q-td v-if="props.row.status === 'pending'"
-                >Awaiting First Synchronization</q-td
-              >
+              <q-td v-if="props.row.status === 'pending'">Awaiting First Synchronization</q-td>
               <q-td v-else-if="props.row.sync_status === 'notsynced'"
                 >Will sync on next agent checkin</q-td
               >
-              <q-td v-else-if="props.row.sync_status === 'synced'"
-                >Synced with agent</q-td
-              >
+              <q-td v-else-if="props.row.sync_status === 'synced'">Synced with agent</q-td>
               <q-td v-else-if="props.row.sync_status === 'pendingdeletion'"
                 >Pending deletion on agent</q-td
               >
@@ -133,20 +112,13 @@
                 >
               </q-td>
               <q-td
-                v-else-if="
-                  props.row.check_type === 'cpuload' ||
-                  props.row.check_type === 'memory'
-                "
+                v-else-if="props.row.check_type === 'cpuload' || props.row.check_type === 'memory'"
                 >{{ props.row.history_info }}</q-td
               >
-              <q-td v-else-if="props.row.more_info">{{
-                props.row.more_info
-              }}</q-td>
+              <q-td v-else-if="props.row.more_info">{{ props.row.more_info }}</q-td>
               <q-td v-else>Awaiting Output</q-td>
               <!-- last run -->
-              <q-td>{{
-                props.row.last_run ? formatDate(props.row.last_run) : "Never"
-              }}</q-td>
+              <q-td>{{ props.row.last_run ? formatDate(props.row.last_run) : "Never" }}</q-td>
             </q-tr>
           </template>
         </q-table>
@@ -158,9 +130,9 @@
 <script>
 import { computed } from "vue";
 import { useStore, mapState } from "vuex";
-import ScriptOutput from "@/components/checks/ScriptOutput.vue";
-import EventLogCheckOutput from "@/components/checks/EventLogCheckOutput.vue";
-import PreDialog from "@/components/ui/PreDialog.vue";
+import ScriptOutput from "src/components/checks/ScriptOutput.vue";
+import EventLogCheckOutput from "src/components/checks/EventLogCheckOutput.vue";
+import PreDialog from "src/components/ui/PreDialog.vue";
 
 export default {
   name: "PolicyStatus",

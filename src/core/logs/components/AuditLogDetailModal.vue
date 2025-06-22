@@ -8,12 +8,12 @@
       </q-bar>
       <q-card-section class="scroll" style="max-height: 65vh">
         <q-splitter v-model="splitterModel">
-          <template v-slot:before>
+          <template #before>
             <div class="text-h6">Before</div>
             <pre>{{ JSON.stringify(log.before_value, null, 4) }}</pre>
           </template>
 
-          <template v-slot:after>
+          <template #after>
             <div class="text-h6">After</div>
             <pre>{{ JSON.stringify(log.after_value, null, 4) }}</pre>
           </template>
@@ -26,25 +26,17 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
+import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-export default {
-  name: "AuditLogDetail",
-  emits: [...useDialogPluginComponent.emits],
-  props: {
-    log: !Object,
-  },
-  setup() {
-    const { dialogRef, onDialogHide } = useDialogPluginComponent();
+import type { AuditLog } from "../types";
 
-    return {
-      // reactive data
-      splitterModel: 50,
+defineProps<{
+  log: AuditLog;
+}>();
 
-      // quasar dialog
-      dialogRef,
-      onDialogHide,
-    };
-  },
-};
+defineEmits(useDialogPluginComponent.emits);
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
+
+const splitterModel = ref(50);
 </script>

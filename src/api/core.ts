@@ -1,14 +1,14 @@
 import axios from "axios";
 import { openURL } from "quasar";
-import { router } from "@/router";
+import { router } from "src/router";
 
 import type {
   URLAction,
   TestRunURLActionRequest,
   TestRunURLActionResponse,
-} from "@/types/core/urlactions";
+} from "src/types/core/urlactions";
 
-import type { CoreSetting } from "@/types/core/settings";
+import type { CoreSetting } from "src/types/core/settings";
 
 const baseUrl = "/core";
 

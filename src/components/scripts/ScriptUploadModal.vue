@@ -20,12 +20,7 @@
         </q-card-section>
 
         <q-card-section>
-          <q-input
-            label="Description"
-            outlined
-            dense
-            v-model="script.description"
-          />
+          <q-input label="Description" outlined dense v-model="script.description" />
         </q-card-section>
 
         <q-card-section>
@@ -113,14 +108,7 @@
         <q-card-actions>
           <q-space />
           <q-btn dense flat label="Cancel" v-close-popup />
-          <q-btn
-            :loading="loading"
-            dense
-            flat
-            label="Add"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="loading" dense flat label="Add" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -131,15 +119,15 @@
 // composition imports
 import { ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { saveScript } from "@/api/scripts";
-import { agentPlatformOptions } from "@/composables/agents";
-import { notifySuccess } from "@/utils/notify";
+import { saveScript } from "src/api/scripts";
+import { agentPlatformOptions } from "src/composables/agents";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // static data
-import { shellOptions } from "@/composables/scripts";
+import { shellOptions } from "src/composables/scripts";
 export default {
   components: { TacticalDropdown },
   name: "ScriptModal",

@@ -27,11 +27,7 @@
           label="Server"
           @update:model-value="power = false"
         />
-        <q-radio
-          v-model="state.agenttype"
-          val="workstation"
-          label="Workstation"
-        />
+        <q-radio v-model="state.agenttype" val="workstation" label="Workstation" />
       </q-card-section>
       <q-card-section>
         <q-input
@@ -60,14 +56,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn dense flat label="Cancel" v-close-popup />
-        <q-btn
-          :loading="loading"
-          dense
-          flat
-          label="Create"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="loading" dense flat label="Create" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -77,17 +66,14 @@
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent, date } from "quasar";
-import { useSiteDropdown } from "@/composables/clients";
-import { saveDeployment } from "@/api/clients";
-import { notifySuccess } from "@/utils/notify";
-import {
-  formatDateInputField,
-  formatDateStringwithTimezone,
-} from "@/utils/format";
-import { GOARCH_AMD64, GOARCH_i386 } from "@/constants/constants";
+import { useSiteDropdown } from "src/composables/clients";
+import { saveDeployment } from "src/api/clients";
+import { notifySuccess } from "src/utils/notify";
+import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
+import { GOARCH_AMD64, GOARCH_i386 } from "src/constants/constants";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 export default {
   name: "NewDeployment",
   components: {
@@ -121,8 +107,7 @@ export default {
         ...state.value,
       };
 
-      if (data.expires)
-        data.expires = formatDateStringwithTimezone(data.expires);
+      if (data.expires) data.expires = formatDateStringwithTimezone(data.expires);
 
       try {
         const result = await saveDeployment(data);

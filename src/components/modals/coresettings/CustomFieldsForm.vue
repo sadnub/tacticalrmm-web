@@ -49,9 +49,7 @@
           />
         </q-card-section>
         <!-- input options select for single and multiple input type -->
-        <q-card-section
-          v-if="localField.type === 'single' || localField.type == 'multiple'"
-        >
+        <q-card-section v-if="localField.type === 'single' || localField.type == 'multiple'">
           <q-select
             dense
             label="Input Options (press Enter after typing each option)"
@@ -137,11 +135,7 @@
             v-model="localField.required"
             color="green"
           />
-          <q-toggle
-            label="Hide in Dashboard"
-            v-model="localField.hide_in_ui"
-            color="green"
-          />
+          <q-toggle label="Hide in Dashboard" v-model="localField.hide_in_ui" color="green" />
           <q-toggle
             label="Hide in Summary Tab"
             v-model="localField.hide_in_summary"
@@ -158,7 +152,7 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "CustomFieldsForm",
@@ -203,9 +197,7 @@ export default {
     },
     defaultValueRules() {
       if (this.localField.required) {
-        return [
-          (val) => !!val || "Default Value needs to be set for required fields",
-        ];
+        return [(val) => !!val || "Default Value needs to be set for required fields"];
       } else {
         return [];
       }

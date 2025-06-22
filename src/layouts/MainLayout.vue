@@ -1,18 +1,9 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="bg-grey-9 text-white">
-      <q-banner
-        v-if="needRefresh"
-        inline-actions
-        class="bg-red text-white text-center"
-      >
+      <q-banner v-if="needRefresh" inline-actions class="bg-red text-white text-center">
         You are viewing an outdated version of this page.
-        <q-btn
-          color="dark"
-          icon="refresh"
-          label="Refresh"
-          @click="$store.dispatch('reload')"
-        />
+        <q-btn color="dark" icon="refresh" label="Refresh" @click="$store.dispatch('reload')" />
       </q-banner>
       <q-banner
         v-if="!hosted && tokenExpired"
@@ -21,11 +12,10 @@
       >
         <q-icon size="xl" name="warning" />
         <span
-          ><br />Your license is currently inactive, usually due to a payment
-          issue.<br /><br />To restore access, please update your payment
-          method.<br /><br />
-          If you’ve intentionally cancelled your sponsorship, you can remove
-          your license key to stop seeing this message.<br /><br />
+          ><br />Your license is currently inactive, usually due to a payment issue.<br /><br />To
+          restore access, please update your payment method.<br /><br />
+          If you’ve intentionally cancelled your sponsorship, you can remove your license key to
+          stop seeing this message.<br /><br />
           If you need help, please contact our support team at
           <a
             href="https://support.amidaware.com"
@@ -35,12 +25,7 @@
             >https://support.amidaware.com</a
           ><br /><br
         /></span>
-        <q-btn
-          color="dark"
-          icon="refresh"
-          label="Refresh"
-          @click="$store.dispatch('reload')"
-        />
+        <q-btn color="dark" icon="refresh" label="Refresh" @click="$store.dispatch('reload')" />
       </q-banner>
       <q-toolbar>
         <q-btn
@@ -50,19 +35,11 @@
           icon="refresh"
           v-if="$route.name === 'Dashboard'"
         />
-        <q-btn
-          v-else
-          dense
-          flat
-          @click="$router.push({ name: 'Dashboard' })"
-          icon="dashboard"
-        >
+        <q-btn v-else dense flat @click="$router.push({ name: 'Dashboard' })" icon="dashboard">
           <q-tooltip>Back to Dashboard</q-tooltip>
         </q-btn>
         <q-toolbar-title>
-          Tactical RMM<span class="text-overline q-ml-sm"
-            >v{{ currentTRMMVersion }}</span
-          >
+          Tactical RMM<span class="text-overline q-ml-sm">v{{ currentTRMMVersion }}</span>
           <!-- update check -->
           <q-chip
             v-if="updateAvailable"
@@ -104,9 +81,7 @@
         <!-- Devices Chip -->
         <q-chip class="cursor-pointer">
           <q-avatar size="md" icon="devices" color="primary" />
-          <q-tooltip :delay="600" anchor="top middle" self="top middle"
-            >Agent Count</q-tooltip
-          >
+          <q-tooltip :delay="600" anchor="top middle" self="top middle">Agent Count</q-tooltip>
           {{ serverCount + workstationCount }}
           <q-menu>
             <q-list dense>
@@ -122,11 +97,7 @@
               </q-item>
               <q-item>
                 <q-item-section avatar>
-                  <q-icon
-                    name="power_off"
-                    size="sm"
-                    :color="dash_negative_color"
-                  />
+                  <q-icon name="power_off" size="sm" :color="dash_negative_color" />
                 </q-item-section>
 
                 <q-item-section no-wrap>
@@ -145,17 +116,11 @@
               </q-item>
               <q-item>
                 <q-item-section avatar>
-                  <q-icon
-                    name="power_off"
-                    size="sm"
-                    :color="dash_negative_color"
-                  />
+                  <q-icon name="power_off" size="sm" :color="dash_negative_color" />
                 </q-item-section>
 
                 <q-item-section no-wrap>
-                  <q-item-label
-                    >Offline: {{ workstationOfflineCount }}</q-item-label
-                  >
+                  <q-item-label>Offline: {{ workstationOfflineCount }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -166,12 +131,7 @@
 
         <q-btn-dropdown flat no-caps stretch :label="displayName || ''">
           <q-list>
-            <q-item
-              clickable
-              v-ripple
-              @click="showUserPreferences"
-              v-close-popup
-            >
+            <q-item clickable v-ripple @click="showUserPreferences" v-close-popup>
               <q-item-section>
                 <q-item-label>Preferences</q-item-label>
               </q-item-section>
@@ -184,12 +144,7 @@
 
               <q-menu anchor="top end" self="top start">
                 <q-list>
-                  <q-item
-                    clickable
-                    v-ripple
-                    @click="resetPassword"
-                    v-close-popup
-                  >
+                  <q-item clickable v-ripple @click="resetPassword" v-close-popup>
                     <q-item-section>
                       <q-item-label>Reset Password</q-item-label>
                     </q-item-section>
@@ -221,20 +176,20 @@
 import { computed, onMounted, onBeforeUnmount, ref } from "vue";
 import { useQuasar } from "quasar";
 import { useStore } from "vuex";
-import { useDashboardStore } from "@/stores/dashboard";
-import { useAuthStore } from "@/stores/auth";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useAuthStore } from "src/stores/auth";
 import { storeToRefs } from "pinia";
-import { resetTwoFactor } from "@/api/accounts";
-import { notifyError, notifySuccess } from "@/utils/notify";
+import { resetTwoFactor } from "src/api/accounts";
+import { notifyError, notifySuccess } from "src/utils/notify";
 import axios from "axios";
 
 // webtermn
-import { checkWebTermPerms, openWebTerminal } from "@/api/core";
+import { checkWebTermPerms, openWebTerminal } from "src/api/core";
 
 // ui imports
-import AlertsIcon from "@/components/AlertsIcon.vue";
-import UserPreferences from "@/components/modals/coresettings/UserPreferences.vue";
-import ResetPass from "@/components/accounts/ResetPass.vue";
+import AlertsIcon from "src/components/AlertsIcon.vue";
+import UserPreferences from "src/components/modals/coresettings/UserPreferences.vue";
+import ResetPass from "src/components/accounts/ResetPass.vue";
 
 const store = useStore();
 const $q = useQuasar();

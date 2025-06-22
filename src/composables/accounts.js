@@ -1,6 +1,6 @@
 import { ref, onMounted } from "vue";
-import { fetchUsers, fetchRoles } from "@/api/accounts";
-import { formatUserOptions } from "@/utils/format";
+import { fetchUsers, fetchRoles } from "src/api/accounts";
+import { formatUserOptions } from "src/utils/format";
 
 export function useUserDropdown(onMount = false) {
   const userOptions = ref([]);

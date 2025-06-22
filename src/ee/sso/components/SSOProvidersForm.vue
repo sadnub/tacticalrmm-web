@@ -94,13 +94,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
       <q-card-actions align="right">
         <q-btn flat label="Cancel" v-close-popup />
-        <q-btn
-          flat
-          label="Submit"
-          color="primary"
-          :loading="loading"
-          @click="submit"
-        />
+        <q-btn flat label="Submit" color="primary" :loading="loading" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -110,15 +104,15 @@ For details, see: https://license.tacticalrmm.com/ee
 // composition imports
 import { ref, reactive } from "vue";
 import { useDialogPluginComponent, extend } from "quasar";
-import { editSSOProvider, addSSOProvider } from "@/ee/sso/api/sso";
-import { notifySuccess } from "@/utils/notify";
-import { useRoleDropdown } from "@/composables/accounts";
+import { editSSOProvider, addSSOProvider } from "src/ee/sso/api/sso";
+import { notifySuccess } from "src/utils/notify";
+import { useRoleDropdown } from "src/composables/accounts";
 
 // components
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // types
-import type { SSOProvider } from "@/ee/sso/types/sso";
+import type { SSOProvider } from "src/ee/sso/types/sso";
 
 // define emits
 defineEmits([...useDialogPluginComponent.emits]);

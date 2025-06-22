@@ -12,31 +12,18 @@
       <template v-slot:avatar>
         <q-icon name="info" />
       </template>
-      If agent auto update is enabled in Global Settings, agents will
-      automatically self update at 35 min past the hour, every hour. Use this
-      tool to manually trigger an agent update cycle.
+      If agent auto update is enabled in Global Settings, agents will automatically self update at
+      35 min past the hour, every hour. Use this tool to manually trigger an agent update cycle.
     </q-banner>
     <q-card-section>
       Select Version
-      <q-select
-        square
-        disable
-        dense
-        options-dense
-        outlined
-        v-model="version"
-        :options="versions"
-      />
+      <q-select square disable dense options-dense outlined v-model="version" :options="versions" />
     </q-card-section>
     <q-card-section v-show="version !== null">
       Select Agent
       <br />
       <q-separator />
-      <q-checkbox
-        v-model="selectAll"
-        label="Select All"
-        @update:model-value="selectAllAction"
-      />
+      <q-checkbox v-model="selectAll" label="Select All" @update:model-value="selectAllAction" />
       <q-btn
         v-show="group.length !== 0"
         label="Update"
@@ -58,7 +45,7 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 export default {
   name: "UpdateAgents",
   emits: ["close"],

@@ -41,10 +41,10 @@ import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { useMeta, useQuasar } from "quasar";
-import { fetchAgentMeshCentralURLs, sendAgentRecoverMesh } from "@/api/agents";
-import { fetchDashboardInfo } from "@/api/core";
-import { sendAgentServiceAction } from "@/api/services";
-import { notifySuccess } from "@/utils/notify";
+import { fetchAgentMeshCentralURLs, sendAgentRecoverMesh } from "src/api/agents";
+import { fetchDashboardInfo } from "src/api/core";
+import { sendAgentServiceAction } from "src/api/services";
+import { notifySuccess } from "src/utils/notify";
 
 export default {
   name: "TakeControl",

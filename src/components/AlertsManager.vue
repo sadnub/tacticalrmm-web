@@ -85,21 +85,13 @@
                 <!-- context menu -->
                 <q-menu context-menu>
                   <q-list dense style="min-width: 200px">
-                    <q-item
-                      clickable
-                      v-close-popup
-                      @click="showEditTemplateModal(props.row)"
-                    >
+                    <q-item clickable v-close-popup @click="showEditTemplateModal(props.row)">
                       <q-item-section side>
                         <q-icon name="edit" />
                       </q-item-section>
                       <q-item-section>Edit</q-item-section>
                     </q-item>
-                    <q-item
-                      clickable
-                      v-close-popup
-                      @click="deleteTemplate(props.row)"
-                    >
+                    <q-item clickable v-close-popup @click="deleteTemplate(props.row)">
                       <q-item-section side>
                         <q-icon name="delete" />
                       </q-item-section>
@@ -108,11 +100,7 @@
 
                     <q-separator></q-separator>
 
-                    <q-item
-                      clickable
-                      v-close-popup
-                      @click="showAlertExclusions(props.row)"
-                    >
+                    <q-item clickable v-close-popup @click="showAlertExclusions(props.row)">
                       <q-item-section side>
                         <q-icon name="rule" />
                       </q-item-section>
@@ -136,41 +124,20 @@
                 </q-td>
                 <!-- agent settings -->
                 <q-td>
-                  <q-icon
-                    v-if="props.row.agent_settings"
-                    color="primary"
-                    name="done"
-                    size="sm"
-                  >
-                    <q-tooltip
-                      >Alert template has agent alert settings</q-tooltip
-                    >
+                  <q-icon v-if="props.row.agent_settings" color="primary" name="done" size="sm">
+                    <q-tooltip>Alert template has agent alert settings</q-tooltip>
                   </q-icon>
                 </q-td>
                 <!-- text settings -->
                 <q-td>
-                  <q-icon
-                    v-if="props.row.check_settings"
-                    color="primary"
-                    name="done"
-                    size="sm"
-                  >
-                    <q-tooltip
-                      >Alert template has check alert settings</q-tooltip
-                    >
+                  <q-icon v-if="props.row.check_settings" color="primary" name="done" size="sm">
+                    <q-tooltip>Alert template has check alert settings</q-tooltip>
                   </q-icon>
                 </q-td>
                 <!-- dashboard settings -->
                 <q-td>
-                  <q-icon
-                    v-if="props.row.task_settings"
-                    color="primary"
-                    name="done"
-                    size="sm"
-                  >
-                    <q-tooltip
-                      >Alert template has task alert settings</q-tooltip
-                    >
+                  <q-icon v-if="props.row.task_settings" color="primary" name="done" size="sm">
+                    <q-tooltip>Alert template has task alert settings</q-tooltip>
                   </q-icon>
                 </q-td>
                 <!-- name -->
@@ -190,9 +157,7 @@
                     style="cursor: pointer; text-decoration: underline"
                     class="text-primary"
                     @click="showTemplateApplied(props.row)"
-                    >Show where template is applied ({{
-                      props.row.applied_count
-                    }})</span
+                    >Show where template is applied ({{ props.row.applied_count }})</span
                   ></q-td
                 >
                 <!-- alert exclusions -->
@@ -222,10 +187,10 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import AlertTemplateForm from "@/components/modals/alerts/AlertTemplateForm.vue";
-import AlertExclusions from "@/components/modals/alerts/AlertExclusions.vue";
-import AlertTemplateRelated from "@/components/modals/alerts/AlertTemplateRelated.vue";
+import mixins from "src/mixins/mixins";
+import AlertTemplateForm from "src/components/modals/alerts/AlertTemplateForm.vue";
+import AlertExclusions from "src/components/modals/alerts/AlertExclusions.vue";
+import AlertTemplateRelated from "src/components/modals/alerts/AlertTemplateRelated.vue";
 
 export default {
   name: "AlertsManager",
@@ -325,9 +290,7 @@ export default {
             .then(() => {
               this.refresh();
               this.$q.loading.hide();
-              this.notifySuccess(
-                `Alert template ${template.name} was deleted!`,
-              );
+              this.notifySuccess(`Alert template ${template.name} was deleted!`);
             })
             .catch(() => {
               this.$q.loading.hide();

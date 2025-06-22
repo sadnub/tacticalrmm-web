@@ -2,11 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
     <q-card class="q-dialog-plugin" style="width: 65vw; min-width: 65vw">
       <q-bar>
-        {{
-          task
-            ? `Editing Automated Task: ${task.name}`
-            : "Adding Automated Task"
-        }}
+        {{ task ? `Editing Automated Task: ${task.name}` : "Adding Automated Task" }}
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -17,12 +13,7 @@
         <p>Settings -> Script Manager</p>
       </q-card-section>
       <q-stepper v-else v-model="step" ref="stepper" color="primary" animated>
-        <q-step
-          :name="1"
-          title="Select Task"
-          :done="step > 1"
-          :error="!isValidStep1"
-        >
+        <q-step :name="1" title="Select Task" :done="step > 1" :error="!isValidStep1">
           <q-form @submit.prevent ref="taskGeneralForm">
             <q-card-section>
               <q-input
@@ -90,12 +81,7 @@
           </q-form>
         </q-step>
 
-        <q-step
-          :name="2"
-          title="Configure Actions"
-          :done="step > 2"
-          :error="!isValidStep2"
-        >
+        <q-step :name="2" title="Configure Actions" :done="step > 2" :error="!isValidStep2">
           <div class="scroll" style="max-height: 60vh">
             <q-form @submit.prevent="addAction">
               <div class="row q-pa-sm q-gutter-x-xs items-center">
@@ -233,26 +219,16 @@
                 <template v-slot:item="{ index, element }">
                   <q-item>
                     <q-item-section avatar>
-                      <q-icon
-                        class="handle"
-                        style="cursor: move"
-                        name="drag_handle"
-                      />
+                      <q-icon class="handle" style="cursor: move" name="drag_handle" />
                     </q-item-section>
                     <q-item-section v-if="element.type === 'script'">
                       <q-item-label>
                         <q-icon size="sm" name="description" color="primary" />
                         &nbsp; {{ element.name }}
                       </q-item-label>
-                      <q-item-label caption>
-                        Arguments: {{ element.script_args }}
-                      </q-item-label>
-                      <q-item-label caption>
-                        Env Vars: {{ element.env_vars }}
-                      </q-item-label>
-                      <q-item-label caption>
-                        Timeout: {{ element.timeout }}
-                      </q-item-label>
+                      <q-item-label caption> Arguments: {{ element.script_args }} </q-item-label>
+                      <q-item-label caption> Env Vars: {{ element.env_vars }} </q-item-label>
+                      <q-item-label caption> Timeout: {{ element.timeout }} </q-item-label>
                     </q-item-section>
                     <q-item-section v-else>
                       <q-item-label>
@@ -261,17 +237,13 @@
                         <q-icon
                           size="sm"
                           :name="
-                            element.shell === 'cmd'
-                              ? 'mdi-microsoft-windows'
-                              : 'mdi-powershell'
+                            element.shell === 'cmd' ? 'mdi-microsoft-windows' : 'mdi-powershell'
                           "
                           color="primary"
                         />
                         {{ element.command }}
                       </q-item-label>
-                      <q-item-label caption>
-                        Timeout: {{ element.timeout }}
-                      </q-item-label>
+                      <q-item-label caption> Timeout: {{ element.timeout }} </q-item-label>
                     </q-item-section>
                     <q-item-section side>
                       <q-icon
@@ -304,11 +276,7 @@
 
               <!-- task start/expire time fields -->
               <q-card-section
-                v-if="
-                  ['runonce', 'daily', 'weekly', 'monthly'].includes(
-                    state.task_type,
-                  )
-                "
+                v-if="['runonce', 'daily', 'weekly', 'monthly'].includes(state.task_type)"
                 class="row"
               >
                 <!-- start time input -->
@@ -316,11 +284,7 @@
                   class="col-6 q-pa-sm"
                   type="datetime-local"
                   dense
-                  :label="
-                    isPosix && state.task_type !== 'runonce'
-                      ? 'Run at'
-                      : 'Start time'
-                  "
+                  :label="isPosix && state.task_type !== 'runonce' ? 'Run at' : 'Start time'"
                   stack-label
                   filled
                   v-model="state.run_time_date"
@@ -347,15 +311,11 @@
               </q-card-section>
 
               <q-card-section
-                v-if="
-                  state.task_type === 'onboarding' ||
-                  state.task_type === 'runonce'
-                "
+                v-if="state.task_type === 'onboarding' || state.task_type === 'runonce'"
                 class="row"
               >
                 <span v-if="state.task_type === 'onboarding'"
-                  >This task will run as soon as it's created on the
-                  agent.</span
+                  >This task will run as soon as it's created on the agent.</span
                 >
                 <span v-else-if="state.task_type === 'runonce'"
                   >Start Time must be in the future for run once tasks.</span
@@ -363,10 +323,7 @@
               </q-card-section>
 
               <!-- daily options -->
-              <q-card-section
-                v-if="!isPosix && state.task_type === 'daily'"
-                class="row"
-              >
+              <q-card-section v-if="!isPosix && state.task_type === 'daily'" class="row">
                 <!-- daily interval -->
                 <q-input
                   :rules="[
@@ -469,9 +426,7 @@
                     </q-item>
                   </template>
 
-                  <template
-                    v-slot:option="{ itemProps, opt, selected, toggleOption }"
-                  >
+                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -520,9 +475,7 @@
                     </q-item>
                   </template>
 
-                  <template
-                    v-slot:option="{ itemProps, opt, selected, toggleOption }"
-                  >
+                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -558,9 +511,7 @@
                   emit-value
                   map-options
                 >
-                  <template
-                    v-slot:option="{ itemProps, opt, selected, toggleOption }"
-                  >
+                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -606,9 +557,7 @@
                     </q-item>
                   </template>
 
-                  <template
-                    v-slot:option="{ itemProps, opt, selected, toggleOption }"
-                  >
+                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -636,9 +585,7 @@
                 "
                 class="row"
               >
-                <div v-if="!isPosix" class="col-12 text-h6">
-                  Advanced Settings (Windows only)
-                </div>
+                <div v-if="!isPosix" class="col-12 text-h6">Advanced Settings (Windows only)</div>
                 <q-input
                   v-if="!isPosix"
                   class="col-6 q-pa-sm"
@@ -673,9 +620,7 @@
                     (val) => (state.task_repetition_interval ? !!val : true), // field is required if repetition interval is set
                     (val) =>
                       convertPeriodToSeconds(val) >=
-                        convertPeriodToSeconds(
-                          state.task_repetition_interval,
-                        ) ||
+                        convertPeriodToSeconds(state.task_repetition_interval) ||
                       'Repetition duration must be greater than repetition interval',
                   ]"
                 />
@@ -741,10 +686,7 @@
               </q-card-section>
 
               <!-- check failure options -->
-              <q-card-section
-                v-else-if="state.task_type === 'checkfailure'"
-                class="row"
-              >
+              <q-card-section v-else-if="state.task_type === 'checkfailure'" class="row">
                 <tactical-dropdown
                   class="col-6 q-pa-sm"
                   :rules="[(val) => !!val || '*Required']"
@@ -771,12 +713,7 @@
         />
         <q-btn
           v-if="step < 3"
-          @click="
-            validateStep(
-              step === 1 ? $refs.taskGeneralForm : undefined,
-              $refs.stepper,
-            )
-          "
+          @click="validateStep(step === 1 ? $refs.taskGeneralForm : undefined, $refs.stepper)"
           color="primary"
           label="Next"
           flat
@@ -801,22 +738,22 @@
 import { computed, ref, watch, onMounted, defineComponent } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import draggable from "vuedraggable";
-import { saveTask, updateTask } from "@/api/tasks";
-import { useScriptDropdown } from "@/composables/scripts";
-import { useCheckDropdown } from "@/composables/checks";
-import { useCustomFieldDropdown } from "@/composables/core";
-import { notifySuccess, notifyError } from "@/utils/notify";
-import { validateTimePeriod } from "@/utils/validation";
-import { envVarsLabel } from "@/constants/constants";
+import { saveTask, updateTask } from "src/api/tasks";
+import { useScriptDropdown } from "src/composables/scripts";
+import { useCheckDropdown } from "src/composables/checks";
+import { useCustomFieldDropdown } from "src/composables/core";
+import { notifySuccess, notifyError } from "src/utils/notify";
+import { validateTimePeriod } from "src/utils/validation";
+import { envVarsLabel } from "src/constants/constants";
 import {
   convertPeriodToSeconds,
   convertToBitArray,
   convertFromBitArray,
   formatDateInputField,
-} from "@/utils/format";
+} from "src/utils/format";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // static data
 const severityOptions = [
@@ -906,16 +843,10 @@ export default defineComponent({
     const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
     // setup dropdowns
-    const {
-      script,
-      scriptName,
-      scriptOptions,
-      defaultTimeout,
-      defaultArgs,
-      defaultEnvVars,
-    } = useScriptDropdown({
-      onMount: true,
-    });
+    const { script, scriptName, scriptOptions, defaultTimeout, defaultArgs, defaultEnvVars } =
+      useScriptDropdown({
+        onMount: true,
+      });
 
     // set defaultTimeout to 30
     defaultTimeout.value = 30;
@@ -1019,16 +950,10 @@ export default defineComponent({
 
     // function for adding script and commands to be run from task
     function addAction() {
-      if (
-        actionType.value === "script" &&
-        (!script.value || !defaultTimeout.value)
-      ) {
+      if (actionType.value === "script" && (!script.value || !defaultTimeout.value)) {
         notifyError("Script and timeout must be set");
         return;
-      } else if (
-        actionType.value === "cmd" &&
-        (!command.value || !defaultTimeout.value)
-      ) {
+      } else if (actionType.value === "cmd" && (!command.value || !defaultTimeout.value)) {
         notifyError("A command and timeout must be set");
         return;
       }
@@ -1125,16 +1050,10 @@ export default defineComponent({
         : [];
 
       // remove milliseconds and Z to work with native date input
-      task.value.run_time_date = formatDateInputField(
-        task.value.run_time_date,
-        true,
-      );
+      task.value.run_time_date = formatDateInputField(task.value.run_time_date, true);
 
       if (task.value.expire_date)
-        task.value.expire_date = formatDateInputField(
-          task.value.expire_date,
-          true,
-        );
+        task.value.expire_date = formatDateInputField(task.value.expire_date, true);
 
       // set task type if monthlydow is being used
       if (task.value.task_type === "monthlydow") {
@@ -1190,10 +1109,7 @@ export default defineComponent({
     const isValidStep3 = ref(true);
 
     function validateStep(form, stepper) {
-      if (
-        step.value === 1 &&
-        task.value.task_supported_platforms.length === 0
-      ) {
+      if (step.value === 1 && task.value.task_supported_platforms.length === 0) {
         notifyError("There must be at least one supported platform");
         return;
       }

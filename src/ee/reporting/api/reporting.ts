@@ -6,7 +6,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
 import axios from "axios";
 import { ref, type Ref } from "vue";
-import { router } from "@/router";
+import { router } from "src/router";
 import type {
   ReportFormat,
   ReportDependencies,
@@ -19,8 +19,8 @@ import type {
   VariableAnalysis,
   SharedTemplate,
 } from "../types/reporting";
-import type { QTreeFileNode } from "@/types/filebrowser";
-import { notifySuccess } from "@/utils/notify";
+import type { QTreeFileNode } from "src/types/filebrowser";
+import { notifySuccess } from "src/utils/notify";
 import { exportFile, Dialog } from "quasar";
 import { until } from "@vueuse/shared";
 
@@ -45,11 +45,7 @@ export interface useReportingTemplates {
   runReportPreview: (payload: RunReportPreviewRequest) => void;
   runReportPreviewDebug: (payload: RunReportPreviewRequest) => void;
   reportData: Ref<string>;
-  runReport: (
-    id: number,
-    payload: RunReportRequest,
-    forDownload?: boolean,
-  ) => void;
+  runReport: (id: number, payload: RunReportRequest, forDownload?: boolean) => void;
   openReport: (
     id: number,
     format: ReportFormat,
@@ -66,15 +62,9 @@ export interface useReportingTemplates {
   ) => void;
   getSharedTemplates: () => void;
   sharedTemplates: Ref<SharedTemplate[]>;
-  importSharedTemplates: (payload: {
-    templates: SharedTemplate[];
-    overwrite: boolean;
-  }) => void;
+  importSharedTemplates: (payload: { templates: SharedTemplate[]; overwrite: boolean }) => void;
   variableAnalysis: Ref<VariableAnalysis>;
-  getAllowedValues: (payload: {
-    variables: string;
-    dependencies: ReportDependencies;
-  }) => void;
+  getAllowedValues: (payload: { variables: string; dependencies: ReportDependencies }) => void;
 }
 
 // reporting endpoints
@@ -111,9 +101,7 @@ export function useReportTemplates(): useReportingTemplates {
     axios
       .delete(`${baseUrl}/templates/${id}/`)
       .then(() => {
-        reportTemplates.value = reportTemplates.value.filter(
-          (template) => template.id != id,
-        );
+        reportTemplates.value = reportTemplates.value.filter((template) => template.id != id);
         notifySuccess("The report template was successfully removed");
       })
       .catch(() => (isError.value = true))
@@ -143,12 +131,9 @@ export function useReportTemplates(): useReportingTemplates {
     axios
       .put(`${baseUrl}/templates/${id}/`, payload)
       .then(({ data }: { data: ReportTemplate }) => {
-        const index = reportTemplates.value.findIndex(
-          (template) => template.id === id,
-        );
+        const index = reportTemplates.value.findIndex((template) => template.id === id);
         reportTemplates.value[index] = data;
-        options?.dontNotify ||
-          notifySuccess("The report template was edited successfully");
+        options?.dontNotify || notifySuccess("The report template was edited successfully");
       })
       .catch(() => (isError.value = true))
       .finally(() => (isLoading.value = false));
@@ -180,19 +165,14 @@ export function useReportTemplates(): useReportingTemplates {
       })
       .then(({ data }) => {
         if (payload.format === "html") renderedPreview.value = data;
-        else if (payload.format === "pdf")
-          renderedPreview.value = URL.createObjectURL(data);
+        else if (payload.format === "pdf") renderedPreview.value = URL.createObjectURL(data);
         else renderedPreview.value = `<pre>${data}</pre>`;
       })
       .catch(() => (isError.value = true))
       .finally(() => (isLoading.value = false));
   }
 
-  function runReport(
-    id: number,
-    payload: RunReportRequest,
-    forDownload?: boolean,
-  ): void {
+  function runReport(id: number, payload: RunReportRequest, forDownload?: boolean): void {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -201,8 +181,7 @@ export function useReportTemplates(): useReportingTemplates {
       })
       .then(({ data }) => {
         if (payload.format === "html" || forDownload) reportData.value = data;
-        else if (payload.format === "pdf")
-          reportData.value = URL.createObjectURL(data);
+        else if (payload.format === "pdf") reportData.value = URL.createObjectURL(data);
         else reportData.value = `<pre>${data}</pre>`;
       })
       .catch(() => (isError.value = true))
@@ -218,8 +197,7 @@ export function useReportTemplates(): useReportingTemplates {
     isError.value = false;
     reportData.value = "";
 
-    const needsPrompt =
-      template.depends_on?.filter((dep) => !dependencies[dep]) || [];
+    const needsPrompt = template.depends_on?.filter((dep) => !dependencies[dep]) || [];
 
     let extension;
     if (format === "plaintext") extension = "csv";
@@ -280,8 +258,7 @@ export function useReportTemplates(): useReportingTemplates {
     newWindow?: boolean,
   ) {
     const dependencyString = JSON.stringify(dependencies) || "{}";
-    const dependsOnString =
-      dependsOn.length > 0 ? JSON.stringify(dependsOn) : null;
+    const dependsOnString = dependsOn.length > 0 ? JSON.stringify(dependsOn) : null;
 
     const params = dependsOnString
       ? `format=${format}&dependsOn=${dependsOnString}&dependencies=${dependencyString}`
@@ -302,10 +279,7 @@ export function useReportTemplates(): useReportingTemplates {
     axios
       .post(`${baseUrl}/templates/${id}/export/`)
       .then(({ data }) => {
-        exportFile(
-          `${data.template.name}-export.json`,
-          JSON.stringify(data, null, 2),
-        );
+        exportFile(`${data.template.name}-export.json`, JSON.stringify(data, null, 2));
       })
       .catch(() => (isError.value = true))
       .finally(() => (isLoading.value = false));
@@ -317,9 +291,7 @@ export function useReportTemplates(): useReportingTemplates {
     axios
       .post(`${baseUrl}/templates/import/`, payload)
       .then(({ data }: { data: ReportTemplate }) => {
-        const index = reportTemplates.value.findIndex(
-          (report) => report.id === data.id,
-        );
+        const index = reportTemplates.value.findIndex((report) => report.id === data.id);
         if (index !== -1) reportTemplates.value[index] = data;
         else reportTemplates.value.push(data);
 
@@ -342,10 +314,7 @@ export function useReportTemplates(): useReportingTemplates {
       .finally(() => (isLoading.value = false));
   }
 
-  function importSharedTemplates(payload: {
-    templates: SharedTemplate[];
-    overwrite: boolean;
-  }) {
+  function importSharedTemplates(payload: { templates: SharedTemplate[]; overwrite: boolean }) {
     isLoading.value = true;
     isError.value = false;
 
@@ -358,10 +327,7 @@ export function useReportTemplates(): useReportingTemplates {
       .finally(() => (isLoading.value = false));
   }
 
-  function getAllowedValues(payload: {
-    variables: string;
-    dependencies: ReportDependencies;
-  }) {
+  function getAllowedValues(payload: { variables: string; dependencies: ReportDependencies }) {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -414,9 +380,7 @@ export async function fetchReportAssets(
   return data;
 }
 
-export async function fetchAllReportAssets(
-  foldersOnly?: boolean,
-): Promise<QTreeFileNode[]> {
+export async function fetchAllReportAssets(foldersOnly?: boolean): Promise<QTreeFileNode[]> {
   const params = {} as { onlyFolders?: boolean };
   if (foldersOnly) params.onlyFolders = true;
 
@@ -426,10 +390,7 @@ export async function fetchAllReportAssets(
   return data;
 }
 
-export async function renameReportAsset(
-  path: string,
-  newName: string,
-): Promise<string> {
+export async function renameReportAsset(path: string, newName: string): Promise<string> {
   const payload = { path, newName };
   const { data } = await axios.put(`${baseUrl}/assets/rename/`, payload);
   return data;
@@ -456,10 +417,7 @@ export async function downloadAsset(path: string): Promise<Blob> {
   return data;
 }
 
-export async function uploadAssets(
-  form: FormData,
-  path = "",
-): Promise<UploadAssetsResponse> {
+export async function uploadAssets(form: FormData, path = ""): Promise<UploadAssetsResponse> {
   form.append("parentPath", path);
   const { data } = await axios.post(`${baseUrl}/assets/upload/`, form);
   return data;
@@ -508,9 +466,7 @@ export function useReportingHTMLTemplates(): useReportingHTMLTemplates {
     axios
       .put(`${baseUrl}/htmltemplates/${id}/`, payload)
       .then(({ data }: { data: ReportHTMLTemplate }) => {
-        const index = reportHTMLTemplates.value.findIndex(
-          (template) => template.id === id,
-        );
+        const index = reportHTMLTemplates.value.findIndex((template) => template.id === id);
         reportHTMLTemplates.value[index] = data;
 
         notifySuccess("HTML Template was edited successfully");
@@ -591,9 +547,7 @@ export function useReportingDataQueries(): useReportingDataQueries {
       .put(`${baseUrl}/dataqueries/${id}/`, payload)
       .then(({ data }: { data: ReportDataQuery }) => {
         isLoading.value = true;
-        const index = reportDataQueries.value.findIndex(
-          (template) => template.id === id,
-        );
+        const index = reportDataQueries.value.findIndex((template) => template.id === id);
         reportDataQueries.value[index] = data;
         notifySuccess("Data Query was edited successfully");
       })
@@ -605,9 +559,7 @@ export function useReportingDataQueries(): useReportingDataQueries {
     axios
       .delete(`${baseUrl}/dataqueries/${id}/`)
       .then(() => {
-        reportDataQueries.value = reportDataQueries.value.filter(
-          (template) => template.id != id,
-        );
+        reportDataQueries.value = reportDataQueries.value.filter((template) => template.id != id);
         notifySuccess("The Data Query was successfully removed");
       })
       .catch(() => (isError.value = true))

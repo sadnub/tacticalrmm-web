@@ -2,14 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 70vw">
       <q-bar>
-        <q-btn
-          @click="getClients"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />Clients Manager
+        <q-btn @click="getClients" class="q-mr-sm" dense flat push icon="refresh" />Clients Manager
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -35,15 +28,7 @@
       >
         <!-- top slot -->
         <template v-slot:top>
-          <q-btn
-            label="New"
-            dense
-            flat
-            push
-            no-caps
-            icon="add"
-            @click="showAddClient"
-          />
+          <q-btn label="New" dense flat push no-caps icon="add" @click="showAddClient" />
         </template>
 
         <!-- loading slot -->
@@ -53,29 +38,17 @@
 
         <!-- body slots -->
         <template v-slot:body="props">
-          <q-tr
-            :props="props"
-            class="cursor-pointer"
-            @dblclick="showEditClient(props.row)"
-          >
+          <q-tr :props="props" class="cursor-pointer" @dblclick="showEditClient(props.row)">
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="showEditClient(props.row)"
-                >
+                <q-item clickable v-close-popup @click="showEditClient(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="showClientDeleteModal(props.row)"
-                >
+                <q-item clickable v-close-popup @click="showClientDeleteModal(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -122,14 +95,14 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { fetchClients, removeClient } from "@/api/clients";
-import { notifySuccess } from "@/utils/notify";
+import { fetchClients, removeClient } from "src/api/clients";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
-import ClientsForm from "@/components/clients/ClientsForm.vue";
-import SitesForm from "@/components/clients/SitesForm.vue";
-import DeleteClient from "@/components/clients/DeleteClient.vue";
-import SitesTable from "@/components/clients/SitesTable.vue";
+import ClientsForm from "src/components/clients/ClientsForm.vue";
+import SitesForm from "src/components/clients/SitesForm.vue";
+import DeleteClient from "src/components/clients/DeleteClient.vue";
+import SitesTable from "src/components/clients/SitesTable.vue";
 
 // static data
 const columns = [

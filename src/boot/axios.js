@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "src/stores/auth";
 import { Notify } from "quasar";
 
 export const getBaseUrl = () => {
@@ -12,11 +12,7 @@ export const getBaseUrl = () => {
 
 export function setErrorMessage(data, message) {
   console.log(data);
-  return [
-    () => {
-      message;
-    },
-  ];
+  return [() => message];
 }
 
 export default function ({ app, router }) {
@@ -98,9 +94,7 @@ export default function ({ app, router }) {
         Notify.create({
           color: "negative",
           message: text ? text : "",
-          caption: error.response
-            ? error.response.status + ": " + error.response.statusText
-            : "",
+          caption: error.response ? error.response.status + ": " + error.response.statusText : "",
           timeout: 2500,
         });
       }

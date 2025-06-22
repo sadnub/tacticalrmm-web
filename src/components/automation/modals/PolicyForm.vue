@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "PolicyForm",
@@ -108,9 +108,7 @@ export default {
           .then(() => {
             this.$q.loading.hide();
             this.onOk();
-            this.notifySuccess(
-              "Policy added. Now you can add Tasks and Checks!"
-            );
+            this.notifySuccess("Policy added. Now you can add Tasks and Checks!");
           })
           .catch(() => {
             this.$q.loading.hide();

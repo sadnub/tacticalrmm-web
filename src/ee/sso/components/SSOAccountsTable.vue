@@ -57,10 +57,10 @@ For details, see: https://license.tacticalrmm.com/ee
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent, useQuasar, type QTableColumn } from "quasar";
-import { disconnectSSOAccount } from "@/ee/sso/api/sso";
-import { notifySuccess } from "@/utils/notify";
-import { useAuthStore } from "@/stores/auth";
-import { formatDate } from "@/utils/format";
+import { disconnectSSOAccount } from "src/ee/sso/api/sso";
+import { notifySuccess } from "src/utils/notify";
+import { useAuthStore } from "src/stores/auth";
+import { formatDate } from "src/utils/format";
 
 //types
 import type { SSOAccount, SSOUser } from "../types/sso";
@@ -127,10 +127,7 @@ function removeSSOAccount(account: SSOAccount) {
     try {
       await disconnectSSOAccount(account.provider, account.uid);
       notifySuccess("Social account disconnected successfully");
-      if (
-        auth.username === props.user.username &&
-        auth.ssoLoginProvider === account.provider
-      ) {
+      if (auth.username === props.user.username && auth.ssoLoginProvider === account.provider) {
         await auth.logout();
       }
     } finally {

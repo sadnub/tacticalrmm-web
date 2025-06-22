@@ -29,7 +29,7 @@
             :options="clientOptions"
             label="Select Client"
             outlined
-            mapOptions
+            map-options
             filterable
           />
           <tactical-dropdown
@@ -39,7 +39,7 @@
             :options="siteOptions"
             label="Select Site"
             outlined
-            mapOptions
+            map-options
             filterable
           />
           <tactical-dropdown
@@ -50,7 +50,7 @@
             label="Select Agents"
             filled
             multiple
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>
@@ -86,23 +86,14 @@
             :options="filterByPlatformOptions"
             label="Select Script"
             outlined
-            mapOptions
+            map-options
             filterable
           >
-            <template v-slot:after>
-              <q-btn
-                size="sm"
-                round
-                dense
-                flat
-                icon="info"
-                @click="openScriptURL"
-              >
-                <q-tooltip
-                  v-if="syntax"
-                  class="bg-white text-primary text-body1"
-                  >{{ syntax }}</q-tooltip
-                >
+            <template #after>
+              <q-btn size="sm" round dense flat icon="info" @click="openScriptURL">
+                <q-tooltip v-if="syntax" class="bg-white text-primary text-body1">{{
+                  syntax
+                }}</q-tooltip>
               </q-btn>
             </template>
           </tactical-dropdown>
@@ -180,10 +171,7 @@
                 state.collector_all_output = false;
               "
             />
-            <q-checkbox
-              v-model="state.save_to_agent_note"
-              label="Save results to Agent Note"
-            />
+            <q-checkbox v-model="state.save_to_agent_note" label="Save results to Agent Note" />
           </div>
         </q-card-section>
 
@@ -194,13 +182,10 @@
             v-model="state.custom_field"
             :options="customFieldOptions"
             label="Select custom field"
-            mapOptions
+            map-options
             filterable
           />
-          <q-checkbox
-            v-model="state.collector_all_output"
-            label="Save all output"
-          />
+          <q-checkbox v-model="state.collector_all_output" label="Save all output" />
         </q-card-section>
 
         <q-card-section v-if="mode === 'script' || mode === 'command'">
@@ -212,10 +197,7 @@
             style="max-width: 150px"
             label="Timeout (seconds)"
             stack-label
-            :rules="[
-              (val) => !!val || '*Required',
-              (val) => val >= 5 || 'Minimum is 5 seconds',
-            ]"
+            :rules="[(val) => !!val || '*Required', (val) => val >= 5 || 'Minimum is 5 seconds']"
           />
         </q-card-section>
 
@@ -232,26 +214,17 @@
         </q-card-section>
 
         <q-card-section v-show="false">
-          <q-checkbox
-            v-model="state.offlineAgents"
-            label="Offline Agents (Run on next checkin)"
-          >
+          <q-checkbox v-model="state.offlineAgents" label="Offline Agents (Run on next checkin)">
             <q-tooltip
-              >If the agent is offline, a pending action will be created to run
-              on agent checkin</q-tooltip
+              >If the agent is offline, a pending action will be created to run on agent
+              checkin</q-tooltip
             >
           </q-checkbox>
         </q-card-section>
 
         <q-card-actions align="right">
           <q-btn label="Cancel" v-close-popup />
-          <q-btn
-            label="Run"
-            color="primary"
-            type="submit"
-            :disable="loading"
-            :loading="loading"
-          />
+          <q-btn label="Run" color="primary" type="submit" :disable="loading" :loading="loading" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -260,26 +233,19 @@
 
 <script>
 // composition imports
-import {
-  ref,
-  reactive,
-  computed,
-  watch,
-  onMounted,
-  defineComponent,
-} from "vue";
+import { ref, reactive, computed, watch, onMounted, defineComponent } from "vue";
 import { useDialogPluginComponent, openURL } from "quasar";
-import { useScriptDropdown } from "@/composables/scripts";
-import { useAgentDropdown } from "@/composables/agents";
-import { useClientDropdown, useSiteDropdown } from "@/composables/clients";
-import { useCustomFieldDropdown } from "@/composables/core";
-import { runBulkAction } from "@/api/agents";
-import { notifySuccess } from "@/utils/notify";
-import { cmdPlaceholder } from "@/composables/agents";
-import { envVarsLabel, runAsUserToolTip } from "@/constants/constants";
+import { useScriptDropdown } from "src/composables/scripts";
+import { useAgentDropdown } from "src/composables/agents";
+import { useClientDropdown, useSiteDropdown } from "src/composables/clients";
+import { useCustomFieldDropdown } from "src/composables/core";
+import { runBulkAction } from "src/api/agents";
+import { notifySuccess } from "src/utils/notify";
+import { cmdPlaceholder } from "src/composables/agents";
+import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // static data
 const monTypeOptions = [
@@ -330,10 +296,8 @@ export default defineComponent({
     });
 
     const filteredOsTypeOptions = computed(() => {
-      if (props.mode === "command")
-        return osTypeOptions.filter((i) => i.value !== "all");
-      else if (props.mode === "patch")
-        return osTypeOptions.filter((i) => i.value === "windows");
+      if (props.mode === "command") return osTypeOptions.filter((i) => i.value !== "all");
+      else if (props.mode === "patch") return osTypeOptions.filter((i) => i.value === "windows");
       return osTypeOptions;
     });
 

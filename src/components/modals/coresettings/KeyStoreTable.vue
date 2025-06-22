@@ -36,11 +36,7 @@
     >
       <!-- body slots -->
       <template v-slot:body="props">
-        <q-tr
-          :props="props"
-          class="cursor-pointer"
-          @dblclick="editKey(props.row)"
-        >
+        <q-tr :props="props" class="cursor-pointer" @dblclick="editKey(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
@@ -79,8 +75,8 @@
 </template>
 
 <script>
-import KeyStoreForm from "@/components/modals/coresettings/KeyStoreForm.vue";
-import mixins from "@/mixins/mixins";
+import KeyStoreForm from "src/components/modals/coresettings/KeyStoreForm.vue";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "KeyStoreTable",

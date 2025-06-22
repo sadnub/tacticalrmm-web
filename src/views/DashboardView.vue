@@ -1,30 +1,14 @@
 <template>
   <q-page>
     <FileBar />
-    <q-splitter
-      v-model="clientTreeSplitter"
-      :style="{ height: `${$q.screen.height - 50 - 40}px` }"
-    >
+    <q-splitter v-model="clientTreeSplitter" :style="{ height: `${$q.screen.height - 50 - 40}px` }">
       <template v-slot:before>
-        <div
-          v-if="!treeReady"
-          class="q-pa-sm q-gutter-sm text-center"
-          style="height: 30vh"
-        >
+        <div v-if="!treeReady" class="q-pa-sm q-gutter-sm text-center" style="height: 30vh">
           <q-spinner size="40px" color="primary" />
         </div>
-        <div
-          v-else
-          class="q-pa-sm q-gutter-sm scroll"
-          style="height: 85vh; overflow: initial"
-        >
+        <div v-else class="q-pa-sm q-gutter-sm scroll" style="height: 85vh; overflow: initial">
           <q-list dense class="rounded-borders">
-            <q-item
-              clickable
-              v-ripple
-              :active="allClientsActive"
-              @click="clearTreeSelected"
-            >
+            <q-item clickable v-ripple :active="allClientsActive" @click="clearTreeSelected">
               <q-item-section avatar>
                 <q-icon name="fas fa-home" />
               </q-item-section>
@@ -41,11 +25,7 @@
             >
               <template v-slot:default-header="props">
                 <div class="row items-center">
-                  <q-icon
-                    :name="props.node.icon"
-                    :color="props.node.color"
-                    class="q-mr-sm"
-                  />
+                  <q-icon :name="props.node.icon" :color="props.node.color" class="q-mr-sm" />
                   <div>
                     {{ props.node.label }}
                     <q-tooltip :delay="600">
@@ -61,21 +41,13 @@
 
                   <q-menu context-menu>
                     <q-list dense style="min-width: 200px">
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="showEditModal(props.node)"
-                      >
+                      <q-item clickable v-close-popup @click="showEditModal(props.node)">
                         <q-item-section side>
                           <q-icon name="edit" />
                         </q-item-section>
                         <q-item-section>Edit</q-item-section>
                       </q-item>
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="showDeleteModal(props.node)"
-                      >
+                      <q-item clickable v-close-popup @click="showDeleteModal(props.node)">
                         <q-item-section side>
                           <q-icon name="delete" />
                         </q-item-section>
@@ -96,11 +68,7 @@
                         <q-item-section>Add Site</q-item-section>
                       </q-item>
 
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="showToggleMaintenance(props.node)"
-                      >
+                      <q-item clickable v-close-popup @click="showToggleMaintenance(props.node)">
                         <q-item-section side>
                           <q-icon name="construction" />
                         </q-item-section>
@@ -123,24 +91,14 @@
                         <q-item-section>Install Agent</q-item-section>
                       </q-item>
 
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="showPolicyAdd(props.node)"
-                      >
+                      <q-item clickable v-close-popup @click="showPolicyAdd(props.node)">
                         <q-item-section side>
                           <q-icon name="policy" />
                         </q-item-section>
-                        <q-item-section
-                          >Assign Automation Policy</q-item-section
-                        >
+                        <q-item-section>Assign Automation Policy</q-item-section>
                       </q-item>
 
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="showAlertTemplateAdd(props.node)"
-                      >
+                      <q-item clickable v-close-popup @click="showAlertTemplateAdd(props.node)">
                         <q-item-section side>
                           <q-icon name="error" />
                         </q-item-section>
@@ -178,11 +136,7 @@
                       </q-item>
 
                       <!-- Bulk Run Checks -->
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="runChecks(props.node)"
-                      >
+                      <q-item clickable v-close-popup @click="runChecks(props.node)">
                         <q-item-section side>
                           <q-icon name="fas fa-check-double" />
                         </q-item-section>
@@ -193,10 +147,8 @@
                         clickable
                         v-if="
                           (props.node.children &&
-                            $integrations?.clientMenuIntegrations?.length >
-                              0) ||
-                          (!props.node.children &&
-                            $integrations?.siteMenuIntegrations.length > 0)
+                            $integrations?.clientMenuIntegrations?.length > 0) ||
+                          (!props.node.children && $integrations?.siteMenuIntegrations.length > 0)
                         "
                       >
                         <q-item-section side>
@@ -251,11 +203,7 @@
                 narrow-indicator
               >
                 <q-tab name="server" icon="fas fa-server" label="Servers" />
-                <q-tab
-                  name="workstation"
-                  icon="computer"
-                  label="Workstations"
-                />
+                <q-tab name="workstation" icon="computer" label="Workstations" />
                 <q-tab name="mixed" label="Mixed" />
               </q-tabs>
               <q-space />
@@ -338,10 +286,7 @@
 
                         <q-item>
                           <q-item-section side>
-                            <q-radio
-                              val="online"
-                              v-model="filterAvailability"
-                            />
+                            <q-radio val="online" v-model="filterAvailability" />
                           </q-item-section>
 
                           <q-item-section>
@@ -351,10 +296,7 @@
 
                         <q-item>
                           <q-item-section side>
-                            <q-radio
-                              val="offline"
-                              v-model="filterAvailability"
-                            />
+                            <q-radio val="offline" v-model="filterAvailability" />
                           </q-item-section>
 
                           <q-item-section>
@@ -364,10 +306,7 @@
 
                         <q-item>
                           <q-item-section side>
-                            <q-radio
-                              val="overdue"
-                              v-model="filterAvailability"
-                            />
+                            <q-radio val="overdue" v-model="filterAvailability" />
                           </q-item-section>
 
                           <q-item-section>
@@ -377,28 +316,18 @@
 
                         <q-item>
                           <q-item-section side>
-                            <q-radio
-                              val="offline_30days"
-                              v-model="filterAvailability"
-                            />
+                            <q-radio val="offline_30days" v-model="filterAvailability" />
                           </q-item-section>
 
                           <q-item-section>
-                            <q-item-label
-                              >Show Offline for over 30 days</q-item-label
-                            >
+                            <q-item-label>Show Offline for over 30 days</q-item-label>
                           </q-item-section>
                         </q-item>
                       </q-list>
 
                       <div class="row no-wrap q-pa-md">
                         <div class="column">
-                          <q-btn
-                            v-close-popup
-                            label="Apply"
-                            color="primary"
-                            @click="applyFilter"
-                          />
+                          <q-btn v-close-popup label="Apply" color="primary" @click="applyFilter" />
                         </div>
                         <q-space />
                         <div class="column">
@@ -418,12 +347,7 @@
             />
           </template>
           <template v-slot:separator>
-            <q-avatar
-              color="primary"
-              text-color="white"
-              size="20px"
-              icon="drag_indicator"
-            />
+            <q-avatar color="primary" text-color="white" size="20px" icon="drag_indicator" />
           </template>
           <template v-slot:after>
             <SubTableTabs />
@@ -440,21 +364,21 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 import { openURL } from "quasar";
 import { mapState } from "vuex";
-import FileBar from "@/components/FileBar.vue";
-import AgentTable from "@/components/AgentTable.vue";
-import SubTableTabs from "@/components/SubTableTabs.vue";
-import PolicyAdd from "@/components/automation/modals/PolicyAdd.vue";
-import ClientsForm from "@/components/clients/ClientsForm.vue";
-import SitesForm from "@/components/clients/SitesForm.vue";
-import DeleteClient from "@/components/clients/DeleteClient.vue";
-import InstallAgent from "@/components/modals/agents/InstallAgent.vue";
-import AlertTemplateAdd from "@/components/modals/alerts/AlertTemplateAdd.vue";
-import IntegrationsContextMenu from "@/components/ui/IntegrationsContextMenu.vue";
+import FileBar from "src/components/FileBar.vue";
+import AgentTable from "src/components/AgentTable.vue";
+import SubTableTabs from "src/components/SubTableTabs.vue";
+import PolicyAdd from "src/components/automation/modals/PolicyAdd.vue";
+import ClientsForm from "src/components/clients/ClientsForm.vue";
+import SitesForm from "src/components/clients/SitesForm.vue";
+import DeleteClient from "src/components/clients/DeleteClient.vue";
+import InstallAgent from "src/components/modals/agents/InstallAgent.vue";
+import AlertTemplateAdd from "src/components/modals/alerts/AlertTemplateAdd.vue";
+import IntegrationsContextMenu from "src/components/ui/IntegrationsContextMenu.vue";
 
-import { removeClient, removeSite } from "@/api/clients";
+import { removeClient, removeSite } from "src/api/clients";
 
 export default {
   name: "DashboardView",
@@ -677,9 +601,7 @@ export default {
       this.$q
         .dialog({
           component: node.children ? ClientsForm : SitesForm,
-          componentProps: node.children
-            ? { client: node.client }
-            : { site: node.site },
+          componentProps: node.children ? { client: node.client } : { site: node.site },
         })
         .onOk(() => this.$store.dispatch("loadTree"));
     },

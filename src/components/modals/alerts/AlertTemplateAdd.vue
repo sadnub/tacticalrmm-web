@@ -27,13 +27,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn dense flat label="Cancel" v-close-popup />
-          <q-btn
-            v-if="options.length > 0"
-            flat
-            label="Submit"
-            color="primary"
-            type="submit"
-          />
+          <q-btn v-if="options.length > 0" flat label="Submit" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -41,7 +35,7 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
+import mixins from "src/mixins/mixins";
 
 export default {
   name: "AlertTemplateAdd",

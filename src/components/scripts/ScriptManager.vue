@@ -11,14 +11,7 @@
       }"
     >
       <q-bar>
-        <q-btn
-          @click="getScripts"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />Script Manager
+        <q-btn @click="getScripts" class="q-mr-sm" dense flat push icon="refresh" />Script Manager
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -68,11 +61,7 @@
           flat
           no-caps
           class="q-ml-sm"
-          :label="
-            showCommunityScripts
-              ? 'Hide Community Scripts'
-              : 'Show Community Scripts'
-          "
+          :label="showCommunityScripts ? 'Hide Community Scripts' : 'Show Community Scripts'"
           :icon="showCommunityScripts ? 'visibility_off' : 'visibility'"
           @click="setShowCommunityScripts(!showCommunityScripts)"
         />
@@ -82,9 +71,7 @@
           flat
           no-caps
           class="q-ml-sm"
-          :label="
-            showHiddenScripts ? 'Hide Hidden Scripts' : 'Show Hidden Scripts'
-          "
+          :label="showHiddenScripts ? 'Hide Hidden Scripts' : 'Show Hidden Scripts'"
           :icon="showHiddenScripts ? 'visibility_off' : 'visibility'"
           @click="showHiddenScripts = !showHiddenScripts"
         />
@@ -139,13 +126,7 @@
                 size="sm"
                 class="q-px-sm"
               />
-              <q-icon
-                v-else
-                color="yellow-8"
-                name="star_outline"
-                size="sm"
-                class="q-px-sm"
-              />
+              <q-icon v-else color="yellow-8" name="star_outline" size="sm" class="q-px-sm" />
 
               <q-icon
                 v-if="props.node.shell === 'powershell'"
@@ -168,11 +149,7 @@
               >
                 <q-tooltip> Batch </q-tooltip>
               </q-icon>
-              <q-icon
-                v-else-if="props.node.shell === 'shell'"
-                name="mdi-bash"
-                color="primary"
-              >
+              <q-icon v-else-if="props.node.shell === 'shell'" name="mdi-bash" color="primary">
                 <q-tooltip> Shell </q-tooltip>
               </q-icon>
               <q-icon
@@ -209,22 +186,14 @@
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="viewCodeModal(props.node)"
-                >
+                <q-item clickable v-close-popup @click="viewCodeModal(props.node)">
                   <q-item-section side>
                     <q-icon name="remove_red_eye" />
                   </q-item-section>
                   <q-item-section>View Code</q-item-section>
                 </q-item>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="cloneScriptModal(props.node)"
-                >
+                <q-item clickable v-close-popup @click="cloneScriptModal(props.node)">
                   <q-item-section side>
                     <q-icon name="content_copy" />
                   </q-item-section>
@@ -257,26 +226,16 @@
 
                 <q-separator></q-separator>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="favoriteScript(props.node)"
-                >
+                <q-item clickable v-close-popup @click="favoriteScript(props.node)">
                   <q-item-section side>
                     <q-icon name="star" />
                   </q-item-section>
                   <q-item-section>{{
-                    props.node.favorite
-                      ? "Remove as Favorite"
-                      : "Add as Favorite"
+                    props.node.favorite ? "Remove as Favorite" : "Add as Favorite"
                   }}</q-item-section>
                 </q-item>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="exportScript(props.node)"
-                >
+                <q-item clickable v-close-popup @click="exportScript(props.node)">
                   <q-item-section side>
                     <q-icon name="cloud_download" />
                   </q-item-section>
@@ -287,11 +246,7 @@
 
                 <q-item clickable v-close-popup @click="hideScript(props.node)">
                   <q-item-section side>
-                    <q-icon
-                      :name="
-                        props.node.hidden ? 'visibility' : 'visibility_off'
-                      "
-                    />
+                    <q-icon :name="props.node.hidden ? 'visibility' : 'visibility_off'" />
                   </q-item-section>
                   <q-item-section>{{
                     props.node.hidden ? "Show Script" : "Hide Script"
@@ -349,22 +304,14 @@
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="viewCodeModal(props.row)"
-                >
+                <q-item clickable v-close-popup @click="viewCodeModal(props.row)">
                   <q-item-section side>
                     <q-icon name="remove_red_eye" />
                   </q-item-section>
                   <q-item-section>View Code</q-item-section>
                 </q-item>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="cloneScriptModal(props.row)"
-                >
+                <q-item clickable v-close-popup @click="cloneScriptModal(props.row)">
                   <q-item-section side>
                     <q-icon name="content_copy" />
                   </q-item-section>
@@ -397,26 +344,16 @@
 
                 <q-separator></q-separator>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="favoriteScript(props.row)"
-                >
+                <q-item clickable v-close-popup @click="favoriteScript(props.row)">
                   <q-item-section side>
                     <q-icon name="star" />
                   </q-item-section>
                   <q-item-section>{{
-                    props.row.favorite
-                      ? "Remove as Favorite"
-                      : "Add as Favorite"
+                    props.row.favorite ? "Remove as Favorite" : "Add as Favorite"
                   }}</q-item-section>
                 </q-item>
 
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="exportScript(props.row)"
-                >
+                <q-item clickable v-close-popup @click="exportScript(props.row)">
                   <q-item-section side>
                     <q-icon name="cloud_download" />
                   </q-item-section>
@@ -427,9 +364,7 @@
 
                 <q-item clickable v-close-popup @click="hideScript(props.row)">
                   <q-item-section side>
-                    <q-icon
-                      :name="props.row.hidden ? 'visibility' : 'visibility_off'"
-                    />
+                    <q-icon :name="props.row.hidden ? 'visibility' : 'visibility_off'" />
                   </q-item-section>
                   <q-item-section>{{
                     props.row.hidden ? "Show Script" : "Hide Script"
@@ -445,12 +380,7 @@
             </q-menu>
             <!-- favorite -->
             <q-td key="favorite" :props="props">
-              <q-icon
-                v-if="props.row.favorite"
-                color="yellow-8"
-                name="star"
-                size="sm"
-              />
+              <q-icon v-if="props.row.favorite" color="yellow-8" name="star" size="sm" />
             </q-td>
             <!-- shell icon -->
             <q-td key="shell" :props="props">
@@ -506,10 +436,7 @@
             <!-- supported platforms -->
             <q-td key="supported_platforms" :props="props">
               <q-badge
-                v-if="
-                  !props.row.supported_platforms ||
-                  props.row.supported_platforms.length === 0
-                "
+                v-if="!props.row.supported_platforms || props.row.supported_platforms.length === 0"
                 >All</q-badge
               >
               <q-badge
@@ -522,11 +449,7 @@
               >
             </q-td>
             <!-- name -->
-            <q-td
-              key="name"
-              :props="props"
-              :style="{ color: props.row.hidden ? 'grey' : '' }"
-            >
+            <q-td key="name" :props="props" :style="{ color: props.row.hidden ? 'grey' : '' }">
               <!-- is community script icon -->
               <img
                 v-if="props.row.script_type === 'builtin'"
@@ -534,10 +457,7 @@
                 style="height: 20px; max-width: 20px"
               />
               {{ truncateText(props.row.name, 50) }}
-              <q-tooltip
-                v-if="props.row.name.length >= 50"
-                style="font-size: 12px"
-              >
+              <q-tooltip v-if="props.row.name.length >= 50" style="font-size: 12px">
                 {{ props.row.name }}
               </q-tooltip>
               <q-tooltip :delay="600">ID: {{ props.row.id }}</q-tooltip>
@@ -546,10 +466,7 @@
             <q-td key="args" :props="props">
               <span v-if="props.row.args.length > 0">
                 {{ truncateText(props.row.args.toString(), 30) }}
-                <q-tooltip
-                  v-if="props.row.args.toString().length >= 30"
-                  style="font-size: 12px"
-                >
+                <q-tooltip v-if="props.row.args.toString().length >= 30" style="font-size: 12px">
                   {{ props.row.args }}
                 </q-tooltip>
               </span>
@@ -558,15 +475,11 @@
             <q-td key="category" :props="props">{{ props.row.category }}</q-td>
             <q-td key="desc" :props="props">
               {{ truncateText(props.row.description, 30) }}
-              <q-tooltip
-                v-if="props.row.description.length >= 30"
-                style="font-size: 12px"
-                >{{ props.row.description }}</q-tooltip
-              >
+              <q-tooltip v-if="props.row.description.length >= 30" style="font-size: 12px">{{
+                props.row.description
+              }}</q-tooltip>
             </q-td>
-            <q-td key="default_timeout" :props="props">{{
-              props.row.default_timeout
-            }}</q-td>
+            <q-td key="default_timeout" :props="props">{{ props.row.default_timeout }}</q-td>
             <q-td></q-td>
           </q-tr>
         </template>
@@ -581,22 +494,17 @@ import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useQuasar, useDialogPluginComponent, exportFile } from "quasar";
 import { useStorage } from "@vueuse/core";
-import {
-  fetchScripts,
-  editScript,
-  downloadScript,
-  removeScript,
-} from "@/api/scripts";
-import { capitalize, truncateText } from "@/utils/format";
-import { notifySuccess } from "@/utils/notify";
+import { fetchScripts, editScript, downloadScript, removeScript } from "src/api/scripts";
+import { capitalize, truncateText } from "src/utils/format";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
-import ScriptUploadModal from "@/components/scripts/ScriptUploadModal.vue";
-import ScriptFormModal from "@/components/scripts/ScriptFormModal.vue";
-import ScriptSnippets from "@/components/scripts/ScriptSnippets.vue";
-import TacticalTable from "@/core/dashboard/ui/TacticalTable.vue";
+import ScriptUploadModal from "src/components/scripts/ScriptUploadModal.vue";
+import ScriptFormModal from "src/components/scripts/ScriptFormModal.vue";
+import ScriptSnippets from "src/components/scripts/ScriptSnippets.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
-import trmmLogo from "@/assets/trmm_256.png";
+import trmmLogo from "src/assets/trmm_256.png";
 
 // static data
 const columns = [
@@ -667,9 +575,7 @@ export default {
   setup() {
     // setup vuex store
     const store = useStore();
-    const showCommunityScripts = computed(
-      () => store.state.showCommunityScripts,
-    );
+    const showCommunityScripts = computed(() => store.state.showCommunityScripts);
 
     // setup quasar plugins
     const { dialogRef, onDialogHide } = useDialogPluginComponent();
@@ -708,9 +614,7 @@ export default {
 
     async function hideScript(script) {
       loading.value = true;
-      const notifyText = !script.hidden
-        ? "Script was hidden!"
-        : "Script was unhidden!";
+      const notifyText = !script.hidden ? "Script was hidden!" : "Script was unhidden!";
       try {
         await editScript({
           id: script.id,
@@ -769,9 +673,7 @@ export default {
       } else {
         return showCommunityScripts.value
           ? scripts.value.filter((i) => !i.hidden)
-          : scripts.value.filter(
-              (i) => i.script_type !== "builtin" && !i.hidden,
-            );
+          : scripts.value.filter((i) => i.script_type !== "builtin" && !i.hidden);
       }
     });
 
@@ -832,10 +734,7 @@ export default {
                 header: "script",
                 ...sortedScripts[x],
               });
-            } else if (
-              category === "Unassigned" &&
-              !sortedScripts[x].category
-            ) {
+            } else if (category === "Unassigned" && !sortedScripts[x].category) {
               temp.children.push({
                 label: sortedScripts[x].name,
                 header: "script",
@@ -955,8 +854,7 @@ export default {
 
       // table and tree view methods
       tree,
-      setShowCommunityScripts: (show) =>
-        store.dispatch("setShowCommunityScripts", show),
+      setShowCommunityScripts: (show) => store.dispatch("setShowCommunityScripts", show),
 
       // helper methods
       truncateText,

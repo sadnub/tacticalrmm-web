@@ -10,8 +10,7 @@
       </q-bar>
       <q-form @submit="submit">
         <q-card-section v-if="siteOptions.length === 0">
-          There are no valid sites to move agents to. Add another site and try
-          again
+          There are no valid sites to move agents to. Add another site and try again
         </q-card-section>
         <q-card-section v-if="siteOptions.length > 0">
           <tactical-dropdown
@@ -20,10 +19,7 @@
             v-model="site"
             :options="siteOptions"
             mapOptions
-            :rules="[
-              (val) =>
-                !!val || 'Select the site that the agents should be moved to',
-            ]"
+            :rules="[(val) => !!val || 'Select the site that the agents should be moved to']"
             hint="The client you are deleting has agents assigned to it. Select a Site below to move the agents to."
             filterable
           />
@@ -50,12 +46,12 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { notifySuccess } from "@/utils/notify";
-import { fetchClients, removeClient, removeSite } from "@/api/clients";
-import { formatSiteOptions } from "@/utils/format";
+import { notifySuccess } from "src/utils/notify";
+import { fetchClients, removeClient, removeSite } from "src/api/clients";
+import { formatSiteOptions } from "src/utils/format";
 
 // ui imports
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   name: "DeleteClient",
@@ -109,17 +105,12 @@ export default {
       if (props.type === "client") {
         // filter out client that is being deleted
         siteOptions.value = Object.freeze(
-          formatSiteOptions(
-            clients.filter((client) => client.id !== props.object.id)
-          )
+          formatSiteOptions(clients.filter((client) => client.id !== props.object.id)),
         );
       } else {
         // filter out site that is being dleted
         clients.forEach(
-          (client) =>
-            (client.sites = client.sites.filter(
-              (site) => site.id !== props.object.id
-            ))
+          (client) => (client.sites = client.sites.filter((site) => site.id !== props.object.id)),
         );
         siteOptions.value = Object.freeze(formatSiteOptions(clients));
       }

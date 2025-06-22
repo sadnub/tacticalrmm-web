@@ -35,12 +35,7 @@
             </q-card-section>
 
             <q-card-section>
-              <q-toggle
-                v-model="template.is_active"
-                color="green"
-                label="Enabled"
-                left-label
-              />
+              <q-toggle v-model="template.is_active" color="green" label="Enabled" left-label />
             </q-card-section>
 
             <div class="q-pl-md text-subtitle1">
@@ -61,11 +56,7 @@
               <div class="col-2 q-mb-sm">Email recipients</div>
               <div class="col-4 q-mb-sm">
                 <q-list dense v-if="template.email_recipients.length !== 0">
-                  <q-item
-                    v-for="email in template.email_recipients"
-                    :key="email"
-                    dense
-                  >
+                  <q-item v-for="email in template.email_recipients" :key="email" dense>
                     <q-item-section>
                       <q-item-label>{{ email }}</q-item-label>
                     </q-item-section>
@@ -97,19 +88,13 @@
               </div>
             </q-card-section>
 
-            <div class="q-pl-md text-subtitle1">
-              SMS Settings (Overrides global SMS settings)
-            </div>
+            <div class="q-pl-md text-subtitle1">SMS Settings (Overrides global SMS settings)</div>
 
             <q-card-section class="row">
               <div class="col-2 q-mb-sm">SMS recipients</div>
               <div class="col-4 q-mb-md">
                 <q-list dense v-if="template.text_recipients.length !== 0">
-                  <q-item
-                    v-for="num in template.text_recipients"
-                    :key="num"
-                    dense
-                  >
+                  <q-item v-for="num in template.text_recipients" :key="num" dense>
                     <q-item-section>
                       <q-item-label>{{ num }}</q-item-label>
                     </q-item-section>
@@ -149,9 +134,7 @@
             <div class="q-pl-md text-subtitle1">
               <span style="text-decoration: underline; cursor: help"
                 >Alert Failure Settings
-                <q-tooltip>
-                  The selected action will run when an alert is triggered.
-                </q-tooltip>
+                <q-tooltip> The selected action will run when an alert is triggered. </q-tooltip>
               </span>
             </div>
 
@@ -239,18 +222,14 @@
                 type="number"
                 v-model.number="template.action_timeout"
                 dense
-                :rules="[
-                  (val) => !!val || 'Failure script timeout is required',
-                ]"
+                :rules="[(val) => !!val || 'Failure script timeout is required']"
               />
             </q-card-section>
 
             <div class="q-pl-md text-subtitle1">
               <span style="text-decoration: underline; cursor: help"
                 >Alert Resolved Settings
-                <q-tooltip>
-                  The selected action will run when an alert is resolved.
-                </q-tooltip>
+                <q-tooltip> The selected action will run when an alert is resolved. </q-tooltip>
               </span>
             </div>
 
@@ -337,9 +316,7 @@
                 type="number"
                 v-model.number="template.resolved_action_timeout"
                 dense
-                :rules="[
-                  (val) => !!val || 'Resolved script timeout is required',
-                ]"
+                :rules="[(val) => !!val || 'Resolved script timeout is required']"
               />
             </q-card-section>
 
@@ -347,8 +324,7 @@
               <span style="text-decoration: underline; cursor: help"
                 >Run actions only on
                 <q-tooltip>
-                  The selected action will only run on the following types of
-                  alerts
+                  The selected action will only run on the following types of alerts
                 </q-tooltip>
               </span>
             </div>
@@ -384,10 +360,9 @@
               <span style="text-decoration: underline; cursor: help"
                 >Alert Failure Settings
                 <q-tooltip>
-                  Select what notifications should be sent when an agent is
-                  overdue. Enabled will override the agent notification settings
-                  and always notify. Not configured will use what notification
-                  settings are configured on the agent. Disabled will override
+                  Select what notifications should be sent when an agent is overdue. Enabled will
+                  override the agent notification settings and always notify. Not configured will
+                  use what notification settings are configured on the agent. Disabled will override
                   the agent notification settings and never notify.
                 </q-tooltip>
               </span>
@@ -422,9 +397,7 @@
                 type="number"
                 v-model.number="template.agent_periodic_alert_days"
                 dense
-                :rules="[
-                  (val) => val >= 0 || 'Periodic days must be 0 or greater',
-                ]"
+                :rules="[(val) => val >= 0 || 'Periodic days must be 0 or greater']"
               />
             </q-card-section>
 
@@ -432,8 +405,7 @@
               <span style="text-decoration: underline; cursor: help"
                 >Alert Resolved Settings
                 <q-tooltip>
-                  Select what notifications should be sent when an overdue agent
-                  is back online.
+                  Select what notifications should be sent when an overdue agent is back online.
                 </q-tooltip>
               </span>
             </div>
@@ -460,10 +432,9 @@
               <span style="text-decoration: underline; cursor: help"
                 >Alert Failure Settings
                 <q-tooltip>
-                  Select what notifications are sent when a check fails. Enabled
-                  will override the check notification settings and always
-                  notify. Not configured will use the notification settings
-                  configured on the check. Disabled will override the check
+                  Select what notifications are sent when a check fails. Enabled will override the
+                  check notification settings and always notify. Not configured will use the
+                  notification settings configured on the check. Disabled will override the check
                   notification settings and never notify.
                 </q-tooltip>
               </span>
@@ -548,9 +519,7 @@
                 type="number"
                 v-model.number="template.check_periodic_alert_days"
                 dense
-                :rules="[
-                  (val) => val >= 0 || 'Periodic days must be 0 or greater',
-                ]"
+                :rules="[(val) => val >= 0 || 'Periodic days must be 0 or greater']"
               />
             </q-card-section>
 
@@ -558,8 +527,7 @@
               <span style="text-decoration: underline; cursor: help"
                 >Alert Resolved Settings
                 <q-tooltip>
-                  Select what notifications are sent when a failed check is
-                  resolved.
+                  Select what notifications are sent when a failed check is resolved.
                 </q-tooltip>
               </span>
             </div>
@@ -586,11 +554,10 @@
               <span style="text-decoration: underline; cursor: help"
                 >Alert Failure Settings
                 <q-tooltip>
-                  Select what notifications are sent when an automated task
-                  fails. Enabled will override the task notification settings
-                  and always notify. Not configured will use the notification
-                  settings configured on the task. Disabled will override the
-                  task notification settings and never notify.
+                  Select what notifications are sent when an automated task fails. Enabled will
+                  override the task notification settings and always notify. Not configured will use
+                  the notification settings configured on the task. Disabled will override the task
+                  notification settings and never notify.
                 </q-tooltip>
               </span>
             </div>
@@ -674,9 +641,7 @@
                 type="number"
                 v-model.number="template.task_periodic_alert_days"
                 dense
-                :rules="[
-                  (val) => val >= 0 || 'Periodic days must be 0 or greater',
-                ]"
+                :rules="[(val) => val >= 0 || 'Periodic days must be 0 or greater']"
               />
             </q-card-section>
 
@@ -684,8 +649,7 @@
               <span style="text-decoration: underline; cursor: help"
                 >Alert Resolved Settings
                 <q-tooltip>
-                  Select what notifications are sent when a failed task is
-                  resolved.
+                  Select what notifications are sent when a failed task is resolved.
                 </q-tooltip>
               </span>
             </div>
@@ -715,19 +679,9 @@
               label="Back"
               class="q-mr-xs"
             />
-            <q-btn
-              v-if="step < 5"
-              @click="stepper?.next()"
-              color="primary"
-              label="Next"
-            />
+            <q-btn v-if="step < 5" @click="stepper?.next()" color="primary" label="Next" />
             <q-space />
-            <q-btn
-              @click="onSubmit"
-              color="primary"
-              label="Submit"
-              :loading="loading"
-            />
+            <q-btn @click="onSubmit" color="primary" label="Submit" :loading="loading" />
           </q-stepper-navigation>
         </template>
       </q-stepper>
@@ -739,24 +693,22 @@
 import { computed, ref, reactive, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 import { useQuasar, useDialogPluginComponent, type QStepper } from "quasar";
-import { useScriptDropdown } from "@/composables/scripts";
-import { useURLActionDropdown } from "@/composables/core";
-import { notifyError, notifySuccess } from "@/utils/notify";
-import { addAlertTemplate, saveAlertTemplate } from "@/api/alerts";
-import { isValidEmail } from "@/utils/validation";
+import { useScriptDropdown } from "src/composables/scripts";
+import { useURLActionDropdown } from "src/composables/core";
+import { notifyError, notifySuccess } from "src/utils/notify";
+import { addAlertTemplate, saveAlertTemplate } from "src/api/alerts";
+import { isValidEmail } from "src/utils/validation";
 
 // components
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // types
-import type { AlertTemplate, AlertSeverity } from "@/types/alerts";
+import type { AlertTemplate, AlertSeverity } from "src/types/alerts";
 
 // store
 const store = useStore();
 const hosted = computed(() => store.state.hosted);
-const server_scripts_enabled = computed(
-  () => store.state.server_scripts_enabled,
-);
+const server_scripts_enabled = computed(() => store.state.server_scripts_enabled);
 
 // props
 const props = defineProps<{
@@ -920,9 +872,7 @@ const staticActionTypeOptions = [
 const actionTypeOptions = computed(() => {
   // don't show for hosted at all
   if (hosted.value) {
-    return staticActionTypeOptions.filter(
-      (option) => option.value !== "server",
-    );
+    return staticActionTypeOptions.filter((option) => option.value !== "server");
   }
   // disable the server script radio button if feature is disabled globally
   const modifiedOptions = staticActionTypeOptions.map((option) => {

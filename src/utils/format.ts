@@ -1,14 +1,14 @@
 import { date } from "quasar";
-import { validateTimePeriod } from "@/utils/validation";
-import trmmLogo from "@/assets/trmm_256.png";
+import { validateTimePeriod } from "src/utils/validation";
+import trmmLogo from "src/assets/trmm_256.png";
 
-import type { Script } from "@/types/scripts";
-import type { Agent } from "@/types/agents";
-import type { Client, ClientWithSites } from "@/types/clients";
-import type { User } from "@/types/accounts";
-import type { Check } from "@/types/checks";
-import { CustomField, CustomFieldValue } from "@/types/core/customfields";
-import { URLAction } from "@/types/core/urlactions";
+import type { Script } from "src/types/scripts";
+import type { Agent } from "src/types/agents";
+import type { Client, ClientWithSites } from "src/types/clients";
+import type { User } from "src/types/accounts";
+import type { Check } from "src/types/checks";
+import { CustomField, CustomFieldValue } from "src/types/core/customfields";
+import { URLAction } from "src/types/core/urlactions";
 
 // dropdown options formatting
 export interface SelectOptionCategory {
@@ -32,10 +32,8 @@ export function removeExtraOptionCategories(array: Option[]) {
     const nextOption = array[i + 1];
 
     // Determine if current and next options are categories
-    const isCurrentCategory =
-      typeof currentOption === "object" && "category" in currentOption;
-    const isNextCategory =
-      typeof nextOption === "object" && "category" in nextOption;
+    const isCurrentCategory = typeof currentOption === "object" && "category" in currentOption;
+    const isNextCategory = typeof nextOption === "object" && "category" in nextOption;
 
     if (i === array.length - 1) {
       // Always add the last item if it's not a category
@@ -121,9 +119,7 @@ export function formatScriptOptions(data: Script[]): Option[] {
   categories.forEach((cat) => {
     options.push({ category: cat });
 
-    const scripts = categoryMap
-      .get(cat)!
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const scripts = categoryMap.get(cat)!.sort((a, b) => a.name.localeCompare(b.name));
     scripts.forEach((script) => {
       const option: Option = {
         img_right: script.script_type === "builtin" ? trmmLogo : undefined,
@@ -172,22 +168,15 @@ export function formatAgentOptions(
     categories.forEach((cat) => {
       options.push({ category: cat });
       const agentsInCategory = agents.filter((agent) => agent.cat === cat);
-      const sortedAgents = agentsInCategory.sort((a, b) =>
-        a.label.localeCompare(b.label),
-      );
-      options.push(
-        ...sortedAgents.map(({ label, value, cat }) => ({ label, value, cat })),
-      );
+      const sortedAgents = agentsInCategory.sort((a, b) => a.label.localeCompare(b.label));
+      options.push(...sortedAgents.map(({ label, value, cat }) => ({ label, value, cat })));
     });
 
     return options;
   }
 }
 
-export function formatCustomFieldOptions(
-  data: CustomField[],
-  flat = false,
-): Option[] {
+export function formatCustomFieldOptions(data: CustomField[], flat = false): Option[] {
   if (flat) {
     // For a flat list, simply format the options based on the "name" property
     return _formatOptions(data, { label: "name", flat: true });
@@ -210,9 +199,7 @@ export function formatCustomFieldOptions(
         }));
 
       // Sort the filtered custom fields by their labels and add them to the options
-      const sortedFields = matchingFields.sort((a, b) =>
-        a.label.localeCompare(b.label),
-      );
+      const sortedFields = matchingFields.sort((a, b) => a.label.localeCompare(b.label));
       options.push(...sortedFields);
     });
 
@@ -256,10 +243,7 @@ export function formatURLActionOptions(data: URLAction[], flat = false) {
   });
 }
 
-export function formatCustomFields(
-  fields: CustomField[],
-  values: CustomFieldValue,
-) {
+export function formatCustomFields(fields: CustomField[], values: CustomFieldValue) {
   const tempArray = [];
 
   for (const field of fields) {
@@ -322,10 +306,7 @@ export function getTimeLapse(unixtime: number) {
   }
 }
 
-export function formatDate(
-  dateString: string | number | Date,
-  format = "MMM-DD-YYYY HH:mm",
-) {
+export function formatDate(dateString: string | number | Date, format = "MMM-DD-YYYY HH:mm") {
   if (!dateString) return "";
   return date.formatDate(dateString, format);
 }
@@ -345,10 +326,7 @@ export function getNextAgentUpdateTime() {
 }
 
 // converts a date with timezone to local for html native datetime fields -> YYYY-MM-DD HH:mm:ss
-export function formatDateInputField(
-  isoDateString: string | number,
-  noTimezone = false,
-) {
+export function formatDateInputField(isoDateString: string | number, noTimezone = false) {
   if (noTimezone && typeof isoDateString === "string") {
     isoDateString = isoDateString.replace("Z", "");
   }
@@ -427,9 +405,7 @@ export function convertToBitArray(number: number) {
       if (binary.slice(i).length === 1) {
         bitArray.push(1);
       } else {
-        bitArray.push(
-          parseInt(binary.slice(i), 2) - parseInt(binary.slice(i + 1), 2),
-        );
+        bitArray.push(parseInt(binary.slice(i), 2) - parseInt(binary.slice(i + 1), 2));
       }
     }
   }
@@ -455,10 +431,10 @@ export function convertCamelCase(str: string) {
 }
 
 // This will take an object and make a clone of it without including some of the keys
-export function copyObjectWithoutKeys<
-  T extends Record<string, unknown>,
-  K extends keyof T,
->(objToCopy: T, keysToExclude: Array<K>): Omit<T, K> {
+export function copyObjectWithoutKeys<T extends Record<string, unknown>, K extends keyof T>(
+  objToCopy: T,
+  keysToExclude: Array<K>,
+): Omit<T, K> {
   const result: Partial<T> = {};
 
   Object.keys(objToCopy).forEach((key) => {

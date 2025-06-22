@@ -2,14 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="min-width: 70vw; height: 70vh">
       <q-bar>
-        <q-btn
-          @click="getDeployments"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />
+        <q-btn @click="getDeployments" class="q-mr-sm" dense flat push icon="refresh" />
         Manage Deployments
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
@@ -39,11 +32,7 @@
         </template>
 
         <template v-slot:body="props">
-          <q-tr
-            :props="props"
-            class="cursor-pointer"
-            @dblclick="copyLink(props.row)"
-          >
+          <q-tr :props="props" class="cursor-pointer" @dblclick="copyLink(props.row)">
             <q-menu context-menu auto-close>
               <q-list dense style="min-width: 200px">
                 <q-item clickable @click="deleteDeployment(props.row)">
@@ -62,17 +51,11 @@
             <q-td key="site" :props="props">{{ props.row.site_name }}</q-td>
             <q-td key="mon_type" :props="props">{{ props.row.mon_type }}</q-td>
             <q-td key="goarch" :props="props">{{ props.row.goarch }}</q-td>
-            <q-td key="expiry" :props="props">{{
-              formatDate(props.row.expiry)
-            }}</q-td>
-            <q-td key="created" :props="props">{{
-              formatDate(props.row.created)
-            }}</q-td>
+            <q-td key="expiry" :props="props">{{ formatDate(props.row.expiry) }}</q-td>
+            <q-td key="created" :props="props">{{ formatDate(props.row.created) }}</q-td>
             <q-td key="flags" :props="props"
               ><q-badge color="grey-8" label="View Flags" />
-              <q-tooltip style="font-size: 12px">{{
-                props.row.install_flags
-              }}</q-tooltip>
+              <q-tooltip style="font-size: 12px">{{ props.row.install_flags }}</q-tooltip>
             </q-td>
             <q-td key="link" :props="props">
               <q-btn
@@ -97,12 +80,12 @@
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useQuasar, useDialogPluginComponent, copyToClipboard } from "quasar";
-import { fetchDeployments, removeDeployment } from "@/api/clients";
-import { notifySuccess } from "@/utils/notify";
-import { getBaseUrl } from "@/boot/axios";
+import { fetchDeployments, removeDeployment } from "src/api/clients";
+import { notifySuccess } from "src/utils/notify";
+import { getBaseUrl } from "src/boot/axios";
 
 // ui imports
-import NewDeployment from "@/components/clients/NewDeployment.vue";
+import NewDeployment from "src/components/clients/NewDeployment.vue";
 
 // static data
 const columns = [

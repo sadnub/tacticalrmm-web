@@ -1,14 +1,6 @@
 <template>
-  <q-dialog
-    ref="dialogRef"
-    @hide="onDialogHide"
-    persistent
-    @keydown.esc="onDialogHide"
-  >
-    <q-card
-      class="q-dialog-plugin"
-      :style="{ 'min-width': !ret ? '40vw' : '70vw' }"
-    >
+  <q-dialog ref="dialogRef" @hide="onDialogHide" persistent @keydown.esc="onDialogHide">
+    <q-card class="q-dialog-plugin" :style="{ 'min-width': !ret ? '40vw' : '70vw' }">
       <q-bar>
         Send command on {{ agent.hostname }}
         <q-space />
@@ -94,15 +86,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat dense push label="Cancel" v-close-popup />
-          <q-btn
-            :loading="loading"
-            flat
-            dense
-            push
-            label="Send"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="loading" flat dense push label="Send" color="primary" type="submit" />
         </q-card-actions>
         <q-card-section v-if="ret !== null"
           ><script-output-copy-clip label="Output" :data="ret" /> <q-separator
@@ -123,11 +107,11 @@
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { sendAgentCommand } from "@/api/agents";
-import { cmdPlaceholder } from "@/composables/agents";
-import { runAsUserToolTip } from "@/constants/constants";
+import { sendAgentCommand } from "src/api/agents";
+import { cmdPlaceholder } from "src/composables/agents";
+import { runAsUserToolTip } from "src/constants/constants";
 
-import ScriptOutputCopyClip from "@/components/scripts/ScriptOutputCopyClip.vue";
+import ScriptOutputCopyClip from "src/components/scripts/ScriptOutputCopyClip.vue";
 
 export default {
   name: "SendCommand",

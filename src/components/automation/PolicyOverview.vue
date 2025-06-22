@@ -2,14 +2,8 @@
   <q-dialog ref="dialog" @hide="onHide">
     <q-card class="q-dialog-plugin" style="width: 90vw; max-width: 90vw">
       <q-bar>
-        <q-btn
-          @click="getPolicyTree"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />Policy Overview
+        <q-btn @click="getPolicyTree" class="q-mr-sm" dense flat push icon="refresh" />Policy
+        Overview
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -69,9 +63,9 @@
 </template>
 
 <script>
-import mixins from "@/mixins/mixins";
-import PolicyChecksTab from "@/components/automation/PolicyChecksTab.vue";
-import PolicyAutomatedTasksTab from "@/components/automation/PolicyAutomatedTasksTab.vue";
+import mixins from "src/mixins/mixins";
+import PolicyChecksTab from "src/components/automation/PolicyChecksTab.vue";
+import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTasksTab.vue";
 
 export default {
   name: "PolicyOverview",
@@ -164,8 +158,7 @@ export default {
             disabled = " (disabled)";
           }
 
-          const label =
-            client.workstation_policy.name + " (Workstations)" + disabled;
+          const label = client.workstation_policy.name + " (Workstations)" + disabled;
           client_temp["children"].push({
             label: label,
             icon: "policy",
@@ -214,8 +207,7 @@ export default {
               disabled = " (disabled)";
             }
 
-            const label =
-              site.workstation_policy.name + " (Workstations)" + disabled;
+            const label = site.workstation_policy.name + " (Workstations)" + disabled;
             site_temp["children"].push({
               label: label,
               icon: "policy",

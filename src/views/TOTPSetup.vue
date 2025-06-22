@@ -9,17 +9,14 @@
           </q-card-section>
           <q-card-section v-if="qrUrl">
             <p>
-              Scan the QR Code with your authenticator app and then click Finish
-              to be redirected back to the signin page. If you navigate away
-              from this page you 2FA signin will need to be reset!
+              Scan the QR Code with your authenticator app and then click Finish to be redirected
+              back to the signin page. If you navigate away from this page you 2FA signin will need
+              to be reset!
             </p>
             <img :src="qrCode" alt="QR Code" />
           </q-card-section>
           <q-card-section v-if="totpKey">
-            <p>
-              You can also use the below code to configure the authenticator
-              manually.
-            </p>
+            <p>You can also use the below code to configure the authenticator manually.</p>
             <p>{{ totpKey }}</p>
           </q-card-section>
           <q-card-actions align="center">
@@ -41,7 +38,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useQuasar } from "quasar";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "src/stores/auth";
 import { useRouter } from "vue-router";
 
 import { useQRCode } from "@vueuse/integrations/useQRCode";

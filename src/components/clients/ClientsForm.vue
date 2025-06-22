@@ -28,23 +28,13 @@
           />
         </q-card-section>
 
-        <div class="q-pl-sm text-h6" v-if="customFields.length > 0">
-          Custom Fields
-        </div>
+        <div class="q-pl-sm text-h6" v-if="customFields.length > 0">Custom Fields</div>
         <q-card-section v-for="field in customFields" :key="field.id">
           <CustomField v-model="custom_fields[field.name]" :field="field" />
         </q-card-section>
         <q-card-actions align="right">
           <q-btn dense flat label="Cancel" v-close-popup />
-          <q-btn
-            :loading="loading"
-            dense
-            flat
-            push
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="loading" dense flat push label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -55,13 +45,13 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { fetchClient, saveClient, editClient } from "@/api/clients";
-import { fetchCustomFields } from "@/api/core";
-import { formatCustomFields } from "@/utils/format";
-import { notifySuccess } from "@/utils/notify";
+import { fetchClient, saveClient, editClient } from "src/api/clients";
+import { fetchCustomFields } from "src/api/core";
+import { formatCustomFields } from "src/utils/format";
+import { notifySuccess } from "src/utils/notify";
 
 // ui imports
-import CustomField from "@/components/ui/CustomField.vue";
+import CustomField from "src/components/ui/CustomField.vue";
 
 export default {
   name: "ClientsForm",
@@ -77,9 +67,7 @@ export default {
     const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 
     // clients form logic
-    const state = !!props.client
-      ? ref(Object.assign({}, props.client))
-      : ref({ name: "" });
+    const state = !!props.client ? ref(Object.assign({}, props.client)) : ref({ name: "" });
     const site = ref({ name: "" });
     const custom_fields = ref({});
     const customFields = ref([]);
@@ -90,10 +78,7 @@ export default {
       const data = {
         client: state.value,
         site: site.value,
-        custom_fields: formatCustomFields(
-          customFields.value,
-          custom_fields.value
-        ),
+        custom_fields: formatCustomFields(customFields.value, custom_fields.value),
       };
       try {
         const result = !!props.client
@@ -112,9 +97,7 @@ export default {
       const data = await fetchClient(props.client.id);
 
       for (let field of customFields.value) {
-        const value = data.custom_fields.find(
-          (value) => value.field === field.id
-        );
+        const value = data.custom_fields.find((value) => value.field === field.id);
 
         if (field.type === "multiple") {
           if (value) custom_fields.value[field.name] = value.value;

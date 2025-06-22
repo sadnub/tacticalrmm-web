@@ -53,8 +53,8 @@
 </template>
 
 <script>
-import TacticalDropdown from "@/components/ui/TacticalDropdown.vue";
-import mixins from "@/mixins/mixins";
+import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import mixins from "src/mixins/mixins";
 export default {
   name: "PolicyExclusions",
   components: { TacticalDropdown },
@@ -99,7 +99,7 @@ export default {
           r.data.forEach((client) => {
             this.siteOptions.push({ category: client.name });
             client.sites.forEach((site) =>
-              this.siteOptions.push({ label: site.name, value: site.id })
+              this.siteOptions.push({ label: site.name, value: site.id }),
             );
           });
           this.$q.loading.hide();
@@ -109,9 +109,7 @@ export default {
         });
     },
     getOptions() {
-      this.getAgentOptions("id").then(
-        (options) => (this.agentOptions = Object.freeze(options))
-      );
+      this.getAgentOptions("id").then((options) => (this.agentOptions = Object.freeze(options)));
       this.getClientsandSites();
     },
     show() {
