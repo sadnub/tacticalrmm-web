@@ -123,57 +123,55 @@
   </q-layout>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 // ui imports
-import SummaryTab from "src/components/agents/SummaryTab.vue";
-import ChecksTab from "src/components/agents/ChecksTab.vue";
-import AutomatedTasksTab from "src/components/agents/AutomatedTasksTab.vue";
-import WinUpdateTab from "src/components/agents/WinUpdateTab.vue";
-import SoftwareTab from "src/components/agents/SoftwareTab.vue";
-import HistoryTab from "src/components/agents/HistoryTab.vue";
-import AuditTab from "src/components/agents/AuditTab.vue";
-import DebugTab from "src/components/agents/DebugTab.vue";
-import AssetsTab from "src/components/agents/AssetsTab.vue";
-import NotesTab from "src/components/agents/NotesTab.vue";
+import SummaryTab from "src/core/agents/components/tabs/SummaryTab.vue";
+import ChecksTab from "src/core/agents/components/tabs/ChecksTab.vue";
+import AutomatedTasksTab from "src/core/agents/components/tabs/AutomatedTasksTab.vue";
+import WinUpdateTab from "src/core/agents/components/tabs/WinUpdateTab.vue";
+import SoftwareTab from "src/core/agents/components/tabs/SoftwareTab.vue";
+import HistoryTab from "src/core/agents/components/tabs/HistoryTab.vue";
+import AuditTab from "src/core/agents/components/tabs/AuditTab.vue";
+import DebugTab from "src/core/agents/components/tabs/DebugTab.vue";
+import AssetsTab from "src/core/agents/components/tabs/AssetsTab.vue";
+import NotesTab from "src/core/agents/components/tabs/NotesTab.vue";
 
-export default {
-  name: "SubTableTabs",
-  components: {
-    SummaryTab,
-    ChecksTab,
-    AutomatedTasksTab,
-    WinUpdateTab,
-    SoftwareTab,
-    HistoryTab,
-    AuditTab,
-    DebugTab,
-    AssetsTab,
-    NotesTab,
-  },
-  props: {
-    activeTabs: {
-      type: Array,
-      default: () => [
-        "summary",
-        "checks",
-        "tasks",
-        "patches",
-        "software",
-        "history",
-        "notes",
-        "assets",
-        "debug",
-        "audit",
-      ],
-    },
-  },
-  setup(props) {
-    return {
-      subtab: ref(props.activeTabs[0]),
-    };
-  },
-};
+type Tab =
+  | "summary"
+  | "checks"
+  | "tasks"
+  | "patches"
+  | "software"
+  | "history"
+  | "notes"
+  | "assets"
+  | "debug"
+  | "audit";
+
+const props = defineProps<{
+  disableTabs?: Tab[];
+}>();
+
+const tabs: Tab[] = [
+  "summary",
+  "checks",
+  "tasks",
+  "patches",
+  "software",
+  "history",
+  "notes",
+  "assets",
+  "debug",
+  "audit",
+];
+
+const activeTabs = computed(() => {
+  if (props.disableTabs) return tabs.filter((tab) => !props.disableTabs?.includes(tab));
+  else return tabs;
+});
+
+const subtab = ref(activeTabs.value[0]);
 </script>

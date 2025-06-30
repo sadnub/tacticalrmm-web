@@ -12,36 +12,36 @@
         <q-card-section>
           <tactical-dropdown
             label="Excluded Clients"
-            outlined
+            filled
             multiple
             v-model="localTemplate.excluded_clients"
             :options="clientOptions"
             use-chips
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
             label="Excluded Sites"
-            outlined
+            filled
             multiple
             v-model="localTemplate.excluded_sites"
             :options="siteOptions"
             use-chips
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
             label="Excluded Agents"
-            outlined
+            filled
             multiple
             v-model="localTemplate.excluded_agents"
             :options="agentOptions"
             use-chips
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>

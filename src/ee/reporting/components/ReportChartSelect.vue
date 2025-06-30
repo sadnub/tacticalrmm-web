@@ -15,13 +15,13 @@ For details, see: https://license.tacticalrmm.com/ee
         </q-btn>
       </q-bar>
       <q-card-section>
-        <q-input v-model="chartName" outlined dense label="Chart Name" />
+        <q-input v-model="chartName" filled dense label="Chart Name" />
       </q-card-section>
       <q-card-section>
         <q-select
           v-model="chartType"
           :options="chartOptions"
-          outlined
+          filled
           dense
           label="Chart Type"
           map-options
@@ -29,18 +29,10 @@ For details, see: https://license.tacticalrmm.com/ee
         />
       </q-card-section>
       <q-card-section>
-        <q-option-group
-          v-model="outputType"
-          :options="outputOptions"
-          dense
-          inline
-        />
+        <q-option-group v-model="outputType" :options="outputOptions" dense inline />
       </q-card-section>
       <q-card-section>
-        <div
-          ref="chartEditor"
-          :style="{ height: `${$q.screen.height / 2}px` }"
-        ></div>
+        <div ref="chartEditor" :style="{ height: `${$q.screen.height / 2}px` }"></div>
       </q-card-section>
       <q-card-actions>
         <q-space />
@@ -96,12 +88,11 @@ const chartEditor = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor;
 
 function loadEditor() {
-  var modelUri = monaco.Uri.parse("model://new"); // a made up unique URI for our model
-  var model = monaco.editor.createModel(options.value, "yaml", modelUri);
+  const modelUri = monaco.Uri.parse("model://new"); // a made up unique URI for our model
+  const model = monaco.editor.createModel(options.value, "yaml", modelUri);
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   editor = monaco.editor.create(chartEditor.value!, {
     model: model,
     theme: theme,

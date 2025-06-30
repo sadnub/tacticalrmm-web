@@ -10,7 +10,7 @@
         </q-btn>
       </q-bar>
       <q-splitter v-model="splitterModel" style="height: 600px">
-        <template v-slot:before>
+        <template #before>
           <div class="q-pa-md">
             <q-tree
               ref="tree"
@@ -22,7 +22,7 @@
           </div>
         </template>
 
-        <template v-slot:after>
+        <template #after>
           <q-tabs
             v-model="selectedTab"
             dense
@@ -46,13 +46,13 @@
             <q-tab-panel name="checks">
               <PolicyChecksTab
                 v-if="!!selectedPolicyId"
-                :selectedPolicy="$refs.tree.getNodeByKey(selectedPolicyId).id"
+                :selected-policy="$refs.tree.getNodeByKey(selectedPolicyId).id"
               />
             </q-tab-panel>
             <q-tab-panel name="tasks">
               <PolicyAutomatedTasksTab
                 v-if="!!selectedPolicyId"
-                :selectedPolicy="$refs.tree.getNodeByKey(selectedPolicyId).id"
+                :selected-policy="$refs.tree.getNodeByKey(selectedPolicyId).id"
               />
             </q-tab-panel>
           </q-tab-panels>
@@ -114,13 +114,13 @@ export default {
        * }]
        */
 
-      var result = [];
+      const result = [];
 
       // Used by tree for unique identification
       let unique_id = 0;
 
-      for (let client of data) {
-        var client_temp = {};
+      for (const client of data) {
+        const client_temp = {};
 
         client_temp["label"] = client.name;
         client_temp["id"] = unique_id;
@@ -132,7 +132,7 @@ export default {
         unique_id--;
 
         // Add any server policies assigned to client
-        if (!!client.server_policy) {
+        if (client.server_policy) {
           let disabled = "";
 
           // Indicate if the policy is active or not
@@ -150,7 +150,7 @@ export default {
         }
 
         // Add any workstation policies assigned to client
-        if (!!client.workstation_policy) {
+        if (client.workstation_policy) {
           let disabled = "";
 
           // Indicate if the policy is active or not
@@ -168,8 +168,8 @@ export default {
         }
 
         // Iterate through Sites
-        for (let site of client.sites) {
-          var site_temp = {};
+        for (const site of client.sites) {
+          const site_temp = {};
           site_temp["label"] = site.name;
           site_temp["id"] = unique_id;
           site_temp["icon"] = "apartment";
@@ -179,7 +179,7 @@ export default {
           unique_id--;
 
           // Add any server policies assigned to site
-          if (!!site.server_policy) {
+          if (site.server_policy) {
             site_temp["children"] = [];
 
             // Indicate if the policy is active or not
@@ -198,7 +198,7 @@ export default {
           }
 
           // Add any server policies assigned to site
-          if (!!site.workstation_policy) {
+          if (site.workstation_policy) {
             site_temp["children"] = [];
 
             // Indicate if the policy is active or not

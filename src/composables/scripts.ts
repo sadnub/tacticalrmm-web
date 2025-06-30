@@ -3,7 +3,7 @@ import { useStore } from "vuex";
 import { fetchScripts } from "src/api/scripts";
 import { formatScriptOptions, removeExtraOptionCategories } from "src/utils/format";
 import type { Script } from "src/types/scripts";
-import { AgentPlatformType } from "src/types/agents";
+import type { AgentPlatformType } from "src/types/agents";
 
 export interface ScriptOption extends Script {
   label: string;

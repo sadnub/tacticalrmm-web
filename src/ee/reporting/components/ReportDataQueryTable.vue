@@ -8,14 +8,8 @@ For details, see: https://license.tacticalrmm.com/ee
   <q-dialog ref="dialogRef" maximized @hide="onDialogHide">
     <q-card>
       <q-bar>
-        <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-          @click="getReportDataQueries"
-        />Data Queries
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getReportDataQueries" />Data
+        Queries
         <q-space />
         <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -55,7 +49,7 @@ For details, see: https://license.tacticalrmm.com/ee
             style="width: 300px"
             label="Search"
             dense
-            outlined
+            filled
             clearable
             class="q-pr-md q-pb-xs"
           >
@@ -66,37 +60,18 @@ For details, see: https://license.tacticalrmm.com/ee
         </template>
 
         <template #body="props">
-          <q-tr
-            :props="props"
-            class="cursor-pointer"
-            @dblclick="openEditDataQuery(props.row)"
-          >
+          <q-tr :props="props" class="cursor-pointer" @dblclick="openEditDataQuery(props.row)">
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item v-close-popup clickable @click="cloneQuery(props.row)">
-                  <q-item-section side>
-                    <q-icon name="content_copy" />
-                  </q-item-section>
-                  <q-item-section>Clone</q-item-section>
-                </q-item>
-
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="openEditDataQuery(props.row)"
-                >
+                <q-item v-close-popup clickable @click="openEditDataQuery(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="deleteDataQuery(props.row)"
-                >
+                <q-item v-close-popup clickable @click="deleteDataQuery(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -149,12 +124,8 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // reports manager logic
-const {
-  reportDataQueries,
-  isLoading,
-  getReportDataQueries,
-  deleteReportDataQuery,
-} = useSharedReportDataQueries;
+const { reportDataQueries, isLoading, getReportDataQueries, deleteReportDataQuery } =
+  useSharedReportDataQueries;
 const search = ref("");
 
 function openNewDataQueryForm() {
@@ -175,18 +146,12 @@ function openEditDataQuery(dataQuery: ReportDataQuery) {
 function deleteDataQuery(dataQuery: ReportDataQuery) {
   $q.dialog({
     title: `Delete Data Query: ${dataQuery.name}?`,
-    message:
-      "If this query is in use you will need to change it in every report template",
+    message: "If this query is in use you will need to change it in every report template",
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
     deleteReportDataQuery(dataQuery.id);
   });
-}
-
-async function cloneQuery(dataQuery: ReportDataQuery) {
-  // TODO: fill out function
-  console.log(dataQuery);
 }
 
 onMounted(getReportDataQueries);

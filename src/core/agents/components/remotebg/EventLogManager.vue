@@ -8,7 +8,7 @@
         <q-select
           dense
           options-dense
-          outlined
+          filled
           v-model="days"
           :options="lastDaysOptions"
           :label="showDays"
@@ -58,7 +58,7 @@
         <q-radio v-model="logType" color="cyan" val="System" label="System" />
         <q-radio v-model="logType" color="cyan" val="Security" label="Security" />
         <q-space />
-        <q-input v-model="filter" style="width: 300px" outlined label="Search" dense clearable>
+        <q-input v-model="filter" style="width: 300px" filled label="Search" dense clearable>
           <template #prepend>
             <q-icon name="search" />
           </template>

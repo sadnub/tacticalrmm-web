@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card style="min-width: 75vw; max-heigth: 75vh" class="q-dialog-plugin">
+    <q-card style="min-width: 75vw; max-height: 75vh" class="q-dialog-plugin">
       <q-bar>
         {{ localRole ? "Editing Role" : "Adding Role" }}
         <q-space />
@@ -12,7 +12,7 @@
             label="Role Name"
             class="col-6"
             dense
-            outlined
+            filled
             v-model="localRole.name"
             :rules="[(val) => !!val || '*Required']"
           />
@@ -129,8 +129,8 @@
               :options="clientOptions"
               v-model="localRole.can_view_clients"
               hint="Empty means all clients are allowed"
-              outlined
-              mapOptions
+              filled
+              map-options
               multiple
               filterable
             />
@@ -142,8 +142,8 @@
               :options="siteOptions"
               v-model="localRole.can_view_sites"
               hint="Empty means all sites are allowed"
-              outlined
-              mapOptions
+              filled
+              map-options
               multiple
               filterable
             />
@@ -391,9 +391,8 @@ const localRole = props.role
     });
 
 async function onSubmit() {
-  props.role && props.role.id
-    ? roleStore.updateRole(props.role.id, localRole)
-    : roleStore.addRole(localRole);
+  if (props.role && props.role.id) roleStore.updateRole(props.role.id, localRole);
+  else roleStore.addRole(localRole);
 
   // stops the dialog from closing when there is an error
   await until(roleStore.isLoading).not.toBeTruthy();
@@ -406,7 +405,9 @@ watch(
   () => localRole.is_superuser,
   (newValue) => {
     Object.keys(localRole).forEach((key) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (typeof (localRole as Record<string, any>)[key] === "boolean") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (localRole as Record<string, any>)[key] = newValue;
       }
     });

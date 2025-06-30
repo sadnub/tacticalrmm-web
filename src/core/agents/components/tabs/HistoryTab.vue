@@ -28,7 +28,7 @@
           icon="refresh"
         />
         <q-space />
-        <q-input v-model="filter" outlined label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -67,7 +67,7 @@ import { useAgentStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
-import ScriptOutput from "src/components/checks/ScriptOutput.vue";
+import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
 

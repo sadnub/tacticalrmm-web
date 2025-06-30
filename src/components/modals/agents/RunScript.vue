@@ -27,11 +27,11 @@
             v-model="state.script"
             :options="filterByPlatformOptions"
             label="Select script"
-            outlined
-            mapOptions
+            filled
+            map-options
             filterable
           >
-            <template v-slot:after>
+            <template #after>
               <q-btn size="sm" round dense flat icon="info" @click="openScriptURL">
                 <q-tooltip v-if="syntax" class="bg-white text-primary text-body1">{{
                   syntax
@@ -99,11 +99,11 @@
         <q-card-section v-if="state.output === 'collector'">
           <tactical-dropdown
             :rules="[(val: number) => !!val || '*Required']"
-            outlined
+            filled
             v-model="state.custom_field"
             :options="customFieldOptions"
             label="Select custom field"
-            mapOptions
+            map-options
             filterable
           />
           <q-checkbox v-model="state.save_all_output" label="Save all output" />
@@ -135,7 +135,7 @@
           <q-input
             v-model.number="state.timeout"
             dense
-            outlined
+            filled
             type="number"
             style="max-width: 150px"
             label="Timeout (seconds)"

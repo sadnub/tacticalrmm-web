@@ -35,7 +35,7 @@
       no-data-label="No Keys added yet"
     >
       <!-- body slots -->
-      <template v-slot:body="props">
+      <template #body="props">
         <q-tr :props="props" class="cursor-pointer" @dblclick="editKey(props.row)">
           <!-- context menu -->
           <q-menu context-menu>

@@ -5,7 +5,7 @@
         <div class="col-3">New password:</div>
         <div class="col-9">
           <q-input
-            outlined
+            filled
             dense
             v-model="pass"
             :type="hidePassword ? 'password' : 'text'"
@@ -23,7 +23,7 @@
         <div class="col-3">Confirm password:</div>
         <div class="col-9">
           <q-input
-            outlined
+            filled
             dense
             v-model="pass2"
             :type="hidePassword ? 'password' : 'text'"

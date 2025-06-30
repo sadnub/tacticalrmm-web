@@ -16,24 +16,29 @@
           <q-card-section class="row items-center">
             <div class="text-h5 text-weight-bold">Initial Setup</div>
           </q-card-section>
-          <q-form @submit.prevent="finish">
+          <q-form @submit.prevent="submit">
             <q-card-section>
               <div>Add Client:</div>
               <q-input
                 dense
-                outlined
-                v-model="client.name"
+                filled
+                v-model="form.client.name"
                 :rules="[(val) => !!val || '*Required']"
               >
-                <template v-slot:prepend>
+                <template #prepend>
                   <q-icon name="business" />
                 </template>
               </q-input>
             </q-card-section>
             <q-card-section>
               <div>Add Site:</div>
-              <q-input dense outlined v-model="site.name" :rules="[(val) => !!val || '*Required']">
-                <template v-slot:prepend>
+              <q-input
+                dense
+                filled
+                v-model="form.site.name"
+                :rules="[(val) => !!val || '*Required']"
+              >
+                <template #prepend>
                   <q-icon name="apartment" />
                 </template>
               </q-input>
@@ -44,9 +49,9 @@
                 filterable
                 dense
                 options-dense
-                outlined
-                v-model="timezone"
-                :options="allTimezones"
+                filled
+                v-model="form.timezone"
+                :options="coreStore.coreSettings?.all_timezones || []"
               />
             </q-card-section>
 
@@ -66,7 +71,7 @@
                 </q-icon>
               </div>
 
-              <q-input dense outlined v-model="companyname"> </q-input>
+              <q-input dense filled v-model="form.companyname"> </q-input>
             </q-card-section>
 
             <q-card-actions align="center">
@@ -80,55 +85,36 @@
   </div>
 </template>
 
-<script>
-import mixins from "src/mixins/mixins";
+<script lang="ts" setup>
+import { onMounted, reactive } from "vue";
+import { useRouter } from "vue-router";
+import { useCoreStore } from "src/core/settings/api";
+import { useClientStore } from "src/core/clients/api";
+
 import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
-export default {
-  name: "InitialSetup",
-  components: { TacticalDropdown },
-  mixins: [mixins],
-  data() {
-    return {
-      client: {
-        name: "",
-      },
-      site: {
-        name: "",
-      },
-      allTimezones: [],
-      timezone: null,
-      arch: "64",
-      companyname: "",
-    };
+// setup stores
+const coreStore = useCoreStore();
+const clientStore = useClientStore();
+
+const router = useRouter();
+
+const form = reactive({
+  client: {
+    name: "",
   },
-  methods: {
-    finish() {
-      this.$q.loading.show();
-      const data = {
-        client: this.client,
-        site: this.site,
-        timezone: this.timezone,
-        companyname: this.companyname,
-        initialsetup: true,
-      };
-      this.$axios
-        .post("/clients/", data)
-        .then(() => {
-          this.$q.loading.hide();
-          this.$router.push({ name: "Dashboard" });
-        })
-        .catch(() => this.$q.loading.hide());
-    },
-    getSettings() {
-      this.$axios.get("/core/settings/").then((r) => {
-        this.allTimezones = Object.freeze(r.data.all_timezones);
-        this.timezone = r.data.default_time_zone;
-      });
-    },
+  site: {
+    name: "",
   },
-  mounted() {
-    this.getSettings();
-  },
-};
+  timezone: "",
+  companyname: "",
+  initialsetup: true,
+});
+
+function submit() {
+  clientStore.addClient(form);
+  void router.push({ name: "Dashboard" });
+}
+
+onMounted(coreStore.getCoreSettings);
 </script>

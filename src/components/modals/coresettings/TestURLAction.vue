@@ -18,7 +18,7 @@
           v-model="agent"
           :options="agentOptions"
           label="Agents"
-          mapOptions
+          map-options
           filterable
           dense
           filled
@@ -30,7 +30,7 @@
           v-model="site"
           :options="siteOptions"
           label="Sites"
-          mapOptions
+          map-options
           filterable
           dense
           filled
@@ -42,7 +42,7 @@
           v-model="client"
           :options="clientOptions"
           label="Client"
-          mapOptions
+          map-options
           filterable
           dense
           filled
@@ -83,7 +83,7 @@ import { useDialogPluginComponent } from "quasar";
 import { useAgentDropdown } from "src/composables/agents";
 import { useSiteDropdown, useClientDropdown } from "src/composables/clients";
 import { runTestURLAction } from "src/api/core";
-import { URLAction } from "src/types/core/urlactions";
+import type { URLAction } from "src/types/core/urlactions";
 
 // ui imports
 import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";

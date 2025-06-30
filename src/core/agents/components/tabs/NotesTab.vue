@@ -84,7 +84,7 @@ import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import { AgentNote } from "../../types";
+import type { AgentNote } from "../../types";
 
 // static data
 const columns: QTableProps["columns"] = [

@@ -1,6 +1,7 @@
 <template>
   <q-table
     ref="tacticalTable"
+    :rows="rows"
     :columns="localColumns"
     :visible-columns="visibleColumns"
     :table-class="{
@@ -39,22 +40,24 @@ export default defineComponent({
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useStorage } from "@vueuse/core";
-import type { QTableColumn } from "quasar";
+import type { QTableColumn, QTableProps } from "quasar";
 
 const props = withDefaults(
   defineProps<{
+    rows: QTableProps["rows"];
     columns: QTableColumn[];
     columnSelect?: boolean;
     excludeColumns?: string[];
     storageKey?: string;
   }>(),
-  { columnSelect: false, excludeColumns: () => [] },
+  { columnSelect: false, excludeColumns: () => [], storageKey: "" },
 );
 
 const columnSelectCol = {
   name: "columnSelect",
   label: "Column Select",
   field: "columnSelect",
+  required: true,
 };
 
 const localColumns = computed(() =>

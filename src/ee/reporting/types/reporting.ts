@@ -24,20 +24,20 @@ export interface ReportTemplate {
   name: string;
   template_md: string;
   template_css: string;
-  template_html?: number;
+  template_html?: number | undefined;
   type: ReportTemplateType;
   template_variables: string;
-  depends_on?: string[];
-  uuid: string;
-  revision: number;
+  depends_on?: string[] | undefined;
+  uuid?: string;
+  revision?: number;
 }
 
 export interface ReportHTMLTemplate {
   id: number;
   name: string;
   html: string;
-  uuid: string;
-  revision: number;
+  uuid?: string;
+  revision?: number;
 }
 export interface ReportDataQuery {
   id: number;

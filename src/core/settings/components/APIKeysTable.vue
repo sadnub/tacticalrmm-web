@@ -13,9 +13,9 @@
       />
     </div>
     <q-separator />
-    <q-table
+    <tactical-table
       dense
-      :rows="keys"
+      :rows="keyStore.apiKeys"
       :columns="columns"
       v-model:pagination="pagination"
       row-key="id"
@@ -24,14 +24,15 @@
       virtual-scroll
       :rows-per-page-options="[0]"
       no-data-label="No API tokens added yet"
+      storage-key="apiKeyTable"
     >
       <!-- header slots -->
-      <template v-slot:header-cell-actions="props">
+      <template #header-cell-actions="props">
         <q-th :props="props" auto-width> </q-th>
       </template>
 
       <!-- body slots -->
-      <template v-slot:body="props">
+      <template #body="props">
         <q-tr :props="props" class="cursor-pointer" @dblclick="editAPIKey(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
@@ -65,11 +66,11 @@
           </q-td>
           <!-- expiration -->
           <q-td>
-            {{ formatDate(props.row.expiration) }}
+            {{ dashboardStore.formatDate(props.row.expiration) }}
           </q-td>
           <!-- created time -->
           <q-td>
-            {{ formatDate(props.row.created_time) }}
+            {{ dashboardStore.formatDate(props.row.created_time) }}
           </q-td>
           <q-td>
             <q-icon size="sm" name="content_copy" @click="copyKeyToClipboard(props.row.key)">
@@ -78,20 +79,22 @@
           </q-td>
         </q-tr>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref, computed, onMounted } from "vue";
-import { useStore } from "vuex";
-import { fetchAPIKeys, removeAPIKey } from "src/api/accounts";
-import { useQuasar, copyToClipboard } from "quasar";
+import { ref, onMounted } from "vue";
+import { useQuasar, copyToClipboard, type QTableColumn } from "quasar";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useAPIKeyStore } from "../api";
 import { notifySuccess, notifyError } from "src/utils/notify";
-import APIKeysForm from "src/components/core/APIKeysForm.vue";
+import APIKeysForm from "src/core/settings/components/APIKeysForm.vue";
+import type { APIKey } from "../types";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
-const columns = [
+const columns: QTableColumn[] = [
   {
     name: "name",
     label: "Name",
@@ -126,100 +129,54 @@ const columns = [
     field: "actions",
   },
 ];
-export default {
-  name: "APIKeysTable",
-  setup() {
-    // setup quasar
-    const $q = useQuasar();
 
-    // setup vuex
-    const store = useStore();
-    const formatDate = computed(() => store.getters.formatDate);
+// setup quasar
+const $q = useQuasar();
 
-    // setup api keys logic
-    const keys = ref([]);
-    const loading = ref(false);
+// setup stores
+const dashboardStore = useDashboardStore();
+const keyStore = useAPIKeyStore();
 
-    // setup table
-    const pagination = ref({
-      rowsPerPage: 0,
-      sortBy: "name",
-      descending: true,
+// setup table
+const pagination = ref({
+  rowsPerPage: 0,
+  sortBy: "name",
+  descending: true,
+});
+
+function copyKeyToClipboard(apikey: string) {
+  copyToClipboard(apikey)
+    .then(() => {
+      notifySuccess("Key was copied to clipboard!");
+    })
+    .catch(() => {
+      notifyError("Unable to copy to clipboard!");
     });
+}
 
-    function copyKeyToClipboard(apikey) {
-      copyToClipboard(apikey)
-        .then(() => {
-          notifySuccess("Key was copied to clipboard!");
-        })
-        .catch(() => {
-          notifyError("Unable to copy to clipboard!");
-        });
-    }
+function deleteAPIKey(key: APIKey) {
+  $q.dialog({
+    title: `Delete API key: ${key.name}?`,
+    cancel: true,
+    ok: { label: "Delete", color: "negative" },
+  }).onOk(() => key.id && void keyStore.removeAPIKey(key.id));
+}
 
-    // api functions
-    async function getAPIKeys() {
-      loading.value = true;
-      keys.value = await fetchAPIKeys();
-      loading.value = false;
-    }
+// quasar dialog functions
+function editAPIKey(key: APIKey) {
+  $q.dialog({
+    component: APIKeysForm,
+    componentProps: {
+      APIKey: key,
+    },
+  });
+}
 
-    async function deleteAPIKey(key) {
-      $q.dialog({
-        title: `Delete API key: ${key.name}?`,
-        cancel: true,
-        ok: { label: "Delete", color: "negative" },
-      }).onOk(async () => {
-        loading.value = true;
-        try {
-          const result = await removeAPIKey(key.id);
-          notifySuccess(result);
-          getAPIKeys();
-          loading.value = false;
-        } catch (e) {
-          console.error(e);
-          loading.value = false;
-        }
-      });
-    }
+function addAPIKey() {
+  $q.dialog({
+    component: APIKeysForm,
+  });
+}
 
-    // quasar dialog functions
-    function editAPIKey(key) {
-      $q.dialog({
-        component: APIKeysForm,
-        componentProps: {
-          APIKey: key,
-        },
-      }).onOk(() => getAPIKeys());
-    }
-
-    function addAPIKey() {
-      $q.dialog({
-        component: APIKeysForm,
-      }).onOk(() => getAPIKeys());
-    }
-
-    // component lifecycle hooks
-    onMounted(getAPIKeys);
-    return {
-      // reactive data
-      keys,
-      loading,
-      pagination,
-
-      // non-reactive data
-      columns,
-
-      //methods
-      getAPIKeys,
-      deleteAPIKey,
-      copyKeyToClipboard,
-      formatDate,
-
-      //dialogs
-      editAPIKey,
-      addAPIKey,
-    };
-  },
-};
+onMounted(keyStore.getAPIKeys);
 </script>

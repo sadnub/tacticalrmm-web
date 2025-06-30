@@ -25,8 +25,8 @@ For details, see: https://license.tacticalrmm.com/ee
             v-model="reportTemplate"
             :options="reportTemplateOptions"
             label="Report Template"
-            outlined
-            mapOptions
+            filled
+            map-options
             filterable
           />
         </q-card-section>
@@ -112,7 +112,7 @@ const reportFormatOptions = computed(() => {
   } else return [];
 });
 
-async function submit() {
+function submit() {
   if (reportTemplate.value === null) {
     notifyError("Report Template is required.");
     return;

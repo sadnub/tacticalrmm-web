@@ -11,11 +11,11 @@
       <q-card-section>
         <tactical-dropdown
           :rules="[(val) => !!val || '*Required']"
-          outlined
+          filled
           label="Site"
           v-model="state.site"
           :options="siteOptions"
-          mapOptions
+          map-options
           filterable
         />
       </q-card-section>

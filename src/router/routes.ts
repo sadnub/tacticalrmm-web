@@ -1,6 +1,7 @@
 import { useAuthStore } from "src/stores/auth";
+import type { RouteRecordRaw } from "vue-router";
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: "/",
     name: "MainLayout",

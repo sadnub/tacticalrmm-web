@@ -32,7 +32,7 @@
         inline-actions
         class="text-black bg-warning"
       >
-        <template v-slot:avatar>
+        <template #avatar>
           <q-icon class="text-center" name="warning" color="black" /> </template
         >Shell/Python scripts on Linux/Mac need a shebang at the top of the script e.g.
         <code>#!/bin/bash</code> or <code>#!/usr/bin/python3</code><br />Add one to get rid of this
@@ -90,7 +90,7 @@
               :options="agentPlatformOptions"
               label="Supported Platforms (All supported if blank)"
               clearable
-              mapOptions
+              map-options
               filled
               multiple
               :readonly="readonly"
@@ -172,10 +172,10 @@
           v-model="agent"
           :options="agentOptions"
           label="Agent to run test script on"
-          mapOptions
+          map-options
           filterable
         >
-          <template v-slot:after>
+          <template #after>
             <q-btn
               size="md"
               color="primary"
@@ -408,11 +408,11 @@ const scriptEditor = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor;
 
 function loadEditor() {
-  var model = monaco.editor.createModel(script.script_body, lang.value);
+  const model = monaco.editor.createModel(script.script_body, lang.value);
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+   
   editor = monaco.editor.create(scriptEditor.value!, {
     readOnly: props.readonly,
     automaticLayout: true,

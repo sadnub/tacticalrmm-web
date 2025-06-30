@@ -37,20 +37,20 @@
         virtual-scroll
       >
         <!-- No data Slot -->
-        <template v-slot:no-data>
+        <template #no-data>
           <div class="full-width row flex-center q-gutter-sm">
             <span v-if="!selectedPolicy">Click on a policy to see the tasks</span>
             <span v-else>There are no tasks added to this policy</span>
           </div>
         </template>
         <!-- header slots -->
-        <template v-slot:header-cell-enabled="props">
+        <template #header-cell-enabled="props">
           <q-th auto-width :props="props">
             <small>Enabled</small>
           </q-th>
         </template>
 
-        <template v-slot:header-cell-smsalert="props">
+        <template #header-cell-smsalert="props">
           <q-th auto-width :props="props">
             <q-icon name="phone_android" size="1.5em">
               <q-tooltip>SMS Alert</q-tooltip>
@@ -58,14 +58,14 @@
           </q-th>
         </template>
 
-        <template v-slot:header-cell-emailalert="props">
+        <template #header-cell-emailalert="props">
           <q-th auto-width :props="props">
             <q-icon name="email" size="1.5em">
               <q-tooltip>Email Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
-        <template v-slot:header-cell-dashboardalert="props">
+        <template #header-cell-dashboardalert="props">
           <q-th auto-width :props="props">
             <q-icon name="notifications" size="1.5em">
               <q-tooltip>Dashboard Alert</q-tooltip>
@@ -73,7 +73,7 @@
           </q-th>
         </template>
 
-        <template v-slot:header-cell-collector="props">
+        <template #header-cell-collector="props">
           <q-th auto-width :props="props">
             <q-icon name="mdi-database-arrow-up" size="1.5em">
               <q-tooltip>Collector Task</q-tooltip>
@@ -82,7 +82,7 @@
         </template>
 
         <!-- body slots -->
-        <template v-slot:body="props">
+        <template #body="props">
           <q-tr class="cursor-pointer" @dblclick="showEditTask(props.row)">
             <!-- context menu -->
             <q-menu context-menu>

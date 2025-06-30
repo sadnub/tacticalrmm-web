@@ -3,65 +3,41 @@
     <SummaryTab />
     <q-separator />
     <SubTableTabs
-      :style="{ height: `${tabHeight + 38}px` }"
-      :activeTabs="[
-        'checks',
-        'tasks',
-        'patches',
-        'software',
-        'history',
-        'notes',
-        'assets',
-        'audit',
-      ]"
+      :style="{ height: `${dashboardStore.tabHeight + 38}px` }"
+      :disable-tabs="['summary']"
     />
   </q-page>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { defineComponent, ref, watch } from "vue";
-import { useStore } from "vuex";
+import { watch } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore } from "src/core/agents/api";
 
 // ui imports
-import SummaryTab from "src/components/agents/SummaryTab.vue";
-import SubTableTabs from "src/components/SubTableTabs.vue";
+import SummaryTab from "src/core/agents/components/tabs/SummaryTab.vue";
+import SubTableTabs from "src/core/dashboard/components/SubTableTabs.vue";
 
-export default defineComponent({
-  name: "AgentView",
-  components: {
-    SummaryTab,
-    SubTableTabs,
-  },
-  provide() {
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      refreshDashboard: () => {}, // noop
-    };
-  },
-  setup() {
-    const store = useStore();
-    const route = useRoute();
-    const $q = useQuasar();
+const route = useRoute();
+const $q = useQuasar();
 
-    const tabHeight = ref($q.screen.height - 309 - 50 - 36);
+// setup stores
+const dashboardStore = useDashboardStore();
+const agentStore = useAgentStore();
 
-    store.commit("setActiveRow", route.params.agent_id);
-    store.state.tabHeight = `${tabHeight.value}px`;
+dashboardStore.tabHeight = $q.screen.height - 309 - 50 - 36;
 
-    // watch for route change
-    watch(
-      () => route.params.agent_id,
-      () => {
-        store.commit("setActiveRow", route.params.agent_id);
-      },
-    );
+agentStore.selectedAgentId =
+  typeof route.params.agent_id === "string" ? route.params.agent_id : null;
 
-    return {
-      tabHeight,
-    };
-  },
-});
+// watch for route change
+watch(
+  () => route.params.agent_id,
+  () =>
+    (agentStore.selectedAgentId =
+      typeof route.params.agent_id === "string" ? route.params.agent_id : null),
+);
 </script>

@@ -16,9 +16,9 @@
             v-model="selectedServerPolicy"
             :options="options"
             label="Server Policy"
-            outlined
+            filled
             clearable
-            mapOptions
+            map-options
             filterable
           />
           <tactical-dropdown
@@ -26,9 +26,9 @@
             v-model="selectedWorkstationPolicy"
             :options="options"
             label="Workstation Policy"
-            outlined
+            filled
             clearable
-            mapOptions
+            map-options
             filterable
           />
           <tactical-dropdown
@@ -36,9 +36,9 @@
             v-model="selectedAgentPolicy"
             :options="options"
             label="Policy"
-            outlined
+            filled
             clearable
-            mapOptions
+            map-options
             filterable
           />
 

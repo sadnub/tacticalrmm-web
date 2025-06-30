@@ -1,7 +1,7 @@
 <template>
   <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
-    <AuditManager :agent="agentStore.selectedAgentId" />
+    <AuditManager :modal="false" :agent="agentStore.selectedAgentId" />
   </div>
 </template>
 
@@ -10,7 +10,7 @@
 import { useAgentStore } from "../../api";
 
 // ui imports
-import AuditManager from "../../core/logs/components/AuditManager.vue";
+import AuditManager from "src/core/logs/components/AuditManager.vue";
 
 const agentStore = useAgentStore();
 </script>

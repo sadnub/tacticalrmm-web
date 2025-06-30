@@ -27,7 +27,7 @@
               <q-input
                 label="Name"
                 class="q-mb-none"
-                outlined
+                filled
                 dense
                 v-model="template.name"
                 :rules="[(val) => !!val || '*Required']"
@@ -46,7 +46,7 @@
               <q-input
                 label="Email From address"
                 class="q-mb-sm"
-                outlined
+                filled
                 dense
                 v-model="template.email_from"
               />
@@ -151,11 +151,11 @@
                 v-if="template.action_type == 'script'"
                 class="q-mb-sm"
                 label="Failure script"
-                outlined
+                filled
                 clearable
                 v-model="template.action"
                 :options="scriptOptions"
-                mapOptions
+                map-options
                 filterable
                 :rules="[(val) => !!val || '*Required']"
               />
@@ -164,11 +164,11 @@
                 v-else-if="template.action_type == 'server'"
                 class="q-mb-sm"
                 label="Failure script"
-                outlined
+                filled
                 clearable
                 v-model="template.action"
                 :options="serverScriptOptions"
-                mapOptions
+                map-options
                 filterable
               />
 
@@ -176,11 +176,11 @@
                 v-else
                 class="q-mb-sm"
                 label="Failure Web Hook"
-                outlined
+                filled
                 clearable
                 v-model="template.action_rest"
                 :options="restActionOptions"
-                mapOptions
+                map-options
                 filterable
               />
 
@@ -218,7 +218,7 @@
                 v-if="template.action_type !== 'rest'"
                 class="q-mb-sm"
                 label="Failure script timeout (seconds)"
-                outlined
+                filled
                 type="number"
                 v-model.number="template.action_timeout"
                 dense
@@ -246,11 +246,11 @@
                 v-if="template.resolved_action_type === 'script'"
                 class="q-mb-sm"
                 label="Resolved Script"
-                outlined
+                filled
                 clearable
                 v-model="template.resolved_action"
                 :options="scriptOptions"
-                mapOptions
+                map-options
                 filterable
               />
 
@@ -258,11 +258,11 @@
                 v-else-if="template.resolved_action_type === 'server'"
                 class="q-mb-sm"
                 label="Resolved Script"
-                outlined
+                filled
                 clearable
                 v-model="template.resolved_action"
                 :options="serverScriptOptions"
-                mapOptions
+                map-options
                 filterable
               />
 
@@ -270,11 +270,11 @@
                 v-else
                 class="q-mb-sm"
                 label="Resolved Web Hook"
-                outlined
+                filled
                 clearable
                 v-model="template.resolved_action_rest"
                 :options="restActionOptions"
-                mapOptions
+                map-options
                 filterable
               />
 
@@ -312,7 +312,7 @@
                 v-if="template.resolved_action_type !== 'rest'"
                 class="q-mb-sm"
                 label="Resolved script timeout (seconds)"
-                outlined
+                filled
                 type="number"
                 v-model.number="template.resolved_action_timeout"
                 dense
@@ -393,7 +393,7 @@
             <q-card-section>
               <q-input
                 label="Alert again if not resolved after (days)"
-                outlined
+                filled
                 type="number"
                 v-model.number="template.agent_periodic_alert_days"
                 dense
@@ -469,7 +469,7 @@
                 label="Only email on alert severity"
                 hint="Defaults to 'error' and 'warning'"
                 v-model="template.check_email_alert_severity"
-                outlined
+                filled
                 dense
                 options-dense
                 multiple
@@ -485,7 +485,7 @@
                 label="Only text on alert severity"
                 hint="Defaults to 'error' and 'warning'"
                 v-model="template.check_text_alert_severity"
-                outlined
+                filled
                 dense
                 options-dense
                 multiple
@@ -501,7 +501,7 @@
                 label="Only show dashboard alert on severity"
                 hint="Defaults to 'error', 'warning', and 'info'"
                 v-model="template.check_dashboard_alert_severity"
-                outlined
+                filled
                 dense
                 options-dense
                 multiple
@@ -515,7 +515,7 @@
             <q-card-section>
               <q-input
                 label="Alert again if not resolved after (days)"
-                outlined
+                filled
                 type="number"
                 v-model.number="template.check_periodic_alert_days"
                 dense
@@ -591,7 +591,7 @@
                 label="Only email on alert severity"
                 hint="Defaults to 'error' and 'warning'"
                 v-model="template.task_email_alert_severity"
-                outlined
+                filled
                 dense
                 options-dense
                 multiple
@@ -607,7 +607,7 @@
                 label="Only text on alert severity"
                 hint="Defaults to 'error' and 'warning'"
                 v-model="template.task_text_alert_severity"
-                outlined
+                filled
                 dense
                 options-dense
                 multiple
@@ -623,7 +623,7 @@
                 label="Only show dashboard alert on severity"
                 hint="Defaults to 'error', 'warning', and 'info'"
                 v-model="template.task_dashboard_alert_severity"
-                outlined
+                filled
                 dense
                 options-dense
                 multiple
@@ -637,7 +637,7 @@
             <q-card-section>
               <q-input
                 label="Alert again if not resolved (days)"
-                outlined
+                filled
                 type="number"
                 v-model.number="template.task_periodic_alert_days"
                 dense
@@ -669,7 +669,7 @@
             </q-card-section>
           </q-card>
         </q-step>
-        <template v-slot:navigation>
+        <template #navigation>
           <q-stepper-navigation class="row">
             <q-btn
               v-if="step > 1"

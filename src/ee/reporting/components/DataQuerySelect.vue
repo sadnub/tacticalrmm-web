@@ -19,7 +19,7 @@ For details, see: https://license.tacticalrmm.com/ee
           v-model="selectedQuery"
           :options="queryOptions"
           label="Data Queries"
-          outlined
+          filled
         />
       </q-card-section>
       <q-card-actions>

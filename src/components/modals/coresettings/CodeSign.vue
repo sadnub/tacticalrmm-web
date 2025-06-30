@@ -15,7 +15,7 @@
         :loading="loading"
       >
         <q-tooltip>Force all existing agents to be updated to the code-signed version</q-tooltip>
-        <template v-slot:loading>
+        <template #loading>
           <q-spinner-facebook />
         </template>
       </q-btn>
@@ -25,7 +25,7 @@
         <div class="col-2">Token:</div>
         <div class="col-1"></div>
         <q-input
-          outlined
+          filled
           dense
           v-model="settings.token"
           class="col-9 q-pa-none"

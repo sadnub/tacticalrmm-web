@@ -52,7 +52,8 @@ import { notifySuccess, notifyWarning } from "src/utils/notify";
 import { fetchSSOSettings, updateSSOSettings } from "src/ee/sso/api/sso";
 
 // types
-import { SSOSettingsType } from "../types/sso";
+import type { SSOSettingsType } from "../types/sso";
+import axios from "axios";
 
 // define emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -79,10 +80,11 @@ async function submit() {
     notifySuccess("Settings updated successfully");
     onDialogOK(ssoSettings.value);
   } catch (e) {
-    if (e.status === 423) {
-      notifyWarning(e.response.data, 7000);
+    if (axios.isAxiosError(e)) {
+      if (e.response?.status === 423) {
+        notifyWarning(e.response.data, 7000);
+      }
     }
-    console.error(e);
   }
   loading.value = false;
 }

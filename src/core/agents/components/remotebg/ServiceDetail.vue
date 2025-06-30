@@ -23,7 +23,7 @@
         <div class="row">
           <div class="col-3">Description:</div>
           <div class="col-9">
-            <q-field outlined :color="$q.dark.isActive ? 'white' : 'black'">{{
+            <q-field filled :color="$q.dark.isActive ? 'white' : 'black'">{{
               service.description
             }}</q-field>
           </div>
@@ -43,7 +43,7 @@
             <q-select
               dense
               options-dense
-              outlined
+              filled
               v-model="startupType"
               :options="startupOptions"
               map-options
@@ -97,7 +97,7 @@
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore } from "../../api";
-import { AgentService, AgentServiceStartType } from "../../types";
+import type { AgentService, AgentServiceStartType } from "../../types";
 
 // static data
 const startupOptions = [

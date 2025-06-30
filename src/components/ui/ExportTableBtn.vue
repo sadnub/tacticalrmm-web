@@ -8,7 +8,7 @@
 import { exportTableToCSV } from "src/utils/csv";
 
 export default {
-  name: "export-table-btn",
+  name: "ExportTableBtn",
   props: {
     columns: !Array,
     data: !Array,

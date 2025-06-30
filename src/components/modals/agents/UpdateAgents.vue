@@ -9,7 +9,7 @@
     </q-bar>
     <q-separator />
     <q-banner class="bg-primary">
-      <template v-slot:avatar>
+      <template #avatar>
         <q-icon name="info" />
       </template>
       If agent auto update is enabled in Global Settings, agents will automatically self update at
@@ -17,7 +17,7 @@
     </q-banner>
     <q-card-section>
       Select Version
-      <q-select square disable dense options-dense outlined v-model="version" :options="versions" />
+      <q-select square disable dense options-dense filled v-model="version" :options="versions" />
     </q-card-section>
     <q-card-section v-show="version !== null">
       Select Agent
@@ -91,8 +91,8 @@ export default {
     },
     agentOptions() {
       const options = [];
-      for (let i of Object.values(this.agents)) {
-        let opt = {};
+      for (const i of Object.values(this.agents)) {
+        const opt = {};
         opt["label"] = `${i.hostname} (${i.client} > ${i.site})`;
         opt["value"] = i.agent_id;
         options.push(opt);

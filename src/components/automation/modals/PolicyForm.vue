@@ -19,7 +19,7 @@
           <div class="col-2">Name:</div>
           <div class="col-10">
             <q-input
-              outlined
+              filled
               dense
               v-model="localPolicy.name"
               :rules="[(val) => !!val || '*Required']"
@@ -29,7 +29,7 @@
         <q-card-section class="row">
           <div class="col-2">Description:</div>
           <div class="col-10">
-            <q-input outlined dense v-model="localPolicy.desc" />
+            <q-input filled dense v-model="localPolicy.desc" />
           </div>
         </q-card-section>
         <q-card-section class="row">
@@ -83,7 +83,7 @@ export default {
     submit() {
       this.$q.loading.show();
 
-      let data = {
+      const data = {
         ...this.localPolicy,
       };
 

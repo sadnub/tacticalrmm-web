@@ -15,7 +15,7 @@
             <q-select
               dense
               :disable="!!check"
-              outlined
+              filled
               v-model="localCheck.disk"
               :options="diskOptions"
               label="Disk"
@@ -25,7 +25,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               type="number"
               v-model.number="localCheck.warning_threshold"
               label="Warning Threshold Remaining (%)"
@@ -38,7 +38,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               type="number"
               v-model.number="localCheck.error_threshold"
               label="Error Threshold Remaining (%)"
@@ -50,7 +50,7 @@
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               v-model="localCheck.fails_b4_alert"
@@ -61,7 +61,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               type="number"
               v-model.number="localCheck.run_interval"
               label="Run this check every (seconds)"
@@ -143,7 +143,7 @@ async function submit() {
     else checkStore.addCheck(localCheck);
 
     // stops the dialog from closing when there is an error
-    await until(checkStore.isLoading).not.toBeTruthy();
+    await until(() => checkStore.isLoading).toBe(false);
     if (checkStore.isError) return;
 
     onDialogOK();

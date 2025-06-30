@@ -11,7 +11,7 @@
           <div class="col-2">New Password:</div>
           <div class="col-10">
             <q-input
-              outlined
+              filled
               dense
               v-model="password"
               :type="hidePassword ? 'password' : 'text'"
@@ -41,7 +41,7 @@ import { until } from "@vueuse/shared";
 import { useDialogPluginComponent } from "quasar";
 
 import { useUserStore } from "../api";
-import { User } from "../types";
+import type { User } from "../types";
 
 const props = defineProps<{
   user: User;
@@ -61,7 +61,7 @@ async function onSubmit() {
   userStore.adminPasswordReset(props.user.id, password.value);
 
   // stops the dialog from closing when there is an error
-  await until(userStore.isLoading).not.toBeTruthy();
+  await until(() => userStore.isLoading).toBe(false);
   if (userStore.isError) return;
 
   onDialogOK();

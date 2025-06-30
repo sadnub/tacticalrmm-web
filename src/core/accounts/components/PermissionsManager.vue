@@ -24,10 +24,10 @@
         no-data-label="No Roles"
         :rows-per-page-options="[0]"
       >
-        <template v-slot:top>
+        <template #top>
           <q-btn flat dense icon="add" label="New Role" @click="showAddRoleModal" />
         </template>
-        <template v-slot:body="props">
+        <template #body="props">
           <q-tr :props="props" @dblclick="showEditRoleModal(props.row)" class="cursor-pointer">
             <q-menu context-menu auto-close>
               <q-list dense style="min-width: 200px">
@@ -72,14 +72,14 @@
 <script lang="ts" setup>
 // composition imports
 import { onMounted } from "vue";
-import { useQuasar, useDialogPluginComponent, QTableProps } from "quasar";
+import { useQuasar, useDialogPluginComponent, type QTableProps } from "quasar";
 import { useRoleStore } from "../api";
 
 // type imports
-import { Role } from "../types";
+import type { Role } from "../types";
 
 // ui imports
-import RolesForm from "src/components/accounts/RolesForm.vue";
+import RolesForm from "./RolesForm.vue";
 
 // static data
 const columns: QTableProps["columns"] = [
@@ -124,7 +124,7 @@ function showAddRoleModal() {
   });
 }
 
-async function deleteRole(role: Role) {
+function deleteRole(role: Role) {
   $q.dialog({
     title: `Delete role ${role.name}?`,
     cancel: true,

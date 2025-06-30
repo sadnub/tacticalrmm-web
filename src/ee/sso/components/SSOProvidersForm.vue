@@ -21,7 +21,7 @@ For details, see: https://license.tacticalrmm.com/ee
           :readonly="!!props.provider"
           :disable="!!props.provider"
           label="Provider Name"
-          outlined
+          filled
           dense
           v-model="localProvider.name"
           :rules="[
@@ -38,7 +38,7 @@ For details, see: https://license.tacticalrmm.com/ee
       <q-card-section>
         <q-input
           label="Issuer URL"
-          outlined
+          filled
           dense
           v-model="localProvider.server_url"
           :rules="[(val) => !!val || '*Required']"
@@ -50,7 +50,7 @@ For details, see: https://license.tacticalrmm.com/ee
       <q-card-section>
         <q-input
           label="Client ID"
-          outlined
+          filled
           dense
           v-model="localProvider.client_id"
           :rules="[(val) => !!val || '*Required']"
@@ -64,11 +64,10 @@ For details, see: https://license.tacticalrmm.com/ee
           filled
           :type="hideSecret ? 'password' : 'text'"
           label="Secret"
-          outlined
           dense
           :rules="[(val) => !!val || '*Required']"
         >
-          <template v-slot:append>
+          <template #append>
             <q-icon
               :name="hideSecret ? 'visibility_off' : 'visibility'"
               class="cursor-pointer"
@@ -82,11 +81,10 @@ For details, see: https://license.tacticalrmm.com/ee
         <tactical-dropdown
           label="Default User Role"
           :options="roleOptions"
-          outlined
+          filled
           dense
           clearable
-          mapOptions
-          filled
+          map-options
           v-model="localProvider.role"
           hint="The role assigned to users upon first sign-in through this provider."
         />
@@ -142,12 +140,13 @@ async function submit() {
   loading.value = true;
 
   try {
-    props.provider
-      ? await editSSOProvider(localProvider.id, localProvider)
-      : await addSSOProvider(localProvider);
+    if (props.provider) await editSSOProvider(localProvider.id, localProvider);
+    else await addSSOProvider(localProvider);
     onDialogOK();
     notifySuccess("SSO Provider was edited!");
-  } catch (e) {}
+  } catch {
+    /* empty */
+  }
 
   loading.value = false;
 }

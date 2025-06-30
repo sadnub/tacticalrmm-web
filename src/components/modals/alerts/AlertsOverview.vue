@@ -25,7 +25,7 @@
             :options="clientsOptions"
             label="Clients"
             multiple
-            outlined
+            filled
             dense
             use-chips
             map-options
@@ -38,7 +38,7 @@
             :options="severityOptions"
             label="Severity"
             multiple
-            outlined
+            filled
             dense
             use-chips
             map-options
@@ -47,7 +47,7 @@
         </div>
         <div class="q-pa-sm col-2">
           <q-select
-            outlined
+            filled
             dense
             v-model="timeFilter"
             label="Time"
@@ -57,8 +57,8 @@
           />
         </div>
         <div class="q-pa-sm col-2">
-          <q-checkbox outlined dense v-model="includeSnoozed" label="Include snoozed" />
-          <q-checkbox outlined dense v-model="includeResolved" label="Include resolved" />
+          <q-checkbox filled dense v-model="includeSnoozed" label="Include snoozed" />
+          <q-checkbox filled dense v-model="includeResolved" label="Include resolved" />
         </div>
         <div class="q-pa-sm col-2">
           <q-btn color="primary" label="Search" @click="search" />
@@ -87,7 +87,7 @@
           dense
           virtual-scroll
         >
-          <template v-slot:top>
+          <template #top>
             <div class="col-1 q-table__title">Alerts</div>
 
             <q-btn-dropdown
@@ -116,7 +116,7 @@
             </q-btn-dropdown>
           </template>
 
-          <template v-slot:body-cell-actions="props">
+          <template #body-cell-actions="props">
             <q-td :props="props">
               <q-icon
                 v-if="props.row.action_run"
@@ -166,7 +166,7 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-severity="props">
+          <template #body-cell-severity="props">
             <q-td :props="props">
               <q-badge :color="alertColor(props.row.severity)">{{
                 capitalize(props.row.severity)
@@ -181,7 +181,7 @@
 
 <script>
 import mixins from "src/mixins/mixins";
-import ScriptOutput from "src/components/checks/ScriptOutput.vue";
+import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import { computed } from "vue";
 import { useStore } from "vuex";
 
@@ -331,7 +331,7 @@ export default {
       this.selectedAlerts = [];
       this.searched = true;
 
-      let data = {
+      const data = {
         snoozedFilter: this.includeSnoozed,
         resolvedFilter: this.includeResolved,
       };
@@ -474,7 +474,7 @@ export default {
         });
     },
     showScriptOutput(alert, failure = false) {
-      let results = {};
+      const results = {};
       if (failure) {
         results.readable_desc = `${alert.alert_type} failure action results`;
         results.execution_time = alert.action_execution_time;

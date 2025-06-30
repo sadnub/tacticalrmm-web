@@ -42,6 +42,7 @@ export interface CoreSettings {
   notify_on_warning_alerts: boolean;
   block_local_user_logon: boolean;
   sso_enabled: boolean;
+  all_timezones: string[];
 }
 
 export type CustomFieldModel = "client" | "site" | "agent";
@@ -56,11 +57,23 @@ export interface CustomField {
   options: string[];
   name: string;
   required: boolean;
-  default_value_string: string | null;
+  default_value_string: string;
   default_value_bool: boolean;
   default_values_multiple: string[];
   hide_in_ui: boolean;
   hide_in_summary: boolean;
+  default_value: string | boolean | string[];
+}
+
+export type CustomFieldValueField = string | boolean | number | string[];
+
+export interface CustomFieldValue {
+  id?: number;
+  field: number;
+  value?: CustomFieldValueField;
+  string_value?: string | undefined;
+  bool_value?: boolean | undefined;
+  multiple_value?: string[] | undefined;
 }
 
 export type URLActionType = "web" | "rest";
@@ -91,4 +104,13 @@ export interface TestRunURLActionRequest {
   rest_method: RESTMethodType;
   run_instance_type: string;
   run_instance_id: number | null;
+}
+
+export interface APIKey {
+  id?: number;
+  name: string;
+  key: string;
+  user: number;
+  expiration: string;
+  created_time?: string;
 }

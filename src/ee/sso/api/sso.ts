@@ -29,14 +29,21 @@ function postForm(url: string, data: FormData) {
   const f = document.createElement("form");
   f.method = "POST";
   f.action = url;
+  f.style.display = "none";
 
-  for (const key in data) {
-    const d = document.createElement("input");
-    d.type = "hidden";
-    d.name = key;
-    d.value = data[key];
-    f.appendChild(d);
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (data as any).forEach((value: string | File, key: string) => {
+    if (typeof value === "string") {
+      const d = document.createElement("input");
+      d.type = "hidden";
+      d.name = key;
+      d.value = value;
+      f.appendChild(d);
+    } else {
+      console.warn(`Skipping non-string value (File object) for key: "${key}"`);
+    }
+  });
+
   document.body.appendChild(f);
   f.submit();
 }
@@ -107,6 +114,7 @@ export interface SSOProviderConfig {
   flows: string[];
   id: string;
   name: string;
+  icon?: string;
 }
 
 export interface SSOConfigResponse {
@@ -120,7 +128,7 @@ export async function getSSOConfig(): Promise<AllAuthResponse<SSOConfigResponse>
   return data;
 }
 
-export async function openSSOProviderRedirect(id: string) {
+export function openSSOProviderRedirect(id: string) {
   //save provider to local storage
   useStorage("provider_id", id);
   postForm(`${getBaseUrl()}/${allauthBase}/auth/provider/redirect/`, {

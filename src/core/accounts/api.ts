@@ -66,6 +66,28 @@ export const useUserStore = defineStore("users", () => {
       });
   }
 
+  function updateUserPreferences(userId: number, payload: Partial<User>) {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .put<User>(`/accounts/users/ui/`, payload)
+      .then(({ data: updatedUser }) => {
+        const index = users.value.findIndex((user) => user.id === userId);
+        if (index !== -1) {
+          users.value[index] = updatedUser;
+        }
+
+        // TODO: Update dashboard store values here
+        notifySuccess("User was modified successfully");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
   function removeUser(userId: number) {
     isLoading.value = true;
     isError.value = false;
@@ -215,6 +237,7 @@ export const useUserStore = defineStore("users", () => {
     getUsers,
     addUser,
     updateUser,
+    updateUserPreferences,
     removeUser,
     resetUserPassword,
     userResetMFA,

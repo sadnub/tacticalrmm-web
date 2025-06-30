@@ -13,7 +13,7 @@
         <q-card-section>
           <q-input
             label="Name"
-            outlined
+            filled
             dense
             v-model="localKey.name"
             :rules="[(val) => !!val || '*Required']"
@@ -24,12 +24,12 @@
         <q-card-section>
           <q-input
             label="Value"
-            outlined
+            filled
             dense
             v-model="localKey.value"
             :type="isPwd ? 'password' : 'text'"
             :rules="[(val) => !!val || '*Required']"
-            ><template v-slot:append>
+            ><template #append>
               <q-icon
                 :name="isPwd ? 'visibility_off' : 'visibility'"
                 class="cursor-pointer"
@@ -77,7 +77,7 @@ export default {
     submit() {
       this.$q.loading.show();
 
-      let data = {
+      const data = {
         ...this.localKey,
       };
 

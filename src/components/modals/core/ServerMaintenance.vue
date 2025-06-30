@@ -14,7 +14,7 @@
         <q-card-section>
           <q-select
             :rules="[(val) => !!val || '*Required']"
-            outlined
+            filled
             options-dense
             label="Actions"
             v-model="action"
@@ -78,7 +78,7 @@ export default {
     submit() {
       this.$q.loading.show();
 
-      let data = {
+      const data = {
         action: this.action,
         prune_tables: this.prune_tables,
       };

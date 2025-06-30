@@ -59,7 +59,7 @@
               no-data-label="No Policies"
             >
               <!-- header slots -->
-              <template v-slot:header-cell-active="props">
+              <template #header-cell-active="props">
                 <q-th :props="props" auto-width>
                   <q-icon name="power_settings_new" size="1.5em">
                     <q-tooltip>Enable Policy</q-tooltip>
@@ -67,7 +67,7 @@
                 </q-th>
               </template>
 
-              <template v-slot:header-cell-enforced="props">
+              <template #header-cell-enforced="props">
                 <q-th :props="props" auto-width>
                   <q-icon name="security" size="1.5em">
                     <q-tooltip>Enforce Policy (Will override Agent tasks/checks)</q-tooltip>
@@ -76,7 +76,7 @@
               </template>
 
               <!-- body slots -->
-              <template v-slot:body="props">
+              <template #body="props">
                 <q-tr
                   :props="props"
                   class="cursor-pointer"
@@ -248,14 +248,14 @@
           <q-tab-panels v-model="subtab" :animated="false">
             <q-tab-panel name="checks">
               <div class="scroll" style="min-height: 25vh; max-height: 25vh">
-                <PolicyChecksTab v-if="!!selectedPolicy" :selectedPolicy="selectedPolicy.id" />
+                <PolicyChecksTab v-if="!!selectedPolicy" :selected-policy="selectedPolicy.id" />
               </div>
             </q-tab-panel>
             <q-tab-panel name="tasks">
               <div class="scroll" style="min-height: 25vh; max-height: 25vh">
                 <PolicyAutomatedTasksTab
                   v-if="!!selectedPolicy"
-                  :selectedPolicy="selectedPolicy.id"
+                  :selected-policy="selectedPolicy.id"
                 />
               </div>
             </q-tab-panel>

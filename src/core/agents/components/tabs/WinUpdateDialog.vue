@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" :style="dialogStyle">
+    <q-card class="q-dialog-plugin" :style="{ width: '80vw', 'max-width': '85vw' }">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">{{ title }}</div>
       </q-card-section>
@@ -11,20 +11,14 @@
         </div>
         <div class="q-mt-md">
           <strong>Description</strong>
-          <div
-            v-for="(para, i) in descriptionParagraphs"
-            :key="i"
-            class="q-mt-xs"
-          >
+          <div v-for="(para, i) in descriptionParagraphs" :key="i" class="q-mt-xs">
             {{ para }}
           </div>
         </div>
         <div class="q-mt-md">
           <strong>Support URLs</strong>
           <div v-for="url in supportUrls" :key="url" class="q-mt-xs">
-            <a :href="url" target="_blank" rel="noopener" :class="linkClass">{{
-              url
-            }}</a>
+            <a :href="url" target="_blank" rel="noopener" :class="linkClass">{{ url }}</a>
           </div>
         </div>
       </q-card-section>
@@ -35,33 +29,26 @@
   </q-dialog>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { computed } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
 
 const $q = useQuasar();
 
-const props = defineProps({
-  title: { type: String, required: true },
-  dialogStyle: { type: [String, Object], default: () => ({}) },
-  categories: { type: Array, default: () => [] },
-  description: { type: String, default: "" },
-  supportUrls: { type: Array, default: () => [] },
-});
+const props = defineProps<{
+  title: string;
+  categories: string[];
+  description: string;
+  supportUrls: string[];
+}>();
 
 defineEmits([...useDialogPluginComponent.emits]);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
-  useDialogPluginComponent();
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 const descriptionParagraphs = computed(() =>
-  props.description
-    .split(/\. +/)
-    .map((para) => (para.endsWith(".") ? para : para + ".")),
+  props.description.split(/\. +/).map((para) => (para.endsWith(".") ? para : para + ".")),
 );
 
-const linkClass = computed(() =>
-  $q.dark.isActive ? "text-white" : "text-primary",
-);
+const linkClass = computed(() => ($q.dark.isActive ? "text-white" : "text-primary"));
 </script>

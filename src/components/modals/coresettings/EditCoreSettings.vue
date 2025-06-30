@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 60vw">
     <q-splitter v-model="splitterModel">
-      <template v-slot:before>
+      <template #before>
         <q-tabs dense v-model="tab" vertical class="text-primary">
           <q-tab name="general" label="General" />
           <q-tab name="emailalerts" label="Email Alerts" />
@@ -17,7 +17,7 @@
           <!-- <q-tab name="openai" label="Open AI" /> -->
         </q-tabs>
       </template>
-      <template v-slot:after>
+      <template #after>
         <q-form @submit.prevent="editSettings">
           <q-card-section class="row items-center">
             <div class="text-h6">Global Settings</div>
@@ -93,7 +93,7 @@
                   <div class="col-2"></div>
                   <tactical-dropdown
                     filterable
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="settings.default_time_zone"
@@ -104,8 +104,8 @@
                 <q-card-section class="row">
                   <div class="col-4">Default date format:</div>
                   <div class="col-2"></div>
-                  <q-input outlined dense v-model="settings.date_format" class="col-6">
-                    <template v-slot:after>
+                  <q-input filled dense v-model="settings.date_format" class="col-6">
+                    <template #after>
                       <q-btn
                         round
                         dense
@@ -128,7 +128,7 @@
                     clearable
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="settings.server_policy"
@@ -143,7 +143,7 @@
                     clearable
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="settings.workstation_policy"
@@ -158,7 +158,7 @@
                     clearable
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="settings.alert_template"
@@ -188,7 +188,7 @@
                   <q-select
                     emit-value
                     map-options
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="settings.agent_debug_level"
@@ -203,7 +203,7 @@
                   <div class="col-2"></div>
                   <q-input
                     hint="Setting this value to 0 disables this feature"
-                    outlined
+                    filled
                     dense
                     v-model.number="settings.clear_faults_days"
                     class="col-6"
@@ -239,14 +239,14 @@
                   <div class="col-5">
                     <q-list dense v-if="ready && settings.email_alert_recipients.length !== 0">
                       <q-item
-                        v-for="email in settings.email_alert_recipients"
-                        :key="email"
+                        v-for="emailAddress in settings.email_alert_recipients"
+                        :key="emailAddress"
                         clickable
                         v-ripple
-                        @click="removeEmail(email)"
+                        @click="removeEmail(emailAddress)"
                       >
                         <q-item-section>
-                          <q-item-label>{{ email }}</q-item-label>
+                          <q-item-label>{{ emailAddress }}</q-item-label>
                         </q-item-section>
                         <q-item-section side>
                           <q-icon name="delete" color="red" />
@@ -267,7 +267,7 @@
                   <div class="col-2">From email:</div>
                   <div class="col-4"></div>
                   <q-input
-                    outlined
+                    filled
                     dense
                     v-model="settings.smtp_from_email"
                     class="col-6 q-pa-none"
@@ -277,17 +277,12 @@
                 <q-card-section class="row">
                   <div class="col-2">From name:</div>
                   <div class="col-4"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="settings.smtp_from_name"
-                    class="col-6 q-pa-none"
-                  />
+                  <q-input filled dense v-model="settings.smtp_from_name" class="col-6 q-pa-none" />
                 </q-card-section>
                 <q-card-section class="row">
                   <div class="col-2">Host:</div>
                   <div class="col-4"></div>
-                  <q-input outlined dense v-model="settings.smtp_host" class="col-6 q-pa-none" />
+                  <q-input filled dense v-model="settings.smtp_host" class="col-6 q-pa-none" />
                 </q-card-section>
                 <q-card-section class="row">
                   <div class="col-2">Port:</div>
@@ -311,24 +306,19 @@
                 <q-card-section class="row" v-show="settings.smtp_requires_auth">
                   <div class="col-2">Username:</div>
                   <div class="col-4"></div>
-                  <q-input
-                    outlined
-                    dense
-                    v-model="settings.smtp_host_user"
-                    class="col-6 q-pa-none"
-                  />
+                  <q-input filled dense v-model="settings.smtp_host_user" class="col-6 q-pa-none" />
                 </q-card-section>
                 <q-card-section class="row" v-show="settings.smtp_requires_auth">
                   <div class="col-2">Password:</div>
                   <div class="col-4"></div>
                   <q-input
-                    outlined
+                    filled
                     dense
                     class="col-6 q-pa-none"
                     v-model="settings.smtp_host_password"
                     :type="isPwd ? 'password' : 'text'"
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <q-icon
                         :name="isPwd ? 'visibility_off' : 'visibility'"
                         class="cursor-pointer"
@@ -389,7 +379,7 @@
                   <div class="col-3">Twilio Number:</div>
                   <div class="col-3"></div>
                   <q-input
-                    outlined
+                    filled
                     dense
                     v-model="settings.twilio_number"
                     class="col-6 q-pa-none"
@@ -400,7 +390,7 @@
                   <div class="col-3">Twilio Account SID:</div>
                   <div class="col-3"></div>
                   <q-input
-                    outlined
+                    filled
                     dense
                     v-model="settings.twilio_account_sid"
                     class="col-6 q-pa-none"
@@ -410,7 +400,7 @@
                   <div class="col-3">Twilio Auth Token:</div>
                   <div class="col-3"></div>
                   <q-input
-                    outlined
+                    filled
                     dense
                     v-model="settings.twilio_auth_token"
                     class="col-6 q-pa-none"
@@ -426,7 +416,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.mesh_username"
                     class="col-6"
                     :rules="[
@@ -439,17 +429,17 @@
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4">Mesh Site:</div>
                   <div class="col-2"></div>
-                  <q-input dense outlined v-model="settings.mesh_site" class="col-6" />
+                  <q-input dense filled v-model="settings.mesh_site" class="col-6" />
                 </q-card-section>
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4">Mesh Token:</div>
                   <div class="col-2"></div>
-                  <q-input dense outlined v-model="settings.mesh_token" class="col-6" />
+                  <q-input dense filled v-model="settings.mesh_token" class="col-6" />
                 </q-card-section>
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4">Mesh Device Group Name:</div>
                   <div class="col-2"></div>
-                  <q-input dense outlined v-model="settings.mesh_device_group" class="col-6" />
+                  <q-input dense filled v-model="settings.mesh_device_group" class="col-6" />
                 </q-card-section>
                 <q-card-section class="row" v-if="!hosted">
                   <div class="col-4 flex items-center">
@@ -494,7 +484,7 @@
 
                   <div class="col-2"></div>
 
-                  <q-input dense outlined v-model="settings.mesh_company_name" class="col-6">
+                  <q-input dense filled v-model="settings.mesh_company_name" class="col-6">
                   </q-input>
                 </q-card-section>
               </q-tab-panel>
@@ -526,7 +516,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.check_history_prune_days"
                     class="col-6"
                     hint="Setting this value to 0 disables this feature"
@@ -537,7 +527,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.resolved_alerts_prune_days"
                     class="col-6"
                     hint="Setting this value to 0 disables this feature"
@@ -548,7 +538,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.agent_history_prune_days"
                     class="col-6"
                     hint="Setting this value to 0 disables this feature"
@@ -559,7 +549,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.debug_log_prune_days"
                     class="col-6"
                     hint="Setting this value to 0 disables this feature"
@@ -570,7 +560,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.audit_log_prune_days"
                     class="col-6"
                     hint="Setting this value to 0 disables this feature"
@@ -596,7 +586,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.open_ai_token"
                     class="col-6"
                   />
@@ -606,7 +596,7 @@
                   <div class="col-2"></div>
                   <q-input
                     dense
-                    outlined
+                    filled
                     v-model="settings.open_ai_model"
                     class="col-6"
                   >
@@ -673,7 +663,7 @@ import ResetPatchPolicy from "src/components/modals/coresettings/ResetPatchPolic
 import CustomFields from "src/components/modals/coresettings/CustomFields.vue";
 import KeyStoreTable from "src/components/modals/coresettings/KeyStoreTable.vue";
 import URLActionsTable from "src/components/modals/coresettings/URLActionsTable.vue";
-import APIKeysTable from "src/components/core/APIKeysTable.vue";
+import APIKeysTable from "src/core/settings/components/APIKeysTable.vue";
 import SSOProvidersTable from "src/ee/sso/components/SSOProvidersTable.vue";
 import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 

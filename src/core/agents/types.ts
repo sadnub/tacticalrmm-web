@@ -44,6 +44,7 @@ export interface Agent {
   alert_template?: number;
   site_name: string;
   site: number;
+  client: number;
   policy?: number;
   patch_policy: number;
   custom_fields: AgentCustomField[];
@@ -57,7 +58,10 @@ export interface Agent {
     failing: number;
     warning: number;
     info: number;
+    has_failing_checks: boolean;
   };
+  has_patches_pending: boolean;
+  pending_actions_count: number;
   physical_disks: string;
   graphics: string;
 }
@@ -92,6 +96,23 @@ export interface WMIDetail {
   desktop_monitor: never[];
   graphics: never[];
   network_adapter: never[];
+}
+
+export interface MeshUrls {
+  file?: string;
+  terminal?: string;
+  control?: string;
+  status?: "online" | "offline";
+  hostname: string;
+  client: string;
+  site: string;
+}
+
+export interface WebVNCUrl {
+  vnc?: string;
+  hostname: string;
+  client: string;
+  site: string;
 }
 
 export type AgentServiceStartType = "automatic" | "manual" | "disabled" | "autodelay";

@@ -13,7 +13,7 @@
         <div style="max-height: 70vh" class="scroll">
           <q-card-section>
             <q-input
-              outlined
+              filled
               dense
               v-model="localCheck.name"
               label="Descriptive Name"
@@ -23,7 +23,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               v-model="localCheck.ip"
               label="Hostname or IP"
               :rules="[(val) => !!val || '*Required']"
@@ -31,7 +31,7 @@
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               emit-value
@@ -43,7 +43,7 @@
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               map-options
@@ -55,7 +55,7 @@
           </q-card-section>
           <q-card-section>
             <q-input
-              outlined
+              filled
               dense
               type="number"
               v-model.number="localCheck.run_interval"
@@ -124,7 +124,7 @@ async function submit() {
   else checkStore.addCheck(localCheck);
 
   // stops the dialog from closing when there is an error
-  await until(checkStore.isLoading).not.toBeTruthy();
+  await until(() => checkStore.isLoading).toBe(false);
   if (checkStore.isError) return;
 
   onDialogOK();

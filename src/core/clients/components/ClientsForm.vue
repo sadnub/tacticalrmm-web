@@ -1,0 +1,130 @@
+<template>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <q-card class="q-dialog-plugin" style="width: 40vw">
+      <q-bar>
+        {{ !!client ? `Editing ${client.name}` : "Adding Client" }}
+        <q-space />
+        <q-btn dense flat icon="close" v-close-popup>
+          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
+        </q-btn>
+      </q-bar>
+      <q-form @submit="submit">
+        <q-card-section>
+          <q-input
+            filled
+            dense
+            v-model="state.name"
+            label="Name"
+            :rules="[(val) => (val && val.length > 0) || '*Required']"
+          />
+        </q-card-section>
+        <q-card-section v-if="!client">
+          <q-input
+            :rules="[(val) => !!val || '*Required']"
+            filled
+            dense
+            v-model="site.name"
+            label="Default first site"
+          />
+        </q-card-section>
+
+        <div class="q-pl-sm text-h6" v-if="fieldStore.clientCustomFields.length > 0">
+          Custom Fields
+        </div>
+        <q-card-section v-for="field in fieldStore.clientCustomFields" :key="field.id">
+          <CustomField v-model="clientCustomFieldValues[field.name]" :field="field" />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn
+            :loading="clientStore.isLoading"
+            dense
+            flat
+            push
+            label="Save"
+            color="primary"
+            type="submit"
+          />
+        </q-card-actions>
+      </q-form>
+    </q-card>
+  </q-dialog>
+</template>
+
+<script lang="ts" setup>
+// composition imports
+import { onMounted, reactive, computed } from "vue";
+import { useDialogPluginComponent } from "quasar";
+import { useClientStore } from "../api";
+import { useCustomFieldStore } from "src/core/settings/api";
+import { formatCustomFields } from "src/utils/format";
+
+// ui imports
+import CustomField from "src/components/ui/CustomField.vue";
+
+import { until } from "@vueuse/shared";
+
+// type imports
+import type { CustomFieldValueField } from "src/core/settings/types";
+import type { Client } from "../types";
+
+const props = defineProps<{
+  client?: Client;
+}>();
+
+defineEmits(useDialogPluginComponent.emits);
+
+// setup stores
+const clientStore = useClientStore();
+const fieldStore = useCustomFieldStore();
+
+// setup quasar dialog
+const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
+
+// clients form logic
+const state = reactive({ name: props.client ? props.client.name : "" });
+const site = reactive({ name: "" });
+
+async function submit() {
+  const data = {
+    client: state,
+    site: site,
+    custom_fields: formatCustomFields(fieldStore.clientCustomFields, clientCustomFieldValues.value),
+  };
+
+  if (props.client) clientStore.updateClient(props.client.id, data);
+  else clientStore.addClient(data);
+
+  await until(() => clientStore.isLoading).not.toBeTruthy();
+
+  if (clientStore.isError) return;
+
+  onDialogOK();
+}
+
+const clientCustomFieldValues = computed(() => {
+  const mapped_custom_fields = {} as Record<string, unknown>;
+  if (clientStore.client && clientStore.client.custom_fields) {
+    for (const field of fieldStore.clientCustomFields) {
+      const value = clientStore.client.custom_fields.find((value) => value.field === field.id);
+
+      if (field.type === "multiple") {
+        if (value) mapped_custom_fields[field.name] = value.value;
+        else mapped_custom_fields[field.name] = [];
+      } else if (field.type === "checkbox") {
+        if (value) mapped_custom_fields[field.name] = value.value;
+        else mapped_custom_fields[field.name] = false;
+      } else {
+        if (value) mapped_custom_fields[field.name] = value.value;
+        else mapped_custom_fields[field.name] = "";
+      }
+    }
+  }
+  return mapped_custom_fields as Record<string, CustomFieldValueField>;
+});
+
+onMounted(() => {
+  fieldStore.getCustomFields();
+  if (props.client) clientStore.getClient(props.client.id);
+});
+</script>

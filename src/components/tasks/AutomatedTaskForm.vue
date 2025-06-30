@@ -52,7 +52,7 @@
                 :options="customFieldOptions"
                 label="Custom Field to update"
                 filled
-                mapOptions
+                map-options
                 :hint="
                   state.collector_all_output
                     ? 'All script output will be saved to custom field selected'
@@ -74,7 +74,7 @@
                 :options="severityOptions"
                 label="Alert Severity"
                 filled
-                mapOptions
+                map-options
                 :rules="[(val) => !!val || '*Required']"
               />
             </q-card-section>
@@ -103,7 +103,7 @@
                   v-model="script"
                   :options="scriptOptions"
                   filled
-                  mapOptions
+                  map-options
                   filterable
                 />
 
@@ -191,7 +191,7 @@
             <div v-if="shell === 'custom'" class="col-5">
               <q-input
                 v-model="custom_shell"
-                outlined
+                filled
                 label="Custom shell"
                 stack-label
                 placeholder="/usr/bin/python3"
@@ -216,7 +216,7 @@
                 v-model="state.actions"
                 item-key="index"
               >
-                <template v-slot:item="{ index, element }">
+                <template #item="{ index, element }">
                   <q-item>
                     <q-item-section avatar>
                       <q-icon class="handle" style="cursor: move" name="drag_handle" />
@@ -339,7 +339,7 @@
                   filled
                   class="col-6 q-pa-sm"
                 >
-                  <template v-slot:append>
+                  <template #append>
                     <span class="text-subtitle2">days</span>
                   </template>
                 </q-input>
@@ -363,7 +363,7 @@
                   v-model="state.weekly_interval"
                   filled
                 >
-                  <template v-slot:append>
+                  <template #append>
                     <span class="text-subtitle2">weeks</span>
                   </template>
                 </q-input>
@@ -411,7 +411,7 @@
                   emit-value
                   map-options
                 >
-                  <template v-slot:before-options>
+                  <template #before-options>
                     <q-item>
                       <q-item-section>
                         <q-item-label>All months</q-item-label>
@@ -426,7 +426,7 @@
                     </q-item>
                   </template>
 
-                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+                  <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -460,7 +460,7 @@
                   emit-value
                   map-options
                 >
-                  <template v-slot:before-options>
+                  <template #before-options>
                     <q-item>
                       <q-item-section>
                         <q-item-label>All days</q-item-label>
@@ -475,7 +475,7 @@
                     </q-item>
                   </template>
 
-                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+                  <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -511,7 +511,7 @@
                   emit-value
                   map-options
                 >
-                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+                  <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -542,7 +542,7 @@
                   emit-value
                   map-options
                 >
-                  <template v-slot:before-options>
+                  <template #before-options>
                     <q-item>
                       <q-item-section>
                         <q-item-label>All days</q-item-label>
@@ -557,7 +557,7 @@
                     </q-item>
                   </template>
 
-                  <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+                  <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
                         <q-item-label v-html="opt.label" />
@@ -681,7 +681,7 @@
                   :options="taskInstancePolicyOptions"
                   v-model="state.task_instance_policy"
                   filled
-                  mapOptions
+                  map-options
                 />
               </q-card-section>
 
@@ -694,7 +694,7 @@
                   filled
                   :options="checkOptions"
                   label="Select Check"
-                  mapOptions
+                  map-options
                   filterable
                 />
               </q-card-section>
@@ -783,7 +783,7 @@ const dayOfWeekOptions = [
 ];
 
 const dayOfMonthOptions = (() => {
-  let result = [];
+  const result = [];
   let day = 0x1;
   for (let i = 1; i <= 31; i++) {
     result.push({ label: `${i}`, value: day });
@@ -997,7 +997,7 @@ export default defineComponent({
     // runs whenever task data is saved
     function processTaskDataforDB(taskData) {
       // copy data
-      let data = Object.assign({}, taskData);
+      const data = Object.assign({}, taskData);
 
       // converts fields from arrays to integers
       data.run_time_bit_weekdays =

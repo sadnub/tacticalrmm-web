@@ -82,11 +82,11 @@
           style="width: 300px"
           label="Search"
           dense
-          outlined
+          filled
           clearable
           class="q-pr-md q-pb-xs"
         >
-          <template v-slot:prepend>
+          <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
@@ -110,7 +110,7 @@
           no-results-label="No Scripts Found"
           no-nodes-label="No Scripts Found"
         >
-          <template v-slot:header-script="props">
+          <template #header-script="props">
             <div
               class="cursor-pointer"
               @dblclick="
@@ -279,18 +279,18 @@
         column-select
         :storage-key="storageKey"
       >
-        <template v-slot:header-cell-favorite="props">
+        <template #header-cell-favorite="props">
           <q-th :props="props" auto-width>
             <q-icon name="star" color="yellow-8" size="sm" />
           </q-th>
         </template>
 
-        <template v-slot:header-cell-shell="props">
+        <template #header-cell-shell="props">
           <q-th :props="props" auto-width> Shell </q-th>
         </template>
 
-        <template v-slot:no-data> No Scripts Found </template>
-        <template v-slot:body="props">
+        <template #no-data> No Scripts Found </template>
+        <template #body="props">
           <!-- Table View -->
           <q-tr
             :props="props"
@@ -678,7 +678,7 @@ export default {
     });
 
     const categories = computed(() => {
-      let list = [];
+      const list = [];
       visibleScripts.value.forEach((script) => {
         if (!!script.category && !list.includes(script.category)) {
           list.push(script.category);
@@ -691,11 +691,11 @@ export default {
       if (tableView.value || visibleScripts.value.length === 0) {
         return [];
       } else {
-        let nodes = [];
+        const nodes = [];
 
         // copy scripts and categories to new array
-        let scriptsTemp = Object.assign([], visibleScripts.value);
-        let categoriesTemp = Object.assign([], categories.value);
+        const scriptsTemp = Object.assign([], visibleScripts.value);
+        const categoriesTemp = Object.assign([], categories.value);
 
         // add Unassigned category
         categoriesTemp.push("Unassigned");
@@ -718,7 +718,7 @@ export default {
         });
 
         sortedCategories.forEach((category) => {
-          let temp = {
+          const temp = {
             icon: "folder",
             iconColor: "yellow-9",
             label: category,

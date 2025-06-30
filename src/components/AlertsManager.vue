@@ -44,28 +44,28 @@
             no-data-label="No Alert Templates"
           >
             <!-- header slots -->
-            <template v-slot:header-cell-is_active="props">
+            <template #header-cell-is_active="props">
               <q-th :props="props" auto-width>
                 <q-icon name="power_settings_new" size="1.5em">
                   <q-tooltip>Enable Template</q-tooltip>
                 </q-icon>
               </q-th>
             </template>
-            <template v-slot:header-cell-agent_settings="props">
+            <template #header-cell-agent_settings="props">
               <q-th :props="props" auto-width>
                 <q-icon name="devices" size="1.5em">
                   <q-tooltip>Has agent alert settings</q-tooltip>
                 </q-icon>
               </q-th>
             </template>
-            <template v-slot:header-cell-check_settings="props">
+            <template #header-cell-check_settings="props">
               <q-th :props="props" auto-width>
                 <q-icon name="fas fa-check-double" size="1.5em">
                   <q-tooltip>Has check alert settings</q-tooltip>
                 </q-icon>
               </q-th>
             </template>
-            <template v-slot:header-cell-task_settings="props">
+            <template #header-cell-task_settings="props">
               <q-th :props="props" auto-width>
                 <q-icon name="fas fa-tasks" size="1.5em">
                   <q-tooltip>Has task alert settings</q-tooltip>
@@ -73,7 +73,7 @@
               </q-th>
             </template>
             <!-- body slots -->
-            <template v-slot:body="props">
+            <template #body="props">
               <q-tr
                 :props="props"
                 class="cursor-pointer"
@@ -340,7 +340,7 @@ export default {
       });
     },
     toggleEnabled(template) {
-      let text = !template.is_active
+      const text = !template.is_active
         ? "Template enabled successfully"
         : "Template disabled successfully";
 

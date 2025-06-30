@@ -14,7 +14,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               v-model="localCheck.name"
               label="Descriptive Name"
               :rules="[(val) => !!val || '*Required']"
@@ -24,7 +24,7 @@
             <q-select
               dense
               options-dense
-              outlined
+              filled
               v-model="localCheck.log_name"
               :options="logNameOptions"
               label="Event log to query"
@@ -34,7 +34,7 @@
             <q-select
               dense
               options-dense
-              outlined
+              filled
               v-model="localCheck.fail_when"
               :options="failWhenOptions"
               label="Fail When"
@@ -45,7 +45,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               v-model="localCheck.event_id"
               label="Event ID (Use * to match every event ID)"
               :rules="[(val) => validateEventID(val) || 'Invalid Event ID']"
@@ -53,16 +53,16 @@
           </q-card-section>
           <q-card-section>
             <q-checkbox v-model="eventSource" label="Event source" />
-            <q-input dense outlined v-model="localCheck.event_source" :disable="!eventSource" />
+            <q-input dense filled v-model="localCheck.event_source" :disable="!eventSource" />
           </q-card-section>
           <q-card-section>
             <q-checkbox v-model="eventMessage" label="Message contains string" />
-            <q-input dense outlined v-model="localCheck.event_message" :disable="!eventMessage" />
+            <q-input dense filled v-model="localCheck.event_message" :disable="!eventMessage" />
           </q-card-section>
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               v-model.number="localCheck.search_last_day"
               label="How many previous days to search (Enter 0 for the entire log)"
               :rules="[
@@ -94,7 +94,7 @@
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               map-options
@@ -108,14 +108,14 @@
             <q-input
               label="Number of events found before alert"
               dense
-              outlined
+              filled
               type="number"
               v-model.number="localCheck.number_of_events_b4_alert"
             />
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               v-model="localCheck.fails_b4_alert"
@@ -125,7 +125,7 @@
           </q-card-section>
           <q-card-section>
             <q-input
-              outlined
+              filled
               dense
               type="number"
               v-model.number="localCheck.run_interval"
@@ -238,7 +238,7 @@ async function submit() {
   else checkStore.addCheck(localCheck);
 
   // stops the dialog from closing when there is an error
-  await until(checkStore.isLoading).not.toBeTruthy();
+  await until(() => checkStore.isLoading).toBe(false);
   if (checkStore.isError) return;
 
   onDialogOK();

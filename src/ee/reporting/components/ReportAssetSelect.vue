@@ -21,24 +21,13 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-card-section>
 
       <q-card-section v-if="imageType === 'link'">
-        <q-input
-          v-model="linkText"
-          label="Text"
-          dense
-          outlined
-          class="q-pb-sm"
-        />
-        <q-input v-model="linkUrl" label="Url" dense outlined class="q-pb-sm" />
+        <q-input v-model="linkText" label="Text" dense filled class="q-pb-sm" />
+        <q-input v-model="linkUrl" label="Url" dense filled class="q-pb-sm" />
         <q-input v-model="output" label="Output" readonly dense />
       </q-card-section>
-      <q-card-section
-        v-if="imageType === 'asset'"
-        style="max-height: 50vh"
-        class="scroll"
-      >
+      <q-card-section v-if="imageType === 'asset'" style="max-height: 50vh" class="scroll">
         <div v-if="tree.length === 0">
-          No Report Assets found. Go to Reporting Manager and use the Report
-          Assets button to upload
+          No Report Assets found. Go to Reporting Manager and use the Report Assets button to upload
         </div>
         <q-tree
           v-else
@@ -52,24 +41,12 @@ For details, see: https://license.tacticalrmm.com/ee
         />
       </q-card-section>
       <q-card-section v-if="imageType === 'asset'">
-        <q-input
-          v-model="output"
-          label="Selected"
-          readonly
-          dense
-          class="q-pb-sm"
-        />
+        <q-input v-model="output" label="Selected" readonly dense class="q-pb-sm" />
       </q-card-section>
       <q-card-actions>
         <q-space />
         <q-btn dense flat label="Cancel" v-close-popup />
-        <q-btn
-          @click="onDialogOK(output)"
-          dense
-          flat
-          label="Select"
-          color="primary"
-        />
+        <q-btn @click="onDialogOK(output)" dense flat label="Select" color="primary" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -80,7 +57,7 @@ import { ref, watch, onMounted } from "vue";
 import { type QTree, type QTreeNode, useDialogPluginComponent } from "quasar";
 import { fetchAllReportAssets } from "../api/reporting";
 
-import { ReportTemplateType } from "../types/reporting";
+import type { ReportTemplateType } from "../types/reporting";
 
 // props
 const props = defineProps<{ templateType: ReportTemplateType }>();
@@ -109,8 +86,7 @@ function formatImageLink(url: string, text: string) {
 }
 
 watch([linkText, linkUrl, selected], ([newText, newLink, newSelected]) => {
-  if (imageType.value === "link")
-    output.value = formatImageLink(newLink, newText);
+  if (imageType.value === "link") output.value = formatImageLink(newLink, newText);
   else if (imageType.value === "asset") {
     if (newSelected) {
       const asset: QTreeNode<unknown> = qtree.value?.getNodeByKey(newSelected);

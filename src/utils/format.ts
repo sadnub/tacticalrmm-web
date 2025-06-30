@@ -7,8 +7,8 @@ import type { Agent } from "src/types/agents";
 import type { Client, ClientWithSites } from "src/types/clients";
 import type { User } from "src/types/accounts";
 import type { Check } from "src/types/checks";
-import { CustomField, CustomFieldValue } from "src/types/core/customfields";
-import { URLAction } from "src/types/core/urlactions";
+import type { CustomField, CustomFieldValue, CustomFieldValueField } from "src/core/settings/types";
+import type { URLAction } from "src/types/core/urlactions";
 
 // dropdown options formatting
 export interface SelectOptionCategory {
@@ -243,16 +243,21 @@ export function formatURLActionOptions(data: URLAction[], flat = false) {
   });
 }
 
-export function formatCustomFields(fields: CustomField[], values: CustomFieldValue) {
-  const tempArray = [];
+export function formatCustomFields(
+  fields: CustomField[],
+  values: Record<string, CustomFieldValueField>,
+) {
+  const tempArray = [] as CustomFieldValue[];
 
   for (const field of fields) {
     if (field.type === "multiple") {
-      tempArray.push({ multiple_value: values[field.name], field: field.id });
+      // supposed to be string[]
+      tempArray.push({ multiple_value: values[field.name] as string[], field: field.id });
     } else if (field.type === "checkbox") {
-      tempArray.push({ bool_value: values[field.name], field: field.id });
+      tempArray.push({ bool_value: !!values[field.name], field: field.id });
     } else {
-      tempArray.push({ string_value: values[field.name], field: field.id });
+      // supposed to be string
+      tempArray.push({ string_value: values[field.name] as string, field: field.id });
     }
   }
   return tempArray;
@@ -340,7 +345,8 @@ export function formatDateStringwithTimezone(localDateString: string) {
 // string formatting
 
 export function capitalize(string: string) {
-  return string[0].toUpperCase() + string.substring(1);
+  if (string.length > 0) return string[0]!.toUpperCase() + string.substring(1);
+  else return string;
 }
 
 export function formatTableColumnText(text: string) {
@@ -353,8 +359,6 @@ export function formatTableColumnText(text: string) {
 }
 
 export function truncateText(txt: string, chars: number) {
-  if (!txt) return;
-
   return txt.length >= chars ? txt.substring(0, chars) + "..." : txt;
 }
 
@@ -416,7 +420,7 @@ export function convertToBitArray(number: number) {
 export function convertFromBitArray(array: number[]) {
   let result = 0;
   for (let i = 0; i < array.length; i++) {
-    result += array[i];
+    result += array[i]!;
   }
   return result;
 }

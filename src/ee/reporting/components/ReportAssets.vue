@@ -125,7 +125,7 @@ import type {
   FileSystemNodeTable,
   QTreeFileNode,
 } from "src/types/filebrowser";
-import { UploadAssetsResponse } from "../types/reporting";
+import type { UploadAssetsResponse } from "../types/reporting";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -144,12 +144,12 @@ const nodes = ref([createFolderNode("Assets", "/", "storage", "primary")] as QTr
 const fileBrowser = ref<InstanceType<typeof FileBrowser> | null>(null);
 const isLoading = ref(false);
 
-async function loadAssets({ path, isDone, isFail }: LazyLoadCallbackParams) {
+async function loadAssets(args: LazyLoadCallbackParams) {
   try {
-    const result = await fetchReportAssets(path);
-    isDone(parseNode(result));
-  } catch (e) {
-    isFail();
+    const result = await fetchReportAssets(args.path);
+    args.isDone(parseNode(result));
+  } catch {
+    args.isFail();
   }
 }
 
@@ -163,8 +163,8 @@ function uploadFiles(node: QTreeFileNode) {
     // the upload view returns an object with the old filename as the key and the
     // new filename as the value in case there are name conflicts
     files.forEach((file) => {
-      const path = response[file.name].filename;
-      const asset_id = response[file.name].id;
+      const path = response[file.name]!.filename;
+      const asset_id = response[file.name]!.id;
       const name = getFile(path);
       const fileNode = createFileNode(name, path, file.size.toString(), asset_id);
       node.children?.push(fileNode);
@@ -184,21 +184,22 @@ function newFolder(node: QTreeFileNode) {
     },
     cancel: true,
     persistent: true,
-  }).onOk(async (data: string) => {
+  }).onOk((data: string) => {
     isLoading.value = true;
     const folderName = data;
     const folderPath = `${node.path}/${folderName}`;
-    try {
-      const newPath = await createAssetFolder(folderPath);
 
-      const folderNode = createFolderNode(getFile(newPath), newPath);
-      node.children?.push(folderNode);
+    createAssetFolder(folderPath)
+      .then((newPath) => {
+        const folderNode = createFolderNode(getFile(newPath), newPath);
+        node.children?.push(folderNode);
 
-      fileBrowser.value?.reloadTable();
-      isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-    }
+        fileBrowser.value?.reloadTable();
+        isLoading.value = false;
+      })
+      .catch(() => {
+        isLoading.value = false;
+      });
   });
 }
 
@@ -212,32 +213,32 @@ function sendRename(node: FileSystemNodeTable) {
     },
     cancel: true,
     persistent: true,
-  }).onOk(async (data: string) => {
+  }).onOk((data: string) => {
     isLoading.value = true;
     const oldPath = node.path;
     const newName = data;
-    try {
-      const newPath = await renameReportAsset(oldPath, newName);
+    renameReportAsset(oldPath, newName)
+      .then((newPath) => {
+        const treeNode = fileBrowser.value?.getNodeByKey(node.id);
 
-      const treeNode = fileBrowser.value?.getNodeByKey(node.id);
+        if (treeNode === undefined) {
+          console.error("Node key not found");
+          return;
+        }
 
-      if (treeNode === undefined) {
-        console.error("Node key not found");
-        return;
-      }
+        treeNode.label = getFile(newPath);
+        treeNode.path = newPath;
 
-      treeNode.label = getFile(newPath);
-      treeNode.path = newPath;
+        if (treeNode.type === "folder" && treeNode.children) {
+          updatePathOnChildNodes(treeNode.children, oldPath, newPath);
+        }
 
-      if (treeNode.type === "folder" && treeNode.children) {
-        updatePathOnChildNodes(treeNode.children, oldPath, newPath);
-      }
-
-      fileBrowser.value?.reloadTable();
-      isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-    }
+        fileBrowser.value?.reloadTable();
+        isLoading.value = false;
+      })
+      .catch(() => {
+        isLoading.value = false;
+      });
   });
 }
 
@@ -248,7 +249,7 @@ async function downloadFile(node: FileSystemNodeTable) {
     if (result.type === "application/zip") exportFile(`${node.name}.zip`, result);
     else exportFile(node.name, result);
     isLoading.value = false;
-  } catch (e) {
+  } catch {
     isLoading.value = false;
   }
 }
@@ -261,21 +262,20 @@ function deleteFiles(nodes: FileSystemNodeTable[], selectedTreeNode: QTreeFileNo
     }. This action isn't reversible`,
     cancel: true,
     persistent: true,
-  }).onOk(async () => {
-    try {
-      const paths = nodes.map((node) => node.path);
-      await deleteAssets(paths);
+  }).onOk(() => {
+    const paths = nodes.map((node) => node.path);
+    deleteAssets(paths)
+      .then(() => {
+        const newNodes = selectedTreeNode.children?.filter((node) => !paths.includes(node.path));
 
-      selectedTreeNode.children = selectedTreeNode.children?.filter(
-        (node) => !paths.includes(node.path),
-      );
+        if (newNodes) selectedTreeNode.children = newNodes;
+        fileBrowser.value?.reloadTable();
 
-      fileBrowser.value?.reloadTable();
-
-      isLoading.value = false;
-    } catch (e) {
-      isLoading.value = false;
-    }
+        isLoading.value = false;
+      })
+      .catch(() => {
+        isLoading.value = false;
+      });
   });
 }
 
@@ -292,10 +292,10 @@ function updatePathOnChildNodes(nodes: QTreeFileNode[], oldPath: string, newPath
 
 // recursive function to parse file system output into Quasar tree nodes
 function parseNode(nodes: QTreeFileNode[]): QTreeFileNode[] {
-  let parsedNodes: QTreeFileNode[] = [];
+  const parsedNodes: QTreeFileNode[] = [];
 
   nodes.forEach((node) => {
-    let tempNode: QTreeFileNode =
+    const tempNode: QTreeFileNode =
       node.type === "folder"
         ? createFolderNode(node.name, node.path)
         : createFileNode(node.name, node.path, node.size, node.asset_id);

@@ -11,10 +11,15 @@ export function useUserDropdown() {
     }));
   });
 
+  const userOptionsFlat = computed(() => {
+    return userStore.users.map((user) => user.username);
+  });
+
   onMounted(userStore.getUsers);
 
   return {
     userOptions,
+    userOptionsFlat,
   };
 }
 

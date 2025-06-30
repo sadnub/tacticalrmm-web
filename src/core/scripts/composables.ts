@@ -56,10 +56,20 @@ export function useScriptDropdown(plat?: AgentPlat) {
     return removeEmptyCategories(filtered);
   });
 
+  const favoriteScriptOptions = computed(() => {
+    const filtered = scriptStore.scripts.filter((item) => item.favorite);
+    return filtered.map((script) => ({
+      label: script.name,
+      value: script.id,
+      ...script,
+    }));
+  });
+
   return {
     scriptOptions: allFormattedOptions,
     filterByPlatformOptions,
     serverScriptOptions,
+    favoriteScriptOptions,
     isLoading: computed(() => scriptStore.isLoading),
   };
 }

@@ -173,11 +173,11 @@ const snippetEditor = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor;
 
 function loadEditor() {
-  var model = monaco.editor.createModel(snippet.code, lang.value);
+  const model = monaco.editor.createModel(snippet.code, lang.value);
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+   
   editor = monaco.editor.create(snippetEditor.value!, {
     automaticLayout: true,
     model: model,

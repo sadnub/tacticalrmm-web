@@ -10,7 +10,7 @@
           filter="filter"
           no-selection-unset
           selected-color="primary"
-          :filter-method="(node: QTreeFileNode/*,  filter */) => node.type === 'folder'"
+          :filter-method="(node: QTreeFileNode /*,  filter */) => node.type === 'folder'"
           :nodes="nodes"
           @update:selected="onFolderSelection"
           @lazy-load="loadNodeChildren"
@@ -43,19 +43,22 @@
           <template #top>
             <slot
               name="action-bar"
-              v-bind="{ selectedTreeNode: folderTree?.getNodeByKey(selectedTreeNode) as QTreeFileNode, selectedTableNodes: selectedTableNodes as FileSystemNodeTable[]}"
+              v-bind="{
+                selectedTreeNode: folderTree?.getNodeByKey(selectedTreeNode) as QTreeFileNode,
+                selectedTableNodes: selectedTableNodes as FileSystemNodeTable[],
+              }"
             ></slot>
           </template>
 
           <template #body="slotProps">
-            <q-tr
-              class="cursor-pointer"
-              @dblclick.prevent="doubleClickTableRow(slotProps.row)"
-            >
+            <q-tr class="cursor-pointer" @dblclick.prevent="doubleClickTableRow(slotProps.row)">
               <!-- Context Menu -->
               <slot
                 name="table-menu"
-                v-bind="{ item: slotProps.row as FileSystemNodeTable, selectedTreeNode: folderTree?.getNodeByKey(selectedTreeNode) as QTreeFileNode }"
+                v-bind="{
+                  item: slotProps.row as FileSystemNodeTable,
+                  selectedTreeNode: folderTree?.getNodeByKey(selectedTreeNode) as QTreeFileNode,
+                }"
               ></slot>
 
               <!-- rows -->
@@ -66,13 +69,9 @@
               <q-td>
                 <q-icon
                   class="q-mr-sm"
-                  :color="
-                    slotProps.row.type === 'folder' ? 'yellow-9' : 'primary'
-                  "
+                  :color="slotProps.row.type === 'folder' ? 'yellow-9' : 'primary'"
                   size="sm"
-                  :name="
-                    slotProps.row.type === 'folder' ? 'folder' : 'description'
-                  "
+                  :name="slotProps.row.type === 'folder' ? 'folder' : 'description'"
                 />{{ slotProps.row.name }}
               </q-td>
               <q-td>{{ slotProps.row.type }}</q-td>
@@ -116,13 +115,12 @@ const props = withDefaults(
     separator: "unix",
     loading: false,
     height: "200px",
-  }
+  },
 );
 
 // expose public methods
 defineExpose({
-  getNodeByKey: (nodeKey: string): QTreeFileNode =>
-    folderTree.value?.getNodeByKey(nodeKey),
+  getNodeByKey: (nodeKey: string): QTreeFileNode => folderTree.value?.getNodeByKey(nodeKey),
   reloadTable: reloadTable,
 });
 
@@ -176,9 +174,7 @@ function reloadTable(parentNodeKey: string = selectedTreeNode.value) {
 }
 
 function onFolderSelection(nodeKey: string) {
-  !folderTree.value?.isExpanded(nodeKey)
-    ? folderTree.value?.setExpanded(nodeKey, true)
-    : undefined;
+  if (!folderTree.value?.isExpanded(nodeKey)) folderTree.value?.setExpanded(nodeKey, true);
   reloadTable(nodeKey);
 }
 
@@ -201,10 +197,8 @@ function loadNodeChildren({ node, key, done, fail }: QTreeLazyLoadParams) {
 }
 
 // parses children of node into table rows
-function parseNodeChildrenIntoTable(
-  node: QTreeFileNode
-): FileSystemNodeTable[] {
-  if (isDefined(node.children)) {
+function parseNodeChildrenIntoTable(node: QTreeFileNode): FileSystemNodeTable[] {
+  if (node.children && node.children.length > 0) {
     return node.children.map((childNode) => ({
       id: childNode.id,
       name: childNode.label as string,
@@ -281,7 +275,7 @@ function parseNodeChildrenIntoTable(
 
 onMounted(() => {
   // make sure the table on the right is always populated and selected node is expanded
-  selectedTreeNode.value = nodes.value[0].id;
+  selectedTreeNode.value = nodes.value[0]!.id;
   folderTree.value?.setExpanded(selectedTreeNode.value, true);
 });
 </script>

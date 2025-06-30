@@ -2,6 +2,7 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 import { defineConfig } from "#q-app/wrappers";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig((ctx) => {
   return {
@@ -77,7 +78,7 @@ export default defineConfig((ctx) => {
             ssr: ctx.modeName === "ssr",
 
             // you need to set i18n resource including paths !
-            //include: [ fileURLToPath(new URL('./src/i18n', import.meta.url)) ]
+            include: [fileURLToPath(new URL("./src/i18n", import.meta.url))],
           },
         ],
 
@@ -101,8 +102,6 @@ export default defineConfig((ctx) => {
     devServer: {
       https: process.env.USE_HTTPS === "true",
       open: false, // opens browser window automatically
-      host: process.env.DEV_HOST,
-      port: process.env.DEV_PORT,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

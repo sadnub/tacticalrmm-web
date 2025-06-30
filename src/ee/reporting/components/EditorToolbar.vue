@@ -237,7 +237,7 @@ import ReportTableMaker from "./ReportTableMaker.vue";
 import { convertCamelCase } from "src/utils/format";
 
 // types
-import { ReportDataQuery, ReportTemplateType } from "../types/reporting";
+import type { ReportDataQuery, ReportTemplateType } from "../types/reporting";
 import { notifyWarning, notifySuccess } from "src/utils/notify";
 
 // props
@@ -314,14 +314,14 @@ function insertCodeBlock() {
 }
 
 function _getDataSourcesInTemplate() {
-  let variablesJson = parse(props.variablesEditor.getValue()) || {};
+  const variablesJson = parse(props.variablesEditor.getValue()) || {};
 
   if (!("data_sources" in variablesJson) || !variablesJson.data_sources) return null;
   else return variablesJson["data_sources"];
 }
 
 function _saveDataSourcesInTemplate(dataQuery: ReportDataQuery, convertNameToCamelCase = true) {
-  let variablesJson = parse(props.variablesEditor.getValue()) || {};
+  const variablesJson = parse(props.variablesEditor.getValue()) || {};
 
   if (!("data_sources" in variablesJson) || !variablesJson.data_sources) {
     variablesJson["data_sources"] = {};
@@ -470,11 +470,11 @@ function insert(text: string, moveToNewLine = false) {
   const selections = _editor.getSelections();
   if (!model || !selections) return;
 
-  let operations = [] as monaco.editor.IIdentifiedSingleEditOperation[];
-  for (let selection of selections) {
+  const operations = [] as monaco.editor.IIdentifiedSingleEditOperation[];
+  for (const selection of selections) {
     const end = selection.getEndPosition();
 
-    let editSelection = moveToNewLine
+    const editSelection = moveToNewLine
       ? monaco.Selection.fromPositions({
           lineNumber: end.lineNumber,
           column: model.getLineMaxColumn(end.lineNumber),
@@ -500,20 +500,20 @@ function insertPrefix(prefix: string, prefixCount = 1) {
   const selections = _editor.getSelections();
   if (!model || !selections) return;
 
-  let operations = [] as monaco.editor.IIdentifiedSingleEditOperation[];
-  let newSelections = [] as monaco.Selection[];
-  for (let selection of selections) {
+  const operations = [] as monaco.editor.IIdentifiedSingleEditOperation[];
+  const newSelections = [] as monaco.Selection[];
+  for (const selection of selections) {
     const start = selection.getStartPosition();
     const end = selection.getEndPosition();
 
-    let editSelection = monaco.Selection.fromPositions(
+    const editSelection = monaco.Selection.fromPositions(
       { lineNumber: start.lineNumber, column: 0 },
       {
         lineNumber: end.lineNumber,
         column: model.getLineMaxColumn(end.lineNumber),
       },
     );
-    let replacementText = [] as string[];
+    const replacementText = [] as string[];
 
     newSelections.push(editSelection);
 
@@ -554,12 +554,12 @@ function insertWrap(prefix: string, suffix: string, includeWholeLine = false) {
   const selections = _editor.getSelections();
   if (!model || !selections) return;
 
-  let operations = [] as monaco.editor.IIdentifiedSingleEditOperation[];
-  for (let selection of selections) {
+  const operations = [] as monaco.editor.IIdentifiedSingleEditOperation[];
+  for (const selection of selections) {
     const start = selection.getStartPosition();
     const end = selection.getEndPosition();
 
-    let editSelection = includeWholeLine
+    const editSelection = includeWholeLine
       ? monaco.Selection.fromPositions(
           { lineNumber: start.lineNumber, column: 0 },
           {

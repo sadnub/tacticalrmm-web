@@ -57,7 +57,7 @@ For details, see: https://license.tacticalrmm.com/ee
             style="width: 300px"
             label="Search"
             dense
-            outlined
+            filled
             clearable
             class="q-pr-md q-pb-xs"
           >
@@ -93,7 +93,7 @@ const columns: QTableColumn[] = [
     field: "url",
     align: "left",
     sortable: true,
-    format: (val) => truncateText(val, 90),
+    format: (val: string) => truncateText(val, 90),
   },
 ];
 

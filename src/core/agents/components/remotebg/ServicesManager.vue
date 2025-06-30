@@ -18,34 +18,40 @@
     row-key="display_name"
     binary-state-sort
     :rows-per-page-options="[0]"
-    :loading="loading"
+    :loading="agentStore.isLoading"
   >
-    <template v-slot:top>
-      <q-btn dense flat push @click="getServices" icon="refresh" />
+    <template #top>
+      <q-btn dense flat push @click="agentStore.getAgentServices(agentId)" icon="refresh" />
       <q-space />
-      <q-input v-model="filter" outlined label="Search" dense clearable>
-        <template v-slot:prepend>
+      <q-input v-model="filter" filled label="Search" dense clearable>
+        <template #prepend>
           <q-icon name="search" />
         </template>
       </q-input>
       <!-- file download doesn't work so disabling -->
       <export-table-btn v-show="false" class="q-ml-sm" :columns="columns" :data="services" />
     </template>
-    <template v-slot:body="props">
-      <q-tr :props="props" class="cursor-pointer" @dblclick="showServiceDetail(props.row)">
+    <template #body="{ row }">
+      <q-tr class="cursor-pointer" @dblclick="showServiceDetail(row)">
         <q-menu context-menu auto-close>
           <q-list dense style="min-width: 200px">
-            <q-item clickable @click="sendServiceAction(props.row, 'start')">
+            <q-item
+              clickable
+              @click="agentStore.sendAgentServiceAction(agentId, row.name, 'start')"
+            >
               <q-item-section>Start</q-item-section>
             </q-item>
-            <q-item clickable @click="sendServiceAction(props.row, 'stop')">
+            <q-item clickable @click="agentStore.sendAgentServiceAction(agentId, row.name, 'stop')">
               <q-item-section>Stop</q-item-section>
             </q-item>
-            <q-item clickable @click="sendServiceAction(props.row, 'restart')">
+            <q-item
+              clickable
+              @click="agentStore.sendAgentServiceAction(agentId, row.name, 'restart')"
+            >
               <q-item-section>Restart</q-item-section>
             </q-item>
             <q-separator />
-            <q-item clickable @click="showServiceDetail(props.row)">
+            <q-item clickable @click="showServiceDetail(row)">
               <q-item-section>Service Details</q-item-section>
             </q-item>
             <q-separator />
@@ -56,38 +62,38 @@
         </q-menu>
         <q-td key="display_name" :props="props">
           <q-icon name="fas fa-cogs" />
-          &nbsp;&nbsp;&nbsp;{{ truncateText(props.row.display_name, 30) }}
+          &nbsp;&nbsp;&nbsp;{{ truncateText(row.display_name, 30) }}
         </q-td>
-        <q-td key="name" :props="props">{{ props.row.name }}</q-td>
+        <q-td key="name" :props="props">{{ row.name }}</q-td>
         <q-td key="start_type" :props="props">{{
-          props.row.start_type.toLowerCase() === "automatic" && props.row.autodelay
-            ? `${props.row.start_type} (Delayed)`
-            : `${props.row.start_type}`
+          row.start_type.toLowerCase() === "automatic" && row.autodelay
+            ? `${row.start_type} (Delayed)`
+            : `${row.start_type}`
         }}</q-td>
-        <q-td key="pid" :props="props">{{ props.row.pid === 0 ? "" : props.row.pid }}</q-td>
-        <q-td key="status" :props="props">{{ props.row.status }}</q-td>
-        <q-td key="username" :props="props">{{
-          props.row.username ? props.row.username : "LocalSystem"
-        }}</q-td>
+        <q-td key="pid" :props="props">{{ row.pid === 0 ? "" : row.pid }}</q-td>
+        <q-td key="status" :props="props">{{ row.status }}</q-td>
+        <q-td key="username" :props="props">{{ row.username ? row.username : "LocalSystem" }}</q-td>
       </q-tr>
     </template>
   </q-table>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref, onMounted } from "vue";
-import { useQuasar } from "quasar";
-import { getAgentServices, sendAgentServiceAction } from "src/api/services";
-import { notifySuccess } from "src/utils/notify";
+import { ref, computed, onMounted } from "vue";
+import { useQuasar, type QTableColumn } from "quasar";
 import { truncateText } from "src/utils/format";
+import { useAgentStore } from "../../api";
 
 // ui imports
 import ServiceDetail from "src/components/agents/remotebg/ServiceDetail.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 
+// type imports
+import type { AgentService } from "../../types";
+
 // static data
-const columns = [
+const columns: QTableColumn[] = [
   {
     name: "display_name",
     label: "Display Name",
@@ -132,97 +138,33 @@ const columns = [
   },
 ];
 
-// static data
-const startupOptions = [
-  {
-    label: "Automatic (Delayed Start)",
-    value: "autodelay",
-  },
-  {
-    label: "Automatic",
-    value: "automatic",
-  },
-  {
-    label: "Manual",
-    value: "manual",
-  },
-  {
-    label: "Disabled",
-    value: "disabled",
-  },
-];
+const props = defineProps<{
+  agentId: string;
+  agentPlatform: string;
+}>();
 
-export default {
-  name: "ServicesManager",
-  components: {
-    ExportTableBtn,
-  },
-  props: {
-    agent_id: !String,
-    agentPlatform: !String,
-  },
-  setup(props) {
-    // quasar setup
-    const $q = useQuasar();
+// quasar setup
+const $q = useQuasar();
 
-    // services manager setup
-    const services = ref([]);
-    const filter = ref("");
-    const loading = ref(false);
+// setup stores
+const agentStore = useAgentStore();
 
-    function showServiceDetail(service) {
-      $q.dialog({
-        component: ServiceDetail,
-        componentProps: {
-          service: service,
-          agent_id: props.agent_id,
-        },
-      }).onOk(getServices);
-    }
+// services manager setup
+const services = computed(() => agentStore.selectedAgent?.services || []);
+const filter = ref("");
 
-    async function getServices() {
-      loading.value = true;
-      services.value = await getAgentServices(props.agent_id);
-      loading.value = false;
-    }
+function showServiceDetail(service: AgentService) {
+  $q.dialog({
+    component: ServiceDetail,
+    componentProps: {
+      service: service,
+      agentId: props.agentId,
+    },
+  });
+}
 
-    async function sendServiceAction(service, action) {
-      loading.value = true;
-
-      try {
-        const result = await sendAgentServiceAction(props.agent_id, service.name, {
-          sv_action: action,
-        });
-        notifySuccess(result);
-        await getServices();
-      } catch (e) {
-        console.error(e);
-      }
-      loading.value = false;
-    }
-
-    // vue lifecycle hooks
-    onMounted(() => {
-      if (props.agentPlatform === "windows") getServices();
-    });
-    return {
-      // reactive data
-      services,
-      filter,
-      loading,
-
-      // dialogs
-      showServiceDetail,
-
-      // non-reactive data
-      columns,
-      startupOptions,
-
-      // methods
-      getServices,
-      sendServiceAction,
-      truncateText,
-    };
-  },
-};
+// vue lifecycle hooks
+onMounted(() => {
+  if (props.agentPlatform === "windows") agentStore.getAgentServices(props.agentId);
+});
 </script>

@@ -13,8 +13,18 @@ For details, see: https://license.tacticalrmm.com/ee
       label-style="font-size: 1.1em"
     />
     <iframe
-      :srcdoc="$route.query.format !== 'pdf' ? reportData : undefined"
-      :src="$route.query.format === 'pdf' ? reportData : undefined"
+      v-if="$route.query.format !== 'pdf'"
+      :srcdoc="reportData"
+      :style="{
+        'max-height': `${$q.screen.height}px`,
+        'min-height': `${$q.screen.height}px`,
+        'min-width': '100%',
+        'background-color': 'white',
+      }"
+    ></iframe>
+    <iframe
+      v-else
+      :src="reportData"
       :style="{
         'max-height': `${$q.screen.height}px`,
         'min-height': `${$q.screen.height}px`,

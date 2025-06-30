@@ -2,7 +2,7 @@ import { onMounted, computed } from "vue";
 import { useClientStore } from "./api";
 
 import type { Client } from "./types";
-import type { Option } from "../dashboard/types";
+import { isCategoryOption } from "../dashboard/types";
 
 export function useClientDropdown() {
   const clientStore = useClientStore();
@@ -18,6 +18,7 @@ export function useClientDropdown() {
 
   return {
     clientOptions,
+    isLoading: clientStore.isLoading,
   };
 }
 
@@ -32,11 +33,36 @@ export function useSiteDropdown() {
 
   return {
     siteOptions,
+    isLoading: clientStore.isLoading,
   };
 }
 
+export type SiteOption = {
+  clientId: number;
+  label: string;
+  value: number | string;
+  cat: string;
+  img_right?: string;
+};
+
+export type SiteOptionWithCategory =
+  | {
+      clientId: number;
+      label: string;
+      value: number | string;
+      cat: string;
+      img_right?: string;
+    }
+  | {
+      category: string;
+    };
+
+export function isSiteOption(option: SiteOptionWithCategory): option is SiteOption {
+  return !isCategoryOption(option);
+}
+
 function _formatSiteOptions(data: Client[]) {
-  const options = [] as Option[];
+  const options = [] as SiteOptionWithCategory[];
 
   data.forEach((client) => {
     options.push({ category: client.name });
@@ -45,6 +71,7 @@ function _formatSiteOptions(data: Client[]) {
         label: site.name,
         value: site.id,
         cat: client.name,
+        clientId: client.id,
       })),
     );
   });

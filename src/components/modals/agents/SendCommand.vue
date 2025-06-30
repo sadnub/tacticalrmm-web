@@ -51,7 +51,7 @@
         <q-card-section v-if="state.shell === 'custom'">
           <q-input
             v-model="state.custom_shell"
-            outlined
+            filled
             label="Custom shell"
             stack-label
             placeholder="/usr/bin/python3"
@@ -62,7 +62,7 @@
           <q-input
             v-model.number="state.timeout"
             dense
-            outlined
+            filled
             type="number"
             style="max-width: 150px"
             label="Timeout (seconds)"
@@ -77,7 +77,7 @@
         <q-card-section>
           <q-input
             v-model="state.cmd"
-            outlined
+            filled
             label="Command"
             stack-label
             :placeholder="cmdPlaceholder(state.shell)"

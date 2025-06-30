@@ -1,18 +1,8 @@
 <template>
   <q-dialog ref="dialog" @hide="onHide">
-    <q-card
-      class="q-dialog-plugin"
-      style="min-width: 80vw; min-height: 65vh; overflow-x: hidden"
-    >
+    <q-card class="q-dialog-plugin" style="min-width: 80vw; min-height: 65vh; overflow-x: hidden">
       <q-bar>
-        <q-btn
-          @click="getChartData"
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-        />
+        <q-btn @click="getChartData" class="q-mr-sm" dense flat push icon="refresh" />
         {{ title }}
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
@@ -28,7 +18,7 @@
           map-options
           style="width: 200px"
           :options="timeFilterOptions"
-          outlined
+          filled
           dense
           class="q-pr-md q-pt-md"
           @update:model-value="getChartData"
@@ -122,8 +112,7 @@ export default {
     seriesName() {
       if (this.check.check_type === "cpuload") return "CPU Load";
       else if (this.check.check_type === "memory") return "Memory Usage";
-      else if (this.check.check_type === "diskspace")
-        return "Disk Space Remaining";
+      else if (this.check.check_type === "diskspace") return "Disk Space Remaining";
       else if (this.check.check_type === "script") return "Script Results";
       else if (this.check.check_type === "eventlog") return "Status";
       else if (this.check.check_type === "winsvc") return "Status";
@@ -259,22 +248,11 @@ export default {
         formatter: (value, { dataPointIndex }) => {
           let formatted = "";
           if (this.check.check_type === "script") {
+            formatted += "Return Code: " + this.results[dataPointIndex].results.retcode + "<br/>";
+            formatted += "Std Out: " + this.results[dataPointIndex].results.stdout + "<br/>";
+            formatted += "Err Out: " + this.results[dataPointIndex].results.errout + "<br/>";
             formatted +=
-              "Return Code: " +
-              this.results[dataPointIndex].results.retcode +
-              "<br/>";
-            formatted +=
-              "Std Out: " +
-              this.results[dataPointIndex].results.stdout +
-              "<br/>";
-            formatted +=
-              "Err Out: " +
-              this.results[dataPointIndex].results.errout +
-              "<br/>";
-            formatted +=
-              "Execution Time: " +
-              this.results[dataPointIndex].results.execution_time +
-              "<br/>";
+              "Execution Time: " + this.results[dataPointIndex].results.execution_time + "<br/>";
           } else {
             formatted += this.results[dataPointIndex].results;
           }

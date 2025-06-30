@@ -2,12 +2,12 @@
   <q-dialog ref="dialog" @hide="onHide">
     <q-card class="q-dialog-plugin" style="min-width: 60vw">
       <q-splitter v-model="splitterModel">
-        <template v-slot:before>
+        <template #before>
           <q-tabs dense v-model="tab" vertical class="text-primary">
             <q-tab name="ui" label="User Interface" />
           </q-tabs>
         </template>
-        <template v-slot:after>
+        <template #after>
           <q-form @submit.prevent="editUserPrefs">
             <q-card-section class="row items-center">
               <div class="text-h6">Preferences</div>
@@ -30,7 +30,7 @@
                   <q-select
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="agentDblClickAction"
@@ -45,7 +45,7 @@
                   <q-select
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="url_action"
@@ -59,7 +59,7 @@
                   <q-select
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="defaultAgentTblTab"
@@ -71,7 +71,7 @@
                   <div class="col-4">Loading Bar Color:</div>
                   <div class="col-4"></div>
                   <q-select
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="loading_bar_color"
@@ -82,8 +82,8 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Info Color:</div>
                   <div class="col-2"></div>
-                  <q-input outlined dense v-model="dash_info_color" class="col-8">
-                    <template v-slot:after>
+                  <q-input filled dense v-model="dash_info_color" class="col-8">
+                    <template #after>
                       <q-btn
                         round
                         dense
@@ -100,8 +100,8 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Positive Color:</div>
                   <div class="col-2"></div>
-                  <q-input outlined dense v-model="dash_positive_color" class="col-8">
-                    <template v-slot:after>
+                  <q-input filled dense v-model="dash_positive_color" class="col-8">
+                    <template #after>
                       <q-btn
                         round
                         dense
@@ -118,8 +118,8 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Negative Color:</div>
                   <div class="col-2"></div>
-                  <q-input outlined dense v-model="dash_negative_color" class="col-8">
-                    <template v-slot:after>
+                  <q-input filled dense v-model="dash_negative_color" class="col-8">
+                    <template #after>
                       <q-btn
                         round
                         dense
@@ -136,8 +136,8 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Warning Color:</div>
                   <div class="col-2"></div>
-                  <q-input outlined dense v-model="dash_warning_color" class="col-8">
-                    <template v-slot:after>
+                  <q-input filled dense v-model="dash_warning_color" class="col-8">
+                    <template #after>
                       <q-btn
                         round
                         dense
@@ -157,7 +157,7 @@
                   <q-select
                     map-options
                     emit-value
-                    outlined
+                    filled
                     dense
                     options-dense
                     v-model="clientTreeSort"
@@ -168,8 +168,8 @@
                 <q-card-section class="row">
                   <div class="col-2">Date Format:</div>
                   <div class="col-2"></div>
-                  <q-input outlined dense v-model="date_format" class="col-8">
-                    <template v-slot:after>
+                  <q-input filled dense v-model="date_format" class="col-8">
+                    <template #after>
                       <q-btn
                         round
                         dense

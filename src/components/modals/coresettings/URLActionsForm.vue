@@ -25,7 +25,7 @@
         <q-card-section>
           <q-input
             label="Name"
-            outlined
+            filled
             dense
             v-model="localAction.name"
             :rules="[(val) => !!val || '*Required']"
@@ -36,7 +36,7 @@
         <q-card-section>
           <q-input
             label="Description"
-            outlined
+            filled
             dense
             type="textarea"
             rows="2"
@@ -48,7 +48,7 @@
         <q-card-section>
           <q-input
             label="URL Pattern"
-            outlined
+            filled
             dense
             v-model="localAction.pattern"
             :rules="[(val) => !!val || '*Required']"
@@ -60,7 +60,7 @@
             v-model="localAction.rest_method"
             label="Method"
             :options="URLActionMethods"
-            outlined
+            filled
             dense
             map-options
             emit-value
@@ -93,7 +93,7 @@ import { ref, computed, reactive, watch } from "vue";
 import { useDialogPluginComponent, useQuasar, extend } from "quasar";
 import { editURLAction, saveURLAction } from "src/api/core";
 import { notifySuccess } from "src/utils/notify";
-import { URLAction, URLActionType } from "src/types/core/urlactions";
+import type { URLAction, URLActionType } from "src/types/core/urlactions";
 
 // ui imports
 import TestURLAction from "src/components/modals/coresettings/TestURLAction.vue";
@@ -128,7 +128,7 @@ const localAction: URLAction = props.action
       action_type: props.type,
       rest_body: "{\n    \n}",
       rest_method: "post",
-      rest_headers: `{\n  "Content-Type": "application/json"\n}`, // eslint-disable-line
+      rest_headers: `{\n  "Content-Type": "application/json"\n}`,
     } as URLAction);
 
 const disableBodyTab = computed(() => ["get", "delete"].includes(localAction.rest_method));
@@ -157,11 +157,11 @@ async function submit() {
 
 const editorDiv = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor;
-var modelBodyUri = monaco.Uri.parse("model://body"); // a made up unique URI for our model
-var modelHeadersUri = monaco.Uri.parse("model://headers"); // a made up unique URI for our model
-var modelBody = monaco.editor.createModel(localAction.rest_body, "json", modelBodyUri);
+const modelBodyUri = monaco.Uri.parse("model://body"); // a made up unique URI for our model
+const modelHeadersUri = monaco.Uri.parse("model://headers"); // a made up unique URI for our model
+const modelBody = monaco.editor.createModel(localAction.rest_body, "json", modelBodyUri);
 
-var modelHeaders = monaco.editor.createModel(localAction.rest_headers, "json", modelHeadersUri);
+const modelHeaders = monaco.editor.createModel(localAction.rest_headers, "json", modelHeadersUri);
 
 function testWebHook() {
   $q.dialog({

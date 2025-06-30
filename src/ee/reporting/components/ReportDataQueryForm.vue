@@ -79,12 +79,14 @@ async function submit() {
   try {
     state.json_query = JSON.parse(json_string.value);
   } catch (e) {
-    notifyError(`There was an error parsing the json: ${e}`);
+    if (typeof e === "string") notifyError(`There was an error parsing the json: ${e}`);
+    else console.error(e);
     return;
   }
 
   if (!props.editInTemplate) {
-    props.dataQuery ? editReportDataQuery(state.id, state) : addReportDataQuery(state);
+    if (props.dataQuery) editReportDataQuery(state.id, state);
+    else addReportDataQuery(state);
 
     await until(isLoading).not.toBeTruthy();
     if (isError.value) return;
@@ -98,8 +100,8 @@ let editor: monaco.editor.IStandaloneCodeEditor;
 async function loadEditor() {
   const r = await axios.get("/reporting/queryschema/");
 
-  var modelUri = monaco.Uri.parse("model://new"); // a made up unique URI for our model
-  var model = monaco.editor.createModel(json_string.value, "json", modelUri);
+  const modelUri = monaco.Uri.parse("model://new"); // a made up unique URI for our model
+  const model = monaco.editor.createModel(json_string.value, "json", modelUri);
 
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
     validate: true,
@@ -114,7 +116,6 @@ async function loadEditor() {
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   editor = monaco.editor.create(queryEditor.value!, {
     model: model,
     theme: theme,

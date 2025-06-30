@@ -303,7 +303,8 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
-import { useQuasar, QTableProps } from "quasar";
+import type { QTableProps } from "quasar";
+import { useQuasar } from "quasar";
 import { useTaskStore } from "src/core/tasks/api";
 import { useAgentStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
@@ -313,7 +314,7 @@ import { notifyError } from "src/utils/notify";
 // ui imports
 import AutomatedTaskForm from "src/components/tasks/AutomatedTaskForm.vue";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
-import { AutomatedTask } from "src/core/tasks/types";
+import type { AutomatedTask } from "src/core/tasks/types";
 
 // static data
 const columns: QTableProps["columns"] = [
@@ -391,7 +392,7 @@ const pagination = ref({
   descending: false,
 });
 
-async function editTask(task: AutomatedTask, data: Partial<AutomatedTask>) {
+function editTask(task: AutomatedTask, data: Partial<AutomatedTask>) {
   if (task.policy) return;
   taskStore.updateTask(task.id, data);
 }
@@ -409,7 +410,7 @@ function deleteTask(task: AutomatedTask) {
   });
 }
 
-async function runWinTask(task: AutomatedTask) {
+function runWinTask(task: AutomatedTask) {
   if (!task.enabled) {
     notifyError("Task cannot be run when it's disabled. Enable it first.");
     return;

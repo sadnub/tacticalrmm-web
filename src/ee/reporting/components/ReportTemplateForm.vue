@@ -65,7 +65,7 @@ For details, see: https://license.tacticalrmm.com/ee
           @new-value="createValue"
           @filter="filterFn"
         >
-          <template v-slot:selected>
+          <template #selected>
             <span v-if="state.depends_on && state.depends_on?.length > 0"
               >{{ state.depends_on?.length }} Selected</span
             >
@@ -116,7 +116,7 @@ For details, see: https://license.tacticalrmm.com/ee
               dense
               round
             />
-            <template v-slot:mini>
+            <template #mini>
               <div class="q-pt-sm">
                 <q-btn
                   class=""
@@ -128,12 +128,12 @@ For details, see: https://license.tacticalrmm.com/ee
                 />
               </div>
             </template>
-            <VariablesSelector
+            <variables-selector
               :variables="state.template_variables"
               :template="state.template_md"
               :dependencies="dependencies"
-              :dependsOn="state.depends_on"
-              :base_template="state.template_html"
+              :depends-on="state.depends_on"
+              :base-template="state.template_html"
             />
           </q-drawer>
 
@@ -149,14 +149,14 @@ For details, see: https://license.tacticalrmm.com/ee
 
           <q-page-container>
             <q-splitter v-model="splitter" emit-immediately reverse :limits="[3, 45]">
-              <template v-slot:before>
+              <template #before>
                 <EditorToolbar
                   v-if="tab !== 'preview' && tab !== 'css' && editor && variablesEditor"
                   :editor="editor"
-                  :variablesEditor="variablesEditor"
-                  :templateType="templateType"
+                  :variables-editor="variablesEditor"
+                  :template-type="templateType"
                 >
-                  <template v-slot:buttons>
+                  <template #buttons>
                     <q-btn
                       flat
                       dense
@@ -183,7 +183,7 @@ For details, see: https://license.tacticalrmm.com/ee
                 </EditorToolbar>
                 <div ref="editorDiv" :style="{ height: `${$q.screen.height - 168}px` }"></div>
               </template>
-              <template v-slot:after>
+              <template #after>
                 <q-bar>
                   <q-btn
                     v-if="splitter > 6"
@@ -210,7 +210,7 @@ For details, see: https://license.tacticalrmm.com/ee
       <!-- preview -->
       <ReportTemplatePreview
         v-if="tab == 'preview' && !isLoading"
-        :previewFormat="previewFormat"
+        :preview-format="previewFormat"
         :source="renderedPreview"
         :debug="debug"
         :variables="renderedVariables"
@@ -443,9 +443,9 @@ const debug = ref(false);
 
 watch(debug, (newValue) => {
   if (newValue)
-    props.templateType === "html" || props.templateType === "markdown"
-      ? (previewFormat.value = "html")
-      : (previewFormat.value = "plaintext");
+    if (props.templateType === "html" || props.templateType === "markdown")
+      previewFormat.value = "html";
+    else previewFormat.value = "plaintext";
 });
 
 function openBaseTemplateForm() {
@@ -476,7 +476,8 @@ function previewReport() {
           dependencies: dependencies.value,
           debug: debug.value,
         };
-        debug.value ? runReportPreviewDebug(request) : runReportPreview(request);
+        if (debug.value) runReportPreviewDebug(request);
+        else runReportPreview(request);
       });
   } else {
     const request = {
@@ -485,7 +486,8 @@ function previewReport() {
       dependencies: dependencies.value,
       debug: debug.value,
     };
-    debug.value ? runReportPreviewDebug(request) : runReportPreview(request);
+    if (debug.value) runReportPreviewDebug(request);
+    else runReportPreview(request);
   }
 }
 
@@ -541,7 +543,6 @@ function initializeEditor() {
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   editor.value = monaco.editor.create(editorDiv.value!, {
     automaticLayout: true,
     model: templateModel,
@@ -559,12 +560,12 @@ function initializeEditor() {
       } else {
         state.template_md = currentModel.getValue();
       }
-      autoSave.value && applyChanges();
+      if (autoSave.value) void applyChanges();
     }
   });
 
   variablesModel = monaco.editor.createModel(state.template_variables, "yaml", variablesUri);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   variablesEditor.value = monaco.editor.create(variablesDiv.value!, {
     automaticLayout: true,
     model: variablesModel,
@@ -577,7 +578,7 @@ function initializeEditor() {
 
     if (currentModel) {
       state.template_variables = currentModel.getValue();
-      autoSave.value && applyChanges();
+      if (autoSave.value) void applyChanges();
     }
   });
 }
@@ -601,12 +602,12 @@ function validate(dontNotify = false): boolean {
   let isValid = true;
 
   if (!state.template_md) {
-    dontNotify || notifyError("Template Text is required");
+    if (!dontNotify) notifyError("Template Text is required");
     isValid = false;
   }
 
   if (!state.name) {
-    dontNotify || notifyError("Template Name is required");
+    if (!dontNotify) notifyError("Template Name is required");
     isNameValid.value = false;
     isValid = false;
   }
@@ -614,7 +615,7 @@ function validate(dontNotify = false): boolean {
   // check if yaml is valid
   const doc = parseDocument(state.template_variables, { prettyErrors: true });
   if (doc.errors.length > 0) {
-    dontNotify || notifyError("Error in variables: " + doc.errors[0].message, 5000);
+    if (!dontNotify) notifyError("Error in variables: " + doc.errors[0]!.message, 5000);
     isValid = false;
   }
 
@@ -641,7 +642,8 @@ const applyChanges = useDebounceFn(() => {
 async function submit() {
   if (validate()) {
     wrapDoubleQuotes();
-    props.reportTemplate ? editReportTemplate(state.id, state) : addReportTemplate(state);
+    if (props.reportTemplate) editReportTemplate(state.id, state);
+    else addReportTemplate(state);
 
     // stops the dialog from closing when there is an error
     await until(isLoading).not.toBeTruthy();

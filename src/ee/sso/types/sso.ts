@@ -4,7 +4,7 @@ This file is subject to the EE License Agreement.
 For details, see: https://license.tacticalrmm.com/ee
 */
 
-import { User } from "src/types/accounts";
+import type { User } from "src/types/accounts";
 export interface SSOProvider {
   id: number;
   name: string;

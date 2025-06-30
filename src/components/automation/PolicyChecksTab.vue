@@ -74,39 +74,39 @@
         virtual-scroll
       >
         <!-- No data Slot -->
-        <template v-slot:no-data>
+        <template #no-data>
           <div class="full-width row flex-center q-gutter-sm">
             <span v-if="!selectedPolicy">Click on a policy to see the checks</span>
             <span v-else>There are no checks added to this policy</span>
           </div>
         </template>
         <!-- header slots -->
-        <template v-slot:header-cell-smsalert="props">
+        <template #header-cell-smsalert="props">
           <q-th auto-width :props="props">
             <q-icon name="phone_android" size="1.5em">
               <q-tooltip>SMS Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
-        <template v-slot:header-cell-emailalert="props">
+        <template #header-cell-emailalert="props">
           <q-th auto-width :props="props">
             <q-icon name="email" size="1.5em">
               <q-tooltip>Email Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
-        <template v-slot:header-cell-dashboardalert="props">
+        <template #header-cell-dashboardalert="props">
           <q-th auto-width :props="props">
             <q-icon name="notifications" size="1.5em">
               <q-tooltip>Dashboard Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
-        <template v-slot:header-cell-statusicon="props">
+        <template #header-cell-statusicon="props">
           <q-th auto-width :props="props"></q-th>
         </template>
         <!-- body slots -->
-        <template v-slot:body="props">
+        <template #body="props">
           <q-tr
             :props="props"
             class="cursor-pointer"
@@ -199,13 +199,13 @@
 import { mapState } from "vuex";
 import mixins from "src/mixins/mixins";
 import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
-import DiskSpaceCheck from "src/components/checks/DiskSpaceCheck.vue";
-import PingCheck from "src/components/checks/PingCheck.vue";
-import CpuLoadCheck from "src/components/checks/CpuLoadCheck.vue";
-import MemCheck from "src/components/checks/MemCheck.vue";
-import WinSvcCheck from "src/components/checks/WinSvcCheck.vue";
-import ScriptCheck from "src/components/checks/ScriptCheck.vue";
-import EventLogCheck from "src/components/checks/EventLogCheck.vue";
+import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
+import PingCheck from "src/core/checks/components/PingCheck.vue";
+import CpuLoadCheck from "src/core/checks/components/CpuLoadCheck.vue";
+import MemCheck from "src/core/checks/components/MemCheck.vue";
+import WinSvcCheck from "src/core/checks/components/WinSvcCheck.vue";
+import ScriptCheck from "src/core/checks/components/ScriptCheck.vue";
+import EventLogCheck from "src/core/checks/components/EventLogCheck.vue";
 
 export default {
   name: "PolicyChecksTab",

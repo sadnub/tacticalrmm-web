@@ -1,9 +1,13 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="bg-grey-9 text-white">
-      <q-banner v-if="needRefresh" inline-actions class="bg-red text-white text-center">
+      <q-banner
+        v-if="dashboardStore.reloadNeeded"
+        inline-actions
+        class="bg-red text-white text-center"
+      >
         You are viewing an outdated version of this page.
-        <q-btn color="dark" icon="refresh" label="Refresh" @click="$store.dispatch('reload')" />
+        <q-btn color="dark" icon="refresh" label="Refresh" @click="dashboardStore.reload" />
       </q-banner>
       <q-banner
         v-if="!hosted && tokenExpired"
@@ -25,13 +29,13 @@
             >https://support.amidaware.com</a
           ><br /><br
         /></span>
-        <q-btn color="dark" icon="refresh" label="Refresh" @click="$store.dispatch('reload')" />
+        <q-btn color="dark" icon="refresh" label="Refresh" @click="dashboardStore.reload" />
       </q-banner>
       <q-toolbar>
         <q-btn
           dense
           flat
-          @click="$store.dispatch('refreshDashboard')"
+          @click="dashboardStore.refreshDashboard({ force: true })"
           icon="refresh"
           v-if="$route.name === 'Dashboard'"
         />
@@ -42,9 +46,9 @@
           Tactical RMM<span class="text-overline q-ml-sm">v{{ currentTRMMVersion }}</span>
           <!-- update check -->
           <q-chip
-            v-if="updateAvailable"
+            v-if="dashboardStore.updateAvailable"
             class="text-overline q-ml-sm"
-            :color="dash_warning_color"
+            :color="dashWarningColor"
             icon="update"
             dense
             ><a :href="latestReleaseURL" target="_blank"
@@ -55,7 +59,7 @@
           <q-chip
             v-if="daysUntilCertExpires <= 15"
             dense
-            :color="dash_negative_color"
+            :color="dashNegativeColor"
             text-color="black"
             icon="warning"
             >SSL certificate expires in {{ daysUntilCertExpires }} days</q-chip
@@ -63,7 +67,7 @@
         </q-toolbar-title>
         <!-- temp dark mode toggle -->
         <q-toggle
-          v-model="darkMode"
+          v-model="dashboardStore.dashboardSettings.darkMode"
           class="q-mr-sm"
           checked-icon="nights_stay"
           unchecked-icon="wb_sunny"
@@ -97,7 +101,7 @@
               </q-item>
               <q-item>
                 <q-item-section avatar>
-                  <q-icon name="power_off" size="sm" :color="dash_negative_color" />
+                  <q-icon name="power_off" size="sm" :color="dashNegativeColor" />
                 </q-item-section>
 
                 <q-item-section no-wrap>
@@ -116,7 +120,7 @@
               </q-item>
               <q-item>
                 <q-item-section avatar>
-                  <q-icon name="power_off" size="sm" :color="dash_negative_color" />
+                  <q-icon name="power_off" size="sm" :color="dashNegativeColor" />
                 </q-item-section>
 
                 <q-item-section no-wrap>
@@ -173,15 +177,14 @@
 </template>
 <script setup lang="ts">
 // composition imports
-import { computed, onMounted, onBeforeUnmount, ref } from "vue";
+import { computed } from "vue";
 import { useQuasar } from "quasar";
-import { useStore } from "vuex";
+import { useIntervalFn } from "@vueuse/shared";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAuthStore } from "src/stores/auth";
+import { useUserStore } from "src/core/accounts/api";
 import { storeToRefs } from "pinia";
-import { resetTwoFactor } from "src/api/accounts";
-import { notifyError, notifySuccess } from "src/utils/notify";
-import axios from "axios";
+import { notifyError } from "src/utils/notify";
 
 // webtermn
 import { checkWebTermPerms, openWebTerminal } from "src/api/core";
@@ -189,10 +192,13 @@ import { checkWebTermPerms, openWebTerminal } from "src/api/core";
 // ui imports
 import AlertsIcon from "src/components/AlertsIcon.vue";
 import UserPreferences from "src/components/modals/coresettings/UserPreferences.vue";
-import ResetPass from "src/components/accounts/ResetPass.vue";
+import ResetPass from "src/core/accounts/components/ResetPass.vue";
 
-const store = useStore();
 const $q = useQuasar();
+
+// setup stores
+const dashboardStore = useDashboardStore();
+const userStore = useUserStore();
 
 const {
   serverCount,
@@ -200,27 +206,16 @@ const {
   workstationCount,
   workstationOfflineCount,
   daysUntilCertExpires,
-} = storeToRefs(useDashboardStore());
+} = storeToRefs(dashboardStore);
 
 const { displayName } = storeToRefs(useAuthStore());
 
-const darkMode = computed({
-  get: () => {
-    return $q.dark.isActive;
-  },
-  set: (value) => {
-    axios.patch("/accounts/users/ui/", { dark_mode: value });
-    $q.dark.set(value);
-  },
-});
-
-const currentTRMMVersion = computed(() => store.state.currentTRMMVersion);
-const latestTRMMVersion = computed(() => store.state.latestTRMMVersion);
-const needRefresh = computed(() => store.state.needrefresh);
-const hosted = computed(() => store.state.hosted);
-const tokenExpired = computed(() => store.state.tokenExpired);
-const dash_warning_color = computed(() => store.state.dash_warning_color);
-const dash_negative_color = computed(() => store.state.dash_negative_color);
+const currentTRMMVersion = computed(() => dashboardStore.dashboardSettings.currentTRMMVersion);
+const latestTRMMVersion = computed(() => dashboardStore.dashboardSettings.latestTRMMVersion);
+const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
+const tokenExpired = computed(() => dashboardStore.dashboardSettings.tokenExpired);
+const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
 
 const latestReleaseURL = computed(() => {
   return latestTRMMVersion.value
@@ -231,7 +226,7 @@ const latestReleaseURL = computed(() => {
 function showUserPreferences() {
   $q.dialog({
     component: UserPreferences,
-  }).onOk(() => store.dispatch("getDashInfo"));
+  });
 }
 
 function resetPassword() {
@@ -246,12 +241,7 @@ function reset2FA() {
     message: "Are you sure you would like to reset your 2FA token?",
     cancel: true,
     persistent: true,
-  }).onOk(async () => {
-    try {
-      const ret = await resetTwoFactor();
-      notifySuccess(ret, 3000);
-    } catch {}
-  });
+  }).onOk(() => userStore.userResetMFA());
 }
 
 async function openWebTerm() {
@@ -267,35 +257,12 @@ async function openWebTerm() {
   }
 }
 
-const updateAvailable = computed(() => {
-  if (
-    latestTRMMVersion.value === "error" ||
-    hosted.value ||
-    currentTRMMVersion.value?.includes("-dev")
-  )
-    return false;
-  return currentTRMMVersion.value !== latestTRMMVersion.value;
-});
-
-const poll = ref(null);
-
-function livePoll() {
-  poll.value = setInterval(
-    () => {
-      store.dispatch("checkVer");
-      store.dispatch("getDashInfo", false);
-    },
-    60 * 4 * 1000,
-  );
-}
-
-onMounted(() => {
-  store.dispatch("getDashInfo");
-  store.dispatch("checkVer");
-  livePoll();
-});
-
-onBeforeUnmount(() => {
-  clearInterval(poll.value);
-});
+useIntervalFn(
+  () => {
+    dashboardStore.checkRmmVersion();
+    void dashboardStore.getDashInfo();
+  },
+  60 * 4 * 1000,
+  { immediate: true },
+);
 </script>

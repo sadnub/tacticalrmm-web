@@ -8,14 +8,8 @@ For details, see: https://license.tacticalrmm.com/ee
   <q-dialog ref="dialogRef" maximized @hide="onDialogHide">
     <q-card>
       <q-bar>
-        <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-          @click="getReportHTMLTemplates"
-        />Base Templates
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getReportHTMLTemplates" />Base
+        Templates
         <q-space />
         <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -55,7 +49,7 @@ For details, see: https://license.tacticalrmm.com/ee
             style="width: 300px"
             label="Search"
             dense
-            outlined
+            filled
             clearable
             class="q-pr-md q-pb-xs"
           >
@@ -66,41 +60,25 @@ For details, see: https://license.tacticalrmm.com/ee
         </template>
 
         <template #body="props">
-          <q-tr
-            :props="props"
-            class="cursor-pointer"
-            @dblclick="openEditHTMLTemplate(props.row)"
-          >
+          <q-tr :props="props" class="cursor-pointer" @dblclick="openEditHTMLTemplate(props.row)">
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="openEditHTMLTemplate(props.row)"
-                >
+                <q-item v-close-popup clickable @click="openEditHTMLTemplate(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="cloneHTMLTemplate(props.row)"
-                >
+                <q-item v-close-popup clickable @click="cloneHTMLTemplate(props.row)">
                   <q-item-section side>
                     <q-icon name="content_copy" />
                   </q-item-section>
                   <q-item-section>Clone</q-item-section>
                 </q-item>
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="deleteHTMLTemplate(props.row)"
-                >
+                <q-item v-close-popup clickable @click="deleteHTMLTemplate(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -153,12 +131,8 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // reports manager logic
-const {
-  reportHTMLTemplates,
-  isLoading,
-  getReportHTMLTemplates,
-  deleteReportHTMLTemplate,
-} = useSharedReportHTMLTemplates;
+const { reportHTMLTemplates, isLoading, getReportHTMLTemplates, deleteReportHTMLTemplate } =
+  useSharedReportHTMLTemplates;
 const search = ref("");
 
 function openNewHTMLTemplateForm() {
@@ -179,8 +153,7 @@ function openEditHTMLTemplate(template: ReportHTMLTemplate) {
 function deleteHTMLTemplate(template: ReportHTMLTemplate) {
   $q.dialog({
     title: `Delete HTML Template: ${template.name}?`,
-    message:
-      "If this template is in use you will need to change it in every report template",
+    message: "If this template is in use you will need to change it in every report template",
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
@@ -188,7 +161,7 @@ function deleteHTMLTemplate(template: ReportHTMLTemplate) {
   });
 }
 
-async function cloneHTMLTemplate(template: ReportHTMLTemplate) {
+function cloneHTMLTemplate(template: ReportHTMLTemplate) {
   $q.dialog({
     component: ReportHTMLTemplateForm,
     componentProps: {

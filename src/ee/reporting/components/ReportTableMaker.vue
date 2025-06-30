@@ -18,7 +18,7 @@ For details, see: https://license.tacticalrmm.com/ee
         <q-option-group v-model="tableType" :options="tableTypeOptions" dense inline />
       </q-card-section>
       <q-card-section v-if="tableType === 'variables'">
-        <q-select v-model="source" :options="arrayOptions" outlined dense label="Data Source" />
+        <q-select v-model="source" :options="arrayOptions" filled dense label="Data Source" />
       </q-card-section>
       <q-card-section style="max-height: 60vh" class="scroll">
         <q-input v-model="output" filled type="textarea" autogrow />
@@ -69,8 +69,8 @@ const output = ref(blankOutput);
 
 // watch for source change and get list of columns
 watch(source, (newSource) => {
-  let columns = [] as string[];
-  for (let key in variableAnalysis.value)
+  const columns = [] as string[];
+  for (const key in variableAnalysis.value)
     if (variableAnalysis.value[key] !== "Object" && key.startsWith(newSource + "[0]"))
       columns.push(key.replace(newSource + "[0].", ""));
 
@@ -83,9 +83,9 @@ watch(tableType, (newValue) => {
 
 // compute the arrayOptions
 const arrayOptions = computed(() => {
-  let options = [];
-  for (let key in variableAnalysis.value)
-    if (variableAnalysis.value[key].toLowerCase().startsWith("array")) options.push(key);
+  const options = [];
+  for (const key in variableAnalysis.value)
+    if (variableAnalysis.value[key]!.toLowerCase().startsWith("array")) options.push(key);
   return options;
 });
 

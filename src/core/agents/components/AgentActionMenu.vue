@@ -15,7 +15,7 @@
       <q-item-section>Pending Agent Actions</q-item-section>
     </q-item>
     <!-- take control -->
-    <q-item clickable v-ripple v-close-popup @click="runTakeControl(agent.agent_id)">
+    <q-item clickable v-ripple v-close-popup @click="agentStore.runTakeControl(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-desktop" />
       </q-item-section>
@@ -32,7 +32,7 @@
       <q-item-section>VNC</q-item-section>
     </q-item>
 
-    <q-item clickable v-ripple @click="getURLActions">
+    <q-item clickable v-ripple @click="actionStore.getURLActions">
       <q-item-section side>
         <q-icon size="xs" name="open_in_new" />
       </q-item-section>
@@ -43,12 +43,12 @@
       <q-menu auto-close anchor="top end" self="top start">
         <q-list>
           <q-item
-            v-for="action in urlActions"
+            v-for="action in actionStore.webActions"
             :key="action.id"
             dense
             clickable
             v-close-popup
-            @click="runURLAction({ agent_id: agent.agent_id, action: action.id })"
+            @click="actionStore.runURLAction(action.id, 'agent', agent.agent_id)"
           >
             {{ action.name }}
           </q-item>
@@ -70,7 +70,7 @@
       <q-item-section>Run Script</q-item-section>
     </q-item>
 
-    <q-item clickable v-ripple @click="getFavoriteScripts">
+    <q-item clickable v-ripple>
       <q-item-section side>
         <q-icon size="xs" name="star" />
       </q-item-section>
@@ -81,12 +81,12 @@
       <q-menu auto-close anchor="top end" self="top start">
         <q-list>
           <q-item
-            v-for="script in favoriteScripts"
+            v-for="script in favoriteScriptOptions"
             :key="script.value"
             dense
             clickable
             v-close-popup
-            @click="showRunScript(agent, script.value)"
+            @click="showRunScript(agent, script)"
           >
             {{ script.label }}
           </q-item>
@@ -94,7 +94,11 @@
       </q-menu>
     </q-item>
 
-    <q-item clickable v-close-popup @click="runRemoteBackground(agent.agent_id, agent.plat)">
+    <q-item
+      clickable
+      v-close-popup
+      @click="agentStore.runRemoteBackground(agent.agent_id, agent.plat)"
+    >
       <q-item-section side>
         <q-icon size="xs" name="terminal" />
       </q-item-section>
@@ -223,30 +227,16 @@
   </q-list>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref, inject } from "vue";
-import { useStore } from "vuex";
 import { useQuasar } from "quasar";
-import { fetchURLActions, runURLAction } from "src/api/core";
-import {
-  editAgent,
-  agentRebootNow,
-  agentShutdown,
-  sendAgentPing,
-  removeAgent,
-  runRemoteBackground,
-  runTakeControl,
-  runWebVNC,
-  wakeUpWOL,
-} from "src/api/agents";
-import { runAgentUpdateScan, runAgentUpdateInstall } from "src/api/winupdates";
-import { runAgentChecks } from "src/api/checks";
-import { fetchScripts } from "src/api/scripts";
-import { notifySuccess, notifyWarning, notifyError } from "src/utils/notify";
+import { useURLActionStore } from "src/core/settings/api";
+import { useAgentStore } from "../api";
+import { useScriptDropdown } from "src/core/scripts/composables";
+import { useWinUpdateStore } from "../api";
 
 // ui imports
-import PendingActions from "../../core/logs/components/PendingActions.vue";
+import PendingActions from "src/core/logs/components/PendingActions.vue";
 import AgentRecovery from "src/components/modals/agents/AgentRecovery.vue";
 import PolicyAdd from "src/components/automation/modals/PolicyAdd.vue";
 import RebootLater from "src/components/modals/agents/RebootLater.vue";
@@ -256,340 +246,193 @@ import RunScript from "src/components/modals/agents/RunScript.vue";
 import IntegrationsContextMenu from "src/components/ui/IntegrationsContextMenu.vue";
 
 import DOMPurify from "dompurify";
+import type { Agent } from "../types";
+import type { Script } from "src/core/scripts/types";
 
-export default {
-  name: "AgentActionMenu",
-  components: {
-    IntegrationsContextMenu,
-  },
-  props: {
-    agent: !Object,
-  },
-  setup() {
-    // setup quasar
-    const $q = useQuasar();
+defineProps<{
+  agent: Agent;
+}>();
 
-    // setup vuex
-    const store = useStore();
+// setup stores
+const agentStore = useAgentStore();
+const actionStore = useURLActionStore();
+const updateStore = useWinUpdateStore();
 
-    const refreshDashboard = inject("refreshDashboard");
+// setup dropdowns
+const { favoriteScriptOptions } = useScriptDropdown();
 
-    const urlActions = ref([]);
-    const favoriteScripts = ref([]);
-    const menuLoading = ref(false);
+// setup quasar
+const $q = useQuasar();
 
-    function showEditAgent(agent_id) {
-      $q.dialog({
-        component: EditAgent,
-        componentProps: {
-          agent_id: agent_id,
-        },
-      }).onOk(refreshDashboard);
-    }
+function showEditAgent(agent_id: string) {
+  $q.dialog({
+    component: EditAgent,
+    componentProps: {
+      agent_id: agent_id,
+    },
+  });
+}
 
-    function showPendingActionsModal(agent) {
-      $q.dialog({
-        component: PendingActions,
-        componentProps: {
-          agent: agent,
-        },
-      });
-    }
+function showPendingActionsModal(agent: Agent) {
+  $q.dialog({
+    component: PendingActions,
+    componentProps: {
+      agent: agent,
+    },
+  });
+}
 
-    async function getURLActions() {
-      menuLoading.value = true;
-      try {
-        urlActions.value = (await fetchURLActions())
-          .filter((action) => action.action_type === "web")
-          .sort((a, b) => a.name.localeCompare(b.name));
+function showSendCommand(agent: Agent) {
+  $q.dialog({
+    component: SendCommand,
+    componentProps: {
+      agent: agent,
+    },
+  });
+}
 
-        if (urlActions.value.length === 0) {
-          notifyWarning(
-            "No URL Actions configured. Go to Settings > Global Settings > URL Actions",
-          );
-          return;
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        menuLoading.value = false;
-      }
-    }
+function showRunScript(agent: Agent, script: Script | undefined = undefined) {
+  $q.dialog({
+    component: RunScript,
+    componentProps: {
+      agent,
+      script,
+    },
+  });
+}
 
-    function showSendCommand(agent) {
-      $q.dialog({
-        component: SendCommand,
-        componentProps: {
-          agent: agent,
-        },
-      });
-    }
+function toggleMaintenance(agent: Agent) {
+  const data = {
+    maintenance_mode: !agent.maintenance_mode,
+  };
+  agentStore.updateAgent(agent.agent_id, data);
+}
 
-    function showRunScript(agent, script = undefined) {
-      $q.dialog({
-        component: RunScript,
-        componentProps: {
-          agent,
-          script,
-        },
-      });
-    }
+function runPatchStatusScan(agent: Agent) {
+  updateStore.runAgentUpdateScan(agent.agent_id);
+}
 
-    async function getFavoriteScripts() {
-      favoriteScripts.value = [];
+function installPatches(agent: Agent) {
+  updateStore.runAgentUpdateInstall(agent.agent_id);
+}
 
-      menuLoading.value = true;
-      try {
-        const data = await fetchScripts({
-          showCommunityScripts: store.state.showCommunityScripts,
-        });
+function runChecks(agent: Agent) {
+  agentStore.runAgentChecks(agent.agent_id);
+}
 
-        const scripts = data.filter((script) => !!script.favorite);
+function wakeUp(agent: Agent) {
+  agentStore.wakeUpWOL(agent.agent_id);
+}
 
-        if (scripts.length === 0) {
-          notifyWarning("You don't have any scripts favorited!");
-          return;
-        }
+function showRebootLaterModal(agent: Agent) {
+  $q.dialog({
+    component: RebootLater,
+    componentProps: {
+      agent: agent,
+    },
+  });
+}
 
-        favoriteScripts.value = scripts
-          .map((script) => ({
-            label: script.name,
-            value: script.id,
-            timeout: script.default_timeout,
-            args: script.args,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-      } catch (e) {
-        console.error(e);
-      }
-    }
+function launchWebVNC(agentId: string) {
+  $q.dialog({
+    title: "VNC Server Port",
+    message: "Enter the VNC server port:",
+    prompt: {
+      model: "5900",
+      type: "text",
+    },
+    cancel: true,
+    ok: { label: "Launch", color: "primary" },
+    persistent: true,
+  }).onOk((port) => {
+    agentStore.runWebVNC(agentId, port);
+  });
+}
 
-    async function toggleMaintenance(agent) {
-      let data = {
-        maintenance_mode: !agent.maintenance_mode,
-      };
+function rebootNow(agent: Agent) {
+  $q.dialog({
+    title: "Are you sure?",
+    message: `Reboot ${agent.hostname} now`,
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    agentStore.agentRebootNow(agent.agent_id);
+  });
+}
 
-      try {
-        await editAgent(agent.agent_id, data);
-        notifySuccess(
-          `Maintenance mode was ${
-            agent.maintenance_mode ? "disabled" : "enabled"
-          } on ${agent.hostname}`,
-        );
-        store.commit("setRefreshSummaryTab", true);
-        refreshDashboard();
-      } catch (e) {
-        console.error(e);
-      }
-    }
+function shutdown(agent: Agent) {
+  const clean = DOMPurify.sanitize(agent.hostname);
+  $q.dialog({
+    title: `Please type <code style="color:red">yes</code> in the box below to confirm shutdown of <span style="color:red">${clean}</span>.`,
+    prompt: {
+      model: "",
+      type: "text",
+      isValid: (val) => val === "yes",
+    },
+    cancel: true,
+    ok: { label: "Shutdown", color: "negative" },
+    persistent: true,
+    html: true,
+  }).onOk(() => {
+    agentStore.agentShutdown(agent.agent_id);
+  });
+}
 
-    async function runPatchStatusScan(agent) {
-      try {
-        await runAgentUpdateScan(agent.agent_id);
-        notifySuccess(`Scan will be run shortly on ${agent.hostname}`);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+function showPolicyAdd(agent: Agent) {
+  $q.dialog({
+    component: PolicyAdd,
+    componentProps: {
+      type: "agent",
+      object: agent,
+    },
+  });
+}
 
-    async function installPatches(agent) {
-      try {
-        const data = await runAgentUpdateInstall(agent.agent_id);
-        notifySuccess(data);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+function showAgentRecovery(agent: Agent) {
+  $q.dialog({
+    component: AgentRecovery,
+    componentProps: {
+      agent: agent,
+    },
+  });
+}
 
-    async function runChecks(agent) {
-      try {
-        const data = await runAgentChecks(agent.agent_id);
-        notifySuccess(data);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    async function wakeUp(agent) {
-      try {
-        const data = await wakeUpWOL(agent.agent_id);
-        notifySuccess(data);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    function showRebootLaterModal(agent) {
-      $q.dialog({
-        component: RebootLater,
-        componentProps: {
-          agent: agent,
-        },
-      }).onOk(refreshDashboard);
-    }
-
-    function launchWebVNC(agent_id) {
-      $q.dialog({
-        title: "VNC Server Port",
-        message: "Enter the VNC server port:",
-        prompt: {
-          model: "5900",
-          type: "text",
-        },
-        cancel: true,
-        ok: { label: "Launch", color: "primary" },
-        persistent: true,
-      }).onOk((port) => {
-        runWebVNC(agent_id, port);
-      });
-    }
-
-    function rebootNow(agent) {
-      $q.dialog({
-        title: "Are you sure?",
-        message: `Reboot ${agent.hostname} now`,
-        cancel: true,
-        persistent: true,
-      }).onOk(async () => {
-        $q.loading.show();
-        try {
-          await agentRebootNow(agent.agent_id);
-          notifySuccess(`${agent.hostname} will now be restarted`);
-          $q.loading.hide();
-        } catch (e) {
-          $q.loading.hide();
-          console.error(e);
-        }
-      });
-    }
-
-    function shutdown(agent) {
-      const clean = DOMPurify.sanitize(agent.hostname);
-      $q.dialog({
-        title: `Please type <code style="color:red">yes</code> in the box below to confirm shutdown of <span style="color:red">${clean}</span>.`,
-        prompt: {
-          model: "",
-          type: "text",
-          isValid: (val) => val === "yes",
-        },
-        cancel: true,
-        ok: { label: "Shutdown", color: "negative" },
-        persistent: true,
-        html: true,
-      }).onOk(async () => {
-        $q.loading.show();
-        try {
-          await agentShutdown(agent.agent_id);
-          notifySuccess(`${agent.hostname} will now be shutdown`);
-          $q.loading.hide();
-        } catch (e) {
-          $q.loading.hide();
-          console.error(e);
-        }
-      });
-    }
-
-    function showPolicyAdd(agent) {
-      $q.dialog({
-        component: PolicyAdd,
-        componentProps: {
-          type: "agent",
-          object: agent,
-        },
-      }).onOk(refreshDashboard);
-    }
-
-    function showAgentRecovery(agent) {
-      $q.dialog({
-        component: AgentRecovery,
-        componentProps: {
-          agent: agent,
-        },
-      });
-    }
-
-    async function pingAgent(agent) {
-      try {
-        $q.loading.show();
-        const data = await sendAgentPing(agent.agent_id);
-        $q.loading.hide();
-        if (data.status === "offline") {
-          $q.dialog({
-            title: "Agent offline",
-            message: `${agent.hostname} cannot be contacted.
+async function pingAgent(agent: Agent) {
+  const result = await agentStore.sendAgentPing(agent.agent_id);
+  if (result === "offline") {
+    $q.dialog({
+      title: "Agent offline",
+      message: `${agent.hostname} cannot be contacted.
                   Would you like to continue with the uninstall?
                   If so, the agent will need to be manually uninstalled from the computer.`,
-            cancel: { label: "No", color: "negative" },
-            ok: { label: "Yes", color: "positive" },
-            persistent: true,
-          })
-            .onOk(() => deleteAgent(agent))
-            .onCancel(() => {
-              return;
-            });
-        } else if (data.status === "online") {
-          deleteAgent(agent);
-        } else {
-          notifyError("Something went wrong");
-        }
-      } catch (e) {
-        $q.loading.hide();
-        console.error(e);
-      }
-    }
-
-    function deleteAgent(agent) {
-      const clean = DOMPurify.sanitize(agent.hostname);
-      $q.dialog({
-        title: `Please type <code style="color:red">yes</code> in the box below to confirm deletion of <span style="color:red">${clean}</span>.`,
-        prompt: {
-          model: "",
-          type: "text",
-          isValid: (val) => val === "yes",
-        },
-        cancel: true,
-        ok: { label: "Uninstall", color: "negative" },
-        persistent: true,
-        html: true,
-      }).onOk(async () => {
-        try {
-          const data = await removeAgent(agent.agent_id);
-          notifySuccess(data);
-          refreshDashboard(false /* clearTreeSelected */, true /* clearSubTable */);
-        } catch (e) {
-          console.error(e);
-        }
+      cancel: { label: "No", color: "negative" },
+      ok: { label: "Yes", color: "positive" },
+      persistent: true,
+    })
+      .onOk(() => deleteAgent(agent))
+      .onCancel(() => {
+        return;
       });
-    }
+  } else if (result === "online") {
+    deleteAgent(agent);
+  }
+}
 
-    return {
-      // reactive data
-      urlActions,
-      favoriteScripts,
-
-      // methods
-      showEditAgent,
-      showPendingActionsModal,
-      runTakeControl,
-      runRemoteBackground,
-      getURLActions,
-      runURLAction,
-      showSendCommand,
-      showRunScript,
-      getFavoriteScripts,
-      toggleMaintenance,
-      runPatchStatusScan,
-      installPatches,
-      runChecks,
-      showRebootLaterModal,
-      rebootNow,
-      shutdown,
-      showPolicyAdd,
-      showAgentRecovery,
-      pingAgent,
-      wakeUp,
-      launchWebVNC,
-    };
-  },
-};
+function deleteAgent(agent: Agent) {
+  const clean = DOMPurify.sanitize(agent.hostname);
+  $q.dialog({
+    title: `Please type <code style="color:red">yes</code> in the box below to confirm deletion of <span style="color:red">${clean}</span>.`,
+    prompt: {
+      model: "",
+      type: "text",
+      isValid: (val) => val === "yes",
+    },
+    cancel: true,
+    ok: { label: "Uninstall", color: "negative" },
+    persistent: true,
+    html: true,
+  }).onOk(() => {
+    agentStore.removeAgent(agent.agent_id);
+  });
+}
 </script>

@@ -28,7 +28,7 @@
             v-model="state.client"
             :options="clientOptions"
             label="Select Client"
-            outlined
+            filled
             map-options
             filterable
           />
@@ -38,7 +38,7 @@
             v-model="state.site"
             :options="siteOptions"
             label="Select Site"
-            outlined
+            filled
             map-options
             filterable
           />
@@ -85,7 +85,7 @@
             v-model="state.script"
             :options="filterByPlatformOptions"
             label="Select Script"
-            outlined
+            filled
             map-options
             filterable
           >
@@ -138,7 +138,7 @@
         <q-card-section v-if="state.shell === 'custom'">
           <q-input
             v-model="state.custom_shell"
-            outlined
+            filled
             label="Custom shell"
             stack-label
             placeholder="/usr/bin/python3"
@@ -148,7 +148,7 @@
         <q-card-section v-if="mode === 'command'">
           <q-input
             v-model="state.cmd"
-            outlined
+            filled
             label="Command"
             stack-label
             :placeholder="cmdPlaceholder(state.shell)"
@@ -178,7 +178,7 @@
         <q-card-section v-if="mode === 'script' && collector">
           <tactical-dropdown
             :rules="[(val) => !!val || '*Required']"
-            outlined
+            filled
             v-model="state.custom_field"
             :options="customFieldOptions"
             label="Select custom field"
@@ -192,7 +192,7 @@
           <q-input
             v-model.number="state.timeout"
             dense
-            outlined
+            filled
             type="number"
             style="max-width: 150px"
             label="Timeout (seconds)"

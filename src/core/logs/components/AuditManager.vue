@@ -70,7 +70,7 @@
           class="q-pr-sm"
           style="width: 200px"
           v-model="requestData.userFilter"
-          :options="userOptions"
+          :options="userOptionsFlat"
           label="Users"
           clearable
           filled
@@ -136,7 +136,7 @@ import { useAuditLogStore } from "../api";
 import { formatDate, formatTableColumnText } from "src/utils/format";
 
 // ui imported
-import AuditLogDetailModal from "src/components/logs/AuditLogDetailModal.vue";
+import AuditLogDetailModal from "./AuditLogDetailModal.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
@@ -288,7 +288,7 @@ const tabHeight = computed(() => dashboardStore.tabHeight);
 // setup dropdowns
 const { clientOptions } = useClientDropdown();
 const { agentOptions } = useAgentDropdown();
-const { userOptions } = useUserDropdown();
+const { userOptionsFlat } = useUserDropdown();
 
 const actionOptions = computed(() =>
   props.agent ? agentActionOptions : agentActionOptions.concat(systemActionOptions),

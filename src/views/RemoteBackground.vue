@@ -13,14 +13,14 @@
       <q-tab name="terminal" icon="fas fa-terminal" label="Terminal" />
       <q-tab name="filebrowser" icon="far fa-folder-open" label="File Browser" />
       <q-tab
-        v-if="$route.query.agentPlatform === 'windows'"
+        v-if="agentPlatform === 'windows'"
         name="services"
         icon="fas fa-cogs"
         label="Services"
       />
       <q-tab name="processes" icon="fas fa-chart-area" label="Processes" />
       <q-tab
-        v-if="$route.query.agentPlatform === 'windows'"
+        v-if="agentPlatform === 'windows'"
         name="eventlog"
         icon="fas fa-clipboard-list"
         label="Event Log"
@@ -30,8 +30,9 @@
     <q-tab-panels v-model="tab">
       <q-tab-panel name="terminal" class="q-pa-none">
         <iframe
+          v-if="agentStore.meshCentralURLs.terminal"
           allow="clipboard-read; clipboard-write"
-          :src="terminal"
+          :src="agentStore.meshCentralURLs.terminal"
           :style="{
             height: `${$q.screen.height - 30}px`,
             width: `${$q.screen.width}px`,
@@ -39,26 +40,19 @@
         ></iframe>
       </q-tab-panel>
       <q-tab-panel name="processes" class="q-pa-none">
-        <ProcessManager :agent_id="agent_id" />
+        <ProcessManager :agent_id="agentId" />
       </q-tab-panel>
-      <q-tab-panel
-        v-if="$route.query.agentPlatform === 'windows'"
-        name="services"
-        class="q-pa-none"
-      >
-        <ServicesManager :agent_id="agent_id" :agentPlatform="$route.query.agentPlatform" />
+      <q-tab-panel v-if="agentPlatform === 'windows'" name="services" class="q-pa-none">
+        <ServicesManager :agent-id="agentId" :agent-platform="agentPlatform" />
       </q-tab-panel>
-      <q-tab-panel
-        v-if="$route.query.agentPlatform === 'windows'"
-        name="eventlog"
-        class="q-pa-none"
-      >
-        <EventLogManager :agent_id="agent_id" :agentPlatform="$route.query.agentPlatform" />
+      <q-tab-panel v-if="agentPlatform === 'windows'" name="eventlog" class="q-pa-none">
+        <EventLogManager :agent-id="agentId" :agent-platform="agentPlatform" />
       </q-tab-panel>
       <q-tab-panel name="filebrowser" class="q-pa-none">
         <iframe
+          v-if="agentStore.meshCentralURLs.file"
           allow="clipboard-read; clipboard-write"
-          :src="file"
+          :src="agentStore.meshCentralURLs.file"
           :style="{
             height: `${$q.screen.height - 30}px`,
             width: `${$q.screen.width}px`,
@@ -69,68 +63,46 @@
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
-import { fetchAgentMeshCentralURLs } from "src/api/agents";
-import { fetchDashboardInfo } from "src/api/core";
+import { useAgentStore } from "src/core/agents/api";
+import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
 import ProcessManager from "src/components/agents/remotebg/ProcessManager.vue";
 import ServicesManager from "src/components/agents/remotebg/ServicesManager.vue";
 import EventLogManager from "src/components/agents/remotebg/EventLogManager.vue";
 
-export default {
-  name: "RemoteBackground",
-  components: {
-    ServicesManager,
-    EventLogManager,
-    ProcessManager,
-  },
-  setup() {
-    // setup quasar
-    const $q = useQuasar();
+// setup quasar
+const $q = useQuasar();
 
-    // vue router
-    const { params } = useRoute();
+// setup stores
+const agentStore = useAgentStore();
 
-    // meshcentral tabs
-    const terminal = ref("");
-    const file = ref("");
-    const tab = ref("terminal");
+// dashinfo is loading onMount
+useDashboardStore();
 
-    const agent_id = computed(() => params.agent_id);
+// vue router
+const { params } = useRoute();
 
-    async function getMeshURLs() {
-      const data = await fetchAgentMeshCentralURLs(params.agent_id);
-      terminal.value = data.terminal;
-      file.value = data.file;
-      useMeta({
-        title: `${data.hostname} - ${data.client} - ${data.site} | Remote Background`,
-      });
-    }
+// meshcentral tabs
+const tab = ref("terminal");
 
-    async function getDashInfo() {
-      const { dark_mode } = await fetchDashboardInfo();
-      $q.dark.set(dark_mode);
-      $q.loadingBar.setDefaults({ size: "0px" });
-    }
+const agentId = computed(() => (typeof params.agentPlatform === "string" ? params.agent_id : ""));
+const agentPlatform = computed(() =>
+  typeof params.agentPlatform === "string" ? params.agentPlatform : "",
+);
+onMounted(() => {
+  if (agentId.value && typeof agentId.value === "string") {
+    $q.loadingBar.setDefaults({ size: "0px" });
+    agentStore.getAgentMeshCentralUrls(agentId.value);
 
-    // vue lifecycle hooks
-    onMounted(() => {
-      getDashInfo();
-      getMeshURLs();
+    useMeta({
+      title: `${agentStore.selectedAgent?.hostname} - ${agentStore.selectedAgent?.client_name} - ${agentStore.selectedAgent?.site_name} | Remote Background`,
     });
-
-    return {
-      // reactive data
-      terminal,
-      file,
-      tab,
-      agent_id,
-    };
-  },
-};
+  }
+});
 </script>

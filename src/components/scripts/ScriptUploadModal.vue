@@ -12,7 +12,7 @@
         <q-card-section>
           <q-input
             label="Name"
-            outlined
+            filled
             dense
             v-model="script.name"
             :rules="[(val) => !!val || '*Required']"
@@ -20,7 +20,7 @@
         </q-card-section>
 
         <q-card-section>
-          <q-input label="Description" outlined dense v-model="script.description" />
+          <q-input label="Description" filled dense v-model="script.description" />
         </q-card-section>
 
         <q-card-section>
@@ -29,7 +29,7 @@
             :options="categories"
             label="Category"
             hint="Press Enter or Tab when adding a new value"
-            outlined
+            filled
             filterable
             clearable
             new-value-mode="add-unique"
@@ -38,7 +38,7 @@
 
         <q-card-section>
           <q-file label="Script Upload" v-model="file" filled dense counter>
-            <template v-slot:prepend>
+            <template #prepend>
               <q-icon name="attach_file" />
             </template>
           </q-file>
@@ -49,8 +49,8 @@
             v-model="script.shell"
             :options="shellOptions"
             label="Type"
-            outlined
-            mapOptions
+            filled
+            map-options
           />
         </q-card-section>
 
@@ -60,7 +60,7 @@
             :options="agentPlatformOptions"
             label="Supported Platforms (All supported if blank)"
             clearable
-            mapOptions
+            map-options
             filled
             multiple
           />
@@ -98,7 +98,7 @@
           <q-input
             label="Default Timeout"
             type="number"
-            outlined
+            filled
             dense
             v-model.number="script.default_timeout"
             :rules="[(val) => val >= 5 || 'Minimum is 5']"

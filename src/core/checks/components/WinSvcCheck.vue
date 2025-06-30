@@ -31,7 +31,7 @@
                 :rules="[(val) => !!val || '*Required']"
                 dense
                 options-dense
-                outlined
+                filled
                 v-model="localCheck.svc_name"
                 :options="serviceOptions"
                 label="Service"
@@ -42,7 +42,7 @@
               <q-input
                 v-if="localCheck.svc_policy_mode === 'manual'"
                 :rules="[(val) => !!val || '*Required']"
-                outlined
+                filled
                 dense
                 v-model="localCheck.svc_name"
                 label="Service Name"
@@ -50,7 +50,7 @@
               <q-input
                 v-if="localCheck.svc_policy_mode === 'manual'"
                 :rules="[(val) => !!val || '*Required']"
-                outlined
+                filled
                 dense
                 v-model="localCheck.svc_display_name"
                 label="Display Name"
@@ -63,7 +63,7 @@
               :rules="[(val) => !!val || '*Required']"
               dense
               options-dense
-              outlined
+              filled
               v-model="localCheck.svc_name"
               :options="serviceOptions"
               label="Service"
@@ -90,7 +90,7 @@
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               map-options
@@ -102,7 +102,7 @@
           </q-card-section>
           <q-card-section>
             <q-select
-              outlined
+              filled
               dense
               options-dense
               v-model="localCheck.fails_b4_alert"
@@ -113,7 +113,7 @@
           <q-card-section>
             <q-input
               dense
-              outlined
+              filled
               type="number"
               v-model.number="localCheck.run_interval"
               label="Run this check every (seconds)"
@@ -213,7 +213,7 @@ async function submit() {
   else checkStore.addCheck(localCheck);
 
   // stops the dialog from closing when there is an error
-  await until(checkStore.isLoading).not.toBeTruthy();
+  await until(() => checkStore.isLoading).toBe(false);
   if (checkStore.isError) return;
 
   onDialogOK();

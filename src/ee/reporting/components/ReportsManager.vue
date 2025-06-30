@@ -40,20 +40,9 @@ For details, see: https://license.tacticalrmm.com/ee
         :rows-per-page-options="[0]"
       >
         <template #top>
-          <q-btn-dropdown
-            class="q-ml-sm"
-            icon="add"
-            label="Template"
-            no-caps
-            dense
-            flat
-          >
+          <q-btn-dropdown class="q-ml-sm" icon="add" label="Template" no-caps dense flat>
             <q-list dense>
-              <q-item
-                v-close-popup
-                clickable
-                @click="openNewReportTemplateForm('markdown')"
-              >
+              <q-item v-close-popup clickable @click="openNewReportTemplateForm('markdown')">
                 <q-item-section avatar>
                   <q-icon name="fa-brands fa-markdown" />
                 </q-item-section>
@@ -62,11 +51,7 @@ For details, see: https://license.tacticalrmm.com/ee
                 </q-item-section>
               </q-item>
 
-              <q-item
-                v-close-popup
-                clickable
-                @click="openNewReportTemplateForm('html')"
-              >
+              <q-item v-close-popup clickable @click="openNewReportTemplateForm('html')">
                 <q-item-section avatar>
                   <q-icon name="fa-brands fa-html5" />
                 </q-item-section>
@@ -75,11 +60,7 @@ For details, see: https://license.tacticalrmm.com/ee
                 </q-item-section>
               </q-item>
 
-              <q-item
-                v-close-popup
-                clickable
-                @click="openNewReportTemplateForm('plaintext')"
-              >
+              <q-item v-close-popup clickable @click="openNewReportTemplateForm('plaintext')">
                 <q-item-section avatar>
                   <q-icon name="fa-solid fa-file-csv" />
                 </q-item-section>
@@ -142,7 +123,7 @@ For details, see: https://license.tacticalrmm.com/ee
             style="width: 300px"
             label="Search"
             dense
-            outlined
+            filled
             clearable
             class="q-pr-md q-pb-xs"
           >
@@ -161,22 +142,14 @@ For details, see: https://license.tacticalrmm.com/ee
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="openEditReportTemplateForm(props.row)"
-                >
+                <q-item v-close-popup clickable @click="openEditReportTemplateForm(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="cloneTemplate(props.row)"
-                >
+                <q-item v-close-popup clickable @click="cloneTemplate(props.row)">
                   <q-item-section side>
                     <q-icon name="content_copy" />
                   </q-item-section>
@@ -188,9 +161,7 @@ For details, see: https://license.tacticalrmm.com/ee
                 <q-item
                   v-close-popup
                   clickable
-                  @click="
-                    openReport(props.row.id, 'pdf', props.row.depends_on, {})
-                  "
+                  @click="openReport(props.row.id, 'pdf', props.row.depends_on, {})"
                 >
                   <q-item-section side>
                     <q-icon name="mdi-file-pdf-box" />
@@ -211,11 +182,7 @@ For details, see: https://license.tacticalrmm.com/ee
                   "
                 >
                   <q-item-section side>
-                    <q-icon
-                      :name="
-                        props.row.type !== 'plaintext' ? 'code' : 'description'
-                      "
-                    />
+                    <q-icon :name="props.row.type !== 'plaintext' ? 'code' : 'description'" />
                   </q-item-section>
                   <q-item-section
                     >Open
@@ -226,11 +193,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
                 <q-separator />
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="downloadReport(props.row, 'pdf', {})"
-                >
+                <q-item v-close-popup clickable @click="downloadReport(props.row, 'pdf', {})">
                   <q-item-section side>
                     <q-icon name="mdi-download" />
                   </q-item-section>
@@ -260,11 +223,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
                 <q-separator />
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="exportReport(props.row.id)"
-                >
+                <q-item v-close-popup clickable @click="exportReport(props.row.id)">
                   <q-item-section side>
                     <q-icon name="mdi-export" />
                   </q-item-section>
@@ -273,11 +232,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
                 <q-separator />
 
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="deleteTemplate(props.row)"
-                >
+                <q-item v-close-popup clickable @click="deleteTemplate(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -413,7 +368,7 @@ function deleteTemplate(template: ReportTemplate) {
   });
 }
 
-async function cloneTemplate(template: ReportTemplate) {
+function cloneTemplate(template: ReportTemplate) {
   $q.dialog({
     component: ReportTemplateForm,
     componentProps: {

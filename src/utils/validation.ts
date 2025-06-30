@@ -1,10 +1,6 @@
 import { Notify } from "quasar";
 
-export function isValidThreshold(
-  warning: number,
-  error: number,
-  diskcheck = false,
-) {
+export function isValidThreshold(warning: number, error: number, diskcheck = false) {
   if (warning === 0 && error === 0) {
     Notify.create({
       type: "negative",
@@ -53,7 +49,8 @@ export function validateRetcode(
   val: string,
   done: (item?: unknown, mode?: "add" | "add-unique" | "toggle") => void,
 ) {
-  /^\d+$/.test(val) ? done(val) : done();
+  if (/^\d+$/.test(val)) done(val);
+  else done();
 }
 
 export function validateTimePeriod(val: string) {

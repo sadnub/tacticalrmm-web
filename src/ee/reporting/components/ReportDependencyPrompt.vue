@@ -21,8 +21,8 @@ For details, see: https://license.tacticalrmm.com/ee
           v-model="dependencies[label]"
           :label="`${capitalize(label)}`"
           :options="clientOptions"
-          outlined
-          mapOptions
+          filled
+          map-options
           filterable
         />
 
@@ -31,8 +31,8 @@ For details, see: https://license.tacticalrmm.com/ee
           v-model="dependencies[label]"
           :label="`${capitalize(label)}`"
           :options="siteOptions"
-          outlined
-          mapOptions
+          filled
+          map-options
           filterable
         />
 
@@ -41,16 +41,16 @@ For details, see: https://license.tacticalrmm.com/ee
           v-model="dependencies[label]"
           :label="`${capitalize(label)}`"
           :options="agentOptions"
-          outlined
-          mapOptions
+          filled
+          map-options
           filterable
         />
 
         <q-input
           v-else
           v-model="dependencies[label]"
-          :label="`${capitalize(label)}`"
-          outlined
+          :label="`${typeof label === 'string' ? capitalize(label) : label}`"
+          filled
           dense
         />
       </q-card-section>
@@ -112,15 +112,15 @@ function submit() {
 
 onBeforeMount(() => {
   if (props.dependsOn.includes("client")) {
-    getClientOptions();
+    void getClientOptions();
   }
 
   if (props.dependsOn.includes("site")) {
-    getSiteOptions();
+    void getSiteOptions();
   }
 
   if (props.dependsOn.includes("agent")) {
-    getAgentOptions();
+    void getAgentOptions();
   }
 });
 </script>

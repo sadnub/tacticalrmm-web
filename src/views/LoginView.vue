@@ -2,7 +2,7 @@
   <q-layout>
     <q-page-container>
       <q-page class="flex bg-image flex-center">
-        <q-card v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }">
+        <q-card :style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }">
           <q-card-section>
             <div class="text-center q-pt-lg">
               <div class="col text-h4 ellipsis">Tactical RMM</div>
@@ -25,7 +25,7 @@
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || 'This field is required']"
               >
-                <template v-slot:append>
+                <template #append>
                   <q-icon
                     :name="showPassword ? 'visibility_off' : 'visibility'"
                     class="cursor-pointer"
@@ -71,7 +71,7 @@
               <q-card-section>
                 <q-input
                   autofocus
-                  outlined
+                  filled
                   autocomplete="one-time-code"
                   v-model="twofactor"
                   :rules="[(val) => (val && val.length > 0) || 'This field is required']"
@@ -122,7 +122,7 @@ async function checkCreds() {
     const { totp } = await auth.checkCredentials(credentials);
 
     if (!totp) {
-      router.push({ name: "TOTPSetup" });
+      void router.push({ name: "TOTPSetup" });
     } else {
       twofactor.value = "";
       prompt.value = true;
@@ -136,10 +136,10 @@ async function onSubmit() {
   try {
     await auth.login({ ...credentials, twofactor: twofactor.value });
     if (auth.next) {
-      router.push(auth.next);
+      void router.push(auth.next);
       auth.next = null;
     } else {
-      router.push({ name: "Dashboard" });
+      void router.push({ name: "Dashboard" });
     }
   } catch (err) {
     console.error(err);

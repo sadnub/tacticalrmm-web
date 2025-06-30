@@ -12,7 +12,7 @@
     no-data-label="No Custom Fields"
   >
     <!-- body slots -->
-    <template v-slot:body="props">
+    <template #body="props">
       <q-tr :props="props" class="cursor-pointer" @dblclick="editCustomField(props.row)">
         <!-- context menu -->
         <q-menu context-menu>

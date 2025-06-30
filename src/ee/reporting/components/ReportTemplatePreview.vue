@@ -16,10 +16,19 @@ For details, see: https://license.tacticalrmm.com/ee
       height: `${splitterHeight}px`,
     }"
   >
-    <template v-slot:before>
+    <template #before>
       <iframe
-        :srcdoc="previewFormat !== 'pdf' ? source : undefined"
-        :src="previewFormat === 'pdf' ? source : undefined"
+        v-if="previewFormat !== 'pdf'"
+        :srcdoc="source"
+        :style="{
+          'min-width': '100%',
+          'background-color': 'white',
+          height: `${horizontalSplitter - 6}px`,
+        }"
+      ></iframe>
+      <iframe
+        v-else
+        :src="source"
         :style="{
           'min-width': '100%',
           'background-color': 'white',
@@ -27,9 +36,9 @@ For details, see: https://license.tacticalrmm.com/ee
         }"
       ></iframe>
     </template>
-    <template v-slot:after>
+    <template #after>
       <q-splitter v-if="debug" v-model="verticalSplitter">
-        <template v-slot:before>
+        <template #before>
           <div class="q-pa-xs">
             {{ previewFormat === "plaintext" ? "Text" : "HTML" }}
           </div>
@@ -38,7 +47,7 @@ For details, see: https://license.tacticalrmm.com/ee
             :style="{ height: `${splitterHeight - horizontalSplitter - 33}px` }"
           ></div>
         </template>
-        <template v-slot:after>
+        <template #after>
           <div class="q-pa-xs">Variables</div>
           <div
             id="variablesDiv"
@@ -70,9 +79,7 @@ const $q = useQuasar();
 
 const splitterHeight = ref($q.screen.height - 82);
 
-const horizontalSplitter = ref(
-  props.debug ? splitterHeight.value / 2 : splitterHeight.value - 8,
-);
+const horizontalSplitter = ref(props.debug ? splitterHeight.value / 2 : splitterHeight.value - 8);
 
 const verticalSplitter = ref(props.debug ? 50 : 0);
 
@@ -84,31 +91,23 @@ if (props.debug) {
   onMounted(() => {
     const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-    templateEditor = monaco.editor.create(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      document.getElementById("templateDiv")!,
-      {
-        automaticLayout: true,
-        value: props.source || "",
-        theme: theme,
-        language: "html",
-        minimap: { enabled: false },
-        readOnly: true,
-      },
-    );
+    templateEditor = monaco.editor.create(document.getElementById("templateDiv")!, {
+      automaticLayout: true,
+      value: props.source || "",
+      theme: theme,
+      language: "html",
+      minimap: { enabled: false },
+      readOnly: true,
+    });
 
-    variablesEditor = monaco.editor.create(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      document.getElementById("variablesDiv")!,
-      {
-        automaticLayout: true,
-        value: props.variables || "",
-        language: "json",
-        theme: theme,
-        minimap: { enabled: false },
-        readOnly: true,
-      },
-    );
+    variablesEditor = monaco.editor.create(document.getElementById("variablesDiv")!, {
+      automaticLayout: true,
+      value: props.variables || "",
+      language: "json",
+      theme: theme,
+      minimap: { enabled: false },
+      readOnly: true,
+    });
   });
 
   onUnmounted(() => {

@@ -50,7 +50,7 @@
 
         <q-space />
 
-        <q-input v-model="filter" outlined label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -69,7 +69,7 @@ import { useAgentStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
-import InstallSoftware from "src/components/software/InstallSoftware.vue";
+import InstallSoftware from "src/core/agents/components/InstallSoftware.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 
 // static data

@@ -29,11 +29,11 @@
           no-data-label="There are no agents in this policy"
         >
           <!-- header slots -->
-          <template v-slot:header-cell-statusicon="props">
+          <template #header-cell-statusicon="props">
             <q-th auto-width :props="props"></q-th>
           </template>
           <!-- body slots -->
-          <template v-slot:body="props">
+          <template #body="props">
             <q-tr :props="props">
               <!-- tds -->
               <!-- agent hostname -->
@@ -130,8 +130,8 @@
 <script>
 import { computed } from "vue";
 import { useStore, mapState } from "vuex";
-import ScriptOutput from "src/components/checks/ScriptOutput.vue";
-import EventLogCheckOutput from "src/components/checks/EventLogCheckOutput.vue";
+import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
+import EventLogCheckOutput from "src/core/checks/components/EventLogCheckOutput.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
 
 export default {
@@ -209,7 +209,7 @@ export default {
       "dash_warning_color",
     ]),
     title() {
-      return !!this.item.readable_desc
+      return this.item.readable_desc
         ? this.item.readable_desc + " Status"
         : this.item.name + " Status";
     },

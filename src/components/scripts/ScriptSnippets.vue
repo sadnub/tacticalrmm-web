@@ -33,14 +33,14 @@
         virtual-scroll
         :rows-per-page-options="[0]"
       >
-        <template v-slot:top>
+        <template #top>
           <q-btn dense flat no-caps icon="add" label="New" @click="newSnippetModal" />
         </template>
-        <template v-slot:header-cell-shell="props">
+        <template #header-cell-shell="props">
           <q-th :props="props" auto-width> Shell </q-th>
         </template>
 
-        <template v-slot:body="props">
+        <template #body="props">
           <!-- Table View -->
           <q-tr :props="props" @dblclick="editSnippetModal(props.row)" class="cursor-pointer">
             <!-- Context Menu -->

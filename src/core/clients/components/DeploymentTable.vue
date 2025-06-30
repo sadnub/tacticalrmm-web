@@ -27,11 +27,11 @@
         no-data-label="No Deployments"
         :loading="loading"
       >
-        <template v-slot:top>
+        <template #top>
           <q-btn dense flat icon="add" label="New" @click="showAddDeployment" />
         </template>
 
-        <template v-slot:body="props">
+        <template #body="props">
           <q-tr :props="props" class="cursor-pointer" @dblclick="copyLink(props.row)">
             <q-menu context-menu auto-close>
               <q-list dense style="min-width: 200px">
@@ -85,7 +85,7 @@ import { notifySuccess } from "src/utils/notify";
 import { getBaseUrl } from "src/boot/axios";
 
 // ui imports
-import NewDeployment from "src/components/clients/NewDeployment.vue";
+import NewDeployment from "./NewDeployment.vue";
 
 // static data
 const columns = [

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import type { Client, Site } from "src/core/clients/types";
+
 export type Option =
   | { label: string; value: number | string; cat: string; img_right?: string }
   | { category: string };
@@ -27,4 +29,17 @@ export function isCategoryOption(option: Option): option is { category: string }
     "category" in option &&
     typeof (option as any).category === "string"
   );
+}
+
+export interface ClientTreeNode {
+  label: string;
+  id: number;
+  raw: string;
+  header: "root" | "generic";
+  icon: string;
+  color?: "green" | "negative" | "warning";
+  selectable?: boolean;
+  children?: ClientTreeNode[];
+  client?: Client;
+  site?: Site;
 }

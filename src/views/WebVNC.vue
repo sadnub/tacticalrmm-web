@@ -13,26 +13,30 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useMeta } from "quasar";
+import { useQuasar, useMeta } from "quasar";
 
-import { fetchAgentWebVNCUrl } from "src/api/agents";
+import { useAgentStore } from "src/core/agents/api";
+
+const $q = useQuasar();
 
 const { params } = useRoute();
 const vnc = ref("");
 
-async function getVNCUrl() {
-  try {
-    const data = await fetchAgentWebVNCUrl(params.agent_id, params.port);
-    vnc.value = data.vnc;
-    useMeta({
-      title: `${data.hostname} - ${data.client} - ${data.site} | VNC`,
-    });
-  } catch (e) {
-    console.error(e);
-  }
-}
+// setup stores
+const agentStore = useAgentStore();
 
-onMounted(async () => {
-  getVNCUrl();
+onMounted(() => {
+  if (
+    params.agent_id &&
+    typeof params.agent_id === "string" &&
+    params.port &&
+    typeof params.port === "string"
+  ) {
+    agentStore.getAgentWebVNCUrl(params.agent_id, parseInt(params.port));
+
+    useMeta({
+      title: `${agentStore.webVNCUrl.hostname} - ${agentStore.webVNCUrl.client} - ${agentStore.webVNCUrl.site} | VNC`,
+    });
+  }
 });
 </script>

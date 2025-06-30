@@ -16,7 +16,7 @@
             :options="modelOptions"
             map-options
             emit-value
-            outlined
+            filled
             dense
             :disable="editing"
             v-model="localField.model"
@@ -27,7 +27,7 @@
         <q-card-section>
           <q-input
             label="Name"
-            outlined
+            filled
             dense
             v-model="localField.name"
             :rules="[(val) => !!val || '*Required']"
@@ -41,7 +41,7 @@
             @update:model-value="clear"
             map-options
             emit-value
-            outlined
+            filled
             dense
             :disable="editing"
             v-model="localField.type"
@@ -76,7 +76,7 @@
             dense
             label="Default Value"
             stack-label
-            outlined
+            filled
             v-model="localField.default_value_string"
             :rules="defaultValueRules"
             reactive-rules
@@ -95,7 +95,7 @@
             v-else-if="localField.type === 'single'"
             label="Default Value"
             :options="localField.options"
-            outlined
+            filled
             dense
             v-model="localField.default_value_string"
             :rules="defaultValueRules"
@@ -107,7 +107,7 @@
             v-else-if="localField.type === 'multiple'"
             label="Default Value(s)"
             :options="localField.options"
-            outlined
+            filled
             dense
             multiple
             v-model="localField.default_values_multiple"
@@ -120,7 +120,7 @@
             v-else
             label="Default Value"
             :type="localField.type === 'text' ? 'text' : 'number'"
-            outlined
+            filled
             dense
             v-model="localField.default_value_string"
             :rules="defaultValueRules"
@@ -207,7 +207,7 @@ export default {
     submit() {
       this.$q.loading.show();
 
-      let data = {
+      const data = {
         ...this.localField,
       };
 

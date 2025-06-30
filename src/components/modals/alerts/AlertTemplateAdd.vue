@@ -13,7 +13,7 @@
           <q-select
             v-model="selectedTemplate"
             :options="options"
-            outlined
+            filled
             dense
             clearable
             emit-value

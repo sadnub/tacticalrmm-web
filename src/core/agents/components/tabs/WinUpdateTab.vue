@@ -59,7 +59,7 @@
         />
         <q-space />
 
-        <q-input v-model="filter" outlined label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -71,39 +71,39 @@
         <q-inner-loading showing color="primary" />
       </template>
 
-      <template #body="props">
-        <q-tr :props="props">
+      <template #body="{ row }">
+        <q-tr>
           <q-menu context-menu>
             <q-list dense style="min-width: 100px">
               <q-item
-                v-if="!props.row.installed"
+                v-if="!row.installed"
                 clickable
                 v-close-popup
-                @click="editWinUpdate(props.row.id, 'inherit')"
+                @click="editWinUpdate(row.id, 'inherit')"
               >
                 <q-item-section>Inherit</q-item-section>
               </q-item>
               <q-item
-                v-if="!props.row.installed"
+                v-if="!row.installed"
                 clickable
                 v-close-popup
-                @click="editWinUpdate(props.row.id, 'approve')"
+                @click="editWinUpdate(row.id, 'approve')"
               >
                 <q-item-section>Approve</q-item-section>
               </q-item>
               <q-item
-                v-if="!props.row.installed"
+                v-if="!row.installed"
                 clickable
                 v-close-popup
-                @click="editWinUpdate(props.row.id, 'ignore')"
+                @click="editWinUpdate(row.id, 'ignore')"
               >
                 <q-item-section>Ignore</q-item-section>
               </q-item>
               <q-item
-                v-if="!props.row.installed"
+                v-if="!row.installed"
                 clickable
                 v-close-popup
-                @click="editWinUpdate(props.row.id, 'nothing')"
+                @click="editWinUpdate(row.id, 'nothing')"
               >
                 <q-item-section>Do Nothing</q-item-section>
               </q-item>
@@ -111,53 +111,45 @@
           </q-menu>
           <!-- policy -->
           <q-td>
-            <q-icon v-if="props.row.action === 'nothing'" name="fiber_manual_record" color="grey">
+            <q-icon v-if="row.action === 'nothing'" name="fiber_manual_record" color="grey">
               <q-tooltip>Do Nothing</q-tooltip>
             </q-icon>
-            <q-icon v-else-if="props.row.action === 'approve'" name="fas fa-check" color="primary">
+            <q-icon v-else-if="row.action === 'approve'" name="fas fa-check" color="primary">
               <q-tooltip>Approve</q-tooltip>
             </q-icon>
             <q-icon
-              v-else-if="props.row.action === 'ignore'"
+              v-else-if="row.action === 'ignore'"
               name="fas fa-check"
               :color="dashNegativeColor"
             >
               <q-tooltip>Ignore</q-tooltip>
             </q-icon>
-            <q-icon
-              v-else-if="props.row.action === 'inherit'"
-              name="fiber_manual_record"
-              color="accent"
-            >
+            <q-icon v-else-if="row.action === 'inherit'" name="fiber_manual_record" color="accent">
               <q-tooltip>Inherit</q-tooltip>
             </q-icon>
           </q-td>
           <q-td>
-            <q-icon v-if="props.row.installed" name="fas fa-check" :color="dashPositiveColor">
+            <q-icon v-if="row.installed" name="fas fa-check" :color="dashPositiveColor">
               <q-tooltip>Installed</q-tooltip>
             </q-icon>
-            <q-icon v-else-if="props.row.action == 'approve'" name="fas fa-tasks" color="primary">
+            <q-icon v-else-if="row.action == 'approve'" name="fas fa-tasks" color="primary">
               <q-tooltip>Pending</q-tooltip>
             </q-icon>
-            <q-icon
-              v-else-if="props.row.action == 'ignore'"
-              name="fas fa-ban"
-              :color="dashNegativeColor"
-            >
+            <q-icon v-else-if="row.action == 'ignore'" name="fas fa-ban" :color="dashNegativeColor">
               <q-tooltip>Ignored</q-tooltip>
             </q-icon>
             <q-icon v-else name="fas fa-exclamation" :color="dashWarningColor">
               <q-tooltip>Missing</q-tooltip>
             </q-icon>
           </q-td>
-          <q-td>{{ !props.row.severity ? "Other" : props.row.severity }}</q-td>
-          <q-td>{{ truncateText(props.row.title, 50) }}</q-td>
-          <q-td @click="showUpdateDetails(props.row)">
+          <q-td>{{ !row.severity ? "Other" : row.severity }}</q-td>
+          <q-td>{{ truncateText(row.title, 50) }}</q-td>
+          <q-td @click="showUpdateDetails(row)">
             <span style="cursor: pointer; text-decoration: underline" class="text-primary">{{
-              truncateText(props.row.description, 50)
+              truncateText(row.description, 50)
             }}</span>
           </q-td>
-          <q-td>{{ dashboardStore.formatDate(props.row.date_installed) }}</q-td>
+          <q-td>{{ dashboardStore.formatDate(row.date_installed) }}</q-td>
         </q-tr>
       </template>
     </q-table>
@@ -178,7 +170,7 @@ import type { WindowsUpdate, PatchAction } from "../../types";
 
 // ui imports
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import WinUpdateDialog from "src/components/ui/WinUpdateDialog.vue";
+import WinUpdateDialog from "./WinUpdateDialog.vue";
 
 // static data
 const columns: QTableProps["columns"] = [
@@ -238,10 +230,6 @@ const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWar
 // setup quasar
 const $q = useQuasar();
 
-// inject function to refresh dashboard
-// TODO: isolate updates only to the single agent
-//const refreshDashboard = inject("refreshDashboard");
-
 // setup win update tab component
 const filter = ref("");
 const pagination = reactive({
@@ -262,10 +250,9 @@ function showUpdateDetails(update: WindowsUpdate) {
     component: WinUpdateDialog,
     componentProps: {
       title: update.title,
-      dialogStyle: { width: "80vw", maxWidth: "85vw" },
-      categories: update.categories,
-      description: update.description,
-      supportUrls: update.more_info_urls,
+      categories: update.categories || "",
+      description: update.description || "",
+      supportUrls: update.more_info_urls || [],
     },
   });
 }

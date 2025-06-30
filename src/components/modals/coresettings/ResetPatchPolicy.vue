@@ -22,10 +22,10 @@
           <tactical-dropdown
             :rules="[(val) => !!val || '*Required']"
             label="Clients"
-            mapOptions
+            map-options
             filterable
             clearable
-            outlined
+            filled
             v-model="state.client"
             :options="clientOptions"
           />
@@ -34,10 +34,10 @@
           <tactical-dropdown
             :rules="[(val) => !!val || '*Required']"
             label="Sites"
-            mapOptions
+            map-options
             filterable
             clearable
-            outlined
+            filled
             v-model="state.site"
             :options="siteOptions"
           />

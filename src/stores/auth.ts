@@ -27,12 +27,12 @@ interface TOTPSetupResponse {
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    username: useStorage("user_name", null),
-    name: useStorage("name", null),
-    token: useStorage("access_token", null),
-    ssoLoginProvider: useStorage("sso_provider", null),
-    provider_id: useStorage("provider_id", null),
-    next: useStorage("next", null),
+    username: useStorage<string | null>("user_name", null),
+    name: useStorage<string | null>("name", null),
+    token: useStorage<string | null>("access_token", null),
+    ssoLoginProvider: useStorage<string | null>("sso_provider", null),
+    provider_id: useStorage<string | null>("provider_id", null),
+    next: useStorage<string | null>("next", null),
   }),
   getters: {
     loggedIn: (state) => {
@@ -68,7 +68,9 @@ export const useAuthStore = defineStore("auth", {
       if (this.token !== null) {
         try {
           await axios.post("/logout/");
-        } catch {}
+        } catch {
+          /* empty */
+        }
       }
       this.token = null;
       this.username = null;

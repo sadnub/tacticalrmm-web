@@ -14,20 +14,18 @@
     :hide-selected="!multiple && (focused || filtered)"
     @popup-show="focused = true"
     @popup-hide="focused = false"
-    @input-value="
-      (value) => (value === '' ? (filtered = false) : (filtered = true))
-    "
+    @input-value="(value) => (value === '' ? (filtered = false) : (filtered = true))"
     @blur="
       filtered = false;
       focused = false;
     "
     v-bind="$attrs"
   >
-    <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
+    <template v-for="(_, slot) in $slots" #[slot]="scope">
       <slot :name="slot" v-bind="scope || {}" />
     </template>
 
-    <template v-slot:option="scope">
+    <template #option="scope">
       <q-item
         v-if="!scope.opt.category"
         v-bind="scope.itemProps"
@@ -35,12 +33,10 @@
         :key="mapOptions ? scope.opt.value : scope.opt"
       >
         <q-item-section>
-          <q-item-label v-html="mapOptions ? scope.opt.label : scope.opt" />
+          <q-item-label>{{ mapOptions ? scope.opt.label : scope.opt }}</q-item-label>
         </q-item-section>
         <q-item-section
-          v-if="
-            (filtered && mapOptions && scope.opt.cat) || scope.opt.img_right
-          "
+          v-if="(filtered && mapOptions && scope.opt.cat) || scope.opt.img_right"
           side
         >
           {{ scope.opt.cat || "" }}
@@ -51,13 +47,9 @@
           />
         </q-item-section>
       </q-item>
-      <q-item-label
-        v-if="scope.opt.category"
-        header
-        class="q-pa-sm"
-        :key="scope.opt.category"
-        >{{ scope.opt.category }}</q-item-label
-      >
+      <q-item-label v-if="scope.opt.category" header class="q-pa-sm" :key="scope.opt.category">{{
+        scope.opt.category
+      }}</q-item-label>
     </template>
   </q-select>
 </template>
@@ -66,8 +58,9 @@
 import { ref, computed } from "vue";
 
 export default {
-  name: "tactical-dropdown",
+  name: "TacticalDropdown",
   inheritAttrs: false,
+  emits: ["update:modelValue"],
   props: {
     modelValue: !String,
     mapOptions: {
@@ -99,9 +92,7 @@ export default {
             );
           else
             filteredOptions.value = props.options.filter((v) => {
-              return !v.category
-                ? v.label.toLowerCase().indexOf(needle) > -1
-                : false;
+              return !v.category ? v.label.toLowerCase().indexOf(needle) > -1 : false;
             });
         }
       });

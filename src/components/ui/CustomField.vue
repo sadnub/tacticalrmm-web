@@ -3,7 +3,7 @@
     :class="longTextClass(field)"
     v-if="field.type === 'text' || field.type === 'number'"
     ref="input"
-    outlined
+    filled
     dense
     :label="field.name"
     :type="field.type === 'text' ? 'text' : 'number'"
@@ -32,7 +32,7 @@
     type="datetime-local"
     dense
     stack-label
-    outlined
+    filled
     :model-value="modelValue"
     @update:model-value="(value) => $emit('update:modelValue', value)"
     :rules="[...validationRules]"
@@ -44,7 +44,7 @@
     ref="input"
     :model-value="modelValue"
     @update:model-value="(value) => $emit('update:modelValue', value)"
-    outlined
+    filled
     dense
     :hint="hintText(field)"
     :label="field.name"
@@ -61,6 +61,7 @@ import { truncateText } from "src/utils/format";
 export default {
   name: "CustomField",
   props: ["field", "modelValue"],
+  emits: ["update:modelValue"],
   methods: {
     validate(...args) {
       return this.$refs.input.validate(...args);

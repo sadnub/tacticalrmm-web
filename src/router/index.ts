@@ -1,3 +1,4 @@
+import { defineRouter } from "#q-app/wrappers";
 import {
   createRouter,
   createMemoryHistory,
@@ -10,26 +11,26 @@ import routes from "./routes";
 
 // useful for importing router outside of vue components
 // import {router} from "src/router"
-export const router = new createRouter({
+export const router = createRouter({
   routes,
   history: createWebHistory(process.env.VUE_ROUTER_BASE),
 });
 
-export default function (/* { store } */) {
+export default defineRouter(function ({ store }) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === "history"
       ? createWebHistory
       : createWebHashHistory;
 
-  const Router = new createRouter({
+  const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
-    history: createHistory(process.env.MODE === "ssr" ? void 0 : process.env.VUE_ROUTER_BASE),
+    history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
   Router.beforeEach((to, from, next) => {
-    const auth = useAuthStore();
+    const auth = useAuthStore(store);
 
     if (to.meta.requireAuth) {
       if (!auth.loggedIn) {
@@ -54,4 +55,4 @@ export default function (/* { store } */) {
   });
 
   return Router;
-}
+});

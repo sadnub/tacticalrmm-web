@@ -29,7 +29,7 @@
       :loading="loading"
     >
       <!-- body slots -->
-      <template v-slot:body="props">
+      <template #body="props">
         <q-tr :props="props" class="cursor-pointer" @dblclick="editURLAction(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
@@ -75,7 +75,8 @@
 <script setup lang="ts">
 // composition imports
 import { ref, onMounted } from "vue";
-import { QTableColumn, useQuasar } from "quasar";
+import type { QTableColumn} from "quasar";
+import { useQuasar } from "quasar";
 import { fetchURLActions, removeURLAction } from "src/api/core";
 import { notifySuccess } from "src/utils/notify";
 import { truncateText } from "src/utils/format";

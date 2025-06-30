@@ -14,9 +14,9 @@
             v-model="localPolicy.excluded_clients"
             :options="clientOptions"
             label="Excluded Clients"
-            outlined
+            filled
             multiple
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>
@@ -25,9 +25,9 @@
             v-model="localPolicy.excluded_sites"
             :options="siteOptions"
             label="Excluded Sites"
-            outlined
+            filled
             multiple
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>
@@ -36,9 +36,9 @@
             v-model="localPolicy.excluded_agents"
             :options="agentOptions"
             label="Excluded Agents"
-            outlined
+            filled
             multiple
-            mapOptions
+            map-options
             filterable
           />
         </q-card-section>

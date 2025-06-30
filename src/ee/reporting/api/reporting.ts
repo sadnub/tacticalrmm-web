@@ -28,47 +28,8 @@ import ReportDependencyPrompt from "../components/ReportDependencyPrompt.vue";
 
 const baseUrl = "/reporting";
 
-export interface useReportingTemplates {
-  reportTemplates: Ref<ReportTemplate[]>;
-  isLoading: Ref<boolean>;
-  isError: Ref<boolean>;
-  getReportTemplates: (dependsOn?: string[]) => void;
-  addReportTemplate: (payload: ReportTemplate) => void;
-  editReportTemplate: (
-    id: number,
-    payload: ReportTemplate,
-    options?: { dontNotify?: boolean },
-  ) => void;
-  deleteReportTemplate: (id: number) => void;
-  renderedPreview: Ref<string>;
-  renderedVariables: Ref<string>;
-  runReportPreview: (payload: RunReportPreviewRequest) => void;
-  runReportPreviewDebug: (payload: RunReportPreviewRequest) => void;
-  reportData: Ref<string>;
-  runReport: (id: number, payload: RunReportRequest, forDownload?: boolean) => void;
-  openReport: (
-    id: number,
-    format: ReportFormat,
-    dependsOn: string[],
-    dependencies?: ReportDependencies,
-    newWindow?: boolean,
-  ) => void;
-  exportReport: (id: number) => void;
-  importReport: (payload: { overwrite: boolean; template: string }) => void;
-  downloadReport: (
-    template: ReportTemplate,
-    format: ReportFormat,
-    dependencies?: ReportDependencies,
-  ) => void;
-  getSharedTemplates: () => void;
-  sharedTemplates: Ref<SharedTemplate[]>;
-  importSharedTemplates: (payload: { templates: SharedTemplate[]; overwrite: boolean }) => void;
-  variableAnalysis: Ref<VariableAnalysis>;
-  getAllowedValues: (payload: { variables: string; dependencies: ReportDependencies }) => void;
-}
-
 // reporting endpoints
-export function useReportTemplates(): useReportingTemplates {
+export function useReportTemplates() {
   const reportTemplates = ref<ReportTemplate[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -133,7 +94,7 @@ export function useReportTemplates(): useReportingTemplates {
       .then(({ data }: { data: ReportTemplate }) => {
         const index = reportTemplates.value.findIndex((template) => template.id === id);
         reportTemplates.value[index] = data;
-        options?.dontNotify || notifySuccess("The report template was edited successfully");
+        if (!options?.dontNotify) notifySuccess("The report template was edited successfully");
       })
       .catch(() => (isError.value = true))
       .finally(() => (isLoading.value = false));
@@ -213,7 +174,7 @@ export function useReportTemplates(): useReportingTemplates {
       },
       cancel: true,
       persistent: true,
-    }).onOk(async (name: string) => {
+    }).onOk((name: string) => {
       // get dependencies
       if (needsPrompt.length > 0) {
         Dialog.create({
@@ -243,10 +204,12 @@ export function useReportTemplates(): useReportingTemplates {
         );
       }
 
-      await until(isLoading).not.toBeTruthy();
-      if (isError.value) return;
-
-      exportFile(name, reportData.value);
+      until(isLoading)
+        .not.toBeTruthy()
+        .then(() => {
+          if (!isError.value) exportFile(name, reportData.value);
+        })
+        .catch(() => {});
     });
   }
 
@@ -269,7 +232,7 @@ export function useReportTemplates(): useReportingTemplates {
     if (newWindow === undefined || newWindow) {
       window.open(url, "_blank");
     } else {
-      router.push(url);
+      void router.push(url);
     }
   }
 
@@ -327,7 +290,10 @@ export function useReportTemplates(): useReportingTemplates {
       .finally(() => (isLoading.value = false));
   }
 
-  function getAllowedValues(payload: { variables: string; dependencies: ReportDependencies }) {
+  function getAllowedValues(payload: {
+    variables: string;
+    dependencies?: ReportDependencies | undefined;
+  }) {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -424,17 +390,8 @@ export async function uploadAssets(form: FormData, path = ""): Promise<UploadAss
 }
 
 // reporting html templates endpoints
-export interface useReportingHTMLTemplates {
-  reportHTMLTemplates: Ref<ReportHTMLTemplate[]>;
-  isLoading: Ref<boolean>;
-  isError: Ref<boolean>;
-  getReportHTMLTemplates: () => void;
-  addReportHTMLTemplate: (payload: ReportHTMLTemplate) => void;
-  editReportHTMLTemplate: (id: number, payload: ReportHTMLTemplate) => void;
-  deleteReportHTMLTemplate: (id: number) => void;
-}
 
-export function useReportingHTMLTemplates(): useReportingHTMLTemplates {
+export function useReportingHTMLTemplates() {
   const reportHTMLTemplates = ref<ReportHTMLTemplate[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

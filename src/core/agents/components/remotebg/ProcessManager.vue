@@ -75,7 +75,7 @@
 
         <q-space />
 
-        <q-input v-model="filter" outlined label="Search" dense clearable>
+        <q-input v-model="filter" filled label="Search" dense clearable>
           <template #prepend>
             <q-icon name="search" />
           </template>

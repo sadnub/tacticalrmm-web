@@ -38,11 +38,11 @@ For details, see: https://license.tacticalrmm.com/ee
       no-data-label="No OIDC Providers added yet"
       :loading="loading"
     >
-      <template v-slot:top>
+      <template #top>
         <q-btn @click="openSSOSettings" label="SSO Settings" no-caps color="primary" size="md" />
       </template>
       <!-- body slots -->
-      <template v-slot:body="props">
+      <template #body="props">
         <q-tr :props="props" class="cursor-pointer" @dblclick="editSSOProvider(props.row)">
           <!-- context menu -->
           <q-menu context-menu>
@@ -118,8 +118,9 @@ For details, see: https://license.tacticalrmm.com/ee
 <script setup lang="ts">
 // composition imports
 import { computed, ref, onMounted } from "vue";
-import { useStore } from "vuex";
-import { QTableColumn, useQuasar, copyToClipboard } from "quasar";
+import type { QTableColumn } from "quasar";
+import { useQuasar, copyToClipboard } from "quasar";
+import { useDashboardStore } from "src/stores/dashboard";
 import { fetchSSOProviders, removeSSOProvider, fetchSSOSettings } from "src/ee/sso/api/sso";
 import { notifySuccess } from "src/utils/notify";
 import { truncateText } from "src/utils/format";
@@ -128,14 +129,15 @@ import { truncateText } from "src/utils/format";
 import SSOProvidersForm from "src/ee/sso/components/SSOProvidersForm.vue";
 
 // types
-import { type SSOProvider, SSOSettingsType } from "src/ee/sso/types/sso";
+import type { SSOSettingsType } from "src/ee/sso/types/sso";
+import { type SSOProvider } from "src/ee/sso/types/sso";
 import SSOSettings from "src/ee/sso/components/SSOSettings.vue";
 
 // setup quasar
 const $q = useQuasar();
 
-// setup vuew store
-const store = useStore();
+// setup stores
+const dashboardStore = useDashboardStore();
 
 const loading = ref(false);
 const providers = ref([] as SSOProvider[]);
@@ -204,7 +206,7 @@ async function getSSOProviders() {
 function addSSOProvider() {
   $q.dialog({
     component: SSOProvidersForm,
-  }).onOk(getSSOProviders);
+  }).onOk(() => void getSSOProviders);
 }
 
 function editSSOProvider(provider: SSOProvider) {
@@ -213,7 +215,7 @@ function editSSOProvider(provider: SSOProvider) {
     componentProps: {
       provider: provider,
     },
-  }).onOk(getSSOProviders);
+  }).onOk(() => void getSSOProviders);
 }
 
 function deleteSSOProvider(provider: SSOProvider) {
@@ -221,30 +223,35 @@ function deleteSSOProvider(provider: SSOProvider) {
     title: `Delete SSO Provider: ${provider.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(async () => {
+  }).onOk(() => {
     loading.value = true;
-    try {
-      await removeSSOProvider(provider.id);
-      await getSSOProviders();
-      notifySuccess(`SSO Provider: ${provider.name} was deleted!`);
-    } catch (e) {
-      console.error(e);
-    }
-    loading.value = false;
+
+    removeSSOProvider(provider.id)
+      .then(async () => {
+        await getSSOProviders();
+        notifySuccess(`SSO Provider: ${provider.name} was deleted!`);
+      })
+      .catch((e) => {
+        console.error(e);
+      })
+      .finally(() => (loading.value = false));
   });
 }
 
 function getCallbackURL(url: string) {
-  copyToClipboard(url).then(() => {
-    notifySuccess("URL copied!");
-  });
+  copyToClipboard(url)
+    .then(() => {
+      notifySuccess("URL copied!");
+    })
+    .catch(() => {});
 }
 
 function openSSOSettings() {
   $q.dialog({
     component: SSOSettings,
   }).onOk((updatedSSOSettings: SSOSettingsType) => {
-    store.commit("setBlockLocalUserLogon", updatedSSOSettings.block_local_user_logon);
+    dashboardStore.dashboardSettings.blockLocalUserLogon =
+      updatedSSOSettings.block_local_user_logon;
     ssoSettings.value = { ...updatedSSOSettings };
   });
 }

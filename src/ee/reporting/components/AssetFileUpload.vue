@@ -18,7 +18,7 @@ For details, see: https://license.tacticalrmm.com/ee
         <q-file
           v-model="files"
           label="Select files"
-          outlined
+          filled
           multiple
           :clearable="!loading"
           style="width: 400px"
@@ -70,7 +70,7 @@ const loading = ref(false);
 async function upload() {
   loading.value = true;
 
-  let formData = new FormData();
+  const formData = new FormData();
   files.value.forEach((file) => {
     formData.append(file.name, file);
   });

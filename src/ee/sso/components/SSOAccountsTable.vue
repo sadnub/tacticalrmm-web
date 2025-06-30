@@ -31,17 +31,17 @@ For details, see: https://license.tacticalrmm.com/ee
         virtual-scroll
         :rows-per-page-options="[0]"
       >
-        <template #body="props">
+        <template #body="{ row }">
           <q-tr>
             <!-- rows -->
-            <td>{{ props.row.display }}</td>
-            <td>{{ props.row.provider }}</td>
-            <td>{{ formatDate(props.row.last_login) }}</td>
-            <td>{{ formatDate(props.row.date_joined) }}</td>
+            <td>{{ row.display }}</td>
+            <td>{{ row.provider }}</td>
+            <td>{{ formatDate(row.last_login) }}</td>
+            <td>{{ formatDate(row.date_joined) }}</td>
             <td>
               <q-btn
                 size="sm"
-                @click="removeSSOAccount(props.row)"
+                @click="removeSSOAccount(row)"
                 label="Disconnect"
                 color="negative"
               ></q-btn>
@@ -122,18 +122,21 @@ function removeSSOAccount(account: SSOAccount) {
     title: `Disconnect social account: ${account.display}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(async () => {
+  }).onOk(() => {
     loading.value = true;
-    try {
-      await disconnectSSOAccount(account.provider, account.uid);
-      notifySuccess("Social account disconnected successfully");
-      if (auth.username === props.user.username && auth.ssoLoginProvider === account.provider) {
-        await auth.logout();
-      }
-    } finally {
-      loading.value = false;
-      onDialogHide();
-    }
+
+    disconnectSSOAccount(account.provider, account.uid)
+      .then(async () => {
+        notifySuccess("Social account disconnected successfully");
+        if (auth.username === props.user.username && auth.ssoLoginProvider === account.provider) {
+          await auth.logout();
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        loading.value = false;
+        onDialogHide();
+      });
   });
 }
 </script>

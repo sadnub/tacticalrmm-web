@@ -9,16 +9,12 @@ For details, see: https://license.tacticalrmm.com/ee
       >Base Template Blocks
       <span v-if="copiedBlock" class="float-right">Copied!</span></q-item-label
     >
-    <q-item
-      v-for="block in templateBlocks"
-      :key="block"
-      :inset-level="block.warning ? 0 : 1"
-    >
+    <q-item v-for="(block, i) in templateBlocks" :key="i" :inset-level="block.warning ? 0 : 1">
       <q-item-section avatar v-if="block.warning">
         <q-icon name="warning" color="warning">
           <q-tooltip
-            >Block not found in template. Click on the block to copy and paste
-            into template</q-tooltip
+            >Block not found in template. Click on the block to copy and paste into
+            template</q-tooltip
           >
         </q-icon>
       </q-item-section>
@@ -38,10 +34,7 @@ For details, see: https://license.tacticalrmm.com/ee
     <q-item-label header>
       Variables <span v-if="copiedVariable" class="float-right">Copied!</span>
     </q-item-label>
-    <q-item
-      v-for="warning in [...dependencyWarnings, ...variableWarnings]"
-      :key="warning"
-    >
+    <q-item v-for="warning in [...dependencyWarnings, ...variableWarnings]" :key="warning">
       <q-item-section avatar>
         <q-icon name="warning" color="warning" />
       </q-item-section>
@@ -50,9 +43,7 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-item-section>
     </q-item>
 
-    <q-separator
-      v-if="[...dependencyWarnings, ...variableWarnings].length > 0"
-    />
+    <q-separator v-if="[...dependencyWarnings, ...variableWarnings].length > 0" />
 
     <q-item
       v-for="(type, prop) in variableAnalysis"
@@ -76,17 +67,10 @@ For details, see: https://license.tacticalrmm.com/ee
         </q-tooltip>
       </q-item-label>
       <q-item-section
-        v-if="
-          type.toLowerCase().substring(0, 5) === 'array' &&
-          mouseover === prop.toString()
-        "
+        v-if="type.toLowerCase().substring(0, 5) === 'array' && mouseover === prop.toString()"
         side
       >
-        <q-badge
-          class="cursor-pointer"
-          label="for loop"
-          @click="copy(prop.toString(), true)"
-        />
+        <q-badge class="cursor-pointer" label="for loop" @click="copy(prop.toString(), true)" />
       </q-item-section>
     </q-item>
   </q-list>
@@ -95,10 +79,7 @@ For details, see: https://license.tacticalrmm.com/ee
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import type { ReportDependencies } from "../types/reporting";
-import {
-  useSharedReportTemplates,
-  useSharedReportHTMLTemplates,
-} from "../api/reporting";
+import { useSharedReportTemplates, useSharedReportHTMLTemplates } from "../api/reporting";
 import { onMounted } from "vue";
 import { copyToClipboard } from "quasar";
 import { watchDebounced, until } from "@vueuse/core";
@@ -106,13 +87,12 @@ import { watchDebounced, until } from "@vueuse/core";
 const props = defineProps<{
   variables: string;
   template: string;
-  dependsOn?: string[];
-  base_template?: number;
-  dependencies?: ReportDependencies;
+  dependsOn?: string[] | undefined;
+  baseTemplate?: number | undefined;
+  dependencies?: ReportDependencies | undefined;
 }>();
 
-const { getAllowedValues, variableAnalysis, isLoading } =
-  useSharedReportTemplates;
+const { getAllowedValues, variableAnalysis, isLoading } = useSharedReportTemplates;
 
 const { reportHTMLTemplates } = useSharedReportHTMLTemplates;
 
@@ -130,7 +110,7 @@ function copy(content: string, is_for = false, block = false) {
   } else if (is_for) text = "{% for item in " + content + " %}{% endfor %}";
   else text = "{{ " + content + " }}";
 
-  copyToClipboard(text).then(() => {
+  void copyToClipboard(text).then(() => {
     if (block) copiedBlock.value = true;
     else copiedVariable.value = true;
 
@@ -147,7 +127,7 @@ async function getVariables() {
   // don't send variable analysis if client, site, or agent dependency isn't selected
   if (props.dependsOn) {
     for (let i = 0; i < props.dependsOn.length; i++) {
-      let dep = props.dependsOn[i];
+      const dep = props.dependsOn[i];
       if (dep === "client" || dep === "site" || dep === "agent") {
         if (!props.dependencies?.[dep]) return;
       }
@@ -162,12 +142,12 @@ async function getVariables() {
   await until(isLoading).not.toBeTruthy();
 
   // check if any data queries returned empty results
-  for (let key in variableAnalysis.value) {
-    if (variableAnalysis.value[key].includes("0 Results")) {
+  for (const key in variableAnalysis.value) {
+    if (variableAnalysis.value[key]?.includes("0 Results")) {
       variableWarnings.value.push(`Data Query: ${key} returned no results`);
     }
 
-    if (variableAnalysis.value[key].toLowerCase().substring(0, 5) === "array") {
+    if (variableAnalysis.value[key]?.toLowerCase().substring(0, 5) === "array") {
       variableAnalysis.value[key] = "Array";
     }
   }
@@ -177,49 +157,44 @@ async function getVariables() {
 watchDebounced(
   () => props.variables,
   () => {
-    getVariables();
+    void getVariables();
   },
-  { debounce: 5000 }
+  { debounce: 5000 },
 );
 
 // checks dependencies and adds warnings
 function checkDependencies(
   dependsOn: string[] | undefined,
-  dependencies: ReportDependencies | undefined
+  dependencies: ReportDependencies | undefined,
 ) {
   dependencyWarnings.value = [];
   // Check if dependencies aren't specified
   dependsOn?.forEach((dep) => {
-    !dependencies?.[dep] &&
+    if (!dependencies?.[dep])
       dependencyWarnings.value.push(
-        `Missing value for dependency: ${dep} . Open Preview to set values`
+        `Missing value for dependency: ${dep} . Open Preview to set values`,
       );
   });
 }
 
 // watch for any dependency changes
-watch(
-  [() => props.dependencies, () => props.dependsOn],
-  ([dependencies, dependsOn]) => {
-    checkDependencies(dependsOn, dependencies);
-  }
-);
+watch([() => props.dependencies, () => props.dependsOn], ([dependencies, dependsOn]) => {
+  checkDependencies(dependsOn, dependencies);
+});
 
 // checks available blocks in base template and checks if they are used
 function checkBaseTemplate(template: string, base_id: number | undefined) {
   templateBlocks.value = [];
   if (base_id) {
-    const base_template = reportHTMLTemplates.value.find(
-      (template) => template.id === base_id
-    );
+    const base_template = reportHTMLTemplates.value.find((template) => template.id === base_id);
 
-    let regex = /\{% block ([A-Za-z0-9_ ]+) %\}/g,
-      match: string[] | null;
+    const regex = /\{% block ([A-Za-z0-9_ ]+) %\}/g;
+    let match: string[] | null = null;
 
     if (base_template)
       while ((match = regex.exec(base_template?.html))) {
-        const full_match = match[0];
-        const block_name = match[1];
+        const full_match = match[0]!;
+        const block_name = match[1]!;
         templateBlocks.value.push({
           block: block_name,
           warning: !template.includes(full_match),
@@ -229,16 +204,13 @@ function checkBaseTemplate(template: string, base_id: number | undefined) {
 }
 
 // watches for changes in base template and template
-watch(
-  [() => props.base_template, () => props.template],
-  ([newBase, newTemplate]) => {
-    checkBaseTemplate(newTemplate, newBase);
-  }
-);
+watch([() => props.baseTemplate, () => props.template], ([newBase, newTemplate]) => {
+  checkBaseTemplate(newTemplate, newBase);
+});
 
 onMounted(() => {
-  getVariables();
+  void getVariables();
   checkDependencies(props.dependsOn, props.dependencies);
-  checkBaseTemplate(props.template, props.base_template);
+  checkBaseTemplate(props.template, props.baseTemplate);
 });
 </script>

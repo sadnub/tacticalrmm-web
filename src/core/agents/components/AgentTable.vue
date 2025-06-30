@@ -1,0 +1,839 @@
+<template>
+  <div class="q-pa-none">
+    <tactical-table
+      dense
+      :table-style="{ 'max-height': `${tableHeight}px` }"
+      :rows="filteredAgents"
+      :filter="search"
+      :filter-method="filterTable"
+      :columns="columns"
+      :visible-columns="visibleColumns"
+      row-key="id"
+      binary-state-sort
+      virtual-scroll
+      v-model:pagination="pagination"
+      :rows-per-page-options="[0]"
+      no-data-label="No Agents"
+      :loading="agentStore.isLoading"
+      storage-key="agent-table"
+    >
+      <template #top>
+        <q-tabs
+          v-model="dashboardStore.dashboardSettings.defaultAgentTblTab"
+          dense
+          no-caps
+          inline-label
+          class="text-grey"
+          active-color="primary"
+          indicator-color="primary"
+          align="left"
+          narrow-indicator
+        >
+          <q-tab name="server" icon="fas fa-server" label="Servers" />
+          <q-tab name="workstation" icon="computer" label="Workstations" />
+          <q-tab name="mixed" label="Mixed" />
+        </q-tabs>
+        <q-space />
+        <q-input
+          v-model="search"
+          style="width: 450px"
+          label="Search"
+          dense
+          filled
+          clearable
+          @clear="clearFilter"
+          class="q-pr-md q-pb-xs"
+        >
+          <template #prepend>
+            <q-icon name="search" color="primary" />
+          </template>
+          <template #after>
+            <q-btn round dense flat icon="filter_alt" :color="isFilteringTable ? 'green' : ''">
+              <q-menu>
+                <q-list dense>
+                  <q-item-label header>Filter Agent Table</q-item-label>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-checkbox v-model="filterChecksFailing" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Checks Failing</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-checkbox v-model="filterPatchesPending" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Patches Pending</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-checkbox v-model="filterActionsPending" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Actions Pending</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-checkbox v-model="filterRebootNeeded" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Reboot Needed</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item-label header>Availability</q-item-label>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-radio val="all" v-model="filterAvailability" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Show All Agents</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-radio val="online" v-model="filterAvailability" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Show Online Only</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-radio val="offline" v-model="filterAvailability" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Show Offline Only</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-radio val="overdue" v-model="filterAvailability" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Show Overdue Only</q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item>
+                    <q-item-section side>
+                      <q-radio val="offline_30days" v-model="filterAvailability" />
+                    </q-item-section>
+
+                    <q-item-section>
+                      <q-item-label>Show Offline for over 30 days</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+
+                <div class="row no-wrap q-pa-md">
+                  <div class="column">
+                    <q-btn v-close-popup label="Apply" color="primary" @click="applyFilter" />
+                  </div>
+                  <q-space />
+                  <div class="column">
+                    <q-btn label="Clear" @click="clearFilter" />
+                  </div>
+                </div>
+              </q-menu>
+            </q-btn>
+          </template>
+        </q-input>
+      </template>
+      <!-- header slots -->
+      <template #header-cell-smsalert="props">
+        <q-th auto-width :props="props">
+          <q-icon name="phone_android" size="1.5em">
+            <q-tooltip>Send an text alert when agent is overdue</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-emailalert="props">
+        <q-th auto-width :props="props">
+          <q-icon name="email" size="1.5em">
+            <q-tooltip>Send an email alert when agent is overdue</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-dashboardalert="props">
+        <q-th auto-width :props="props">
+          <q-icon name="notifications" size="1.5em">
+            <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-plat="props">
+        <q-th auto-width :props="props"></q-th>
+      </template>
+      <template #header-cell-mon-type="props">
+        <q-th auto-width :props="props"></q-th>
+      </template>
+      <template #header-cell-checks-status="props">
+        <q-th :props="props">
+          <q-icon name="fas fa-check-double" size="1.2em">
+            <q-tooltip>Checks Status</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-patchespending="props">
+        <q-th auto-width :props="props">
+          <q-icon name="verified_user" size="1.5em">
+            <q-tooltip>Patches Pending</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-pendingactions="props">
+        <q-th auto-width :props="props">
+          <q-icon name="far fa-clock" size="1.5em">
+            <q-tooltip>Pending Actions</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-agentstatus="props">
+        <q-th auto-width :props="props">
+          <q-icon name="fas fa-signal" size="1.2em">
+            <q-tooltip>Agent Status</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <template #header-cell-needs_reboot="props">
+        <q-th auto-width :props="props">
+          <q-icon name="fas fa-power-off" size="1.2em">
+            <q-tooltip>Reboot</q-tooltip>
+          </q-icon>
+        </q-th>
+      </template>
+      <!-- body slots -->
+      <template #body="props">
+        <q-tr
+          @contextmenu="agentRowSelected(props.row.agent_id)"
+          :props="props"
+          :class="rowSelectedClass(props.row.agent_id)"
+          @click="agentRowSelected(props.row.agent_id)"
+          @dblclick="rowDoubleClicked(props.row.agent_id, props.row.plat)"
+        >
+          <q-menu context-menu>
+            <AgentActionMenu :agent="props.row" />
+          </q-menu>
+          <q-td>
+            <q-checkbox
+              v-if="props.row.alert_template && props.row.alert_template.always_text !== null"
+              v-model="props.row.alert_template.always_text"
+              disable
+              dense
+            >
+              <q-tooltip>
+                Setting is overridden by alert template:
+                {{ props.row.alert_template.name }}
+              </q-tooltip>
+            </q-checkbox>
+
+            <q-checkbox
+              v-else
+              dense
+              @update:model-value="overdueAlert('text', props.row, props.row.overdue_text_alert)"
+              v-model="props.row.overdue_text_alert"
+            >
+              <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
+            </q-checkbox>
+          </q-td>
+          <q-td>
+            <q-checkbox
+              v-if="props.row.alert_template && props.row.alert_template.always_email !== null"
+              v-model="props.row.alert_template.always_email"
+              disable
+              dense
+            >
+              <q-tooltip>
+                Setting is overridden by alert template:
+                {{ props.row.alert_template.name }}
+              </q-tooltip>
+            </q-checkbox>
+
+            <q-checkbox
+              v-else
+              dense
+              @update:model-value="overdueAlert('email', props.row, props.row.overdue_email_alert)"
+              v-model="props.row.overdue_email_alert"
+            >
+              <q-tooltip>Send an email when an agent is overdue</q-tooltip>
+            </q-checkbox>
+          </q-td>
+          <q-td>
+            <q-checkbox
+              v-if="props.row.alert_template && props.row.alert_template.always_alert !== null"
+              v-model="props.row.alert_template.always_alert"
+              disable
+              dense
+            >
+              <q-tooltip>
+                Setting is overridden by alert template:
+                {{ props.row.alert_template.name }}
+              </q-tooltip>
+            </q-checkbox>
+
+            <q-checkbox
+              v-else
+              dense
+              @update:model-value="
+                overdueAlert('dashboard', props.row, props.row.overdue_dashboard_alert)
+              "
+              v-model="props.row.overdue_dashboard_alert"
+            >
+              <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
+            </q-checkbox>
+          </q-td>
+
+          <q-td key="plat" :props="props">
+            <q-icon
+              v-if="props.row.plat === 'windows'"
+              name="mdi-microsoft-windows"
+              size="sm"
+              color="primary"
+            >
+              <q-tooltip>Microsoft Windows</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.plat === 'linux'"
+              name="mdi-linux"
+              size="sm"
+              color="primary"
+            >
+              <q-tooltip>Linux</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.plat === 'darwin'"
+              name="mdi-apple"
+              size="sm"
+              color="primary"
+            >
+              <q-tooltip>macOS</q-tooltip>
+            </q-icon>
+          </q-td>
+
+          <q-td key="mon-type" :props="props">
+            <q-icon
+              v-if="props.row.monitoring_type === 'server'"
+              name="dns"
+              size="sm"
+              color="primary"
+            >
+              <q-tooltip>Server</q-tooltip>
+            </q-icon>
+            <q-icon v-else name="computer" size="sm" color="primary">
+              <q-tooltip>Workstation</q-tooltip>
+            </q-icon>
+          </q-td>
+
+          <q-td key="checks-status" :props="props">
+            <q-icon
+              v-if="props.row.maintenance_mode"
+              name="construction"
+              size="1.2em"
+              :color="dashPositiveColor"
+            >
+              <q-tooltip>Maintenance Mode Enabled</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.checks.failing > 0"
+              name="fas fa-check-double"
+              size="1.2em"
+              :color="dashNegativeColor"
+            >
+              <q-tooltip>Checks failing</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.checks.warning > 0"
+              name="fas fa-check-double"
+              size="1.2em"
+              :color="dashWarningColor"
+            >
+              <q-tooltip>Checks warning</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.checks.info > 0"
+              name="fas fa-check-double"
+              size="1.2em"
+              :color="dashInfoColor"
+            >
+              <q-tooltip>Checks info</q-tooltip>
+            </q-icon>
+            <q-icon v-else name="fas fa-check-double" size="1.2em" :color="dashPositiveColor">
+              <q-tooltip>Checks passing</q-tooltip>
+            </q-icon>
+          </q-td>
+
+          <q-td key="client_name" :props="props">{{ props.row.client_name }}</q-td>
+          <q-td key="site_name" :props="props">{{ props.row.site_name }}</q-td>
+          <q-td key="hostname" :props="props">{{ props.row.hostname }}</q-td>
+          <q-td key="description" :props="props">{{ props.row.description }}</q-td>
+          <q-td key="user" :props="props">
+            <span class="text-italic" v-if="props.row.italic">{{ props.row.logged_username }}</span>
+            <span v-else>{{ props.row.logged_username }}</span>
+          </q-td>
+          <q-td :props="props" key="patchespending">
+            <q-icon
+              v-if="props.row.has_patches_pending"
+              name="verified_user"
+              size="1.5em"
+              color="primary"
+            >
+              <q-tooltip>Patches Pending</q-tooltip>
+            </q-icon>
+          </q-td>
+          <q-td :props="props" key="pendingactions">
+            <q-icon
+              v-if="props.row.pending_actions_count > 0"
+              @click="showPendingActionsModal(props.row)"
+              name="far fa-clock"
+              size="1.4em"
+              :color="dashWarningColor"
+              class="cursor-pointer"
+            >
+              <q-tooltip>Pending Action Count: {{ props.row.pending_actions_count }}</q-tooltip>
+            </q-icon>
+          </q-td>
+          <!-- needs reboot -->
+          <q-td key="needsreboot">
+            <q-icon v-if="props.row.needs_reboot" name="fas fa-power-off" color="primary">
+              <q-tooltip>Reboot required</q-tooltip>
+            </q-icon>
+          </q-td>
+          <q-td key="agentstatus">
+            <q-icon
+              v-if="props.row.status === 'overdue'"
+              name="fas fa-signal"
+              size="1.2em"
+              :color="dashNegativeColor"
+            >
+              <q-tooltip>Agent overdue</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="props.row.status === 'offline'"
+              name="fas fa-signal"
+              size="1.2em"
+              :color="dashWarningColor"
+            >
+              <q-tooltip>Agent offline</q-tooltip>
+            </q-icon>
+            <q-icon v-else name="fas fa-signal" size="1.2em" :color="dashPositiveColor">
+              <q-tooltip>Agent online</q-tooltip>
+            </q-icon>
+          </q-td>
+          <q-td key="last_seen" :props="props">{{
+            dashboardStore.formatDate(props.row.last_seen)
+          }}</q-td>
+          <q-td key="boot_time" :props="props">{{ getTimeLapse(props.row.boot_time) }}</q-td>
+        </q-tr>
+      </template>
+    </tactical-table>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, computed, watch, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { type QTableColumn, useQuasar } from "quasar";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore } from "../api";
+import { useURLActionStore } from "src/core/settings/api";
+import { date } from "quasar";
+import { capitalize, getTimeLapse } from "src/utils/format";
+
+// ui imports
+import EditAgent from "src/components/modals/agents/EditAgent.vue";
+import PendingActions from "src/core/logs/components/PendingActions.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import AgentActionMenu from "./AgentActionMenu.vue";
+
+// type imports
+import type { Agent } from "../types";
+
+const $q = useQuasar();
+
+// setup stores
+const dashboardStore = useDashboardStore();
+const agentStore = useAgentStore();
+const actionStore = useURLActionStore();
+
+const tab = computed(() => dashboardStore.dashboardSettings.defaultAgentTblTab);
+const tableHeight = computed(() => dashboardStore.tableHeight);
+const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
+const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const agentDblClickAction = computed(() => dashboardStore.dashboardSettings.agentDblClickAction);
+const agentUrlAction = computed(() => dashboardStore.dashboardSettings.agentUrlAction);
+
+const route = useRoute();
+const search = ref(route.query.search ? String(route.query.search) : "");
+const filterTextLength = ref(0);
+const filterAvailability = ref("all");
+const filterPatchesPending = ref(false);
+const filterActionsPending = ref(false);
+const filterChecksFailing = ref(false);
+const filterRebootNeeded = ref(false);
+
+const columns: QTableColumn[] = [
+  { name: "smsalert", align: "left", label: "", field: "" },
+  { name: "emailalert", align: "left", label: "", field: "" },
+  { name: "dashboardalert", align: "left", label: "", field: "" },
+  { name: "plat", label: "", field: "plat", sortable: true, align: "left" },
+  { name: "mon-type", label: "", field: "monitoring_type", sortable: true, align: "left" },
+  {
+    name: "checks-status",
+    align: "left",
+    field: "checks",
+    label: "",
+    sortable: true,
+    sort: (a, b) =>
+      parseInt(b.failing) - parseInt(a.failing) ||
+      parseInt(b.warning) - parseInt(a.warning) ||
+      parseInt(b.info) - parseInt(a.info),
+  },
+  { name: "client_name", label: "Client", field: "client_name", sortable: true, align: "left" },
+  { name: "site_name", label: "Site", field: "site_name", sortable: true, align: "left" },
+  { name: "hostname", label: "Hostname", field: "hostname", sortable: true, align: "left" },
+  {
+    name: "description",
+    label: "Description",
+    field: "description",
+    sortable: true,
+    align: "left",
+  },
+  { name: "user", label: "User", field: "logged_username", sortable: true, align: "left" },
+  { name: "italic", field: "italic", label: "" },
+  {
+    name: "patchespending",
+    field: "has_patches_pending",
+    label: "",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "pendingactions",
+    field: "pending_actions_count",
+    align: "left",
+    label: "",
+    sortable: true,
+  },
+  { name: "needs_reboot", field: "needs_reboot", align: "left", label: "", sortable: true },
+  { name: "agentstatus", field: "status", align: "left", label: "", sortable: true },
+  {
+    name: "last_seen",
+    label: "Last Response",
+    field: "last_seen",
+    sortable: true,
+    align: "left",
+  },
+  { name: "boot_time", label: "Boot Time", field: "boot_time", sortable: true, align: "left" },
+];
+const visibleColumns = ref([
+  "smsalert",
+  "plat",
+  "mon-type",
+  "emailalert",
+  "dashboardalert",
+  "checks-status",
+  "client_name",
+  "site_name",
+  "hostname",
+  "description",
+  "user",
+  "patchespending",
+  "pendingactions",
+  "agentstatus",
+  "needs_reboot",
+  "last_seen",
+  "boot_time",
+]);
+
+const isFilteringTable = computed(
+  () =>
+    filterPatchesPending.value ||
+    filterActionsPending.value ||
+    filterChecksFailing.value ||
+    filterRebootNeeded.value ||
+    filterAvailability.value !== "all",
+);
+
+watch(
+  () => dashboardStore.selectedClientSiteNode,
+  () => {
+    agentStore.clearSelectedAgent();
+  },
+);
+
+watch(search, (newVal) => {
+  if (newVal === "") clearFilter();
+  else if (newVal.length < filterTextLength.value) clearFilter();
+});
+
+const clearFilter = () => {
+  filterTextLength.value = 0;
+  filterPatchesPending.value = false;
+  filterRebootNeeded.value = false;
+  filterChecksFailing.value = false;
+  filterActionsPending.value = false;
+  filterAvailability.value = "all";
+  search.value = "";
+};
+
+const applyFilter = () => {
+  if (
+    filterAvailability.value === "all" &&
+    (search.value.includes("is:online") ||
+      search.value.includes("is:offline") ||
+      search.value.includes("is:expired") ||
+      search.value.includes("is:overdue"))
+  ) {
+    clearFilter();
+  }
+
+  if (!isFilteringTable.value) return;
+
+  let filterText = "";
+  if (filterPatchesPending.value) filterText += "is:patchespending ";
+  if (filterActionsPending.value) filterText += "is:actionspending ";
+  if (filterChecksFailing.value) filterText += "is:checksfailing ";
+  if (filterRebootNeeded.value) filterText += "is:rebootneeded ";
+  if (filterAvailability.value !== "all") {
+    if (filterAvailability.value === "online") filterText += "is:online ";
+    else if (filterAvailability.value === "offline") filterText += "is:offline ";
+    else if (filterAvailability.value === "offline_30days") filterText += "is:expired ";
+    else if (filterAvailability.value === "overdue") filterText += "is:overdue ";
+  }
+
+  search.value = filterText;
+  filterTextLength.value = filterText.length - 1;
+};
+
+const selectedClientSite = computed(() => dashboardStore.selectedClientSiteNode);
+
+const filteredAgents = computed(() => {
+  // tab filter
+  const tabFilteredAgents =
+    tab.value === "mixed"
+      ? agentStore.agents
+      : agentStore.agents.filter((k) => k.monitoring_type === tab.value);
+
+  // client tree filter
+  if (selectedClientSite.value) {
+    const treeKey = selectedClientSite.value.split("|");
+    const model = treeKey[0];
+    const id = parseInt(String(treeKey[1]));
+    if (model === "site") return tabFilteredAgents.filter((agent) => agent.site === id);
+    else if (model === "client") return tabFilteredAgents.filter((agent) => agent.client === id);
+  }
+  return tabFilteredAgents;
+});
+
+watch(tab, () => {
+  if (dashboardStore.dashboardSettings.clearSearchWhenSwitching) clearFilter();
+});
+onMounted(agentStore.getAgents);
+
+const pagination = ref({
+  rowsPerPage: 0,
+  sortBy: "hostname",
+  descending: false,
+});
+
+type AvailabilityStatus = "online" | "offline" | "expired" | "overdue" | null;
+type CellValueFunction = (
+  col: { field: string | ((row: Agent) => unknown) },
+  row: Agent,
+) => unknown;
+
+function filterTable(
+  rows: readonly Agent[],
+  terms: string,
+  cols: readonly QTableColumn[],
+  cellValue: CellValueFunction,
+): Agent[] {
+  const hiddenFields: string[] = [
+    "version",
+    "operating_system",
+    "public_ip",
+    "cpu_model",
+    "graphics",
+    "local_ips",
+    "make_model",
+    "physical_disks",
+    "custom_fields",
+    "serial_number",
+  ];
+
+  const allColumns = [...cols, ...hiddenFields.map((field) => ({ name: field, field }))];
+
+  const lowerTerms = terms ? terms.toLowerCase() : "";
+  if (!lowerTerms) {
+    return [...rows];
+  }
+
+  let advancedFilter: boolean = false;
+  let availability: AvailabilityStatus = null;
+  let checks: boolean = false;
+  let patches: boolean = false;
+  let actions: boolean = false;
+  let reboot: boolean = false;
+  let search: string = "";
+
+  const params = lowerTerms.trim().split(" ");
+  params.forEach((param) => {
+    if (param.startsWith("is:")) {
+      advancedFilter = true;
+      const filter = param.split(":")[1];
+      if (filter === "patchespending") patches = true;
+      else if (filter === "actionspending") actions = true;
+      else if (filter === "checksfailing") checks = true;
+      else if (filter === "rebootneeded") reboot = true;
+      else if (["online", "offline", "expired", "overdue"].includes(filter || "")) {
+        availability = filter as AvailabilityStatus;
+      }
+    } else {
+      search += param + " ";
+    }
+  });
+
+  search = search.trim();
+
+  return rows.filter((row: Agent) => {
+    if (advancedFilter) {
+      if (checks && !row.checks.has_failing_checks) return false;
+      if (patches && !row.has_patches_pending) return false;
+      if (actions && row.pending_actions_count === 0) return false;
+      if (reboot && !row.needs_reboot) return false;
+      if (availability) {
+        if (availability === "online" && row.status !== "online") return false;
+        if (availability === "offline" && row.status !== "offline") return false;
+        if (availability === "overdue" && row.status !== "overdue") return false;
+        if (availability === "expired") {
+          const now = new Date();
+          const lastSeen = new Date(row.last_seen);
+          const diff = date.getDateDiff(now, lastSeen, "days");
+          if (diff < 30) return false;
+        }
+      }
+    }
+
+    if (search.length === 0 && advancedFilter) {
+      return true;
+    }
+
+    return allColumns.some((col) => {
+      const valObj: unknown = cellValue(col, row);
+      let haystack: string;
+
+      if (valObj === null || valObj === undefined) {
+        haystack = "";
+      } else if (Array.isArray(valObj)) {
+        const flattened = valObj.map((item) =>
+          item && typeof item === "object" && "value" in item ? item.value : item,
+        );
+        haystack = flattened.join(" ");
+      } else if (typeof valObj === "object") {
+        haystack = Object.values(valObj).join(" ");
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        haystack = String(valObj);
+      }
+
+      return haystack.toLowerCase().includes(search);
+    });
+  });
+}
+
+function rowDoubleClicked(agentId: string, agentPlatform: string) {
+  agentStore.selectedAgentId = agentId;
+  agentStore.getAgent(agentId);
+  switch (agentDblClickAction.value) {
+    case "editagent":
+      showEditAgent(agentId);
+      break;
+    case "takecontrol":
+      agentStore.runTakeControl(agentId);
+      break;
+    case "remotebg":
+      agentStore.runRemoteBackground(agentId, agentPlatform);
+      break;
+    case "urlaction":
+      if (agentUrlAction.value) actionStore.runURLAction(agentUrlAction.value, "agent", agentId);
+      break;
+  }
+}
+
+function agentRowSelected(agentId: string) {
+  agentStore.selectedAgentId = agentId;
+  agentStore.getAgent(agentId);
+}
+
+function showPendingActionsModal(agent: Agent) {
+  $q.dialog({
+    component: PendingActions,
+    componentProps: {
+      agent: agent,
+    },
+  });
+}
+
+function overdueAlert(
+  category: "email" | "text" | "dashboard",
+  agent: Agent,
+  alert_action: "enable" | "disabled",
+) {
+  const data = {
+    [`overdue_${category}_alert`]: !alert_action,
+  };
+
+  const alertColor = !alert_action ? dashPositiveColor : dashInfoColor;
+  agentStore.updateAgent(agent.agent_id, data);
+
+  $q.notify({
+    color: alertColor.value,
+    textColor: "black",
+    icon: "fas fa-check-circle",
+    message: `${capitalize(category)} alerts will now be ${alert_action ? "disabled" : "enabled"} when ${
+      agent.hostname
+    } is overdue.`,
+    timeout: 5000,
+  });
+}
+
+function rowSelectedClass(agent_id: string) {
+  if (agent_id === agentStore.selectedAgentId) {
+    return $q.dark.isActive ? "highlight-dark" : "highlight";
+  } else {
+    return "";
+  }
+}
+
+function showEditAgent(agent_id: string) {
+  $q.dialog({
+    component: EditAgent,
+    componentProps: {
+      agent_id: agent_id,
+    },
+  });
+}
+</script>

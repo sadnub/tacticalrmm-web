@@ -23,13 +23,13 @@ const auth = useAuthStore();
 if (!error) {
   if (auth.loggedIn) {
     if (auth.next) {
-      router.push(auth.next);
+      void router.push(auth.next);
       auth.next = null;
     } else {
-      router.push({ name: "Dashboard" });
+      void router.push({ name: "Dashboard" });
     }
   } else {
-    router.push({ name: "Login" });
+    void router.push({ name: "Login" });
   }
 }
 </script>

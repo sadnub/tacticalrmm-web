@@ -68,7 +68,7 @@ async function getQRCodeData() {
     if (!data) {
       //don't logout user if totp is already set
       clearToken.value = false;
-      router.push({ name: "Login" });
+      void router.push({ name: "Login" });
     } else {
       totpKey.value = data.totp_key;
       qrUrl.value = data.qr_url;
@@ -81,11 +81,11 @@ async function getQRCodeData() {
 async function logout() {
   await auth.logout();
   clearToken.value = false;
-  router.push({ name: "Login" });
+  void router.push({ name: "Login" });
 }
 
 onMounted(() => {
-  getQRCodeData();
+  void getQRCodeData();
   $q.dark.set(false);
 });
 

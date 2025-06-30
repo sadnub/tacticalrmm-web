@@ -31,21 +31,11 @@ For details, see: https://license.tacticalrmm.com/ee
         <q-space />
       </q-toolbar>
 
-      <div
-        ref="htmlEditor"
-        :style="{ height: `${$q.screen.height - 126}px` }"
-      ></div>
+      <div ref="htmlEditor" :style="{ height: `${$q.screen.height - 126}px` }"></div>
 
       <q-card-actions align="right">
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn
-          :loading="isLoading"
-          dense
-          flat
-          label="Save"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="isLoading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -80,7 +70,7 @@ const defaultTemplate = `<html>
         </style>
     </head>
     <body>
-        \{% block content %\}\{% endblock %\}
+        {% block content %}{% endblock %}
     </body>
 </html>
 `;
@@ -101,9 +91,8 @@ const { isLoading, isError, addReportHTMLTemplate, editReportHTMLTemplate } =
   useSharedReportHTMLTemplates;
 
 async function submit() {
-  props.template
-    ? editReportHTMLTemplate(state.id, state)
-    : addReportHTMLTemplate(state);
+  if (props.template) editReportHTMLTemplate(state.id, state);
+  else addReportHTMLTemplate(state);
 
   // stops the dialog from closing when there is an error
   await until(isLoading).not.toBeTruthy();
@@ -118,7 +107,6 @@ let editor: monaco.editor.IStandaloneCodeEditor;
 const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
 function loadEditor() {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   editor = monaco.editor.create(htmlEditor.value!, {
     language: "html",
     value: state.html,

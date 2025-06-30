@@ -52,7 +52,7 @@
           label="Agents Filter"
           :options="agentOptions"
           map-options
-          outlined
+          filled
           clearable
           filterable
         />
@@ -63,7 +63,7 @@
           label="Log Type Filter"
           :options="logTypeOptions"
           map-options
-          outlined
+          filled
           clearable
         />
         <q-radio
@@ -91,7 +91,7 @@
           label="Warning"
         />
         <q-space />
-        <q-input v-model="filter" outlined label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>

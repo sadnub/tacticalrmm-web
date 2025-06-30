@@ -235,26 +235,28 @@
 </template>
 
 <script>
+import { computed } from "vue";
+import { useDashboardStore } from "src/stores/dashboard";
 import mixins from "src/mixins/mixins";
 import DialogWrapper from "src/components/ui/DialogWrapper.vue";
 import DebugLog from "../core/logs/components/DebugLog.vue";
 import PendingActions from "../core/logs/components/PendingActions.vue";
-import ClientsManager from "src/components/clients/ClientsManager.vue";
-import ClientsForm from "src/components/clients/ClientsForm.vue";
-import SitesForm from "src/components/clients/SitesForm.vue";
+import ClientsManager from "src/core/clients/components/ClientsManager.vue";
+import ClientsForm from "src/core/clients/components//ClientsForm.vue";
+import SitesForm from "src/core/clients/components//SitesForm.vue";
 import UpdateAgents from "src/components/modals/agents/UpdateAgents.vue";
 import ScriptManager from "src/components/scripts/ScriptManager.vue";
 import EditCoreSettings from "src/components/modals/coresettings/EditCoreSettings.vue";
 import AlertsManager from "src/components/AlertsManager.vue";
 import AutomationManager from "src/components/automation/AutomationManager.vue";
-import AdminManager from "src/components/AdminManager.vue";
-import InstallAgent from "src/components/modals/agents/InstallAgent.vue";
-import AuditManager from "../core/logs/components/AuditManager.vue";
+import AdminManager from "src/core/accounts/components/AdminManager.vue";
+import InstallAgent from "src/core/agents/components/InstallAgent.vue";
+import AuditManager from "src/core/logs/components/AuditManager.vue";
 import BulkAction from "src/components/modals/agents/BulkAction.vue";
-import DeploymentTable from "src/components/clients/DeploymentTable.vue";
+import DeploymentTable from "src/core/clients/components/DeploymentTable.vue";
 import ServerMaintenance from "src/components/modals/core/ServerMaintenance.vue";
 import CodeSign from "src/components/modals/coresettings/CodeSign.vue";
-import PermissionsManager from "src/components/accounts/PermissionsManager.vue";
+import PermissionsManager from "src/core/accounts/components/PermissionsManager.vue";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { notifyWarning } from "src/utils/notify";
@@ -270,6 +272,13 @@ export default {
     ServerMaintenance,
     CodeSign,
   },
+  setup() {
+    const dashboardStore = useDashboardStore();
+
+    return {
+      hosted: computed(() => dashboardStore.dashboardSettings.hosted),
+    };
+  },
   data() {
     return {
       showServerMaintenance: false,
@@ -279,11 +288,6 @@ export default {
       showInstallAgent: false,
       showCodeSign: false,
     };
-  },
-  computed: {
-    hosted() {
-      return this.$store.state.hosted;
-    },
   },
   methods: {
     clearCache() {
@@ -332,25 +336,19 @@ export default {
       });
     },
     showClientsManager() {
-      this.$q
-        .dialog({
-          component: ClientsManager,
-        })
-        .onDismiss(() => this.$store.dispatch("refreshDashboard", true));
+      this.$q.dialog({
+        component: ClientsManager,
+      });
     },
     showAddClientModal() {
-      this.$q
-        .dialog({
-          component: ClientsForm,
-        })
-        .onOk(() => this.$store.dispatch("loadTree"));
+      this.$q.dialog({
+        component: ClientsForm,
+      });
     },
     showAddSiteModal() {
-      this.$q
-        .dialog({
-          component: SitesForm,
-        })
-        .onOk(() => this.$store.dispatch("loadTree"));
+      this.$q.dialog({
+        component: SitesForm,
+      });
     },
     showPermissionsManager() {
       this.$q.dialog({

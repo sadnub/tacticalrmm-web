@@ -14,7 +14,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.critical"
         :options="severityOptions"
         emit-value
@@ -27,7 +27,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.important"
         :options="severityOptions"
         emit-value
@@ -40,7 +40,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.moderate"
         :options="severityOptions"
         emit-value
@@ -53,7 +53,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.low"
         :options="severityOptions"
         emit-value
@@ -66,7 +66,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.other"
         :options="severityOptions"
         emit-value
@@ -82,7 +82,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.run_time_frequency"
         :options="frequencyOptions"
         emit-value
@@ -96,7 +96,7 @@
         v-show="winupdatepolicy.run_time_frequency !== 'inherit'"
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.run_time_day"
         :options="monthDays"
         emit-value
@@ -109,7 +109,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.run_time_hour"
         :options="timeOptions"
         emit-value
@@ -139,7 +139,7 @@
       <q-select
         dense
         class="col-5"
-        outlined
+        filled
         v-model="winupdatepolicy.reboot_after_install"
         :options="rebootOptions"
         emit-value

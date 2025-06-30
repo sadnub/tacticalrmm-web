@@ -12,7 +12,7 @@
           <div class="col-2">Username:</div>
           <div class="col-10">
             <q-input
-              outlined
+              filled
               dense
               v-model="localUser.username"
               :rules="[(val) => !!val || '*Required']"
@@ -24,7 +24,7 @@
           <div class="col-2">Password:</div>
           <div class="col-10">
             <q-input
-              outlined
+              filled
               dense
               v-model="localUser.password"
               :type="hidePassword ? 'password' : 'text'"
@@ -45,7 +45,7 @@
           <div class="col-2">Email:</div>
           <div class="col-10">
             <q-input
-              outlined
+              filled
               dense
               v-model="localUser.email"
               :rules="[(val) => isValidEmail(val) || 'Invalid email']"
@@ -56,13 +56,13 @@
         <q-card-section class="row">
           <div class="col-2">First Name:</div>
           <div class="col-10">
-            <q-input outlined dense v-model="localUser.first_name" />
+            <q-input filled dense v-model="localUser.first_name" />
           </div>
         </q-card-section>
         <q-card-section class="row">
           <div class="col-2">Last Name:</div>
           <div class="col-10">
-            <q-input outlined dense v-model="localUser.last_name" />
+            <q-input filled dense v-model="localUser.last_name" />
           </div>
         </q-card-section>
         <q-card-section class="row">
@@ -82,7 +82,7 @@
             ><q-select
               map-options
               emit-value
-              outlined
+              filled
               dense
               options-dense
               v-model="localUser.role"
@@ -171,7 +171,7 @@ async function onSubmit() {
   }
 
   // stops the dialog from closing when there is an error
-  await until(userStore.isLoading).not.toBeTruthy();
+  await until(() => userStore.isLoading).toBe(false);
   if (userStore.isError) return;
 
   onDialogOK();

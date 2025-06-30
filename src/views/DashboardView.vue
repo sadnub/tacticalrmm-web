@@ -1,14 +1,22 @@
 <template>
   <q-page>
     <FileBar />
-    <q-splitter v-model="clientTreeSplitter" :style="{ height: `${$q.screen.height - 50 - 40}px` }">
-      <template v-slot:before>
-        <div v-if="!treeReady" class="q-pa-sm q-gutter-sm text-center" style="height: 30vh">
+    <q-splitter
+      v-model="dashboardStore.dashboardSettings.clientTreeSplitter"
+      :style="{ height: `${$q.screen.height - 50 - 40}px` }"
+    >
+      <template #before>
+        <div v-if="!clientTree" class="q-pa-sm q-gutter-sm text-center" style="height: 30vh">
           <q-spinner size="40px" color="primary" />
         </div>
         <div v-else class="q-pa-sm q-gutter-sm scroll" style="height: 85vh; overflow: initial">
           <q-list dense class="rounded-borders">
-            <q-item clickable v-ripple :active="allClientsActive" @click="clearTreeSelected">
+            <q-item
+              clickable
+              v-ripple
+              :active="dashboardStore.selectedClientSiteNode === null"
+              @click="dashboardStore.selectedClientSiteNode = null"
+            >
               <q-item-section avatar>
                 <q-icon name="fas fa-home" />
               </q-item-section>
@@ -16,14 +24,14 @@
             </q-item>
             <q-tree
               ref="tree"
-              :nodes="clientsTree"
+              :nodes="clientTree"
               node-key="raw"
               no-nodes-label="No Clients"
               selected-color="primary"
-              v-model:selected="selectedTree"
-              @update:selected="$store.dispatch('refreshDashboard')"
+              no-selection-unset
+              v-model:selected="dashboardStore.selectedClientSiteNode"
             >
-              <template v-slot:default-header="props">
+              <template #default-header="props">
                 <div class="row items-center">
                   <q-icon :name="props.node.icon" :color="props.node.color" class="q-mr-sm" />
                   <div>
@@ -105,7 +113,7 @@
                         <q-item-section>Assign Alert Template</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-ripple @click="getURLActions">
+                      <q-item clickable v-ripple>
                         <q-item-section side>
                           <q-icon name="open_in_new" />
                         </q-item-section>
@@ -122,10 +130,10 @@
                               clickable
                               v-close-popup
                               @click="
-                                runURLAction(
-                                  props.node.id,
+                                urlActionStore.runURLAction(
                                   action.id,
                                   props.node.children ? 'client' : 'site',
+                                  props.node.id,
                                 )
                               "
                             >
@@ -178,653 +186,242 @@
         </div>
       </template>
 
-      <template v-slot:after>
+      <template #after>
         <q-splitter
           v-model="innerModel"
           reverse
           unit="px"
           horizontal
-          @update:model-value="$store.commit('SET_SPLITTER', innerModel)"
+          @update:model-value="dashboardStore.setTableHeight(innerModel)"
           after-class="hide-scrollbar"
           before-class="hide-scrollbar"
           emit-immediately
         >
-          <template v-slot:before>
-            <div class="row">
-              <q-tabs
-                v-model="tab"
-                dense
-                no-caps
-                inline-label
-                class="text-grey"
-                active-color="primary"
-                indicator-color="primary"
-                align="left"
-                narrow-indicator
-              >
-                <q-tab name="server" icon="fas fa-server" label="Servers" />
-                <q-tab name="workstation" icon="computer" label="Workstations" />
-                <q-tab name="mixed" label="Mixed" />
-              </q-tabs>
-              <q-space />
-              <q-input
-                v-model="search"
-                style="width: 450px"
-                label="Search"
-                dense
-                outlined
-                clearable
-                @clear="clearFilter"
-                class="q-pr-md q-pb-xs"
-              >
-                <template v-slot:prepend>
-                  <q-icon name="search" color="primary" />
-                </template>
-                <template v-slot:after>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="filter_alt"
-                    :color="isFilteringTable ? 'green' : ''"
-                  >
-                    <q-menu>
-                      <q-list dense>
-                        <q-item-label header>Filter Agent Table</q-item-label>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-checkbox v-model="filterChecksFailing" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Checks Failing</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-checkbox v-model="filterPatchesPending" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Patches Pending</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-checkbox v-model="filterActionsPending" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Actions Pending</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-checkbox v-model="filterRebootNeeded" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Reboot Needed</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item-label header>Availability</q-item-label>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-radio val="all" v-model="filterAvailability" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Show All Agents</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-radio val="online" v-model="filterAvailability" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Show Online Only</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-radio val="offline" v-model="filterAvailability" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Show Offline Only</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-radio val="overdue" v-model="filterAvailability" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Show Overdue Only</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item>
-                          <q-item-section side>
-                            <q-radio val="offline_30days" v-model="filterAvailability" />
-                          </q-item-section>
-
-                          <q-item-section>
-                            <q-item-label>Show Offline for over 30 days</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-
-                      <div class="row no-wrap q-pa-md">
-                        <div class="column">
-                          <q-btn v-close-popup label="Apply" color="primary" @click="applyFilter" />
-                        </div>
-                        <q-space />
-                        <div class="column">
-                          <q-btn label="Clear" @click="clearFilter" />
-                        </div>
-                      </div>
-                    </q-menu>
-                  </q-btn>
-                </template>
-              </q-input>
-            </div>
-            <AgentTable
-              :agents="filteredAgents"
-              :columns="columns"
-              :search="search"
-              :visibleColumns="visibleColumns"
-            />
+          <template #before>
+            <AgentTable />
           </template>
-          <template v-slot:separator>
+          <template #separator>
             <q-avatar color="primary" text-color="white" size="20px" icon="drag_indicator" />
           </template>
-          <template v-slot:after>
+          <template #after>
             <SubTableTabs />
           </template>
         </q-splitter>
       </template>
     </q-splitter>
-
-    <!-- install agent modal -->
-    <q-dialog v-model="showInstallAgentModal" @hide="closeInstallAgent">
-      <InstallAgent @close="closeInstallAgent" :sitepk="parseInt(sitePk)" />
-    </q-dialog>
   </q-page>
 </template>
 
-<script>
-import mixins from "src/mixins/mixins";
-import { openURL } from "quasar";
-import { mapState } from "vuex";
+<script lang="ts" setup>
+import { ref, computed, onMounted } from "vue";
+import { useQuasar, QTree } from "quasar";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useClientStore } from "src/core/clients/api";
+import { useSiteStore } from "src/core/clients/api";
+import { useURLActionStore } from "src/core/settings/api";
+import axios from "axios";
+
+// import ui
 import FileBar from "src/components/FileBar.vue";
-import AgentTable from "src/components/AgentTable.vue";
-import SubTableTabs from "src/components/SubTableTabs.vue";
+import AgentTable from "src/core/agents/components/AgentTable.vue";
+import SubTableTabs from "src/core/dashboard/components/SubTableTabs.vue";
 import PolicyAdd from "src/components/automation/modals/PolicyAdd.vue";
-import ClientsForm from "src/components/clients/ClientsForm.vue";
-import SitesForm from "src/components/clients/SitesForm.vue";
-import DeleteClient from "src/components/clients/DeleteClient.vue";
-import InstallAgent from "src/components/modals/agents/InstallAgent.vue";
+import ClientsForm from "src/core/clients/components/ClientsForm.vue";
+import SitesForm from "src/core/clients/components/SitesForm.vue";
+import DeleteClient from "src/core/clients/components/DeleteClient.vue";
+import InstallAgent from "src/core/agents/components/InstallAgent.vue";
 import AlertTemplateAdd from "src/components/modals/alerts/AlertTemplateAdd.vue";
 import IntegrationsContextMenu from "src/components/ui/IntegrationsContextMenu.vue";
 
-import { removeClient, removeSite } from "src/api/clients";
+//types
+import { notifySuccess, notifyWarning } from "src/utils/notify";
+import type { ClientTreeNode } from "src/core/dashboard/types";
 
-export default {
-  name: "DashboardView",
-  components: {
-    FileBar,
-    AgentTable,
-    SubTableTabs,
-    InstallAgent,
-    IntegrationsContextMenu,
-  },
-  // allow child components to refresh table
-  provide() {
-    return {
-      refreshDashboard: (clearTreeSelected, clearSubTable) => {
-        if (clearSubTable) this.$store.commit("destroySubTable");
+// setup stores
+const clientStore = useClientStore();
+const siteStore = useSiteStore();
+const dashboardStore = useDashboardStore();
+const urlActionStore = useURLActionStore();
 
-        this.$store.dispatch("refreshDashboard", clearTreeSelected);
-      },
-    };
-  },
-  mixins: [mixins],
-  data() {
-    return {
-      showInstallAgentModal: false,
-      sitePk: null,
-      innerModel: (this.$q.screen.height - 82) / 2,
-      search: this.$route.query.search ? this.$route.query.search : "",
-      filterTextLength: 0,
-      filterAvailability: "all",
-      filterPatchesPending: false,
-      filterActionsPending: false,
-      filterChecksFailing: false,
-      filterRebootNeeded: false,
-      urlActions: [],
-      columns: [
-        {
-          name: "smsalert",
-          align: "left",
-        },
-        {
-          name: "emailalert",
-          align: "left",
-        },
-        {
-          name: "dashboardalert",
-          align: "left",
-        },
-        {
-          name: "plat",
-          label: "",
-          field: "plat",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "mon-type",
-          label: "",
-          field: "monitoring_type",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "checks-status",
-          align: "left",
-          field: "checks",
-          sortable: true,
-          sort: (a, b) =>
-            parseInt(b.failing) - parseInt(a.failing) ||
-            parseInt(b.warning) - parseInt(a.warning) ||
-            parseInt(b.info) - parseInt(a.info),
-        },
-        {
-          name: "client_name",
-          label: "Client",
-          field: "client_name",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "site_name",
-          label: "Site",
-          field: "site_name",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "hostname",
-          label: "Hostname",
-          field: "hostname",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "description",
-          label: "Description",
-          field: "description",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "user",
-          label: "User",
-          field: "logged_username",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "italic",
-          field: "italic",
-        },
-        {
-          name: "patchespending",
-          field: "has_patches_pending",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "pendingactions",
-          field: "pending_actions_count",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "needs_reboot",
-          field: "needs_reboot",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "agentstatus",
-          field: "status",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "last_seen",
-          label: "Last Response",
-          field: "last_seen",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "boot_time",
-          label: "Boot Time",
-          field: "boot_time",
-          sortable: true,
-          align: "left",
-        },
-      ],
-      visibleColumns: [
-        "smsalert",
-        "plat",
-        "mon-type",
-        "emailalert",
-        "dashboardalert",
-        "checks-status",
-        "client_name",
-        "site_name",
-        "hostname",
-        "description",
-        "user",
-        "patchespending",
-        "pendingactions",
-        "agentstatus",
-        "needs_reboot",
-        "last_seen",
-        "boot_time",
-      ],
-    };
-  },
-  watch: {
-    search(newVal) {
-      if (newVal === "") this.clearFilter();
-      else if (newVal.length < this.filterTextLength) this.clearFilter();
-    },
-    selectedTree() {
-      if (this.clearSearchWhenSwitching) this.clearFilter();
-    },
-    tab() {
-      this.$store.dispatch("loadAgents");
-    },
-  },
-  methods: {
-    getTree() {
-      this.$store.dispatch("loadTree");
-    },
-    clearTreeSelected() {
-      if (this.clearSearchWhenSwitching) this.clearFilter();
-      this.$store.dispatch("refreshDashboard", true);
-    },
-    showPolicyAdd(node) {
-      this.$q
-        .dialog({
-          component: PolicyAdd,
-          componentProps: {
-            type: node.children ? "client" : "site",
-            object: node.children ? node.client : node.site,
-          },
-        })
-        .onOk(() => this.$store.dispatch("loadTree"));
-    },
-    showAddSiteModal(node) {
-      this.$q
-        .dialog({
-          component: SitesForm,
-          componentProps: {
-            client: node.id,
-          },
-        })
-        .onOk(() => this.$store.dispatch("loadTree"));
-    },
-    showEditModal(node) {
-      let props = {};
-      if (node.children) {
-        props.client = { id: node.id, name: node.label };
-      } else {
-        props.site = { id: node.id, name: node.label, client: node.client };
-      }
+const $q = useQuasar();
 
-      this.$q
-        .dialog({
-          component: node.children ? ClientsForm : SitesForm,
-          componentProps: node.children ? { client: node.client } : { site: node.site },
-        })
-        .onOk(() => this.$store.dispatch("loadTree"));
-    },
-    showDeleteModal(node) {
-      if (
-        (node.children && node.client.agent_count > 0) ||
-        (!node.children && node.site.agent_count > 0)
-      ) {
-        this.$q
-          .dialog({
-            component: DeleteClient,
-            componentProps: {
-              object: node.children ? node.client : node.site,
-              type: node.children ? "client" : "site",
-            },
-          })
-          .onOk(this.clearTreeSelected);
-      } else {
-        this.$q
-          .dialog({
-            title: "Are you sure?",
-            message: `Delete ${node.children ? "client" : "site"}: ${node.label}.`,
-            cancel: true,
-            ok: { label: "Delete", color: "negative" },
-          })
-          .onOk(async () => {
-            this.$q.loading.show();
-            try {
-              const result = node.children
-                ? await removeClient(node.id)
-                : await removeSite(node.id);
-              this.notifySuccess(result);
-              this.clearTreeSelected();
-            } catch (e) {
-              console.error(e);
-            }
-            this.$q.loading.hide();
-          });
-      }
-    },
-    showInstallAgent(node) {
-      this.sitePk = node.id;
-      this.showInstallAgentModal = true;
-    },
-    closeInstallAgent() {
-      this.showInstallAgentModal = false;
-      this.sitePk = null;
-    },
-    showAlertTemplateAdd(node) {
-      this.$q
-        .dialog({
-          component: AlertTemplateAdd,
-          componentProps: {
-            type: node.children ? "client" : "site",
-            object: node.children ? node.client : node.site,
-          },
-        })
-        .onOk(() => this.$store.dispatch("refreshDashboard"));
-    },
-    runChecks(node) {
-      const target = node.children ? "client" : "site";
-      this.$axios
-        .post(`/checks/${target}/${node.id}/csbulkrun/`)
-        .then((r) => {
-          this.notifySuccess(r.data);
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    },
-    showToggleMaintenance(node) {
-      let data = {
-        id: node.id,
-        type: node.raw.split("|")[0],
-        action: node.color === "green" ? false : true,
+const innerModel = ref(($q.screen.height - 82) / 2);
+
+const clientTree = computed((): ClientTreeNode[] => {
+  const output: ClientTreeNode[] = [];
+
+  for (const client of clientStore.clients) {
+    const childSites: ClientTreeNode[] = [];
+
+    for (const site of client.sites) {
+      const siteNode: ClientTreeNode = {
+        label: site.name,
+        id: site.id,
+        raw: `site|${site.id}|${site.name}`,
+        header: "generic",
+        icon: "apartment",
+        selectable: true,
+        site: site,
       };
 
-      this.$axios
-        .post("/agents/maintenance/bulk/", data)
-        .then((r) => {
-          this.notifySuccess(r.data);
-          this.$store.dispatch("refreshDashboard");
-          this.$store.commit("setRefreshSummaryTab", true);
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    },
-    clearFilter() {
-      this.filterTextLength = 0;
-      this.filterPatchesPending = false;
-      this.filterRebootNeeded = false;
-      this.filterChecksFailing = false;
-      this.filterActionsPending = false;
-      this.filterAvailability = "all";
-      this.search = "";
-    },
-    applyFilter() {
-      // clear search if availability changes to all
-      if (
-        this.filterAvailability === "all" &&
-        (this.search.includes("is:online") ||
-          this.search.includes("is:offline") ||
-          this.search.includes("is:expired") ||
-          this.search.includes("is:overdue"))
-      )
-        this.clearFilter();
-
-      // don't apply filter if nothing is being filtered
-      if (!this.isFilteringTable) return;
-
-      let filterText = "";
-
-      if (this.filterPatchesPending) {
-        filterText += "is:patchespending ";
+      if (site.maintenance_mode) {
+        siteNode.color = "green";
+      } else if (site.failing_checks.error) {
+        siteNode.color = "negative";
+      } else if (site.failing_checks.warning) {
+        siteNode.color = "warning";
       }
 
-      if (this.filterActionsPending) {
-        filterText += "is:actionspending ";
-      }
+      childSites.push(siteNode);
+    }
 
-      if (this.filterChecksFailing) {
-        filterText += "is:checksfailing ";
-      }
+    const clientNode: ClientTreeNode = {
+      label: client.name,
+      id: client.id,
+      raw: `client|${client.id}|${client.name}`,
+      header: "root",
+      icon: "business",
+      children: childSites,
+      client: client,
+    };
 
-      if (this.filterRebootNeeded) {
-        filterText += "is:rebootneeded ";
-      }
+    if (client.maintenance_mode) {
+      clientNode.color = "green";
+    } else if (client.failing_checks.error) {
+      clientNode.color = "negative";
+    } else if (client.failing_checks.warning) {
+      clientNode.color = "warning";
+    }
 
-      if (this.filterAvailability !== "all") {
-        if (this.filterAvailability === "online") {
-          filterText += "is:online ";
-        } else if (this.filterAvailability === "offline") {
-          filterText += "is:offline ";
-        } else if (this.filterAvailability === "offline_30days") {
-          filterText += "is:expired ";
-        } else if (this.filterAvailability === "overdue") {
-          filterText += "is:overdue ";
-        }
-      }
+    output.push(clientNode);
+  }
 
-      this.search = filterText;
-      this.filterTextLength = filterText.length - 1;
-    },
-    getURLActions() {
-      this.$axios.get("/core/urlaction/").then((r) => {
-        this.urlActions = r.data
-          .filter((action) => action.action_type === "web")
-          .sort((a, b) => a.name.localeCompare(b.name));
-        if (this.urlActions.length === 0) {
-          this.notifyWarning(
-            "No URL Actions configured. Go to Settings > Global Settings > URL Actions",
-          );
-        }
-      });
-    },
-    runURLAction(id, action, model) {
-      const data = {
-        [model]: id,
-        action: action,
-      };
-      this.$axios.patch("/core/urlaction/run/", data).then((r) => {
-        openURL(r.data);
-      });
-    },
-  },
-  computed: {
-    ...mapState({
-      clientsTree: (state) => state.tree,
-      treeReady: (state) => state.treeReady,
-      clearSearchWhenSwitching: (state) => state.clearSearchWhenSwitching,
-      agents: (state) => state.agents,
-    }),
-    clientTreeSplitter: {
-      get() {
-        return this.$store.state.clientTreeSplitter;
-      },
-      set(newVal) {
-        this.$store.dispatch("setClientTreeSplitter", newVal);
-      },
-    },
-    tab: {
-      get() {
-        return this.$store.state.defaultAgentTblTab;
-      },
-      set(newVal) {
-        this.$store.commit("SET_DEFAULT_AGENT_TBL_TAB", newVal);
-        this.$store.commit("destroySubTable");
-      },
-    },
-    selectedTree: {
-      get() {
-        return this.$store.state.selectedTree;
-      },
-      set(newVal) {
-        this.$store.commit("setSelectedTree", newVal);
-        this.$store.commit("destroySubTable");
-      },
-    },
-    allClientsActive() {
-      return this.selectedTree === "";
-    },
-    filteredAgents() {
-      if (this.tab === "mixed") return this.agents;
-      else return this.agents.filter((k) => k.monitoring_type === this.tab);
-    },
-    isFilteringTable() {
-      return (
-        this.filterPatchesPending ||
-        this.filterActionsPending ||
-        this.filterChecksFailing ||
-        this.filterRebootNeeded ||
-        this.filterAvailability !== "all"
-      );
-    },
-  },
-  mounted() {
-    this.getTree();
+  const sorted = output.sort((a, b) => a.label.localeCompare(b.label));
 
-    // set initial value for agent table and agent tabs
-    this.$store.commit("SET_SPLITTER", this.innerModel);
-  },
-};
+  if (dashboardStore.dashboardSettings.clientTreeSort === "alphafail") {
+    const failing = sorted.filter((i) => i.color === "negative" || i.color === "warning");
+    const ok = sorted.filter((i) => i.color !== "negative" && i.color !== "warning");
+    return [...failing, ...ok];
+  } else {
+    return sorted;
+  }
+});
+
+function showPolicyAdd(node: ClientTreeNode) {
+  $q.dialog({
+    component: PolicyAdd,
+    componentProps: {
+      type: node.children ? "client" : "site",
+      object: node.children ? node.client : node.site,
+    },
+  });
+}
+
+function showAddSiteModal(node: ClientTreeNode) {
+  $q.dialog({
+    component: SitesForm,
+    componentProps: { client: node.id },
+  });
+}
+
+function showEditModal(node: ClientTreeNode) {
+  $q.dialog({
+    component: node.children ? ClientsForm : SitesForm,
+    componentProps: node.children
+      ? { client: node.client }
+      : { site: node.site, client: node.site?.client },
+  });
+}
+
+function showDeleteModal(node: ClientTreeNode) {
+  if (
+    (node.children && node.client?.agent_count && node.client?.agent_count > 0) ||
+    (!node.children && node.site?.agent_count && node.site?.agent_count > 0)
+  ) {
+    $q.dialog({
+      component: DeleteClient,
+      componentProps: {
+        object: node.children ? node.client : node.site,
+        type: node.children ? "client" : "site",
+      },
+    }).onOk(() => (dashboardStore.selectedClientSiteNode = null));
+  } else {
+    $q.dialog({
+      title: "Are you sure?",
+      message: `Delete ${node.children ? "client" : "site"}: ${node.label}.`,
+      cancel: true,
+      ok: { label: "Delete", color: "negative" },
+    }).onOk(() => {
+      if (node.children) clientStore.removeClient(node.id);
+      else siteStore.removeSite(node.id);
+      dashboardStore.selectedClientSiteNode = null;
+    });
+  }
+}
+
+function showInstallAgent(node: ClientTreeNode) {
+  $q.dialog({
+    component: InstallAgent,
+    componentProps: {
+      sitePk: node.id,
+    },
+  });
+}
+
+function showAlertTemplateAdd(node: ClientTreeNode) {
+  $q.dialog({
+    component: AlertTemplateAdd,
+    componentProps: {
+      type: node.children ? "client" : "site",
+      object: node.children ? node.client : node.site,
+    },
+  });
+}
+
+function runChecks(node: ClientTreeNode) {
+  const target = node.children ? "client" : "site";
+  axios
+    .post(`/checks/${target}/${node.id}/csbulkrun/`)
+    .then((r) => {
+      notifySuccess(r.data);
+    })
+    .catch((e) => console.error(e));
+}
+
+function showToggleMaintenance(node: ClientTreeNode) {
+  const data = {
+    id: node.id,
+    type: node.raw.split("|")[0],
+    action: node.color !== "green",
+  };
+
+  axios
+    .post("/agents/maintenance/bulk/", data)
+    .then((r) => {
+      notifySuccess(r.data);
+      dashboardStore.refreshDashboard();
+    })
+    .catch((e) => console.error(e));
+}
+
+const urlActions = computed(() => {
+  const actions = urlActionStore.urlActions
+    .filter((action) => action.action_type === "web")
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (actions.length === 0) {
+    notifyWarning("No URL Actions configured. Go to Settings > Global Settings > URL Actions");
+    return [];
+  } else {
+    return actions;
+  }
+});
+
+onMounted(() => {
+  clientStore.getClients();
+  urlActionStore.getURLActions();
+  dashboardStore.setTableHeight(innerModel.value);
+});
 </script>
 
 <style>

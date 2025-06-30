@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="min-width: 800px">
       <q-splitter v-model="splitterModel">
-        <template v-slot:before>
+        <template #before>
           <q-tabs dense v-model="tab" vertical class="text-primary">
             <q-tab name="general" label="General" />
             <q-tab name="customfields" label="Custom Fields" />
@@ -10,7 +10,7 @@
             <q-tab name="policies" label="Automation Policies" />
           </q-tabs>
         </template>
-        <template v-slot:after>
+        <template #after>
           <q-form @submit.prevent="editAgent">
             <q-card-section class="row items-center">
               <div class="text-h6">Edit {{ agent.hostname }}</div>
@@ -33,8 +33,8 @@
                       class="col-8"
                       v-model="agent.site"
                       :options="siteOptions"
-                      outlined
-                      mapOptions
+                      filled
+                      map-options
                       filterable
                     />
                   </q-card-section>
@@ -44,7 +44,7 @@
                     <q-select
                       dense
                       options-dense
-                      outlined
+                      filled
                       v-model="agent.monitoring_type"
                       :options="monTypes"
                       class="col-8"
@@ -53,14 +53,14 @@
                   <q-card-section class="row">
                     <div class="col-2">Description:</div>
                     <div class="col-2"></div>
-                    <q-input outlined dense v-model="agent.description" class="col-8" />
+                    <q-input filled dense v-model="agent.description" class="col-8" />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-2">Timezone:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
                       filterable
-                      outlined
+                      filled
                       dense
                       options-dense
                       v-model="timezone"
@@ -387,7 +387,7 @@ export default {
           this.original_tz = r.data.time_zone;
         }
 
-        for (let field of this.customFields) {
+        for (const field of this.customFields) {
           const value = r.data.custom_fields.find((value) => value.field === field.id);
 
           if (field.type === "multiple") {
@@ -486,7 +486,7 @@ export default {
       if (array.length === 0) return "not set";
 
       let result = "";
-      for (let day in array) {
+      for (const day in array) {
         if (day === 1) result += "Mon, ";
         else if (day === 2) result += "Tue, ";
         else if (day === 3) result += "Wed, ";

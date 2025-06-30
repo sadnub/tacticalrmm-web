@@ -34,7 +34,7 @@ const { data, send, close } = useCliWSConnection();
 onMounted(() => {
   setupXTerm();
   useResizeObserver(xtermContainer, () => {
-    resizeWindow();
+    void resizeWindow();
   });
 });
 
