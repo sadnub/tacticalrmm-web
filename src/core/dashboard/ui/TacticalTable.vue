@@ -69,7 +69,7 @@ const defaultNames = computed(() =>
 );
 
 const storedNames = props.storageKey
-  ? useStorage<string[]>(`${props.storageKey}columns`, [])
+  ? useStorage<string[]>(`${props.storageKey}-columns`, [])
   : ref<string[]>([]);
 
 const visibleColumns = computed<string[]>({

@@ -4,23 +4,20 @@
     Only supported for Windows agents at this time
   </div>
   <div v-else>
-    <q-table
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
-      class="tabs-tbl-sticky"
+    <tactical-table
+      v-model:pagination="pagination"
       dense
       :rows="agentStore.agentSoftware"
       :columns="columns"
       :filter="filter"
       :style="{ 'max-height': `${tabHeight}px` }"
-      v-model:pagination="pagination"
       binary-state-sort
       row-key="id"
       virtual-scroll
       :rows-per-page-options="[0]"
       :loading="agentStore.isLoading"
+      column-select
+      storage-key="agent-software-tab"
     >
       <template #loading>
         <q-inner-loading showing color="primary" />
@@ -32,11 +29,11 @@
           dense
           flat
           push
+          icon="refresh"
           @click="
             agentStore.selectedAgentId &&
               agentStore.refreshAgentSoftware(agentStore.selectedAgentId)
           "
-          icon="refresh"
         />
         <q-btn
           icon="add"
@@ -57,7 +54,7 @@
         </q-input>
         <export-table-btn :data="agentStore.agentSoftware" :columns="columns" />
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -71,6 +68,7 @@ import { useDashboardStore } from "src/stores/dashboard";
 // ui imports
 import InstallSoftware from "src/core/agents/components/InstallSoftware.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // static data
 const columns: QTableProps["columns"] = [

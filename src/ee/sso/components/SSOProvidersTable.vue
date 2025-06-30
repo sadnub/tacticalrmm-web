@@ -15,8 +15,8 @@ For details, see: https://license.tacticalrmm.com/ee
         icon="fas fa-plus"
         text-color="black"
         label="Add OIDC Provider"
-        @click="addSSOProvider"
         :disable="!ssoSettings.sso_enabled"
+        @click="addSSOProvider"
       >
         <q-tooltip v-if="!ssoSettings.sso_enabled" class="text-caption"
           >Enable SSO in the settings to allow adding a provider.</q-tooltip
@@ -39,7 +39,7 @@ For details, see: https://license.tacticalrmm.com/ee
       :loading="loading"
     >
       <template #top>
-        <q-btn @click="openSSOSettings" label="SSO Settings" no-caps color="primary" size="md" />
+        <q-btn label="SSO Settings" no-caps color="primary" size="md" @click="openSSOSettings" />
       </template>
       <!-- body slots -->
       <template #body="props">
@@ -47,13 +47,13 @@ For details, see: https://license.tacticalrmm.com/ee
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
-              <q-item clickable v-close-popup @click="editSSOProvider(props.row)">
+              <q-item v-close-popup clickable @click="editSSOProvider(props.row)">
                 <q-item-section side>
                   <q-icon name="edit" />
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteSSOProvider(props.row)">
+              <q-item v-close-popup clickable @click="deleteSSOProvider(props.row)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -63,7 +63,7 @@ For details, see: https://license.tacticalrmm.com/ee
               <q-separator></q-separator>
 
               <!-- callback url -->
-              <q-item clickable v-close-popup @click="getCallbackURL(props.row.callback_url)">
+              <q-item v-close-popup clickable @click="getCallbackURL(props.row.callback_url)">
                 <q-item-section side>
                   <q-icon name="description" />
                 </q-item-section>
@@ -72,8 +72,8 @@ For details, see: https://license.tacticalrmm.com/ee
 
               <!-- javascript origin url (used by google oauth) -->
               <q-item
-                clickable
                 v-close-popup
+                clickable
                 @click="getCallbackURL(props.row.javascript_origin_url)"
               >
                 <q-item-section side>
@@ -84,7 +84,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
               <q-separator></q-separator>
 
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup clickable>
                 <q-item-section>Close</q-item-section>
               </q-item>
             </q-list>

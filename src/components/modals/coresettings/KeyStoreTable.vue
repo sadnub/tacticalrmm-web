@@ -23,10 +23,10 @@
     </div>
     <q-separator />
     <q-table
+      v-model:pagination="pagination"
       dense
       :rows="keystore"
       :columns="columns"
-      v-model:pagination="pagination"
       row-key="id"
       binary-state-sort
       hide-pagination
@@ -40,13 +40,13 @@
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
-              <q-item clickable v-close-popup @click="editKey(props.row)">
+              <q-item v-close-popup clickable @click="editKey(props.row)">
                 <q-item-section side>
                   <q-icon name="edit" />
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteKey(props.row)">
+              <q-item v-close-popup clickable @click="deleteKey(props.row)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -55,7 +55,7 @@
 
               <q-separator></q-separator>
 
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup clickable>
                 <q-item-section>Close</q-item-section>
               </q-item>
             </q-list>
@@ -107,6 +107,9 @@ export default {
         },
       ],
     };
+  },
+  mounted() {
+    this.getKeyStore();
   },
   methods: {
     getKeyStore() {
@@ -164,9 +167,6 @@ export default {
             });
         });
     },
-  },
-  mounted() {
-    this.getKeyStore();
   },
 };
 </script>

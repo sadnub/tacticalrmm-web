@@ -112,9 +112,9 @@ For details, see: https://license.tacticalrmm.com/ee
               color="dark"
               class="absolute"
               style="top: 15px; right: -17px"
-              @click="drawerMiniState = true"
               dense
               round
+              @click="drawerMiniState = true"
             />
             <template #mini>
               <div class="q-pt-sm">
@@ -122,9 +122,9 @@ For details, see: https://license.tacticalrmm.com/ee
                   class=""
                   icon="chevron_right"
                   color="dark"
-                  @click="drawerMiniState = false"
                   dense
                   round
+                  @click="drawerMiniState = false"
                 />
               </div>
             </template>
@@ -198,8 +198,8 @@ For details, see: https://license.tacticalrmm.com/ee
                   <div v-if="splitter > 8" class="q-pl-xs text-subtitle">Variables</div>
                 </q-bar>
                 <div
-                  ref="variablesDiv"
                   v-show="splitter > 8"
+                  ref="variablesDiv"
                   :style="{ height: `${$q.screen.height - 168}px` }"
                 ></div>
               </template>
@@ -226,7 +226,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
       <q-card-actions v-if="tab !== 'preview'">
         <q-toggle v-if="reportTemplate" v-model="autoSave" label="Auto-save" dense />
-        <span class="q-pl-sm" v-if="showSaved">Template Saved!</span>
+        <span v-if="showSaved" class="q-pl-sm">Template Saved!</span>
         <q-space />
         <q-btn dense flat label="Cancel" @click="openClosePrompt" />
         <q-btn

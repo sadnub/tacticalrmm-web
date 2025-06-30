@@ -4,7 +4,7 @@
       <q-bar>
         Reset Agent Patch Policy
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -20,30 +20,30 @@
       <q-form @submit="submit">
         <q-card-section v-if="target == 'client'">
           <tactical-dropdown
+            v-model="state.client"
             :rules="[(val) => !!val || '*Required']"
             label="Clients"
             map-options
             filterable
             clearable
             filled
-            v-model="state.client"
             :options="clientOptions"
           />
         </q-card-section>
         <q-card-section v-if="target == 'site'">
           <tactical-dropdown
+            v-model="state.site"
             :rules="[(val) => !!val || '*Required']"
             label="Sites"
             map-options
             filterable
             clearable
             filled
-            v-model="state.site"
             :options="siteOptions"
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat push dense label="Cancel" v-close-popup />
+          <q-btn v-close-popup flat push dense label="Cancel" />
           <q-btn
             :loading="loading"
             flat

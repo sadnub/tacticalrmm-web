@@ -4,7 +4,7 @@
       <q-bar>
         Assigned to {{ template.name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -67,10 +67,10 @@
 <script>
 export default {
   name: "AlertTemplateRelated",
-  emits: ["hide", "ok", "cancel"],
   props: {
     template: !Object,
   },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       tab: "policies",
@@ -84,17 +84,6 @@ export default {
       },
     };
   },
-  methods: {
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-  },
   mounted() {
     this.$q.loading.show();
 
@@ -107,6 +96,17 @@ export default {
       .catch(() => {
         this.$q.loading.hide();
       });
+  },
+  methods: {
+    show() {
+      this.$refs.dialog.show();
+    },
+    hide() {
+      this.$refs.dialog.hide();
+    },
+    onHide() {
+      this.$emit("hide");
+    },
   },
 };
 </script>

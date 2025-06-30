@@ -5,12 +5,12 @@ For details, see: https://license.tacticalrmm.com/ee
 -->
 
 <template>
-  <q-dialog persistent ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 35vw; max-width: 35vw">
       <q-bar>
         {{ props.provider ? "Edit OIDC Provider" : "Add OIDC Provider" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -18,12 +18,12 @@ For details, see: https://license.tacticalrmm.com/ee
       <!-- name -->
       <q-card-section>
         <q-input
+          v-model="localProvider.name"
           :readonly="!!props.provider"
           :disable="!!props.provider"
           label="Provider Name"
           filled
           dense
-          v-model="localProvider.name"
           :rules="[
             (val) => !!val || '*Required',
             (val) =>
@@ -37,10 +37,10 @@ For details, see: https://license.tacticalrmm.com/ee
       <!-- url -->
       <q-card-section>
         <q-input
+          v-model="localProvider.server_url"
           label="Issuer URL"
           filled
           dense
-          v-model="localProvider.server_url"
           :rules="[(val) => !!val || '*Required']"
           hint="The OpenID Connect Issuer URL provided by the SSO provider. This is typically the base URL where the provider hosts their OIDC configuration."
         />
@@ -49,10 +49,10 @@ For details, see: https://license.tacticalrmm.com/ee
       <!-- client id -->
       <q-card-section>
         <q-input
+          v-model="localProvider.client_id"
           label="Client ID"
           filled
           dense
-          v-model="localProvider.client_id"
           :rules="[(val) => !!val || '*Required']"
         />
       </q-card-section>
@@ -79,19 +79,19 @@ For details, see: https://license.tacticalrmm.com/ee
 
       <q-card-section>
         <tactical-dropdown
+          v-model="localProvider.role"
           label="Default User Role"
           :options="roleOptions"
           filled
           dense
           clearable
           map-options
-          v-model="localProvider.role"
           hint="The role assigned to users upon first sign-in through this provider."
         />
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat label="Cancel" />
         <q-btn flat label="Submit" color="primary" :loading="loading" @click="submit" />
       </q-card-actions>
     </q-card>

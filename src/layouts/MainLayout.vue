@@ -33,13 +33,13 @@
       </q-banner>
       <q-toolbar>
         <q-btn
+          v-if="$route.name === 'Dashboard'"
           dense
           flat
-          @click="dashboardStore.refreshDashboard({ force: true })"
           icon="refresh"
-          v-if="$route.name === 'Dashboard'"
+          @click="dashboardStore.refreshDashboard({ force: true })"
         />
-        <q-btn v-else dense flat @click="$router.push({ name: 'Dashboard' })" icon="dashboard">
+        <q-btn v-else dense flat icon="dashboard" @click="$router.push({ name: 'Dashboard' })">
           <q-tooltip>Back to Dashboard</q-tooltip>
         </q-btn>
         <q-toolbar-title>
@@ -78,9 +78,9 @@
           label=">_"
           dense
           flat
-          @click="openWebTerm"
           class="q-mr-sm"
           style="font-size: 16px"
+          @click="openWebTerm"
         />
         <!-- Devices Chip -->
         <q-chip class="cursor-pointer">
@@ -135,7 +135,7 @@
 
         <q-btn-dropdown flat no-caps stretch :label="displayName || ''">
           <q-list>
-            <q-item clickable v-ripple @click="showUserPreferences" v-close-popup>
+            <q-item v-ripple v-close-popup clickable @click="showUserPreferences">
               <q-item-section>
                 <q-item-label>Preferences</q-item-label>
               </q-item-section>
@@ -148,12 +148,12 @@
 
               <q-menu anchor="top end" self="top start">
                 <q-list>
-                  <q-item clickable v-ripple @click="resetPassword" v-close-popup>
+                  <q-item v-ripple v-close-popup clickable @click="resetPassword">
                     <q-item-section>
                       <q-item-label>Reset Password</q-item-label>
                     </q-item-section>
                   </q-item>
-                  <q-item clickable v-ripple @click="reset2FA" v-close-popup>
+                  <q-item v-ripple v-close-popup clickable @click="reset2FA">
                     <q-item-section>
                       <q-item-label>Reset 2FA</q-item-label>
                     </q-item-section>

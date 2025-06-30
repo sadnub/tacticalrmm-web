@@ -4,19 +4,6 @@
   </div>
 </template>
 
-<style>
-.full-page-terminal {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.xterm-container {
-  flex-grow: 1;
-  overflow: hidden;
-}
-</style>
-
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { Terminal } from "@xterm/xterm";
@@ -86,3 +73,16 @@ watch(data, (newValue) => {
   }
 });
 </script>
+
+<style>
+.full-page-terminal {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.xterm-container {
+  flex-grow: 1;
+  overflow: hidden;
+}
+</style>

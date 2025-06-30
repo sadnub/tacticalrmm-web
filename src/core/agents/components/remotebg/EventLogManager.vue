@@ -6,10 +6,10 @@
     <div class="row q-pt-sm q-pl-sm">
       <div class="col-2">
         <q-select
+          v-model="days"
           dense
           options-dense
           filled
-          v-model="days"
           :options="lastDaysOptions"
           :label="showDays"
         />
@@ -21,13 +21,8 @@
         >
       </div>
     </div>
-    <q-table
+    <tactical-table
       dense
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
-      class="remote-bg-tbl-sticky"
       :rows="agentStore.agentEventLog"
       :columns="columns"
       :style="{ 'max-height': `${$q.screen.height - 85}px` }"
@@ -38,14 +33,16 @@
       virtual-scroll
       :rows-per-page-options="[0]"
       :loading="agentStore.isLoading"
+      column-select
+      storage-key="eventlog-manager"
     >
       <template #top>
         <q-btn
           dense
           flat
           push
-          @click="agentStore.getAgentEventLog(props.agentId, logType, days)"
           icon="refresh"
+          @click="agentStore.getAgentEventLog(props.agentId, logType, days)"
         />
         <q-space />
         <q-radio
@@ -84,7 +81,7 @@
           </q-td>
         </q-tr>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -98,6 +95,7 @@ import { truncateText } from "src/utils/format";
 // ui imports
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // static data
 const columns: QTableProps["columns"] = [

@@ -4,7 +4,7 @@
       <q-bar>
         {{ title }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -12,6 +12,7 @@
         <!-- model select -->
         <q-card-section>
           <q-select
+            v-model="localField.model"
             label="Target"
             :options="modelOptions"
             map-options
@@ -19,17 +20,16 @@
             filled
             dense
             :disable="editing"
-            v-model="localField.model"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
         <!-- name -->
         <q-card-section>
           <q-input
+            v-model="localField.name"
             label="Name"
             filled
             dense
-            v-model="localField.name"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
@@ -38,23 +38,23 @@
           <q-select
             label="Field Type"
             :options="typeOptions"
-            @update:model-value="clear"
             map-options
+            v-model="localField.type"
             emit-value
             filled
             dense
             :disable="editing"
-            v-model="localField.type"
             :rules="[(val) => !!val || '*Required']"
+            @update:model-value="clear"
           />
         </q-card-section>
         <!-- input options select for single and multiple input type -->
         <q-card-section v-if="localField.type === 'single' || localField.type == 'multiple'">
           <q-select
+            v-model="localField.options"
             dense
             label="Input Options (press Enter after typing each option)"
             filled
-            v-model="localField.options"
             use-input
             use-chips
             multiple
@@ -72,12 +72,12 @@
           <!-- For datetime field -->
           <q-input
             v-if="localField.type === 'datetime'"
+            v-model="localField.default_value_string"
             type="datetime-local"
             dense
             label="Default Value"
             stack-label
             filled
-            v-model="localField.default_value_string"
             :rules="defaultValueRules"
             reactive-rules
           />
@@ -85,19 +85,19 @@
           <!-- For Checkbox -->
           <q-toggle
             v-else-if="localField.type == 'checkbox'"
-            label="Default Value"
             v-model="localField.default_value_bool"
+            label="Default Value"
             color="green"
           />
 
           <!-- Dropdown Single -->
           <q-select
             v-else-if="localField.type === 'single'"
+            v-model="localField.default_value_string"
             label="Default Value"
             :options="localField.options"
             filled
             dense
-            v-model="localField.default_value_string"
             :rules="defaultValueRules"
             reactive-rules
           />
@@ -105,12 +105,12 @@
           <!-- Dropdown Multiple -->
           <q-select
             v-else-if="localField.type === 'multiple'"
+            v-model="localField.default_values_multiple"
             label="Default Value(s)"
             :options="localField.options"
             filled
             dense
             multiple
-            v-model="localField.default_values_multiple"
             :rules="defaultValueRules"
             reactive-rules
           />
@@ -118,11 +118,11 @@
           <!-- For everything else -->
           <q-input
             v-else
+            v-model="localField.default_value_string"
             label="Default Value"
             :type="localField.type === 'text' ? 'text' : 'number'"
             filled
             dense
-            v-model="localField.default_value_string"
             :rules="defaultValueRules"
             reactive-rules
             autogrow
@@ -131,19 +131,19 @@
         <q-card-section>
           <q-toggle
             v-if="localField.type !== 'checkbox'"
-            label="Required"
             v-model="localField.required"
+            label="Required"
             color="green"
           />
-          <q-toggle label="Hide in Dashboard" v-model="localField.hide_in_ui" color="green" />
+          <q-toggle v-model="localField.hide_in_ui" label="Hide in Dashboard" color="green" />
           <q-toggle
-            label="Hide in Summary Tab"
             v-model="localField.hide_in_summary"
+            label="Hide in Summary Tab"
             color="green"
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup flat label="Cancel" />
           <q-btn flat label="Submit" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -156,9 +156,9 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "CustomFieldsForm",
-  emits: ["hide", "ok", "cancel"],
   mixins: [mixins],
   props: { field: Object, model: String },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       localField: {
@@ -202,6 +202,13 @@ export default {
         return [];
       }
     },
+  },
+  mounted() {
+    // If pk prop is set that means we are editing
+    if (this.field) Object.assign(this.localField, this.field);
+
+    // Set model to current tab
+    if (this.model) this.localField.model = this.model;
   },
   methods: {
     submit() {
@@ -255,13 +262,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  mounted() {
-    // If pk prop is set that means we are editing
-    if (this.field) Object.assign(this.localField, this.field);
-
-    // Set model to current tab
-    if (this.model) this.localField.model = this.model;
   },
 };
 </script>

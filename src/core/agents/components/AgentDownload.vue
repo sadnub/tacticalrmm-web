@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 70vw">
       <q-bar>
         Manual Install Instructions
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup />
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-card-section>
         <p v-if="info.plat === 'windows'" class="text-subtitle1">

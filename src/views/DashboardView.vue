@@ -12,8 +12,8 @@
         <div v-else class="q-pa-sm q-gutter-sm scroll" style="height: 85vh; overflow: initial">
           <q-list dense class="rounded-borders">
             <q-item
-              clickable
               v-ripple
+              clickable
               :active="dashboardStore.selectedClientSiteNode === null"
               @click="dashboardStore.selectedClientSiteNode = null"
             >
@@ -24,12 +24,12 @@
             </q-item>
             <q-tree
               ref="tree"
+              v-model:selected="dashboardStore.selectedClientSiteNode"
               :nodes="clientTree"
               node-key="raw"
               no-nodes-label="No Clients"
               selected-color="primary"
               no-selection-unset
-              v-model:selected="dashboardStore.selectedClientSiteNode"
             >
               <template #default-header="props">
                 <div class="row items-center">
@@ -49,13 +49,13 @@
 
                   <q-menu context-menu>
                     <q-list dense style="min-width: 200px">
-                      <q-item clickable v-close-popup @click="showEditModal(props.node)">
+                      <q-item v-close-popup clickable @click="showEditModal(props.node)">
                         <q-item-section side>
                           <q-icon name="edit" />
                         </q-item-section>
                         <q-item-section>Edit</q-item-section>
                       </q-item>
-                      <q-item clickable v-close-popup @click="showDeleteModal(props.node)">
+                      <q-item v-close-popup clickable @click="showDeleteModal(props.node)">
                         <q-item-section side>
                           <q-icon name="delete" />
                         </q-item-section>
@@ -66,8 +66,8 @@
 
                       <q-item
                         v-if="props.node.children"
-                        clickable
                         v-close-popup
+                        clickable
                         @click="showAddSiteModal(props.node)"
                       >
                         <q-item-section side>
@@ -76,7 +76,7 @@
                         <q-item-section>Add Site</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showToggleMaintenance(props.node)">
+                      <q-item v-close-popup clickable @click="showToggleMaintenance(props.node)">
                         <q-item-section side>
                           <q-icon name="construction" />
                         </q-item-section>
@@ -89,8 +89,8 @@
 
                       <q-item
                         v-if="props.node.children === undefined"
-                        clickable
                         v-close-popup
+                        clickable
                         @click="showInstallAgent(props.node)"
                       >
                         <q-item-section side>
@@ -99,21 +99,21 @@
                         <q-item-section>Install Agent</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showPolicyAdd(props.node)">
+                      <q-item v-close-popup clickable @click="showPolicyAdd(props.node)">
                         <q-item-section side>
                           <q-icon name="policy" />
                         </q-item-section>
                         <q-item-section>Assign Automation Policy</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showAlertTemplateAdd(props.node)">
+                      <q-item v-close-popup clickable @click="showAlertTemplateAdd(props.node)">
                         <q-item-section side>
                           <q-icon name="error" />
                         </q-item-section>
                         <q-item-section>Assign Alert Template</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-ripple>
+                      <q-item v-ripple clickable>
                         <q-item-section side>
                           <q-icon name="open_in_new" />
                         </q-item-section>
@@ -126,9 +126,9 @@
                             <q-item
                               v-for="action in urlActions"
                               :key="action.id"
+                              v-close-popup
                               dense
                               clickable
-                              v-close-popup
                               @click="
                                 urlActionStore.runURLAction(
                                   action.id,
@@ -144,7 +144,7 @@
                       </q-item>
 
                       <!-- Bulk Run Checks -->
-                      <q-item clickable v-close-popup @click="runChecks(props.node)">
+                      <q-item v-close-popup clickable @click="runChecks(props.node)">
                         <q-item-section side>
                           <q-icon name="fas fa-check-double" />
                         </q-item-section>
@@ -152,12 +152,12 @@
                       </q-item>
 
                       <q-item
-                        clickable
                         v-if="
                           (props.node.children &&
                             $integrations?.clientMenuIntegrations?.length > 0) ||
                           (!props.node.children && $integrations?.siteMenuIntegrations.length > 0)
                         "
+                        clickable
                       >
                         <q-item-section side>
                           <q-icon name="analytics" />
@@ -167,14 +167,14 @@
                           <q-icon name="keyboard_arrow_right" />
                         </q-item-section>
                         <integrations-context-menu
-                          :type="props.node.children ? 'client' : 'site'"
                           :id="props.node.id"
+                          :type="props.node.children ? 'client' : 'site'"
                         />
                       </q-item>
 
                       <q-separator></q-separator>
 
-                      <q-item clickable v-close-popup>
+                      <q-item v-close-popup clickable>
                         <q-item-section>Close</q-item-section>
                       </q-item>
                     </q-list>
@@ -192,10 +192,10 @@
           reverse
           unit="px"
           horizontal
-          @update:model-value="dashboardStore.setTableHeight(innerModel)"
           after-class="hide-scrollbar"
           before-class="hide-scrollbar"
           emit-immediately
+          @update:model-value="dashboardStore.setTableHeight(innerModel)"
         >
           <template #before>
             <AgentTable />

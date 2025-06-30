@@ -4,17 +4,17 @@
       <q-bar>
         Alert Exclusions for {{ template.name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-form ref="form" @submit.prevent="onSubmit">
         <q-card-section>
           <tactical-dropdown
+            v-model="localTemplate.excluded_clients"
             label="Excluded Clients"
             filled
             multiple
-            v-model="localTemplate.excluded_clients"
             :options="clientOptions"
             use-chips
             map-options
@@ -23,10 +23,10 @@
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
+            v-model="localTemplate.excluded_sites"
             label="Excluded Sites"
             filled
             multiple
-            v-model="localTemplate.excluded_sites"
             :options="siteOptions"
             use-chips
             map-options
@@ -35,10 +35,10 @@
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
+            v-model="localTemplate.excluded_agents"
             label="Excluded Agents"
             filled
             multiple
-            v-model="localTemplate.excluded_agents"
             :options="agentOptions"
             use-chips
             map-options
@@ -52,7 +52,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -68,9 +68,9 @@ export default {
   components: {
     TacticalDropdown,
   },
-  emits: ["hide", "ok"],
-  props: { template: !Object },
   mixins: [mixins],
+  props: { template: !Object },
+  emits: ["hide", "ok"],
   data() {
     return {
       localTemplate: {
@@ -84,6 +84,16 @@ export default {
       siteOptions: [],
       agentOptions: [],
     };
+  },
+  created() {
+    // copy prop data locally
+    this.localTemplate.id = this.template.id;
+    this.localTemplate.excluded_clients = this.template.excluded_clients;
+    this.localTemplate.excluded_sites = this.template.excluded_sites;
+    this.localTemplate.excluded_agents = this.template.excluded_agents;
+    this.localTemplate.exclude_servers = this.template.exclude_servers;
+    this.localTemplate.exclude_workstations = this.template.exclude_workstations;
+    this.getOptions();
   },
   methods: {
     onSubmit() {
@@ -138,16 +148,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  created() {
-    // copy prop data locally
-    this.localTemplate.id = this.template.id;
-    this.localTemplate.excluded_clients = this.template.excluded_clients;
-    this.localTemplate.excluded_sites = this.template.excluded_sites;
-    this.localTemplate.excluded_agents = this.template.excluded_agents;
-    this.localTemplate.exclude_servers = this.template.exclude_servers;
-    this.localTemplate.exclude_workstations = this.template.exclude_workstations;
-    this.getOptions();
   },
 };
 </script>

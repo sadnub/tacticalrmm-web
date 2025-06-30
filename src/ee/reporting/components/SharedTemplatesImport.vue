@@ -15,6 +15,7 @@ For details, see: https://license.tacticalrmm.com/ee
         </q-btn>
       </q-bar>
       <q-table
+        v-model:selected="selected"
         dense
         :table-class="{
           'table-bgcolor': !$q.dark.isActive,
@@ -28,7 +29,6 @@ For details, see: https://license.tacticalrmm.com/ee
         :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: false }"
         :filter="search"
         selection="multiple"
-        v-model:selected="selected"
         row-key="name"
         binary-state-sort
         virtual-scroll
@@ -46,10 +46,10 @@ For details, see: https://license.tacticalrmm.com/ee
             @click="importTemplates"
           />
           <q-checkbox
+            v-model="overwrite"
             class="q-ml-sm"
             dense
             label="Overwrite if name conflicts"
-            v-model="overwrite"
           />
           <q-space />
           <q-input

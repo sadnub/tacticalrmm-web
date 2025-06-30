@@ -10,22 +10,22 @@ For details, see: https://license.tacticalrmm.com/ee
       <q-bar>
         SSO Settings
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
 
       <!-- disable sso-->
       <q-card-section>
-        <q-checkbox dense label="Enable SSO" v-model="ssoSettings.sso_enabled" />
+        <q-checkbox v-model="ssoSettings.sso_enabled" dense label="Enable SSO" />
       </q-card-section>
 
       <!-- block local user logon -->
       <q-card-section>
         <q-checkbox
+          v-model="ssoSettings.block_local_user_logon"
           dense
           label="Block Local User Login"
-          v-model="ssoSettings.block_local_user_logon"
           :disable="!ssoSettings.sso_enabled"
           hint="When enabled, only users with SSO accounts can log in, with the exception of local superuser accounts."
         >
@@ -37,7 +37,7 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat label="Cancel" />
         <q-btn flat label="Submit" color="primary" :loading="loading" @click="submit" />
       </q-card-actions>
     </q-card>

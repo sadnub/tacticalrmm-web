@@ -2,14 +2,9 @@
   <div v-if="agentPlatform.toLowerCase() !== 'windows'" class="q-pa-sm">
     Only supported for Windows agents at this time
   </div>
-  <q-table
+  <tactical-table
     v-else
     dense
-    :table-class="{
-      'table-bgcolor': !$q.dark.isActive,
-      'table-bgcolor-dark': $q.dark.isActive,
-    }"
-    class="remote-bg-tbl-sticky"
     :style="{ 'max-height': `${$q.screen.height - 36}px` }"
     :rows="services"
     :columns="columns"
@@ -19,9 +14,11 @@
     binary-state-sort
     :rows-per-page-options="[0]"
     :loading="agentStore.isLoading"
+    column-select
+    storage-key="services-manager"
   >
     <template #top>
-      <q-btn dense flat push @click="agentStore.getAgentServices(agentId)" icon="refresh" />
+      <q-btn dense flat push icon="refresh" @click="agentStore.getAgentServices(agentId)" />
       <q-space />
       <q-input v-model="filter" filled label="Search" dense clearable>
         <template #prepend>
@@ -75,7 +72,7 @@
         <q-td key="username" :props="props">{{ row.username ? row.username : "LocalSystem" }}</q-td>
       </q-tr>
     </template>
-  </q-table>
+  </tactical-table>
 </template>
 
 <script lang="ts" setup>
@@ -88,6 +85,7 @@ import { useAgentStore } from "../../api";
 // ui imports
 import ServiceDetail from "src/components/agents/remotebg/ServiceDetail.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // type imports
 import type { AgentService } from "../../types";

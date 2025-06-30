@@ -7,8 +7,8 @@
         dense
         flat
         push
-        @click="getTasks"
         icon="refresh"
+        @click="getTasks"
       />
       <q-btn
         v-if="!!selectedPolicy"
@@ -21,6 +21,7 @@
         @click="showAddTask"
       />
       <q-table
+        v-model:pagination="pagination"
         :table-class="{
           'table-bgcolor': !$q.dark.isActive,
           'table-bgcolor-dark': $q.dark.isActive,
@@ -29,7 +30,6 @@
         :rows="tasks"
         :columns="columns"
         :rows-per-page-options="[0]"
-        v-model:pagination="pagination"
         dense
         row-key="id"
         binary-state-sort
@@ -87,33 +87,33 @@
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item clickable v-close-popup @click="runTask(props.row)">
+                <q-item v-close-popup clickable @click="runTask(props.row)">
                   <q-item-section side>
                     <q-icon name="play_arrow" />
                   </q-item-section>
                   <q-item-section>Run task now</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="showEditTask(props.row)">
+                <q-item v-close-popup clickable @click="showEditTask(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="deleteTask(props.row)">
+                <q-item v-close-popup clickable @click="deleteTask(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
                   <q-item-section>Delete</q-item-section>
                 </q-item>
                 <q-separator />
-                <q-item clickable v-close-popup @click="showStatus(props.row)">
+                <q-item v-close-popup clickable @click="showStatus(props.row)">
                   <q-item-section side>
                     <q-icon name="sync" />
                   </q-item-section>
                   <q-item-section>Policy Status</q-item-section>
                 </q-item>
                 <q-separator />
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>
@@ -121,37 +121,37 @@
             <!-- tds -->
             <q-td>
               <q-checkbox
+                v-model="props.row.enabled"
                 dense
                 @update:model-value="editTask(props.row, { enabled: !props.row.enabled })"
-                v-model="props.row.enabled"
               />
             </q-td>
 
             <q-td>
               <q-checkbox
+                v-model="props.row.text_alert"
                 dense
                 @update:model-value="editTask(props.row, { text_alert: !props.row.text_alert })"
-                v-model="props.row.text_alert"
               />
             </q-td>
             <!-- email alert -->
             <q-td>
               <q-checkbox
+                v-model="props.row.email_alert"
                 dense
                 @update:model-value="editTask(props.row, { email_alert: !props.row.email_alert })"
-                v-model="props.row.email_alert"
               />
             </q-td>
             <!-- dashboard alert -->
             <q-td>
               <q-checkbox
+                v-model="props.row.dashboard_alert"
                 dense
                 @update:model-value="
                   editTask(props.row, {
                     dashboard_alert: !props.row.dashboard_alert,
                   })
                 "
-                v-model="props.row.dashboard_alert"
               />
             </q-td>
             <!-- is collector task -->
@@ -165,8 +165,8 @@
             <q-td>
               <span
                 style="cursor: pointer; text-decoration: underline"
-                @click="showStatus(props.row)"
                 class="status-cell text-primary"
+                @click="showStatus(props.row)"
                 >See Status</span
               >
             </q-td>
@@ -244,6 +244,9 @@ export default {
     selectedPolicy: function (newValue, oldValue) {
       if (newValue !== oldValue) this.getTasks();
     },
+  },
+  created() {
+    this.getTasks();
   },
   methods: {
     getTasks() {
@@ -348,9 +351,6 @@ export default {
             });
         });
     },
-  },
-  created() {
-    this.getTasks();
   },
 };
 </script>

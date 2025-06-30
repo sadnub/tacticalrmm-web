@@ -4,7 +4,7 @@
       <q-bar>
         {{ title }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -12,10 +12,10 @@
         <!-- name -->
         <q-card-section>
           <q-input
+            v-model="localKey.name"
             label="Name"
             filled
             dense
-            v-model="localKey.name"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
@@ -23,10 +23,10 @@
         <!-- value -->
         <q-card-section>
           <q-input
+            v-model="localKey.value"
             label="Value"
             filled
             dense
-            v-model="localKey.value"
             :type="isPwd ? 'password' : 'text'"
             :rules="[(val) => !!val || '*Required']"
             ><template #append>
@@ -40,7 +40,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup flat label="Cancel" />
           <q-btn flat label="Submit" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -53,9 +53,9 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "KeyStoreForm",
-  emits: ["hide", "ok", "cancel"],
   mixins: [mixins],
   props: { globalKey: Object },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       isPwd: true,
@@ -72,6 +72,10 @@ export default {
     editing() {
       return !!this.globalKey;
     },
+  },
+  mounted() {
+    // If pk prop is set that means we are editing
+    if (this.globalKey) Object.assign(this.localKey, this.globalKey);
   },
   methods: {
     submit() {
@@ -118,10 +122,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  mounted() {
-    // If pk prop is set that means we are editing
-    if (this.globalKey) Object.assign(this.localKey, this.globalKey);
   },
 };
 </script>

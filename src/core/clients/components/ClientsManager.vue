@@ -1,17 +1,17 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 70vw">
       <q-bar>
         <q-btn
-          @click="clientStore.getClients({ force: true })"
           class="q-mr-sm"
           dense
           flat
           push
           icon="refresh"
+          @click="clientStore.getClients({ force: true })"
         />Clients Manager
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -45,13 +45,13 @@
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item clickable v-close-popup @click="showEditClient(row)">
+                <q-item v-close-popup clickable @click="showEditClient(row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="showClientDeleteModal(row)">
+                <q-item v-close-popup clickable @click="showClientDeleteModal(row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -60,7 +60,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup @click="showAddSite(row)">
+                <q-item v-close-popup clickable @click="showAddSite(row)">
                   <q-item-section side>
                     <q-icon name="add" />
                   </q-item-section>
@@ -69,7 +69,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>

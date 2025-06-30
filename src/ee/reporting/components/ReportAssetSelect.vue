@@ -16,8 +16,8 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-bar>
 
       <q-card-section class="q-gutter-sm">
-        <q-radio dense v-model="imageType" val="link" label="Link" />
-        <q-radio dense v-model="imageType" val="asset" label="Report Asset" />
+        <q-radio v-model="imageType" dense val="link" label="Link" />
+        <q-radio v-model="imageType" dense val="asset" label="Report Asset" />
       </q-card-section>
 
       <q-card-section v-if="imageType === 'link'">
@@ -32,8 +32,8 @@ For details, see: https://license.tacticalrmm.com/ee
         <q-tree
           v-else
           ref="qtree"
-          :nodes="tree"
           v-model:selected="selected"
+          :nodes="tree"
           node-key="path"
           label-key="name"
           dense
@@ -45,8 +45,8 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-card-section>
       <q-card-actions>
         <q-space />
-        <q-btn dense flat label="Cancel" v-close-popup />
-        <q-btn @click="onDialogOK(output)" dense flat label="Select" color="primary" />
+        <q-btn v-close-popup dense flat label="Cancel" />
+        <q-btn dense flat label="Select" color="primary" @click="onDialogOK(output)" />
       </q-card-actions>
     </q-card>
   </q-dialog>

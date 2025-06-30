@@ -1,30 +1,30 @@
 <template>
   <q-dialog
     ref="dialogRef"
-    @hide="onDialogHide"
     persistent
-    @keydown.esc="onDialogHide"
     :maximized="maximized"
+    @hide="onDialogHide"
+    @keydown.esc="onDialogHide"
   >
     <q-card class="dialog-plugin" style="min-width: 60vw">
       <q-bar>
         Run a script on {{ agent.hostname }}
         <q-space />
-        <q-btn dense flat icon="minimize" @click="maximized = false" :disable="!maximized">
+        <q-btn dense flat icon="minimize" :disable="!maximized" @click="maximized = false">
           <q-tooltip v-if="maximized" class="bg-white text-primary">Minimize</q-tooltip>
         </q-btn>
-        <q-btn dense flat icon="crop_square" @click="maximized = true" :disable="maximized">
+        <q-btn dense flat icon="crop_square" :disable="maximized" @click="maximized = true">
           <q-tooltip v-if="!maximized" class="bg-white text-primary">Maximize</q-tooltip>
         </q-btn>
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-form @submit.prevent="sendScript">
         <q-card-section>
           <tactical-dropdown
-            :rules="[(val: number) => !!val || '*Required']"
             v-model="state.script"
+            :rules="[(val: number) => !!val || '*Required']"
             :options="filterByPlatformOptions"
             label="Select script"
             filled
@@ -76,12 +76,12 @@
         <q-card-section v-if="state.output === 'email'">
           <div class="q-gutter-sm">
             <q-radio
-              dense
               v-model="state.emailMode"
+              dense
               val="default"
               label="Use email addresses from global settings"
             />
-            <q-radio dense v-model="state.emailMode" val="custom" label="Custom emails" />
+            <q-radio v-model="state.emailMode" dense val="custom" label="Custom emails" />
           </div>
         </q-card-section>
         <q-card-section v-if="state.emailMode === 'custom' && state.output === 'email'">
@@ -98,9 +98,9 @@
         </q-card-section>
         <q-card-section v-if="state.output === 'collector'">
           <tactical-dropdown
+            v-model="state.custom_field"
             :rules="[(val: number) => !!val || '*Required']"
             filled
-            v-model="state.custom_field"
             :options="customFieldOptions"
             label="Select custom field"
             map-options
@@ -118,8 +118,8 @@
           </q-checkbox>
           <q-checkbox
             v-if="!hosted"
-            :disable="!server_scripts_enabled"
             v-model="state.run_on_server"
+            :disable="!server_scripts_enabled"
             label="Run On Server"
             @update:model-value="ret = null"
           >
@@ -144,7 +144,7 @@
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn label="Cancel" v-close-popup />
+          <q-btn v-close-popup label="Cancel" />
           <q-btn :loading="loading" :disabled="loading" label="Run" color="primary" type="submit" />
         </q-card-actions>
         <q-card-section

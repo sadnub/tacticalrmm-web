@@ -5,15 +5,15 @@
         <q-bar>
           <q-btn
             ref="refresh"
-            @click="refresh"
             class="q-mr-sm"
             dense
             flat
             push
             icon="refresh"
+            @click="refresh"
           />Automation Manager
           <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
+          <q-btn v-close-popup dense flat icon="close">
             <q-tooltip class="bg-white text-primary">Close</q-tooltip>
           </q-btn>
         </q-bar>
@@ -42,6 +42,7 @@
           </div>
           <div class="scroll" style="min-height: 35vh; max-height: 35vh">
             <q-table
+              v-model:pagination="pagination"
               :table-class="{
                 'table-bgcolor': !$q.dark.isActive,
                 'table-bgcolor-dark': $q.dark.isActive,
@@ -49,7 +50,6 @@
               class="tabs-tbl-sticky"
               :rows="policies"
               :columns="columns"
-              v-model:pagination="pagination"
               :rows-per-page-options="[0]"
               dense
               row-key="id"
@@ -88,21 +88,21 @@
                   <!-- context menu -->
                   <q-menu context-menu>
                     <q-list dense style="min-width: 200px">
-                      <q-item clickable v-close-popup @click="showEditPolicyForm(props.row)">
+                      <q-item v-close-popup clickable @click="showEditPolicyForm(props.row)">
                         <q-item-section side>
                           <q-icon name="edit" />
                         </q-item-section>
                         <q-item-section>Edit</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showCopyPolicyForm(props.row)">
+                      <q-item v-close-popup clickable @click="showCopyPolicyForm(props.row)">
                         <q-item-section side>
                           <q-icon name="content_copy" />
                         </q-item-section>
                         <q-item-section>Copy</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="deletePolicy(props.row)">
+                      <q-item v-close-popup clickable @click="deletePolicy(props.row)">
                         <q-item-section side>
                           <q-icon name="delete" />
                         </q-item-section>
@@ -111,28 +111,28 @@
 
                       <q-separator></q-separator>
 
-                      <q-item clickable v-close-popup @click="showRelations(props.row)">
+                      <q-item v-close-popup clickable @click="showRelations(props.row)">
                         <q-item-section side>
                           <q-icon name="account_tree" />
                         </q-item-section>
                         <q-item-section>Show Relations</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showPolicyExclusions(props.row)">
+                      <q-item v-close-popup clickable @click="showPolicyExclusions(props.row)">
                         <q-item-section side>
                           <q-icon name="rule" />
                         </q-item-section>
                         <q-item-section>Policy Exclusions</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showPatchPolicyForm(props.row)">
+                      <q-item v-close-popup clickable @click="showPatchPolicyForm(props.row)">
                         <q-item-section side>
                           <q-icon name="system_update" />
                         </q-item-section>
                         <q-item-section>{{ patchPolicyText(props.row) }}</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="showAlertTemplateAdd(props.row)">
+                      <q-item v-close-popup clickable @click="showAlertTemplateAdd(props.row)">
                         <q-item-section side>
                           <q-icon name="warning" />
                         </q-item-section>
@@ -141,7 +141,7 @@
 
                       <q-separator></q-separator>
 
-                      <q-item clickable v-close-popup>
+                      <q-item v-close-popup clickable>
                         <q-item-section>Close</q-item-section>
                       </q-item>
                     </q-list>
@@ -149,17 +149,17 @@
                   <!-- enabled checkbox -->
                   <q-td>
                     <q-checkbox
+                      v-model="props.row.active"
                       dense
                       @update:model-value="toggleCheckbox(props.row, 'Active')"
-                      v-model="props.row.active"
                     />
                   </q-td>
                   <!-- enforced checkbox -->
                   <q-td>
                     <q-checkbox
+                      v-model="props.row.enforced"
                       dense
                       @update:model-value="toggleCheckbox(props.row, 'Enforced')"
-                      v-model="props.row.enforced"
                     />
                   </q-td>
                   <q-td>
@@ -280,9 +280,9 @@ import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTa
 
 export default {
   name: "AutomationManager",
-  emits: ["hide", "ok", "cancel"],
   components: { PolicyChecksTab, PolicyAutomatedTasksTab },
   mixins: [mixins],
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       subtab: "checks",
@@ -345,6 +345,9 @@ export default {
         descending: true,
       },
     };
+  },
+  mounted() {
+    this.getPolicies();
   },
   methods: {
     getPolicies() {
@@ -523,9 +526,6 @@ export default {
     onHide() {
       this.$emit("hide");
     },
-  },
-  mounted() {
-    this.getPolicies();
   },
 };
 </script>

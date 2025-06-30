@@ -1,21 +1,16 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 70vw; height: 70vh">
       <q-bar>
-        <q-btn @click="getDeployments" class="q-mr-sm" dense flat push icon="refresh" />
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getDeployments" />
         Manage Deployments
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary" />
         </q-btn>
       </q-bar>
-      <q-table
+      <tactical-table
         dense
-        :table-class="{
-          'table-bgcolor': !$q.dark.isActive,
-          'table-bgcolor-dark': $q.dark.isActive,
-        }"
-        class="audit-mgr-tbl-sticky"
         style="max-height: 65vh"
         binary-state-sort
         virtual-scroll
@@ -26,6 +21,8 @@
         :pagination="{ rowsPerPage: 0, sortBy: 'id', descending: true }"
         no-data-label="No Deployments"
         :loading="loading"
+        column-select,
+        storage-key="deployments"
       >
         <template #top>
           <q-btn dense flat icon="add" label="New" @click="showAddDeployment" />
@@ -70,7 +67,7 @@
             </q-td>
           </q-tr>
         </template>
-      </q-table>
+      </tactical-table>
     </q-card>
   </q-dialog>
 </template>
@@ -86,6 +83,7 @@ import { getBaseUrl } from "src/boot/axios";
 
 // ui imports
 import NewDeployment from "./NewDeployment.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // static data
 const columns = [
@@ -137,6 +135,9 @@ const columns = [
 
 export default {
   name: "DeploymentTable",
+  components: {
+    TacticalTable,
+  },
   emits: [...useDialogPluginComponent.emits],
   setup() {
     // quasar dialog setup

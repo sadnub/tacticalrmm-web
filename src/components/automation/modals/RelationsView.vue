@@ -4,15 +4,15 @@
       <q-bar>
         {{ policy.name }} Relations
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-card-section
-        class="row items-center"
         v-if="
           related.default_server_policy || related.default_workstation_policy
         "
+        class="row items-center"
       >
         <div v-if="related.default_server_policy" class="text-body">
           <q-icon name="error_outline" color="info" size="1.5em" />This policy
@@ -130,13 +130,13 @@
 <script>
 export default {
   name: "RelationsView",
-  emits: ["hide", "ok", "cancel"],
   props: {
     policy: {
       type: Object,
       required: true,
     },
   },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       tab: "clients",
@@ -150,17 +150,6 @@ export default {
       },
     };
   },
-  methods: {
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-  },
   mounted() {
     this.$q.loading.show();
 
@@ -173,6 +162,17 @@ export default {
       .catch(() => {
         this.$q.loading.hide();
       });
+  },
+  methods: {
+    show() {
+      this.$refs.dialog.show();
+    },
+    hide() {
+      this.$refs.dialog.hide();
+    },
+    onHide() {
+      this.$emit("hide");
+    },
   },
 };
 </script>

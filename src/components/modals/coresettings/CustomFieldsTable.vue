@@ -1,9 +1,9 @@
 <template>
   <q-table
+    v-model:pagination="pagination"
     dense
     :rows="data"
     :columns="columns"
-    v-model:pagination="pagination"
     row-key="id"
     binary-state-sort
     hide-pagination
@@ -17,13 +17,13 @@
         <!-- context menu -->
         <q-menu context-menu>
           <q-list dense style="min-width: 200px">
-            <q-item clickable v-close-popup @click="editCustomField(props.row)">
+            <q-item v-close-popup clickable @click="editCustomField(props.row)">
               <q-item-section side>
                 <q-icon name="edit" />
               </q-item-section>
               <q-item-section>Edit</q-item-section>
             </q-item>
-            <q-item clickable v-close-popup @click="deleteCustomField(props.row)">
+            <q-item v-close-popup clickable @click="deleteCustomField(props.row)">
               <q-item-section side>
                 <q-icon name="delete" />
               </q-item-section>
@@ -32,7 +32,7 @@
 
             <q-separator></q-separator>
 
-            <q-item clickable v-close-popup>
+            <q-item v-close-popup clickable>
               <q-item-section>Close</q-item-section>
             </q-item>
           </q-list>
@@ -84,11 +84,11 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "CustomFieldsTable",
-  emits: ["refresh"],
   mixins: [mixins],
   props: {
     data: !Array,
   },
+  emits: ["refresh"],
   data() {
     return {
       pagination: {

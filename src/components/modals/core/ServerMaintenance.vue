@@ -13,11 +13,11 @@
       <q-form @submit.prevent="submit">
         <q-card-section>
           <q-select
+            v-model="action"
             :rules="[(val) => !!val || '*Required']"
             filled
             options-dense
             label="Actions"
-            v-model="action"
             :options="actions"
             emit-value
             map-options

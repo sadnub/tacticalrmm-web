@@ -1,18 +1,18 @@
 <template>
   <q-dialog
     ref="dialog"
-    @hide="onHide"
     maximized
     transition-show="slide-up"
     transition-hide="slide-down"
+    @hide="onHide"
   >
     <q-card>
       <q-bar>
-        <q-btn @click="search" class="q-mr-sm" dense flat push icon="refresh" />
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="search" />
         <q-space />
         Alerts Overview
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -47,9 +47,9 @@
         </div>
         <div class="q-pa-sm col-2">
           <q-select
+            v-model="timeFilter"
             filled
             dense
-            v-model="timeFilter"
             label="Time"
             emit-value
             map-options
@@ -57,8 +57,8 @@
           />
         </div>
         <div class="q-pa-sm col-2">
-          <q-checkbox filled dense v-model="includeSnoozed" label="Include snoozed" />
-          <q-checkbox filled dense v-model="includeResolved" label="Include resolved" />
+          <q-checkbox v-model="includeSnoozed" filled dense label="Include snoozed" />
+          <q-checkbox v-model="includeResolved" filled dense label="Include resolved" />
         </div>
         <div class="q-pa-sm col-2">
           <q-btn color="primary" label="Search" @click="search" />
@@ -69,6 +69,8 @@
 
       <q-card-section>
         <q-table
+          v-model:pagination="pagination"
+          v-model:selected="selectedAlerts"
           :table-class="{
             'table-bgcolor': !$q.dark.isActive,
             'table-bgcolor-dark': $q.dark.isActive,
@@ -77,10 +79,8 @@
           :rows="alerts"
           :columns="columns"
           :rows-per-page-options="[25, 50, 100, 500, 1000]"
-          v-model:pagination="pagination"
           :no-data-label="noDataText"
           :visible-columns="visibleColumns"
-          v-model:selected="selectedAlerts"
           selection="multiple"
           binary-state-sort
           row-key="id"
@@ -96,7 +96,7 @@
               :disable="selectedAlerts.length === 0 || includeResolved"
             >
               <q-list dense>
-                <q-item clickable v-close-popup @click="snoozeAlertBulk(selectedAlerts)">
+                <q-item v-close-popup clickable @click="snoozeAlertBulk(selectedAlerts)">
                   <q-item-section avatar>
                     <q-icon name="alarm_off" />
                   </q-item-section>
@@ -104,7 +104,7 @@
                     <q-item-label>Snooze alerts</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="resolveAlertBulk(selectedAlerts)">
+                <q-item v-close-popup clickable @click="resolveAlertBulk(selectedAlerts)">
                   <q-item-section avatar>
                     <q-icon name="flag" />
                   </q-item-section>
@@ -187,8 +187,8 @@ import { useStore } from "vuex";
 
 export default {
   name: "AlertsOverview",
-  emits: ["hide"],
   mixins: [mixins],
+  emits: ["hide"],
   setup() {
     // setup vuex store
     const store = useStore();
@@ -316,6 +316,9 @@ export default {
         }
       });
     },
+  },
+  mounted() {
+    this.getClients();
   },
   methods: {
     getClients() {
@@ -518,9 +521,6 @@ export default {
     onHide() {
       this.$emit("hide");
     },
-  },
-  mounted() {
-    this.getClients();
   },
 };
 </script>

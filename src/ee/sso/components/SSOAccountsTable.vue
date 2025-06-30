@@ -41,9 +41,9 @@ For details, see: https://license.tacticalrmm.com/ee
             <td>
               <q-btn
                 size="sm"
-                @click="removeSSOAccount(row)"
                 label="Disconnect"
                 color="negative"
+                @click="removeSSOAccount(row)"
               ></q-btn>
             </td>
           </q-tr>

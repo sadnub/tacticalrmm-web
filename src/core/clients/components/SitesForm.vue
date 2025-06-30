@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ !!site ? `Editing ${site.name}` : "Adding Site" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -22,21 +22,21 @@
         </q-card-section>
         <q-card-section>
           <q-input
+            v-model="state.name"
             :rules="[(val) => !!val || 'Name is required']"
             filled
             dense
-            v-model="state.name"
             label="Name"
           />
         </q-card-section>
 
-        <div class="q-pl-sm text-h6" v-if="fieldStore.customFields.length > 0">Custom Fields</div>
+        <div v-if="fieldStore.customFields.length > 0" class="q-pl-sm text-h6">Custom Fields</div>
         <q-card-section v-for="field in fieldStore.customFields" :key="field.id">
           <CustomField v-model="siteCustomFieldValues[field.name]" :field="field" />
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn dense flat push label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat push label="Cancel" />
           <q-btn
             :loading="siteStore.isLoading"
             dense

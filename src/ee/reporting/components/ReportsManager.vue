@@ -71,7 +71,7 @@ For details, see: https://license.tacticalrmm.com/ee
 
               <q-separator />
 
-              <q-item clickable v-close-popup @click="importReportTemplate">
+              <q-item v-close-popup clickable @click="importReportTemplate">
                 <q-item-section avatar>
                   <q-icon name="fa-solid fa-file-import" />
                 </q-item-section>

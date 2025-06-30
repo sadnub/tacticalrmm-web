@@ -4,7 +4,7 @@
       <q-bar>
         Policy Exclusions for {{ policy.name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -44,7 +44,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -58,9 +58,9 @@ import mixins from "src/mixins/mixins";
 export default {
   name: "PolicyExclusions",
   components: { TacticalDropdown },
-  emits: ["hide", "ok", "cancel"],
-  props: { policy: !Object },
   mixins: [mixins],
+  props: { policy: !Object },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       localPolicy: {
@@ -72,6 +72,15 @@ export default {
       siteOptions: [],
       agentOptions: [],
     };
+  },
+  created() {
+    // copy prop data locally
+    this.localPolicy.id = this.policy.id;
+    this.localPolicy.excluded_clients = this.policy.excluded_clients;
+    this.localPolicy.excluded_sites = this.policy.excluded_sites;
+    this.localPolicy.excluded_agents = this.policy.excluded_agents;
+
+    this.getOptions();
   },
   methods: {
     onSubmit() {
@@ -125,15 +134,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  created() {
-    // copy prop data locally
-    this.localPolicy.id = this.policy.id;
-    this.localPolicy.excluded_clients = this.policy.excluded_clients;
-    this.localPolicy.excluded_sites = this.policy.excluded_sites;
-    this.localPolicy.excluded_agents = this.policy.excluded_agents;
-
-    this.getOptions();
   },
 };
 </script>

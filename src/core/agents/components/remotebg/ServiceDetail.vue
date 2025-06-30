@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="width: 600px; max-width: 80vw">
       <q-bar>
         Service Details - {{ service.display_name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -41,10 +41,10 @@
           <div class="col-3">Startup type:</div>
           <div class="col-5">
             <q-select
+              v-model="startupType"
               dense
               options-dense
               filled
-              v-model="startupType"
               :options="startupOptions"
               map-options
               emit-value
@@ -78,7 +78,7 @@
       </q-card-section>
       <q-separator />
       <q-card-actions align="right">
-        <q-btn flat dense label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat dense label="Cancel" />
         <q-btn
           :loading="agentStore.isLoading"
           dense

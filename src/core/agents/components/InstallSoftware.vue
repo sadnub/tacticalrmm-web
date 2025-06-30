@@ -1,19 +1,19 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 40vw; max-width: 50vw">
       <q-bar>
         Install Software
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-card-section>
         <tactical-table
+          v-model:pagination="pagination"
           dense
           :rows="chocoStore.chocos"
           :columns="columns"
-          v-model:pagination="pagination"
           :filter="filter"
           binary-state-sort
           hide-bottom

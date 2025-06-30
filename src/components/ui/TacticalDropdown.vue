@@ -2,7 +2,6 @@
   <q-select
     dense
     options-dense
-    @update:model-value="(value) => $emit('update:modelValue', value)"
     :options="filtered ? filteredOptions : options"
     :model-value="modelValue"
     :map-options="mapOptions"
@@ -10,8 +9,10 @@
     :multiple="multiple"
     :use-chips="multiple"
     :use-input="filterable"
-    @[filterEvent]="filterFn"
     :hide-selected="!multiple && (focused || filtered)"
+    v-bind="$attrs"
+    @update:model-value="(value) => $emit('update:modelValue', value)"
+    @[filterEvent]="filterFn"
     @popup-show="focused = true"
     @popup-hide="focused = false"
     @input-value="(value) => (value === '' ? (filtered = false) : (filtered = true))"
@@ -19,7 +20,6 @@
       filtered = false;
       focused = false;
     "
-    v-bind="$attrs"
   >
     <template v-for="(_, slot) in $slots" #[slot]="scope">
       <slot :name="slot" v-bind="scope || {}" />
@@ -29,8 +29,8 @@
       <q-item
         v-if="!scope.opt.category"
         v-bind="scope.itemProps"
-        class="q-pl-lg"
         :key="mapOptions ? scope.opt.value : scope.opt"
+        class="q-pl-lg"
       >
         <q-item-section>
           <q-item-label>{{ mapOptions ? scope.opt.label : scope.opt }}</q-item-label>
@@ -47,7 +47,7 @@
           />
         </q-item-section>
       </q-item>
-      <q-item-label v-if="scope.opt.category" header class="q-pa-sm" :key="scope.opt.category">{{
+      <q-item-label v-if="scope.opt.category" :key="scope.opt.category" header class="q-pa-sm">{{
         scope.opt.category
       }}</q-item-label>
     </template>
@@ -60,7 +60,6 @@ import { ref, computed } from "vue";
 export default {
   name: "TacticalDropdown",
   inheritAttrs: false,
-  emits: ["update:modelValue"],
   props: {
     modelValue: !String,
     mapOptions: {
@@ -77,6 +76,7 @@ export default {
     },
     options: !Array,
   },
+  emits: ["update:modelValue"],
   setup(props) {
     const filtered = ref(false);
     const filteredOptions = ref(props.options);

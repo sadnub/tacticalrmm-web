@@ -4,7 +4,7 @@
       <q-bar>
         Script Output
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -31,7 +31,7 @@
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat dense push label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat dense push label="Cancel" />
       </q-card-actions>
     </q-card>
   </q-dialog>

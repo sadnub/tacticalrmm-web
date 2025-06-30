@@ -1,13 +1,12 @@
 <template>
   <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
-    <q-table
+    <tactical-table
+      v-model:pagination="pagination"
       grid
-      class="tabs-tbl-sticky"
       :style="{ 'max-height': `${tabHeight}px` }"
       :rows="agentStore.agentNotes"
       :columns="columns"
-      v-model:pagination="pagination"
       row-key="id"
       :rows-per-page-options="[0]"
       :loading="agentStore.isLoading"
@@ -21,8 +20,8 @@
           dense
           flat
           push
-          @click="agentStore.getAgentNotes(agentStore.selectedAgentId)"
           icon="refresh"
+          @click="agentStore.getAgentNotes(agentStore.selectedAgentId)"
         />
         <q-btn icon="add" label="Add Note" no-caps dense flat push @click="addNote" />
         <q-space />
@@ -47,14 +46,14 @@
                 <q-btn color="grey-7" round flat icon="more_vert">
                   <q-menu cover auto-close>
                     <q-list dense>
-                      <q-item clickable v-close-popup @click="editNote(props.row)">
+                      <q-item v-close-popup clickable @click="editNote(props.row)">
                         <q-item-section side>
                           <q-icon name="edit" />
                         </q-item-section>
                         <q-item-section>Edit</q-item-section>
                       </q-item>
 
-                      <q-item clickable v-close-popup @click="deleteNote(props.row)">
+                      <q-item v-close-popup clickable @click="deleteNote(props.row)">
                         <q-item-section side>
                           <q-icon name="delete" />
                         </q-item-section>
@@ -71,7 +70,7 @@
           </q-card-section>
         </q-card>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -84,6 +83,9 @@ import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+
+// type imports
 import type { AgentNote } from "../../types";
 
 // static data

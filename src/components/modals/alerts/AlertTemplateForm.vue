@@ -4,13 +4,13 @@
       <q-bar>
         {{ alertTemplate ? "Edit Alert Template" : "Add Alert Template" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-stepper
-        v-model="step"
         ref="stepper"
+        v-model="step"
         alternative-labels
         header-nav
         color="primary"
@@ -25,11 +25,11 @@
           <q-card flat>
             <q-card-section>
               <q-input
+                v-model="template.name"
                 label="Name"
                 class="q-mb-none"
                 filled
                 dense
-                v-model="template.name"
                 :rules="[(val) => !!val || '*Required']"
               />
             </q-card-section>
@@ -44,18 +44,18 @@
 
             <q-card-section>
               <q-input
+                v-model="template.email_from"
                 label="Email From address"
                 class="q-mb-sm"
                 filled
                 dense
-                v-model="template.email_from"
               />
             </q-card-section>
 
             <q-card-section class="row">
               <div class="col-2 q-mb-sm">Email recipients</div>
               <div class="col-4 q-mb-sm">
-                <q-list dense v-if="template.email_recipients.length !== 0">
+                <q-list v-if="template.email_recipients.length !== 0" dense>
                   <q-item v-for="email in template.email_recipients" :key="email" dense>
                     <q-item-section>
                       <q-item-label>{{ email }}</q-item-label>
@@ -93,7 +93,7 @@
             <q-card-section class="row">
               <div class="col-2 q-mb-sm">SMS recipients</div>
               <div class="col-4 q-mb-md">
-                <q-list dense v-if="template.text_recipients.length !== 0">
+                <q-list v-if="template.text_recipients.length !== 0" dense>
                   <q-item v-for="num in template.text_recipients" :key="num" dense>
                     <q-item-section>
                       <q-item-label>{{ num }}</q-item-label>
@@ -149,11 +149,11 @@
 
               <tactical-dropdown
                 v-if="template.action_type == 'script'"
+                v-model="template.action"
                 class="q-mb-sm"
                 label="Failure script"
                 filled
                 clearable
-                v-model="template.action"
                 :options="scriptOptions"
                 map-options
                 filterable
@@ -162,11 +162,11 @@
 
               <tactical-dropdown
                 v-else-if="template.action_type == 'server'"
+                v-model="template.action"
                 class="q-mb-sm"
                 label="Failure script"
                 filled
                 clearable
-                v-model="template.action"
                 :options="serverScriptOptions"
                 map-options
                 filterable
@@ -174,11 +174,11 @@
 
               <tactical-dropdown
                 v-else
+                v-model="template.action_rest"
                 class="q-mb-sm"
                 label="Failure Web Hook"
                 filled
                 clearable
-                v-model="template.action_rest"
                 :options="restActionOptions"
                 map-options
                 filterable
@@ -186,11 +186,11 @@
 
               <q-select
                 v-if="template.action_type !== 'rest'"
+                v-model="template.action_args"
                 class="q-mb-sm"
                 dense
                 label="Failure script arguments (press Enter after typing each argument)"
                 filled
-                v-model="template.action_args"
                 use-input
                 use-chips
                 multiple
@@ -201,11 +201,11 @@
 
               <q-select
                 v-if="template.action_type !== 'rest'"
+                v-model="template.action_env_vars"
                 class="q-mb-sm"
                 dense
                 label="Failure script environment vars (press Enter after typing each key=value pair)"
                 filled
-                v-model="template.action_env_vars"
                 use-input
                 use-chips
                 multiple
@@ -216,11 +216,11 @@
 
               <q-input
                 v-if="template.action_type !== 'rest'"
+                v-model.number="template.action_timeout"
                 class="q-mb-sm"
                 label="Failure script timeout (seconds)"
                 filled
                 type="number"
-                v-model.number="template.action_timeout"
                 dense
                 :rules="[(val) => !!val || 'Failure script timeout is required']"
               />
@@ -244,11 +244,11 @@
 
               <tactical-dropdown
                 v-if="template.resolved_action_type === 'script'"
+                v-model="template.resolved_action"
                 class="q-mb-sm"
                 label="Resolved Script"
                 filled
                 clearable
-                v-model="template.resolved_action"
                 :options="scriptOptions"
                 map-options
                 filterable
@@ -256,11 +256,11 @@
 
               <tactical-dropdown
                 v-else-if="template.resolved_action_type === 'server'"
+                v-model="template.resolved_action"
                 class="q-mb-sm"
                 label="Resolved Script"
                 filled
                 clearable
-                v-model="template.resolved_action"
                 :options="serverScriptOptions"
                 map-options
                 filterable
@@ -268,11 +268,11 @@
 
               <tactical-dropdown
                 v-else
+                v-model="template.resolved_action_rest"
                 class="q-mb-sm"
                 label="Resolved Web Hook"
                 filled
                 clearable
-                v-model="template.resolved_action_rest"
                 :options="restActionOptions"
                 map-options
                 filterable
@@ -280,11 +280,11 @@
 
               <q-select
                 v-if="template.resolved_action_type !== 'rest'"
+                v-model="template.resolved_action_args"
                 class="q-mb-sm"
                 dense
                 label="Resolved script arguments (press Enter after typing each argument)"
                 filled
-                v-model="template.resolved_action_args"
                 use-input
                 use-chips
                 multiple
@@ -295,11 +295,11 @@
 
               <q-select
                 v-if="template.resolved_action_type !== 'rest'"
+                v-model="template.resolved_action_env_vars"
                 class="q-mb-sm"
                 dense
                 label="Resolved action environment vars (press Enter after typing each key=value pair)"
                 filled
-                v-model="template.resolved_action_env_vars"
                 use-input
                 use-chips
                 multiple
@@ -310,11 +310,11 @@
 
               <q-input
                 v-if="template.resolved_action_type !== 'rest'"
+                v-model.number="template.resolved_action_timeout"
                 class="q-mb-sm"
                 label="Resolved script timeout (seconds)"
                 filled
                 type="number"
-                v-model.number="template.resolved_action_timeout"
                 dense
                 :rules="[(val) => !!val || 'Resolved script timeout is required']"
               />
@@ -392,10 +392,10 @@
             </q-card-section>
             <q-card-section>
               <q-input
+                v-model.number="template.agent_periodic_alert_days"
                 label="Alert again if not resolved after (days)"
                 filled
                 type="number"
-                v-model.number="template.agent_periodic_alert_days"
                 dense
                 :rules="[(val) => val >= 0 || 'Periodic days must be 0 or greater']"
               />
@@ -466,9 +466,9 @@
 
             <q-card-section>
               <q-select
+                v-model="template.check_email_alert_severity"
                 label="Only email on alert severity"
                 hint="Defaults to 'error' and 'warning'"
-                v-model="template.check_email_alert_severity"
                 filled
                 dense
                 options-dense
@@ -482,9 +482,9 @@
 
             <q-card-section>
               <q-select
+                v-model="template.check_text_alert_severity"
                 label="Only text on alert severity"
                 hint="Defaults to 'error' and 'warning'"
-                v-model="template.check_text_alert_severity"
                 filled
                 dense
                 options-dense
@@ -498,9 +498,9 @@
 
             <q-card-section>
               <q-select
+                v-model="template.check_dashboard_alert_severity"
                 label="Only show dashboard alert on severity"
                 hint="Defaults to 'error', 'warning', and 'info'"
-                v-model="template.check_dashboard_alert_severity"
                 filled
                 dense
                 options-dense
@@ -514,10 +514,10 @@
 
             <q-card-section>
               <q-input
+                v-model.number="template.check_periodic_alert_days"
                 label="Alert again if not resolved after (days)"
                 filled
                 type="number"
-                v-model.number="template.check_periodic_alert_days"
                 dense
                 :rules="[(val) => val >= 0 || 'Periodic days must be 0 or greater']"
               />
@@ -588,9 +588,9 @@
 
             <q-card-section>
               <q-select
+                v-model="template.task_email_alert_severity"
                 label="Only email on alert severity"
                 hint="Defaults to 'error' and 'warning'"
-                v-model="template.task_email_alert_severity"
                 filled
                 dense
                 options-dense
@@ -604,9 +604,9 @@
 
             <q-card-section>
               <q-select
+                v-model="template.task_text_alert_severity"
                 label="Only text on alert severity"
                 hint="Defaults to 'error' and 'warning'"
-                v-model="template.task_text_alert_severity"
                 filled
                 dense
                 options-dense
@@ -620,9 +620,9 @@
 
             <q-card-section>
               <q-select
+                v-model="template.task_dashboard_alert_severity"
                 label="Only show dashboard alert on severity"
                 hint="Defaults to 'error', 'warning', and 'info'"
-                v-model="template.task_dashboard_alert_severity"
                 filled
                 dense
                 options-dense
@@ -636,10 +636,10 @@
 
             <q-card-section>
               <q-input
+                v-model.number="template.task_periodic_alert_days"
                 label="Alert again if not resolved (days)"
                 filled
                 type="number"
-                v-model.number="template.task_periodic_alert_days"
                 dense
                 :rules="[(val) => val >= 0 || 'Periodic days must be 0 or greater']"
               />
@@ -675,13 +675,13 @@
               v-if="step > 1"
               flat
               color="primary"
-              @click="stepper?.previous()"
               label="Back"
               class="q-mr-xs"
+              @click="stepper?.previous()"
             />
-            <q-btn v-if="step < 5" @click="stepper?.next()" color="primary" label="Next" />
+            <q-btn v-if="step < 5" color="primary" label="Next" @click="stepper?.next()" />
             <q-space />
-            <q-btn @click="onSubmit" color="primary" label="Submit" :loading="loading" />
+            <q-btn color="primary" label="Submit" :loading="loading" @click="onSubmit" />
           </q-stepper-navigation>
         </template>
       </q-stepper>

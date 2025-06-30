@@ -4,7 +4,7 @@
       <q-bar>
         Testing {{ urlAction.name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -69,7 +69,7 @@
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="Close" v-close-popup />
+        <q-btn v-close-popup flat label="Close" />
         <q-btn :loading="loading" flat label="Run" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>

@@ -1,11 +1,6 @@
 <template>
-  <q-table
+  <tactical-table
     dense
-    :table-class="{
-      'table-bgcolor': !$q.dark.isActive,
-      'table-bgcolor-dark': $q.dark.isActive,
-    }"
-    class="remote-bg-tbl-sticky"
     :style="{ 'max-height': `${$q.screen.height - 36}px` }"
     :rows="agentStore.agentProcesses"
     :columns="columns"
@@ -23,18 +18,18 @@
           dense
           flat
           push
-          @click="pause"
           icon="stop"
           label="Stop Live Refresh"
+          @click="pause"
         />
         <q-btn
           v-else
           dense
           flat
           push
-          @click="resume"
           icon="play_arrow"
           label="Resume Live Refresh"
+          @click="resume"
         />
 
         <div class="flex flex-center q-ml-md">
@@ -59,11 +54,11 @@
           <q-btn
             :disable="pollInterval === 1"
             dense
-            @click="pollInterval--"
             push
             icon="remove"
             size="sm"
             color="grey"
+            @click="pollInterval--"
           />
           <q-btn dense push icon="add" size="sm" color="grey" @click="pollInterval++" />
         </div>
@@ -105,7 +100,7 @@
         <q-td>{{ row.pid }}</q-td>
       </q-tr>
     </template>
-  </q-table>
+  </tactical-table>
 </template>
 
 <script lang="ts" setup>
@@ -114,6 +109,9 @@ import { useIntervalFn } from "@vueuse/core";
 import type { QTableProps } from "quasar";
 import { useAgentStore } from "../../api";
 import { bytes2Human } from "src/utils/format";
+
+// ui imports
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 const columns: QTableProps["columns"] = [
   {

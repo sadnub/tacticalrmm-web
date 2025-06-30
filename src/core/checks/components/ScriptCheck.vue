@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? `Edit Script Check` : "Add Script Check" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -16,9 +16,9 @@
       <q-form v-else @submit.prevent="submit">
         <q-card-section>
           <tactical-dropdown
+            v-model="localCheck.script"
             :rules="[(val: string) => !!val || '*Required']"
             filled
-            v-model="localCheck.script"
             :options="filterByPlatformOptions"
             label="Select script"
             map-options
@@ -28,10 +28,10 @@
         </q-card-section>
         <q-card-section>
           <q-select
+            v-model="localCheck.script_args"
             dense
             label="Script Arguments (press Enter after typing each argument)"
             filled
-            v-model="localCheck.script_args"
             use-input
             use-chips
             multiple
@@ -41,10 +41,10 @@
         </q-card-section>
         <q-card-section>
           <q-select
+            v-model="localCheck.env_vars"
             dense
             :label="envVarsLabel"
             filled
-            v-model="localCheck.env_vars"
             use-input
             use-chips
             multiple
@@ -54,9 +54,9 @@
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
+            v-model="localCheck.info_return_codes"
             label="Informational return codes (press Enter after typing each code)"
             filled
-            v-model="localCheck.info_return_codes"
             multiple
             hide-dropdown-icon
             use-input
@@ -67,9 +67,9 @@
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
+            v-model="localCheck.warning_return_codes"
             label="Warning return codes (press Enter after typing each code)"
             filled
-            v-model="localCheck.warning_return_codes"
             use-input
             multiple
             hide-dropdown-icon
@@ -80,9 +80,9 @@
         </q-card-section>
         <q-card-section>
           <tactical-dropdown
+            v-model="localCheck.success_return_codes"
             label="Success return codes (press Enter after typing each code)"
             filled
-            v-model="localCheck.success_return_codes"
             use-input
             multiple
             hide-dropdown-icon
@@ -93,34 +93,34 @@
         </q-card-section>
         <q-card-section>
           <q-input
+            v-model.number="localCheck.timeout"
             filled
             dense
-            v-model.number="localCheck.timeout"
             label="Script Timeout (seconds)"
           />
         </q-card-section>
         <q-card-section>
           <q-select
+            v-model="localCheck.fails_b4_alert"
             filled
             dense
             options-dense
-            v-model="localCheck.fails_b4_alert"
             :options="failOptions"
             label="Number of consecutive failures before alert"
           />
         </q-card-section>
         <q-card-section>
           <q-input
+            v-model.number="localCheck.run_interval"
             filled
             dense
             type="number"
-            v-model.number="localCheck.run_interval"
             label="Run this check every (seconds)"
             hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             :loading="checkStore.isLoading"
             dense

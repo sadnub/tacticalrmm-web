@@ -34,13 +34,13 @@
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
-              <q-item clickable v-close-popup @click="editURLAction(props.row)">
+              <q-item v-close-popup clickable @click="editURLAction(props.row)">
                 <q-item-section side>
                   <q-icon name="edit" />
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteURLAction(props.row)">
+              <q-item v-close-popup clickable @click="deleteURLAction(props.row)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -49,7 +49,7 @@
 
               <q-separator></q-separator>
 
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup clickable>
                 <q-item-section>Close</q-item-section>
               </q-item>
             </q-list>

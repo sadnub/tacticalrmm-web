@@ -2,10 +2,10 @@
   <q-dialog ref="dialog" @hide="onHide">
     <q-card class="q-dialog-plugin" style="min-width: 80vw; min-height: 65vh; overflow-x: hidden">
       <q-bar>
-        <q-btn @click="getChartData" class="q-mr-sm" dense flat push icon="refresh" />
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getChartData" />
         {{ title }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -40,13 +40,13 @@ import VueApexCharts from "vue3-apexcharts";
 
 export default {
   name: "CheckGraph",
-  emits: ["hide", "ok", "cancel"],
   components: {
     apexchart: VueApexCharts,
   },
   props: {
     check: !Object,
   },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       history: [],
@@ -118,42 +118,6 @@ export default {
       else if (this.check.check_type === "winsvc") return "Status";
       else if (this.check.check_type === "ping") return "Status";
       else return "";
-    },
-  },
-  methods: {
-    getChartData() {
-      this.$q.loading.show();
-
-      this.$axios
-        .patch(`/checks/${this.check.check_result.id}/history/`, {
-          timeFilter: this.timeFilter,
-        })
-        .then((r) => {
-          this.history = Object.freeze(r.data);
-
-          // save copy of data to reference results in chart tooltip
-          if (
-            this.check.check_type !== "cpuload" ||
-            this.check.check_type !== "memory" ||
-            this.check.check_type !== "diskspace"
-          ) {
-            this.results = Object.freeze(r.data);
-          }
-
-          this.$q.loading.hide();
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
     },
   },
   mounted() {
@@ -263,6 +227,42 @@ export default {
     }
 
     this.getChartData();
+  },
+  methods: {
+    getChartData() {
+      this.$q.loading.show();
+
+      this.$axios
+        .patch(`/checks/${this.check.check_result.id}/history/`, {
+          timeFilter: this.timeFilter,
+        })
+        .then((r) => {
+          this.history = Object.freeze(r.data);
+
+          // save copy of data to reference results in chart tooltip
+          if (
+            this.check.check_type !== "cpuload" ||
+            this.check.check_type !== "memory" ||
+            this.check.check_type !== "diskspace"
+          ) {
+            this.results = Object.freeze(r.data);
+          }
+
+          this.$q.loading.hide();
+        })
+        .catch(() => {
+          this.$q.loading.hide();
+        });
+    },
+    show() {
+      this.$refs.dialog.show();
+    },
+    hide() {
+      this.$refs.dialog.hide();
+    },
+    onHide() {
+      this.$emit("hide");
+    },
   },
 };
 </script>

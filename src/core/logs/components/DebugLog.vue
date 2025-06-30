@@ -2,24 +2,19 @@
   <q-card>
     <q-bar v-if="modal">
       <q-btn
-        @click="debugLogStore.getDebugLog(requestData)"
         class="q-mr-sm"
         dense
         flat
         push
         icon="refresh"
+        @click="debugLogStore.getDebugLog(requestData)"
       />Debug Log
       <q-space />
-      <q-btn dense flat icon="close" v-close-popup>
+      <q-btn v-close-popup dense flat icon="close">
         <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
       </q-btn>
     </q-bar>
-    <q-table
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
-      class="tabs-tbl-sticky"
+    <tactical-table
       :style="{
         'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
       }"
@@ -33,6 +28,8 @@
       dense
       binary-state-sort
       :rows-per-page-options="[0]"
+      column-select
+      storage-key="debuglog"
     >
       <template #top>
         <q-btn
@@ -41,14 +38,14 @@
           dense
           flat
           push
-          @click="debugLogStore.getDebugLog(requestData)"
           icon="refresh"
+          @click="debugLogStore.getDebugLog(requestData)"
         />
         <tactical-dropdown
           v-if="!agent"
+          v-model="requestData.agentFilter"
           class="q-pr-sm"
           style="width: 250px"
-          v-model="requestData.agentFilter"
           label="Agents Filter"
           :options="agentOptions"
           map-options
@@ -57,9 +54,9 @@
           filterable
         />
         <tactical-dropdown
+          v-model="requestData.logTypeFilter"
           class="q-pr-sm"
           style="width: 250px"
-          v-model="requestData.logTypeFilter"
           label="Log Type Filter"
           :options="logTypeOptions"
           map-options
@@ -107,7 +104,7 @@
           </q-td>
         </q-tr>
       </template>
-    </q-table>
+    </tactical-table>
   </q-card>
 </template>
 
@@ -123,6 +120,7 @@ import { formatTableColumnText } from "src/utils/format";
 // ui components
 import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // types
 import type { GetDebugLogRequest } from "../types";

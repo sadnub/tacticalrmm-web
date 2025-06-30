@@ -1,13 +1,13 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-card-section class="row">
         <div class="col-3">New password:</div>
         <div class="col-9">
           <q-input
+            v-model="pass"
             filled
             dense
-            v-model="pass"
             :type="hidePassword ? 'password' : 'text'"
             :rules="[(val) => !!val || '*Required']"
           >
@@ -23,9 +23,9 @@
         <div class="col-3">Confirm password:</div>
         <div class="col-9">
           <q-input
+            v-model="pass2"
             filled
             dense
-            v-model="pass2"
             :type="hidePassword ? 'password' : 'text'"
             :rules="[(val) => val === pass || 'Passwords do not match']"
           >
@@ -40,7 +40,7 @@
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn color="primary" label="Reset" @click="onSubmit" :disable="!pass || pass !== pass2" />
+        <q-btn color="primary" label="Reset" :disable="!pass || pass !== pass2" @click="onSubmit" />
         <q-btn color="negative" label="Cancel" @click="onDialogCancel" />
       </q-card-actions>
     </q-card>

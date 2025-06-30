@@ -1,32 +1,32 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 85vh">
       <q-form ref="form" @submit="onSubmit">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ user ? "Edit User" : "Add User" }}</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn v-close-popup icon="close" flat round dense />
         </q-card-section>
 
         <q-card-section class="row">
           <div class="col-2">Username:</div>
           <div class="col-10">
             <q-input
+              v-model="localUser.username"
               filled
               dense
-              v-model="localUser.username"
               :rules="[(val) => !!val || '*Required']"
               class="q-pa-none"
             />
           </div>
         </q-card-section>
-        <q-card-section class="row" v-if="!user">
+        <q-card-section v-if="!user" class="row">
           <div class="col-2">Password:</div>
           <div class="col-10">
             <q-input
+              v-model="localUser.password"
               filled
               dense
-              v-model="localUser.password"
               :type="hidePassword ? 'password' : 'text'"
               :rules="[(val) => !!val || '*Required']"
               class="q-pa-none"
@@ -45,9 +45,9 @@
           <div class="col-2">Email:</div>
           <div class="col-10">
             <q-input
+              v-model="localUser.email"
               filled
               dense
-              v-model="localUser.email"
               :rules="[(val) => isValidEmail(val) || 'Invalid email']"
               class="q-pa-none"
             />
@@ -56,13 +56,13 @@
         <q-card-section class="row">
           <div class="col-2">First Name:</div>
           <div class="col-10">
-            <q-input filled dense v-model="localUser.first_name" />
+            <q-input v-model="localUser.first_name" filled dense />
           </div>
         </q-card-section>
         <q-card-section class="row">
           <div class="col-2">Last Name:</div>
           <div class="col-10">
-            <q-input filled dense v-model="localUser.last_name" />
+            <q-input v-model="localUser.last_name" filled dense />
           </div>
         </q-card-section>
         <q-card-section class="row">
@@ -80,21 +80,21 @@
           >
           <template v-else
             ><q-select
+              v-model="localUser.role"
               map-options
               emit-value
               filled
               dense
               options-dense
-              v-model="localUser.role"
               :options="roleOptions"
               class="col-10"
           /></template>
         </q-card-section>
         <q-card-section>
           <q-checkbox
+            v-model="localUser.block_dashboard_login"
             label="Deny Dashboard Logins"
             left-label
-            v-model="localUser.block_dashboard_login"
             :disable="isLoggedInUser"
           />
         </q-card-section>

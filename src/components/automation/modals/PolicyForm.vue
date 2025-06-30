@@ -4,7 +4,7 @@
       <q-bar>
         {{ title }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -19,9 +19,9 @@
           <div class="col-2">Name:</div>
           <div class="col-10">
             <q-input
+              v-model="localPolicy.name"
               filled
               dense
-              v-model="localPolicy.name"
               :rules="[(val) => !!val || '*Required']"
             />
           </div>
@@ -29,7 +29,7 @@
         <q-card-section class="row">
           <div class="col-2">Description:</div>
           <div class="col-10">
-            <q-input filled dense v-model="localPolicy.desc" />
+            <q-input v-model="localPolicy.desc" filled dense />
           </div>
         </q-card-section>
         <q-card-section class="row">
@@ -45,7 +45,7 @@
           </div>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn flat label="Submit" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -58,9 +58,9 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "PolicyForm",
-  emits: ["hide", "ok", "cancel"],
   mixins: [mixins],
   props: { policy: Object, copyPolicy: Object },
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       localPolicy: {
@@ -78,6 +78,16 @@ export default {
     editing() {
       return !!this.policy;
     },
+  },
+  mounted() {
+    // If pk prop is set that means we are editting
+    if (this.policy) {
+      this.localPolicy.id = this.policy.id;
+      this.localPolicy.name = this.policy.name;
+      this.localPolicy.desc = this.policy.desc;
+      this.localPolicy.enforced = this.policy.enforced;
+      this.localPolicy.active = this.policy.active;
+    }
   },
   methods: {
     submit() {
@@ -128,16 +138,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  mounted() {
-    // If pk prop is set that means we are editting
-    if (this.policy) {
-      this.localPolicy.id = this.policy.id;
-      this.localPolicy.name = this.policy.name;
-      this.localPolicy.desc = this.policy.desc;
-      this.localPolicy.enforced = this.policy.enforced;
-      this.localPolicy.active = this.policy.active;
-    }
   },
 };
 </script>

@@ -1,10 +1,10 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="min-width: 70vw">
+    <q-card class="q-dialog-plugin" style="min-width: 70vw" persistent>
       <q-bar>
         {{ log.message }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup />
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-card-section class="scroll" style="max-height: 65vh">
         <q-splitter v-model="splitterModel">
@@ -20,7 +20,7 @@
         </q-splitter>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat dense push label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat dense push label="Cancel" />
       </q-card-actions>
     </q-card>
   </q-dialog>

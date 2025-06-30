@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide" persistent>
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 65vw; min-width: 65vw">
       <q-bar>
         {{ task ? `Editing Automated Task: ${task.name}` : "Adding Automated Task" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -12,15 +12,15 @@
         <p>You need to upload a script first</p>
         <p>Settings -> Script Manager</p>
       </q-card-section>
-      <q-stepper v-else v-model="step" ref="stepper" color="primary" animated>
+      <q-stepper v-else ref="stepper" v-model="step" color="primary" animated>
         <q-step :name="1" title="Select Task" :done="step > 1" :error="!isValidStep1">
-          <q-form @submit.prevent ref="taskGeneralForm">
+          <q-form ref="taskGeneralForm" @submit.prevent>
             <q-card-section>
               <q-input
+                v-model="state.name"
                 :rules="[(val) => !!val || '*Required']"
                 filled
                 dense
-                v-model="state.name"
                 label="Descriptive name of task"
                 hide-bottom-space
               />
@@ -36,9 +36,9 @@
             </q-card-section>
             <q-card-section>
               <q-checkbox
+                v-model="collector"
                 dense
                 label="Collector Task"
-                v-model="collector"
                 class="q-pb-sm"
                 @update:model-value="
                   state.custom_field = null;
@@ -47,8 +47,8 @@
               />
               <tactical-dropdown
                 v-if="collector"
-                :rules="[(val) => !!val || '*Required']"
                 v-model="state.custom_field"
+                :rules="[(val) => !!val || '*Required']"
                 :options="customFieldOptions"
                 label="Custom Field to update"
                 filled
@@ -62,9 +62,9 @@
               />
               <q-checkbox
                 v-if="collector"
+                v-model="state.collector_all_output"
                 dense
                 label="Save all output"
-                v-model="state.collector_all_output"
                 class="q-py-sm"
               />
             </q-card-section>
@@ -87,9 +87,9 @@
               <div class="row q-pa-sm q-gutter-x-xs items-center">
                 <div class="text-subtitle2 col-12">Action Type:</div>
                 <q-option-group
+                  v-model="actionType"
                   class="col-12"
                   inline
-                  v-model="actionType"
                   :options="[
                     { label: 'Script', value: 'script' },
                     { label: 'Command', value: 'cmd' },
@@ -98,9 +98,9 @@
 
                 <tactical-dropdown
                   v-if="actionType === 'script'"
+                  v-model="script"
                   class="col-3"
                   label="Select script"
-                  v-model="script"
                   :options="scriptOptions"
                   filled
                   map-options
@@ -109,11 +109,11 @@
 
                 <q-select
                   v-if="actionType === 'script'"
+                  v-model="defaultArgs"
                   class="col-3"
                   dense
                   label="Script Arguments (press Enter after typing each argument)"
                   filled
-                  v-model="defaultArgs"
                   use-input
                   use-chips
                   multiple
@@ -124,11 +124,11 @@
 
                 <q-select
                   v-if="actionType === 'script'"
+                  v-model="defaultEnvVars"
                   class="col-3"
                   dense
                   :label="envVarsLabel"
                   filled
-                  v-model="defaultEnvVars"
                   use-input
                   use-chips
                   multiple
@@ -139,36 +139,36 @@
 
                 <q-input
                   v-if="actionType === 'script'"
+                  v-model.number="defaultTimeout"
                   class="col-2"
                   filled
                   dense
-                  v-model.number="defaultTimeout"
                   type="number"
                   label="Timeout (seconds)"
                 />
 
                 <q-input
                   v-if="actionType === 'cmd'"
-                  label="Command"
                   v-model="command"
+                  label="Command"
                   dense
                   filled
                   class="col-5"
                 />
                 <q-input
                   v-if="actionType === 'cmd'"
+                  v-model.number="defaultTimeout"
                   class="col-2"
                   filled
                   dense
-                  v-model.number="defaultTimeout"
                   type="number"
                   label="Timeout (seconds)"
                 />
                 <q-option-group
                   v-if="actionType === 'cmd'"
+                  v-model="shell"
                   class="col-4 q-pl-sm"
                   inline
-                  v-model="shell"
                   :options="[
                     { label: 'CMD', value: 'cmd' },
                     { label: 'Powershell', value: 'powershell' },
@@ -200,9 +200,9 @@
             <div class="text-subtitle2 q-pa-sm">
               Actions:
               <q-checkbox
+                v-model="state.continue_on_error"
                 class="float-right"
                 label="Continue on Errors"
-                v-model="state.continue_on_error"
                 dense
               >
                 <q-tooltip>Continue task if an action fails</q-tooltip>
@@ -210,10 +210,10 @@
             </div>
             <div class="q-pt-sm" style="height: 150px">
               <draggable
+                v-model="state.actions"
                 class="q-list"
                 handle=".handle"
                 ghost-class="ghost"
-                v-model="state.actions"
                 item-key="index"
               >
                 <template #item="{ index, element }">
@@ -262,7 +262,7 @@
 
         <q-step :name="3" title="Choose Schedule" :error="!isValidStep3">
           <div class="scroll" style="height: 60vh; max-height: 60vh">
-            <q-form @submit.prevent ref="taskDetailForm">
+            <q-form ref="taskDetailForm" @submit.prevent>
               <q-card-section>
                 <q-option-group
                   v-model="state.task_type"
@@ -281,13 +281,13 @@
               >
                 <!-- start time input -->
                 <q-input
+                  v-model="state.run_time_date"
                   class="col-6 q-pa-sm"
                   type="datetime-local"
                   dense
                   :label="isPosix && state.task_type !== 'runonce' ? 'Run at' : 'Start time'"
                   stack-label
                   filled
-                  v-model="state.run_time_date"
                   :hint="
                     isPosix && state.task_type !== 'runonce'
                       ? 'Agent timezone will be used. On Linux and macOS, the selected date is ignored—only the hour and minute are used.'
@@ -299,13 +299,13 @@
                 <!-- expires on input -->
                 <q-input
                   v-if="!isPosix"
+                  v-model="state.expire_date"
                   class="col-6 q-pa-sm"
                   type="datetime-local"
                   dense
                   stack-label
                   label="Expires on"
                   filled
-                  v-model="state.expire_date"
                   hint="Agent timezone will be used"
                 />
               </q-card-section>
@@ -326,6 +326,7 @@
               <q-card-section v-if="!isPosix && state.task_type === 'daily'" class="row">
                 <!-- daily interval -->
                 <q-input
+                  v-model.number="state.daily_interval"
                   :rules="[
                     (val) => !!val || '*Required',
                     (val) =>
@@ -335,7 +336,6 @@
                   dense
                   type="number"
                   label="Run every"
-                  v-model.number="state.daily_interval"
                   filled
                   class="col-6 q-pa-sm"
                 >
@@ -351,6 +351,7 @@
                 <!-- weekly interval -->
                 <q-input
                   v-if="!isPosix"
+                  v-model="state.weekly_interval"
                   :rules="[
                     (val) => !!val || '*Required',
                     (val) =>
@@ -360,7 +361,6 @@
                   class="col-6 q-pa-sm"
                   dense
                   label="Run every"
-                  v-model="state.weekly_interval"
                   filled
                 >
                   <template #append>
@@ -374,12 +374,12 @@
                   <!-- day of week input -->
                   Run on Days:
                   <q-option-group
+                    v-model="state.run_time_bit_weekdays"
                     :rules="[(val) => val.length > 0 || '*Required']"
                     inline
                     dense
                     :options="dayOfWeekOptions"
                     type="checkbox"
-                    v-model="state.run_time_bit_weekdays"
                   />
                 </div>
               </q-card-section>
@@ -388,8 +388,8 @@
               <q-card-section v-if="state.task_type === 'monthly'" class="row">
                 <!-- type of monthly schedule -->
                 <q-option-group
-                  class="col-12 q-pa-sm"
                   v-model="monthlyType"
+                  class="col-12 q-pa-sm"
                   inline
                   :options="[
                     { label: 'On Days', value: 'days' },
@@ -399,12 +399,12 @@
 
                 <!-- month select input -->
                 <q-select
+                  v-model="state.monthly_months_of_year"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
                   options-dense
-                  v-model="state.monthly_months_of_year"
                   :options="monthOptions"
                   label="Run on Months"
                   multiple
@@ -418,8 +418,8 @@
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
-                          dense
                           v-model="allMonthsCheckbox"
+                          dense
                           @update:model-value="toggleMonths"
                         />
                       </q-item-section>
@@ -448,12 +448,12 @@
                 <!-- days of month select input -->
                 <q-select
                   v-if="monthlyType === 'days'"
+                  v-model="state.monthly_days_of_month"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
                   options-dense
-                  v-model="state.monthly_days_of_month"
                   :options="dayOfMonthOptions"
                   label="Run on Days"
                   multiple
@@ -467,8 +467,8 @@
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
-                          dense
                           v-model="allMonthDaysCheckbox"
+                          dense
                           @update:model-value="toggleMonthDays"
                         />
                       </q-item-section>
@@ -499,12 +499,12 @@
                 <!-- week of month select input -->
                 <q-select
                   v-if="monthlyType === 'weeks'"
+                  v-model="state.monthly_weeks_of_month"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
                   options-dense
-                  v-model="state.monthly_weeks_of_month"
                   :options="weekOptions"
                   label="Run on weeks"
                   multiple
@@ -530,12 +530,12 @@
                 <!-- day of week select input -->
                 <q-select
                   v-if="monthlyType === 'weeks'"
+                  v-model="state.run_time_bit_weekdays"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
                   options-dense
-                  v-model="state.run_time_bit_weekdays"
                   :options="dayOfWeekOptions"
                   label="Run on days"
                   multiple
@@ -549,8 +549,8 @@
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
-                          dense
                           v-model="allWeekDaysCheckbox"
+                          dense
                           @update:model-value="toggleWeekDays"
                         />
                       </q-item-section>
@@ -588,11 +588,11 @@
                 <div v-if="!isPosix" class="col-12 text-h6">Advanced Settings (Windows only)</div>
                 <q-input
                   v-if="!isPosix"
+                  v-model="state.task_repetition_interval"
                   class="col-6 q-pa-sm"
                   dense
                   label="Repeat task every"
                   filled
-                  v-model="state.task_repetition_interval"
                   placeholder="e.g. 30m (30 minutes) or 1h (1 hour)"
                   lazy-rules
                   :rules="[
@@ -605,12 +605,12 @@
 
                 <q-input
                   v-if="!isPosix"
+                  v-model="state.task_repetition_duration"
                   :disable="!state.task_repetition_interval"
                   class="col-6 q-pa-sm"
                   dense
                   label="Task repeat duration"
                   filled
-                  v-model="state.task_repetition_duration"
                   placeholder="e.g. 6h (6 hours) or 1d (1 day)"
                   lazy-rules
                   :rules="[
@@ -627,21 +627,21 @@
 
                 <q-checkbox
                   v-if="!isPosix"
+                  v-model="state.stop_task_at_duration_end"
                   :disable="!state.task_repetition_interval"
                   class="col-6 q-pa-sm"
                   dense
-                  v-model="state.stop_task_at_duration_end"
                   label="Stop all tasks at the end of duration"
                 />
                 <div class="col-6"></div>
 
                 <q-input
                   v-if="!isPosix"
+                  v-model="state.random_task_delay"
                   class="col-6 q-pa-sm"
                   dense
                   label="Random task delay"
                   filled
-                  v-model="state.random_task_delay"
                   placeholder="e.g. 2m (2 minutes) or 1h (1 hour)"
                   lazy-rules
                   :rules="[
@@ -654,10 +654,10 @@
                 <div class="col-6"></div>
                 <q-checkbox
                   v-if="!isPosix"
+                  v-model="state.remove_if_not_scheduled"
                   :disable="!state.expire_date"
                   class="col-6 q-pa-sm"
                   dense
-                  v-model="state.remove_if_not_scheduled"
                   label="Delete task if not scheduled for 30 days"
                 >
                   <q-tooltip>Must set an expire date</q-tooltip>
@@ -665,10 +665,10 @@
                 <div class="col-6"></div>
                 <q-checkbox
                   v-if="!isPosix"
+                  v-model="state.run_asap_after_missed"
                   :disable="state.task_type === 'runonce'"
                   class="col-6 q-pa-sm"
                   dense
-                  v-model="state.run_asap_after_missed"
                   label="Run task ASAP after a scheduled start is missed"
                 />
 
@@ -676,10 +676,10 @@
 
                 <tactical-dropdown
                   v-if="!isPosix"
+                  v-model="state.task_instance_policy"
                   class="col-6 q-pa-sm"
                   label="Task instance policy"
                   :options="taskInstancePolicyOptions"
-                  v-model="state.task_instance_policy"
                   filled
                   map-options
                 />
@@ -688,9 +688,9 @@
               <!-- check failure options -->
               <q-card-section v-else-if="state.task_type === 'checkfailure'" class="row">
                 <tactical-dropdown
+                  v-model="state.assigned_check"
                   class="col-6 q-pa-sm"
                   :rules="[(val) => !!val || '*Required']"
-                  v-model="state.assigned_check"
                   filled
                   :options="checkOptions"
                   label="Select Check"
@@ -703,30 +703,30 @@
         </q-step>
       </q-stepper>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat label="Cancel" />
         <q-btn
           v-if="step > 1"
           label="Back"
-          @click="$refs.stepper.previous()"
           color="primary"
           flat
+          @click="$refs.stepper.previous()"
         />
         <q-btn
           v-if="step < 3"
-          @click="validateStep(step === 1 ? $refs.taskGeneralForm : undefined, $refs.stepper)"
           color="primary"
           label="Next"
           flat
+          @click="validateStep(step === 1 ? $refs.taskGeneralForm : undefined, $refs.stepper)"
         />
         <q-btn
           v-else
           :label="task ? 'Edit Task' : 'Add Task'"
           color="primary"
-          @click="validateStep($refs.taskDetailForm, $refs.stepper)"
           :loading="loading"
           flat
           dense
           push
+          @click="validateStep($refs.taskDetailForm, $refs.stepper)"
         />
       </q-card-actions>
     </q-card>
@@ -830,14 +830,14 @@ const plat_options = [
 ];
 
 export default defineComponent({
-  components: { TacticalDropdown, draggable },
   name: "AddAutomatedTask",
-  emits: [...useDialogPluginComponent.emits],
+  components: { TacticalDropdown, draggable },
   props: {
     parent: Object, // parent policy or agent for task
     task: Object, // only for editing
     plat: String,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup(props) {
     // setup quasar dialog
     const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

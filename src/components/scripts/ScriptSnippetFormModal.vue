@@ -20,15 +20,15 @@
           @click="generateScriptOpenAI"
         />
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <div class="row">
         <q-input
+          v-model="snippet.name"
           :rules="[(val: string) => !!val || '*Required']"
           class="q-pa-sm col-4"
-          v-model="snippet.name"
           label="Name"
           filled
           dense
@@ -44,13 +44,13 @@
           emit-value
           map-options
         />
-        <q-input class="q-pa-sm col-6" filled dense v-model="snippet.desc" label="Description" />
+        <q-input v-model="snippet.desc" class="q-pa-sm col-6" filled dense label="Description" />
       </div>
 
       <div ref="snippetEditor" :style="{ height: `${$q.screen.height - 132}px` }"></div>
 
       <q-card-actions align="right">
-        <q-btn dense flat label="Cancel" v-close-popup />
+        <q-btn v-close-popup dense flat label="Cancel" />
         <q-btn :loading="loading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>

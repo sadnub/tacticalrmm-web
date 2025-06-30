@@ -20,9 +20,9 @@
             <q-card-section>
               <div>Add Client:</div>
               <q-input
+                v-model="form.client.name"
                 dense
                 filled
-                v-model="form.client.name"
                 :rules="[(val) => !!val || '*Required']"
               >
                 <template #prepend>
@@ -33,9 +33,9 @@
             <q-card-section>
               <div>Add Site:</div>
               <q-input
+                v-model="form.site.name"
                 dense
                 filled
-                v-model="form.site.name"
                 :rules="[(val) => !!val || '*Required']"
               >
                 <template #prepend>
@@ -46,11 +46,11 @@
             <q-card-section>
               <div>Default timezone for agents:</div>
               <tactical-dropdown
+                v-model="form.timezone"
                 filterable
                 dense
                 options-dense
                 filled
-                v-model="form.timezone"
                 :options="coreStore.coreSettings?.all_timezones || []"
               />
             </q-card-section>
@@ -71,7 +71,7 @@
                 </q-icon>
               </div>
 
-              <q-input dense filled v-model="form.companyname"> </q-input>
+              <q-input v-model="form.companyname" dense filled> </q-input>
             </q-card-section>
 
             <q-card-actions align="center">

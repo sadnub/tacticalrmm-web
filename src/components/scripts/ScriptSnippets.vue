@@ -10,9 +10,9 @@
       }"
     >
       <q-bar>
-        <q-btn @click="getSnippets" class="q-mr-sm" dense flat push icon="refresh" />Script Snippets
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getSnippets" />Script Snippets
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -42,25 +42,25 @@
 
         <template #body="props">
           <!-- Table View -->
-          <q-tr :props="props" @dblclick="editSnippetModal(props.row)" class="cursor-pointer">
+          <q-tr :props="props" class="cursor-pointer" @dblclick="editSnippetModal(props.row)">
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item clickable v-close-popup @click="editSnippetModal(props.row)">
+                <q-item v-close-popup clickable @click="editSnippetModal(props.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
 
-                <q-item clickable v-close-popup @click="deleteSnippet(props.row)">
+                <q-item v-close-popup clickable @click="deleteSnippet(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
                   <q-item-section>Delete</q-item-section>
                 </q-item>
 
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>

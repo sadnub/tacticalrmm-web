@@ -1,41 +1,41 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 40vw">
       <q-bar>
         {{ !!client ? `Editing ${client.name}` : "Adding Client" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-form @submit="submit">
         <q-card-section>
           <q-input
+            v-model="state.name"
             filled
             dense
-            v-model="state.name"
             label="Name"
             :rules="[(val) => (val && val.length > 0) || '*Required']"
           />
         </q-card-section>
         <q-card-section v-if="!client">
           <q-input
+            v-model="site.name"
             :rules="[(val) => !!val || '*Required']"
             filled
             dense
-            v-model="site.name"
             label="Default first site"
           />
         </q-card-section>
 
-        <div class="q-pl-sm text-h6" v-if="fieldStore.clientCustomFields.length > 0">
+        <div v-if="fieldStore.clientCustomFields.length > 0" class="q-pl-sm text-h6">
           Custom Fields
         </div>
         <q-card-section v-for="field in fieldStore.clientCustomFields" :key="field.id">
           <CustomField v-model="clientCustomFieldValues[field.name]" :field="field" />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             :loading="clientStore.isLoading"
             dense

@@ -1,14 +1,15 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 35vw">
       <q-bar>
         Add an Agent
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup />
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-form @submit.prevent="submit">
         <q-card-section>
           <Tactical-dropdown
+            v-model="agentInstallRequest.site"
             dense
             options-dense
             filled
@@ -16,7 +17,6 @@
             emit-value
             filterable
             label="Site"
-            v-model="agentInstallRequest.site"
             :options="siteOptions"
           />
         </q-card-section>
@@ -49,9 +49,9 @@
               <q-tooltip> Enable ICMP echo requests in the local firewall </q-tooltip>
             </q-checkbox>
             <q-checkbox
+              v-show="agentInstallRequest.agenttype === 'workstation'"
               v-model="agentInstallRequest.power"
               dense
-              v-show="agentInstallRequest.agenttype === 'workstation'"
               label="Disable sleep/hibernate"
             />
           </div>
@@ -60,42 +60,42 @@
           Arch
           <div class="q-gutter-sm">
             <q-radio
-              v-model="agentInstallRequest.goarch"
-              :val="GOARCH_AMD64"
-              label="64 bit"
               v-show="
                 agentInstallRequest.agentOS === 'windows' || agentInstallRequest.agentOS === 'linux'
               "
+              v-model="agentInstallRequest.goarch"
+              :val="GOARCH_AMD64"
+              label="64 bit"
             />
             <q-radio
+              v-show="agentInstallRequest.agentOS === 'darwin'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_AMD64"
               label="Intel 64 bit"
-              v-show="agentInstallRequest.agentOS === 'darwin'"
             />
             <q-radio
+              v-show="agentInstallRequest.agentOS !== 'darwin'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_i386"
               label="32 bit"
-              v-show="agentInstallRequest.agentOS !== 'darwin'"
             />
             <q-radio
+              v-show="agentInstallRequest.agentOS === 'linux'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_ARM64"
               label="ARM 64 bit"
-              v-show="agentInstallRequest.agentOS === 'linux'"
             />
             <q-radio
+              v-show="agentInstallRequest.agentOS === 'darwin'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_ARM64"
               label="Apple Silicon (M-Series)"
-              v-show="agentInstallRequest.agentOS === 'darwin'"
             />
             <q-radio
+              v-show="agentInstallRequest.agentOS === 'linux'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_ARM32"
               label="ARM 32 bit"
-              v-show="agentInstallRequest.agentOS === 'linux'"
             />
           </div>
         </q-card-section>

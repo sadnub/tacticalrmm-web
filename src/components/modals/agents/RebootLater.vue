@@ -4,23 +4,23 @@
       <q-bar>
         Schedule reboot on {{ agent.hostname }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-card-section>
         <q-input
+          v-model="state.datetime"
           type="datetime-local"
           dense
           label="Reboot time"
           stack-label
           filled
-          v-model="state.datetime"
           hint="Uses the agent's local time zone"
         />
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn dense flat push label="Cancel" v-close-popup />
+        <q-btn v-close-popup dense flat push label="Cancel" />
         <q-btn
           :loading="loading"
           dense
@@ -44,10 +44,10 @@ import { formatDateInputField } from "src/utils/format";
 
 export default {
   name: "RebootLater",
-  emits: [...useDialogPluginComponent.emits],
   props: {
     agent: !Object,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup(props) {
     // setup quasar dialog plugin
     const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

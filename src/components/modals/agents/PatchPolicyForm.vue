@@ -12,10 +12,10 @@
       <div class="col-3">Critical:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.critical"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.critical"
         :options="severityOptions"
         emit-value
         map-options
@@ -25,10 +25,10 @@
       <div class="col-3">Important:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.important"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.important"
         :options="severityOptions"
         emit-value
         map-options
@@ -38,10 +38,10 @@
       <div class="col-3">Moderate:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.moderate"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.moderate"
         :options="severityOptions"
         emit-value
         map-options
@@ -51,10 +51,10 @@
       <div class="col-3">Low:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.low"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.low"
         :options="severityOptions"
         emit-value
         map-options
@@ -64,10 +64,10 @@
       <div class="col-3">Other:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.other"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.other"
         :options="severityOptions"
         emit-value
         map-options
@@ -80,37 +80,37 @@
       <div class="col-3">Schedule Frequency:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.run_time_frequency"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.run_time_frequency"
         :options="frequencyOptions"
         emit-value
         map-options
       />
     </q-card-section>
-    <q-card-section class="row" v-if="winupdatepolicy.run_time_frequency === 'monthly'">
+    <q-card-section v-if="winupdatepolicy.run_time_frequency === 'monthly'" class="row">
       <div class="col-3">Day of month to run:</div>
       <div class="col-4"></div>
       <q-select
         v-show="winupdatepolicy.run_time_frequency !== 'inherit'"
+        v-model="winupdatepolicy.run_time_day"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.run_time_day"
         :options="monthDays"
         emit-value
         map-options
       />
     </q-card-section>
-    <q-card-section class="row" v-show="winupdatepolicy.run_time_frequency !== 'inherit'">
+    <q-card-section v-show="winupdatepolicy.run_time_frequency !== 'inherit'" class="row">
       <div class="col-3">Scheduled Time:</div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.run_time_hour"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.run_time_hour"
         :options="timeOptions"
         emit-value
         map-options
@@ -137,10 +137,10 @@
       <div class="col-3"></div>
       <div class="col-4"></div>
       <q-select
+        v-model="winupdatepolicy.reboot_after_install"
         dense
         class="col-5"
         filled
-        v-model="winupdatepolicy.reboot_after_install"
         :options="rebootOptions"
         emit-value
         map-options
@@ -149,7 +149,7 @@
     <!-- Failed Patches -->
     <div class="text-subtitle2">Failed Patches</div>
     <q-separator />
-    <q-card-section class="row" v-if="!policy">
+    <q-card-section v-if="!policy" class="row">
       <div class="col-5">
         <q-checkbox
           v-model="winupdatepolicy.reprocess_failed_inherit"
@@ -157,15 +157,15 @@
         />
       </div>
     </q-card-section>
-    <q-card-section class="row" v-show="!winupdatepolicy.reprocess_failed_inherit">
+    <q-card-section v-show="!winupdatepolicy.reprocess_failed_inherit" class="row">
       <div class="col-5">
         <q-checkbox v-model="winupdatepolicy.reprocess_failed" label="Reprocess failed patches" />
       </div>
 
       <div class="col-3">
         <q-input
-          dense
           v-model.number="winupdatepolicy.reprocess_failed_times"
+          dense
           type="number"
           filled
           label="Times"
@@ -178,7 +178,7 @@
         label="Send an email when patch installation fails"
       />
     </q-card-section>
-    <q-card-actions align="left" v-if="policy">
+    <q-card-actions v-if="policy" align="left">
       <q-btn label="Submit" color="primary" @click="submit" />
       <q-btn label="Cancel" @click="$emit('hide')" />
       <q-space />
@@ -198,12 +198,12 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "PatchPolicyForm",
-  emits: ["close", "hide"],
+  mixins: [mixins],
   props: {
     policy: Object,
     agent: Object,
   },
-  mixins: [mixins],
+  emits: ["close", "hide"],
   data() {
     return {
       editing: true,
@@ -241,6 +241,23 @@ export default {
       timeOptions: scheduledTimes,
       monthDays,
     };
+  },
+  mounted() {
+    if (this.policy && this.policy.winupdatepolicy[0]) {
+      this.winupdatepolicy = this.policy.winupdatepolicy[0];
+      this.editing = true;
+    } else if (this.policy) {
+      this.winupdatepolicy = this.defaultWinUpdatePolicy;
+      this.winupdatepolicy.policy = this.policy.id;
+      this.editing = false;
+    } else if (this.agent) {
+      this.winupdatepolicy = this.agent.winupdatepolicy[0];
+
+      // add agent inherit options
+      this.severityOptions.push({ label: "Inherit", value: "inherit" });
+      this.frequencyOptions.push({ label: "Inherit", value: "inherit" });
+      this.rebootOptions.push({ label: "Inherit", value: "inherit" });
+    }
   },
   methods: {
     submit() {
@@ -296,23 +313,6 @@ export default {
             });
         });
     },
-  },
-  mounted() {
-    if (this.policy && this.policy.winupdatepolicy[0]) {
-      this.winupdatepolicy = this.policy.winupdatepolicy[0];
-      this.editing = true;
-    } else if (this.policy) {
-      this.winupdatepolicy = this.defaultWinUpdatePolicy;
-      this.winupdatepolicy.policy = this.policy.id;
-      this.editing = false;
-    } else if (this.agent) {
-      this.winupdatepolicy = this.agent.winupdatepolicy[0];
-
-      // add agent inherit options
-      this.severityOptions.push({ label: "Inherit", value: "inherit" });
-      this.frequencyOptions.push({ label: "Inherit", value: "inherit" });
-      this.rebootOptions.push({ label: "Inherit", value: "inherit" });
-    }
   },
 };
 </script>

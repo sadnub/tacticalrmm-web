@@ -3,7 +3,7 @@
     <q-card class="q-dialog-plugin" style="min-width: 60vw">
       <q-splitter v-model="splitterModel">
         <template #before>
-          <q-tabs dense v-model="tab" vertical class="text-primary">
+          <q-tabs v-model="tab" dense vertical class="text-primary">
             <q-tab name="ui" label="User Interface" />
           </q-tabs>
         </template>
@@ -12,7 +12,7 @@
             <q-card-section class="row items-center">
               <div class="text-h6">Preferences</div>
               <q-space />
-              <q-btn icon="close" flat round dense v-close-popup />
+              <q-btn v-close-popup icon="close" flat round dense />
             </q-card-section>
             <q-tab-panels
               v-model="tab"
@@ -28,27 +28,27 @@
                   <div class="col-6">Agent double-click action:</div>
                   <div class="col-2"></div>
                   <q-select
+                    v-model="agentDblClickAction"
                     map-options
                     emit-value
                     filled
                     dense
                     options-dense
-                    v-model="agentDblClickAction"
                     :options="agentDblClickOptions"
                     class="col-4"
                     @update:model-value="url_action = null"
                   />
                 </q-card-section>
-                <q-card-section class="row" v-if="agentDblClickAction === 'urlaction'">
+                <q-card-section v-if="agentDblClickAction === 'urlaction'" class="row">
                   <div class="col-6">URL Action:</div>
                   <div class="col-2"></div>
                   <q-select
+                    v-model="url_action"
                     map-options
                     emit-value
                     filled
                     dense
                     options-dense
-                    v-model="url_action"
                     :options="urlActions"
                     class="col-4"
                   />
@@ -57,12 +57,12 @@
                   <div class="col-6">Agent table default tab:</div>
                   <div class="col-2"></div>
                   <q-select
+                    v-model="defaultAgentTblTab"
                     map-options
                     emit-value
                     filled
                     dense
                     options-dense
-                    v-model="defaultAgentTblTab"
                     :options="defaultAgentTblTabOptions"
                     class="col-4"
                   />
@@ -71,10 +71,10 @@
                   <div class="col-4">Loading Bar Color:</div>
                   <div class="col-4"></div>
                   <q-select
+                    v-model="loading_bar_color"
                     filled
                     dense
                     options-dense
-                    v-model="loading_bar_color"
                     :options="loadingBarColors"
                     class="col-4"
                   />
@@ -82,7 +82,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Info Color:</div>
                   <div class="col-2"></div>
-                  <q-input filled dense v-model="dash_info_color" class="col-8">
+                  <q-input v-model="dash_info_color" filled dense class="col-8">
                     <template #after>
                       <q-btn
                         round
@@ -100,7 +100,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Positive Color:</div>
                   <div class="col-2"></div>
-                  <q-input filled dense v-model="dash_positive_color" class="col-8">
+                  <q-input v-model="dash_positive_color" filled dense class="col-8">
                     <template #after>
                       <q-btn
                         round
@@ -118,7 +118,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Negative Color:</div>
                   <div class="col-2"></div>
-                  <q-input filled dense v-model="dash_negative_color" class="col-8">
+                  <q-input v-model="dash_negative_color" filled dense class="col-8">
                     <template #after>
                       <q-btn
                         round
@@ -136,7 +136,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Dashboard Warning Color:</div>
                   <div class="col-2"></div>
-                  <q-input filled dense v-model="dash_warning_color" class="col-8">
+                  <q-input v-model="dash_warning_color" filled dense class="col-8">
                     <template #after>
                       <q-btn
                         round
@@ -155,12 +155,12 @@
                   <div class="col-2">Client Sort:</div>
                   <div class="col-2"></div>
                   <q-select
+                    v-model="clientTreeSort"
                     map-options
                     emit-value
                     filled
                     dense
                     options-dense
-                    v-model="clientTreeSort"
                     :options="clientTreeSortOptions"
                     class="col-8"
                   />
@@ -168,7 +168,7 @@
                 <q-card-section class="row">
                   <div class="col-2">Date Format:</div>
                   <div class="col-2"></div>
-                  <q-input filled dense v-model="date_format" class="col-8">
+                  <q-input v-model="date_format" filled dense class="col-8">
                     <template #after>
                       <q-btn
                         round
@@ -211,8 +211,8 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "UserPreferences",
-  emits: ["hide", "ok", "cancel"],
   mixins: [mixins],
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       loadingBarColors,
@@ -281,6 +281,9 @@ export default {
         this.getURLActions();
       }
     },
+  },
+  mounted() {
+    this.getUserPrefs();
   },
   methods: {
     openURL(url) {
@@ -355,9 +358,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  mounted() {
-    this.getUserPrefs();
   },
 };
 </script>

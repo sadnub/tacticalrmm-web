@@ -4,23 +4,23 @@
       <q-bar>
         Add Script
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-form id="scriptUploadForm" @submit="submitForm">
         <q-card-section>
           <q-input
+            v-model="script.name"
             label="Name"
             filled
             dense
-            v-model="script.name"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
 
         <q-card-section>
-          <q-input label="Description" filled dense v-model="script.description" />
+          <q-input v-model="script.description" label="Description" filled dense />
         </q-card-section>
 
         <q-card-section>
@@ -37,7 +37,7 @@
         </q-card-section>
 
         <q-card-section>
-          <q-file label="Script Upload" v-model="file" filled dense counter>
+          <q-file v-model="file" label="Script Upload" filled dense counter>
             <template #prepend>
               <q-icon name="attach_file" />
             </template>
@@ -96,18 +96,18 @@
 
         <q-card-section>
           <q-input
+            v-model.number="script.default_timeout"
             label="Default Timeout"
             type="number"
             filled
             dense
-            v-model.number="script.default_timeout"
             :rules="[(val) => val >= 5 || 'Minimum is 5']"
           />
         </q-card-section>
 
         <q-card-actions>
           <q-space />
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn :loading="loading" dense flat label="Add" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -129,12 +129,12 @@ import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 // static data
 import { shellOptions } from "src/composables/scripts";
 export default {
-  components: { TacticalDropdown },
   name: "ScriptModal",
-  emits: [...useDialogPluginComponent.emits],
+  components: { TacticalDropdown },
   props: {
     categories: !Array,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup() {
     // setup quasar plugins
     const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

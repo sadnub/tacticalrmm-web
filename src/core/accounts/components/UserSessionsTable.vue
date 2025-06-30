@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="width: 60vw; max-width: 90vw; min-height: 40vh">
       <q-bar>
         User Sessions for {{ user.username }}
@@ -8,14 +8,9 @@
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
-      <q-table
+      <tactical-table
         dense
-        :table-class="{
-          'table-bgcolor': !$q.dark.isActive,
-          'table-bgcolor-dark': $q.dark.isActive,
-        }"
         :style="{ 'max-height': `${$q.screen.height - 24}px` }"
-        class="tbl-sticky"
         :rows="userStore.userSessions"
         :columns="columns"
         :loading="userStore.isLoading"
@@ -24,14 +19,16 @@
         binary-state-sort
         virtual-scroll
         :rows-per-page-options="[0]"
+        column-select
+        storage-key="user-sessions"
       >
         <template #top>
           <q-space />
           <q-btn
             label="Remove All Sessions"
-            @click="removeAllSessions"
             size="sm"
             color="negative"
+            @click="removeAllSessions"
           />
         </template>
         <template #body="{ row }">
@@ -42,14 +39,14 @@
             <q-td>
               <q-btn
                 size="sm"
-                @click="removeSession(row)"
                 label="Disconnect"
                 color="negative"
+                @click="removeSession(row)"
               ></q-btn>
             </q-td>
           </q-tr>
         </template>
-      </q-table>
+      </tactical-table>
     </q-card>
   </q-dialog>
 </template>
@@ -63,6 +60,7 @@ import { useDashboardStore } from "src/stores/dashboard";
 
 //types
 import type { User, UserSession } from "../types";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 const columns: QTableColumn[] = [
   {

@@ -1,50 +1,47 @@
 <template>
   <q-card>
     <q-bar v-if="modal">
-      <q-btn @click="search" class="q-mr-sm" dense flat push icon="refresh" />
+      <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="search" />
       <q-space />Audit Manager
       <q-space />
-      <q-btn dense flat icon="close" v-close-popup>
+      <q-btn v-close-popup dense flat icon="close">
         <q-tooltip class="bg-white text-primary">Close</q-tooltip>
       </q-btn>
     </q-bar>
-    <q-table
-      @request="onRequest"
+    <tactical-table
       :title="modal ? 'Audit Logs' : ''"
       :rows="auditLogStore.auditLog"
       :columns="columns"
-      class="tabs-tbl-sticky"
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
       :style="{
         'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
       }"
       row-key="id"
+      v-model:pagination="requestData.pagination"
       dense
       binary-state-sort
-      v-model:pagination="requestData.pagination"
       :rows-per-page-options="[25, 50, 100, 500, 1000]"
       no-data-label="No data found"
-      @row-click="openAuditDetail"
+      @request="onRequest"
       virtual-scroll
       :loading="loading"
+      column-select,
+      storage-key="audit-manager"
+      @row-click="openAuditDetail"
     >
       <template #top>
-        <q-btn v-if="agent" class="q-pr-sm" dense flat push @click="search" icon="refresh" />
+        <q-btn v-if="agent" class="q-pr-sm" dense flat push icon="refresh" @click="search" />
         <q-option-group
           v-if="!agent"
-          class="q-pr-sm"
           v-model="filterType"
+          class="q-pr-sm"
           :options="filterTypeOptions"
           color="primary"
         />
         <tactical-dropdown
           v-if="filterType === 'agents' && !agent"
+          v-model="requestData.agentFilter"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="requestData.agentFilter"
           :options="agentOptions"
           label="Agent"
           clearable
@@ -55,9 +52,9 @@
         />
         <tactical-dropdown
           v-if="filterType === 'clients' && !agent"
+          v-model="requestData.clientFilter"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="requestData.clientFilter"
           :options="clientOptions"
           label="Clients"
           clearable
@@ -67,9 +64,9 @@
           filterable
         />
         <tactical-dropdown
+          v-model="requestData.userFilter"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="requestData.userFilter"
           :options="userOptionsFlat"
           label="Users"
           clearable
@@ -77,9 +74,9 @@
           multiple
         />
         <tactical-dropdown
+          v-model="requestData.actionFilter"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="requestData.actionFilter"
           :options="actionOptions"
           label="Action"
           clearable
@@ -88,10 +85,10 @@
           map-options
         />
         <tactical-dropdown
-          class="q-pr-sm"
-          style="width: 200px"
           v-if="!agent"
           v-model="requestData.objectFilter"
+          class="q-pr-sm"
+          style="width: 200px"
           :options="objectOptions"
           label="Object"
           clearable
@@ -100,9 +97,9 @@
           map-options
         />
         <tactical-dropdown
+          v-model="requestData.timeFilter"
           class="q-pr-sm"
           style="width: 200px"
-          v-model="requestData.timeFilter"
           :options="timeOptions"
           label="Time"
           filled
@@ -120,7 +117,7 @@
           </div>
         </q-td>
       </template>
-    </q-table>
+    </tactical-table>
   </q-card>
 </template>
 
@@ -139,6 +136,7 @@ import { formatDate, formatTableColumnText } from "src/utils/format";
 import AuditLogDetailModal from "./AuditLogDetailModal.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // types
 import type { AuditAction, AuditLog, GetAuditLogRequest, Pagination } from "../types";

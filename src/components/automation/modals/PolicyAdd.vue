@@ -4,7 +4,7 @@
       <q-bar>
         Edit policies assigned to {{ type }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -12,8 +12,8 @@
         <q-card-section v-if="options.length > 0">
           <tactical-dropdown
             v-if="type === 'client' || type === 'site'"
-            class="q-mb-md"
             v-model="selectedServerPolicy"
+            class="q-mb-md"
             :options="options"
             label="Server Policy"
             filled
@@ -42,7 +42,7 @@
             filterable
           />
 
-          <q-checkbox label="Block policy inheritance" v-model="blockInheritance">
+          <q-checkbox v-model="blockInheritance" label="Block policy inheritance">
             <q-tooltip>This {{ type }} will not inherit from higher policies</q-tooltip>
           </q-checkbox>
         </q-card-section>
@@ -50,7 +50,7 @@
           No Automation Policies have been setup. Go to Settings > Automation Manager
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             v-if="options.length > 0"
             dense
@@ -72,7 +72,7 @@ import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 export default {
   name: "PolicyAdd",
   components: { TacticalDropdown },
-  emits: ["hide", "ok", "cancel"],
+  mixins: [mixins],
   props: {
     object: !Object,
     type: {
@@ -84,7 +84,7 @@ export default {
       },
     },
   },
-  mixins: [mixins],
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       selectedWorkstationPolicy: null,
@@ -93,6 +93,18 @@ export default {
       blockInheritance: false,
       options: [],
     };
+  },
+  mounted() {
+    this.getPolicies();
+
+    if (this.type !== "agent") {
+      this.selectedServerPolicy = this.object.server_policy;
+      this.selectedWorkstationPolicy = this.object.workstation_policy;
+      this.blockInheritance = this.object.block_policy_inheritance;
+    } else {
+      this.selectedAgentPolicy = this.object.policy;
+      this.blockInheritance = this.object.block_policy_inheritance;
+    }
   },
   methods: {
     submit() {
@@ -187,18 +199,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  mounted() {
-    this.getPolicies();
-
-    if (this.type !== "agent") {
-      this.selectedServerPolicy = this.object.server_policy;
-      this.selectedWorkstationPolicy = this.object.workstation_policy;
-      this.blockInheritance = this.object.block_policy_inheritance;
-    } else {
-      this.selectedAgentPolicy = this.object.policy;
-      this.blockInheritance = this.object.block_policy_inheritance;
-    }
   },
 };
 </script>

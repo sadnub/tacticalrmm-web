@@ -1,8 +1,8 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card
-      class="q-dialog-plugin"
       id="script-manager-card"
+      class="q-dialog-plugin"
       :style="{
         width: `${$q.screen.width - 100}px`,
         'max-width': `${$q.screen.width - 100}px`,
@@ -11,16 +11,16 @@
       }"
     >
       <q-bar>
-        <q-btn @click="getScripts" class="q-mr-sm" dense flat push icon="refresh" />Script Manager
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getScripts" />Script Manager
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <div class="row q-pt-xs q-pl-xs">
         <q-btn-dropdown icon="add" label="New" no-caps dense flat>
           <q-list dense>
-            <q-item clickable v-close-popup @click="newScriptModal">
+            <q-item v-close-popup clickable @click="newScriptModal">
               <q-item-section side>
                 <q-icon size="xs" name="add" />
               </q-item-section>
@@ -28,7 +28,7 @@
                 <q-item-label>New Script</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item clickable v-close-popup @click="uploadScriptModal">
+            <q-item v-close-popup clickable @click="uploadScriptModal">
               <q-item-section side>
                 <q-icon size="xs" name="cloud_upload" />
               </q-item-section>
@@ -102,11 +102,11 @@
       >
         <q-tree
           ref="folderTree"
+          v-model:expanded="expanded"
           :nodes="tree"
           :filter="search"
           no-connectors
           node-key="id"
-          v-model:expanded="expanded"
           no-results-label="No Scripts Found"
           no-nodes-label="No Scripts Found"
         >
@@ -186,14 +186,14 @@
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item clickable v-close-popup @click="viewCodeModal(props.node)">
+                <q-item v-close-popup clickable @click="viewCodeModal(props.node)">
                   <q-item-section side>
                     <q-icon name="remove_red_eye" />
                   </q-item-section>
                   <q-item-section>View Code</q-item-section>
                 </q-item>
 
-                <q-item clickable v-close-popup @click="cloneScriptModal(props.node)">
+                <q-item v-close-popup clickable @click="cloneScriptModal(props.node)">
                   <q-item-section side>
                     <q-icon name="content_copy" />
                   </q-item-section>
@@ -201,10 +201,10 @@
                 </q-item>
 
                 <q-item
-                  clickable
                   v-close-popup
-                  @click="editScriptModal(props.node)"
+                  clickable
                   :disable="props.node.script_type === 'builtin'"
+                  @click="editScriptModal(props.node)"
                 >
                   <q-item-section side>
                     <q-icon name="edit" />
@@ -213,10 +213,10 @@
                 </q-item>
 
                 <q-item
-                  clickable
                   v-close-popup
-                  @click="deleteScript(props.node)"
+                  clickable
                   :disable="props.node.script_type === 'builtin'"
+                  @click="deleteScript(props.node)"
                 >
                   <q-item-section side>
                     <q-icon name="delete" />
@@ -226,7 +226,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup @click="favoriteScript(props.node)">
+                <q-item v-close-popup clickable @click="favoriteScript(props.node)">
                   <q-item-section side>
                     <q-icon name="star" />
                   </q-item-section>
@@ -235,7 +235,7 @@
                   }}</q-item-section>
                 </q-item>
 
-                <q-item clickable v-close-popup @click="exportScript(props.node)">
+                <q-item v-close-popup clickable @click="exportScript(props.node)">
                   <q-item-section side>
                     <q-icon name="cloud_download" />
                   </q-item-section>
@@ -244,7 +244,7 @@
 
                 <q-separator />
 
-                <q-item clickable v-close-popup @click="hideScript(props.node)">
+                <q-item v-close-popup clickable @click="hideScript(props.node)">
                   <q-item-section side>
                     <q-icon :name="props.node.hidden ? 'visibility' : 'visibility_off'" />
                   </q-item-section>
@@ -255,7 +255,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>
@@ -294,24 +294,24 @@
           <!-- Table View -->
           <q-tr
             :props="props"
+            class="cursor-pointer"
             @dblclick="
               props.row.script_type === 'builtin'
                 ? viewCodeModal(props.row)
                 : editScriptModal(props.row)
             "
-            class="cursor-pointer"
           >
             <!-- Context Menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item clickable v-close-popup @click="viewCodeModal(props.row)">
+                <q-item v-close-popup clickable @click="viewCodeModal(props.row)">
                   <q-item-section side>
                     <q-icon name="remove_red_eye" />
                   </q-item-section>
                   <q-item-section>View Code</q-item-section>
                 </q-item>
 
-                <q-item clickable v-close-popup @click="cloneScriptModal(props.row)">
+                <q-item v-close-popup clickable @click="cloneScriptModal(props.row)">
                   <q-item-section side>
                     <q-icon name="content_copy" />
                   </q-item-section>
@@ -319,10 +319,10 @@
                 </q-item>
 
                 <q-item
-                  clickable
                   v-close-popup
-                  @click="editScriptModal(props.row)"
+                  clickable
                   :disable="props.row.script_type === 'builtin'"
+                  @click="editScriptModal(props.row)"
                 >
                   <q-item-section side>
                     <q-icon name="edit" />
@@ -331,10 +331,10 @@
                 </q-item>
 
                 <q-item
-                  clickable
                   v-close-popup
-                  @click="deleteScript(props.row)"
+                  clickable
                   :disable="props.row.script_type === 'builtin'"
+                  @click="deleteScript(props.row)"
                 >
                   <q-item-section side>
                     <q-icon name="delete" />
@@ -344,7 +344,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup @click="favoriteScript(props.row)">
+                <q-item v-close-popup clickable @click="favoriteScript(props.row)">
                   <q-item-section side>
                     <q-icon name="star" />
                   </q-item-section>
@@ -353,7 +353,7 @@
                   }}</q-item-section>
                 </q-item>
 
-                <q-item clickable v-close-popup @click="exportScript(props.row)">
+                <q-item v-close-popup clickable @click="exportScript(props.row)">
                   <q-item-section side>
                     <q-icon name="cloud_download" />
                   </q-item-section>
@@ -362,7 +362,7 @@
 
                 <q-separator />
 
-                <q-item clickable v-close-popup @click="hideScript(props.row)">
+                <q-item v-close-popup clickable @click="hideScript(props.row)">
                   <q-item-section side>
                     <q-icon :name="props.row.hidden ? 'visibility' : 'visibility_off'" />
                   </q-item-section>
@@ -373,7 +373,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>
@@ -440,8 +440,8 @@
                 >All</q-badge
               >
               <q-badge
-                v-else
                 v-for="plat in props.row.supported_platforms"
+                v-else
                 :key="plat"
                 color="primary"
                 class="q-pr-xs"

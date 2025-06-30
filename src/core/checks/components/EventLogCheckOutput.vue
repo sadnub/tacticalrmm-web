@@ -4,28 +4,25 @@
       <q-bar>
         {{ evtLogData.readable_desc }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <div v-if="evtLogData.check_result?.extra_details">
-        <q-table
+        <tactical-table
+          v-model:pagination="pagination"
           dense
           style="height: 65vh"
-          :table-class="{
-            'table-bgcolor': !$q.dark.isActive,
-            'table-bgcolor-dark': $q.dark.isActive,
-          }"
-          class="tabs-tbl-sticky"
           :filter="filter"
           :rows="evtLogData.check_result?.extra_details.log"
           :columns="columns"
-          v-model:pagination="pagination"
           row-key="uid"
           binary-state-sort
           virtual-scroll
           :rows-per-page-options="[0]"
           no-data-label="No event logs"
+          column-select
+          storage-key="eventlog-output"
         >
           <template #top>
             <q-space />
@@ -39,7 +36,7 @@
               :columns="columns"
             />
           </template>
-        </q-table>
+        </tactical-table>
       </div>
       <div v-else>Check has not run yet</div>
     </q-card>
@@ -54,6 +51,9 @@ import { useDialogPluginComponent } from "quasar";
 
 //ui imports
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+
+// type imports
 import type { Check } from "../types";
 
 // static data

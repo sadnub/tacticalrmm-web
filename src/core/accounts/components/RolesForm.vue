@@ -1,19 +1,19 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 75vw; max-height: 75vh" class="q-dialog-plugin">
       <q-bar>
         {{ localRole ? "Editing Role" : "Adding Role" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup />
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-form ref="form" @submit="onSubmit">
         <q-card-section class="row">
           <q-input
+            v-model="localRole.name"
             label="Role Name"
             class="col-6"
             dense
             filled
-            v-model="localRole.name"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
@@ -124,10 +124,10 @@
 
           <q-card-section class="row">
             <tactical-dropdown
+              v-model="localRole.can_view_clients"
               class="col-6"
               label="Allowed Clients"
               :options="clientOptions"
-              v-model="localRole.can_view_clients"
               hint="Empty means all clients are allowed"
               filled
               map-options
@@ -137,10 +137,10 @@
           </q-card-section>
           <q-card-section class="row">
             <tactical-dropdown
+              v-model="localRole.can_view_sites"
               class="col-6"
               label="Allowed Sites"
               :options="siteOptions"
-              v-model="localRole.can_view_sites"
               hint="Empty means all sites are allowed"
               filled
               map-options
@@ -251,7 +251,7 @@
           </q-card-section>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             :loading="roleStore.isLoading"
             dense

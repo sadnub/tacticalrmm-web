@@ -2,10 +2,10 @@
   <q-dialog ref="dialog" @hide="onHide">
     <q-card class="q-dialog-plugin" style="width: 90vw; max-width: 90vw">
       <q-bar>
-        <q-btn @click="getPolicyTree" class="q-mr-sm" dense flat push icon="refresh" />Policy
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getPolicyTree" />Policy
         Overview
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -14,10 +14,10 @@
           <div class="q-pa-md">
             <q-tree
               ref="tree"
+              v-model:selected="selectedPolicyId"
               :nodes="clientSiteTree"
               node-key="key"
               selected-color="primary"
-              v-model:selected="selectedPolicyId"
             ></q-tree>
           </div>
         </template>
@@ -69,12 +69,12 @@ import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTa
 
 export default {
   name: "PolicyOverview",
-  emits: ["hide", "ok", "cancel"],
   components: {
     PolicyAutomatedTasksTab,
     PolicyChecksTab,
   },
   mixins: [mixins],
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       splitterModel: 25,
@@ -82,6 +82,9 @@ export default {
       selectedTab: "checks",
       clientSiteTree: [],
     };
+  },
+  mounted() {
+    this.getPolicyTree();
   },
   methods: {
     getPolicyTree() {
@@ -235,9 +238,6 @@ export default {
     onHide() {
       this.$emit("hide");
     },
-  },
-  mounted() {
-    this.getPolicyTree();
   },
 };
 </script>

@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? `Edit Ping Check` : "Add Ping Check" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -13,59 +13,59 @@
         <div style="max-height: 70vh" class="scroll">
           <q-card-section>
             <q-input
+              v-model="localCheck.name"
               filled
               dense
-              v-model="localCheck.name"
               label="Descriptive Name"
               :rules="[(val) => !!val || '*Required']"
             />
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model="localCheck.ip"
               dense
               filled
-              v-model="localCheck.ip"
               label="Hostname or IP"
               :rules="[(val) => !!val || '*Required']"
             />
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.alert_severity"
               filled
               dense
               options-dense
               emit-value
               map-options
-              v-model="localCheck.alert_severity"
               :options="severityOptions"
               label="Alert Severity"
             />
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.fails_b4_alert"
               filled
               dense
               options-dense
               map-options
               emit-value
-              v-model="localCheck.fails_b4_alert"
               :options="failOptions"
               label="Number of consecutive failures before alert"
             />
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model.number="localCheck.run_interval"
               filled
               dense
               type="number"
-              v-model.number="localCheck.run_interval"
               label="Run this check every (seconds)"
               hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
             />
           </q-card-section>
         </div>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             :loading="checkStore.isLoading"
             dense

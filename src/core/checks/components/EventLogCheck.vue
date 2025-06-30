@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? "Edit Event Log Check" : "Add Event Log Check" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -13,29 +13,29 @@
         <div style="max-height: 70vh" class="scroll">
           <q-card-section>
             <q-input
+              v-model="localCheck.name"
               dense
               filled
-              v-model="localCheck.name"
               label="Descriptive Name"
               :rules="[(val) => !!val || '*Required']"
             />
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.log_name"
               dense
               options-dense
               filled
-              v-model="localCheck.log_name"
               :options="logNameOptions"
               label="Event log to query"
             />
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.fail_when"
               dense
               options-dense
               filled
-              v-model="localCheck.fail_when"
               :options="failWhenOptions"
               label="Fail When"
               emit-value
@@ -44,26 +44,26 @@
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model="localCheck.event_id"
               dense
               filled
-              v-model="localCheck.event_id"
               label="Event ID (Use * to match every event ID)"
               :rules="[(val) => validateEventID(val) || 'Invalid Event ID']"
             />
           </q-card-section>
           <q-card-section>
             <q-checkbox v-model="eventSource" label="Event source" />
-            <q-input dense filled v-model="localCheck.event_source" :disable="!eventSource" />
+            <q-input v-model="localCheck.event_source" dense filled :disable="!eventSource" />
           </q-card-section>
           <q-card-section>
             <q-checkbox v-model="eventMessage" label="Message contains string" />
-            <q-input dense filled v-model="localCheck.event_message" :disable="!eventMessage" />
+            <q-input v-model="localCheck.event_message" dense filled :disable="!eventMessage" />
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model.number="localCheck.search_last_day"
               dense
               filled
-              v-model.number="localCheck.search_last_day"
               label="How many previous days to search (Enter 0 for the entire log)"
               :rules="[
                 (val) => !!val.toString() || '*Required',
@@ -75,18 +75,18 @@
           <q-card-section>
             <span>Event Type:</span>
             <div class="q-gutter-sm">
-              <q-radio dense v-model="localCheck.event_type" val="INFO" label="Information" />
-              <q-radio dense v-model="localCheck.event_type" val="WARNING" label="Warning" />
-              <q-radio dense v-model="localCheck.event_type" val="ERROR" label="Error" />
+              <q-radio v-model="localCheck.event_type" dense val="INFO" label="Information" />
+              <q-radio v-model="localCheck.event_type" dense val="WARNING" label="Warning" />
+              <q-radio v-model="localCheck.event_type" dense val="ERROR" label="Error" />
               <q-radio
-                dense
                 v-model="localCheck.event_type"
+                dense
                 val="AUDIT_SUCCESS"
                 label="Success Audit"
               />
               <q-radio
-                dense
                 v-model="localCheck.event_type"
+                dense
                 val="AUDIT_FAILURE"
                 label="Failure Audit"
               />
@@ -94,48 +94,48 @@
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.alert_severity"
               filled
               dense
               options-dense
               map-options
               emit-value
-              v-model="localCheck.alert_severity"
               :options="severityOptions"
               label="Alert Severity"
             />
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model.number="localCheck.number_of_events_b4_alert"
               label="Number of events found before alert"
               dense
               filled
               type="number"
-              v-model.number="localCheck.number_of_events_b4_alert"
             />
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.fails_b4_alert"
               filled
               dense
               options-dense
-              v-model="localCheck.fails_b4_alert"
               :options="failOptions"
               label="Number of consecutive failures before alert"
             />
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model.number="localCheck.run_interval"
               filled
               dense
               type="number"
-              v-model.number="localCheck.run_interval"
               label="Run this check every (seconds)"
               hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
             />
           </q-card-section>
         </div>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             :loading="checkStore.isLoading"
             dense

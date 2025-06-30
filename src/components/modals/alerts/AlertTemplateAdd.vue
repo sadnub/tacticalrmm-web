@@ -4,11 +4,11 @@
       <q-bar>
         Edit Alert Template assigned to {{ type }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
-      <q-form @submit.prevent="submit" ref="form">
+      <q-form ref="form" @submit.prevent="submit">
         <q-card-section v-if="options.length > 0">
           <q-select
             v-model="selectedTemplate"
@@ -26,7 +26,7 @@
           No Alert Templates have been setup. Go to Settings > Alerts Manager
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn v-if="options.length > 0" flat label="Submit" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
@@ -39,7 +39,7 @@ import mixins from "src/mixins/mixins";
 
 export default {
   name: "AlertTemplateAdd",
-  emits: ["hide", "ok", "cancel"],
+  mixins: [mixins],
   props: {
     object: !Object,
     type: {
@@ -51,12 +51,16 @@ export default {
       },
     },
   },
-  mixins: [mixins],
+  emits: ["hide", "ok", "cancel"],
   data() {
     return {
       selectedTemplate: null,
       options: [],
     };
+  },
+  mounted() {
+    this.getAlertTemplates();
+    this.selectedTemplate = this.object.alert_template;
   },
   methods: {
     submit() {
@@ -125,10 +129,6 @@ export default {
       this.$emit("ok");
       this.hide();
     },
-  },
-  mounted() {
-    this.getAlertTemplates();
-    this.selectedTemplate = this.object.alert_template;
   },
 };
 </script>

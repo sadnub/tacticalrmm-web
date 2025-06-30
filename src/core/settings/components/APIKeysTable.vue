@@ -14,10 +14,10 @@
     </div>
     <q-separator />
     <tactical-table
+      v-model:pagination="pagination"
       dense
       :rows="keyStore.apiKeys"
       :columns="columns"
-      v-model:pagination="pagination"
       row-key="id"
       binary-state-sort
       hide-pagination
@@ -37,13 +37,13 @@
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
-              <q-item clickable v-close-popup @click="editAPIKey(props.row)">
+              <q-item v-close-popup clickable @click="editAPIKey(props.row)">
                 <q-item-section side>
                   <q-icon name="edit" />
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="deleteAPIKey(props.row)">
+              <q-item v-close-popup clickable @click="deleteAPIKey(props.row)">
                 <q-item-section side>
                   <q-icon name="delete" />
                 </q-item-section>
@@ -52,7 +52,7 @@
 
               <q-separator></q-separator>
 
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup clickable>
                 <q-item-section>Close</q-item-section>
               </q-item>
             </q-list>

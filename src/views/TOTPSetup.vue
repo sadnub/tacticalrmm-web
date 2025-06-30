@@ -24,8 +24,8 @@
               label="Finish"
               color="primary"
               class="full-width"
-              @click="logout"
               :loading="loading"
+              @click="logout"
             />
           </q-card-actions>
         </q-card>

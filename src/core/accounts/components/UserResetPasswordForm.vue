@@ -1,19 +1,19 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="width: 60vw">
       <q-form ref="form" @submit="onSubmit">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ user.username }} Password Reset</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn v-close-popup icon="close" flat round dense />
         </q-card-section>
         <q-card-section class="row">
           <div class="col-2">New Password:</div>
           <div class="col-10">
             <q-input
+              v-model="password"
               filled
               dense
-              v-model="password"
               :type="hidePassword ? 'password' : 'text'"
               :rules="[(val) => !!val || '*Required']"
             >

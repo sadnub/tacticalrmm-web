@@ -4,8 +4,10 @@
       <q-item
         v-for="integration in $integrations[type + 'MenuIntegrations']"
         :key="integration.name"
+        v-close-popup
         dense
         clickable
+        :to="integration.type === 'route' ? integration.uri : undefined"
         @click="
           integration.type === 'dialog'
             ? $q.dialog({
@@ -16,8 +18,6 @@
               })
             : undefined
         "
-        :to="integration.type === 'route' ? integration.uri : undefined"
-        v-close-popup
       >
         <q-item-section>{{ integration.name }}</q-item-section>
       </q-item>

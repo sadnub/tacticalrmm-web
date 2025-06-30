@@ -24,8 +24,8 @@ For details, see: https://license.tacticalrmm.com/ee
       </q-card-section>
       <q-card-actions>
         <q-space />
-        <q-btn dense flat label="Cancel" v-close-popup />
-        <q-btn :loading="loading" @click="submit" dense flat label="Select" color="primary" />
+        <q-btn v-close-popup dense flat label="Cancel" />
+        <q-btn :loading="loading" dense flat label="Select" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>

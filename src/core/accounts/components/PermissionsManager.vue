@@ -1,19 +1,14 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 60vw; height: 75vh">
       <q-bar>
-        <q-btn @click="roleStore.getRoles" class="q-mr-sm" dense flat icon="refresh" />
+        <q-btn class="q-mr-sm" dense flat icon="refresh" @click="roleStore.getRoles" />
         <q-space />Manage Roles
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup />
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-table
+      <tactical-table
         dense
-        :table-class="{
-          'table-bgcolor': !$q.dark.isActive,
-          'table-bgcolor-dark': $q.dark.isActive,
-        }"
-        class="tabs-tbl-sticky"
         style="max-height: 70vh"
         binary-state-sort
         virtual-scroll
@@ -23,12 +18,14 @@
         :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: false }"
         no-data-label="No Roles"
         :rows-per-page-options="[0]"
+        column-select
+        storage-key="permission-manager"
       >
         <template #top>
           <q-btn flat dense icon="add" label="New Role" @click="showAddRoleModal" />
         </template>
         <template #body="props">
-          <q-tr :props="props" @dblclick="showEditRoleModal(props.row)" class="cursor-pointer">
+          <q-tr :props="props" class="cursor-pointer" @dblclick="showEditRoleModal(props.row)">
             <q-menu context-menu auto-close>
               <q-list dense style="min-width: 200px">
                 <q-item clickable @click="showEditRoleModal(props.row)">
@@ -39,8 +36,8 @@
                 </q-item>
                 <q-item
                   clickable
-                  @click="deleteRole(props.row)"
                   :disable="props.row.user_count > 0"
+                  @click="deleteRole(props.row)"
                 >
                   <q-item-section side>
                     <q-icon name="delete" />
@@ -64,7 +61,7 @@
             </q-td>
           </q-tr>
         </template>
-      </q-table>
+      </tactical-table>
     </q-card>
   </q-dialog>
 </template>
@@ -79,6 +76,7 @@ import { useRoleStore } from "../api";
 import type { Role } from "../types";
 
 // ui imports
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 import RolesForm from "./RolesForm.vue";
 
 // static data

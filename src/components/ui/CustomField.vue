@@ -1,18 +1,18 @@
 <template>
   <q-input
-    :class="longTextClass(field)"
     v-if="field.type === 'text' || field.type === 'number'"
     ref="input"
+    :class="longTextClass(field)"
     filled
     dense
     :label="field.name"
     :type="field.type === 'text' ? 'text' : 'number'"
     :hint="hintText(field)"
     :model-value="modelValue"
-    @update:model-value="(value) => $emit('update:modelValue', value)"
     :rules="[...validationRules]"
     reactive-rules
     autogrow
+    @update:model-value="(value) => $emit('update:modelValue', value)"
   />
 
   <q-toggle
@@ -26,24 +26,23 @@
 
   <q-input
     v-else-if="field.type === 'datetime'"
+    ref="input"
     :label="field.name"
     :hint="hintText(field)"
-    ref="input"
     type="datetime-local"
     dense
     stack-label
     filled
     :model-value="modelValue"
-    @update:model-value="(value) => $emit('update:modelValue', value)"
     :rules="[...validationRules]"
     reactive-rules
+    @update:model-value="(value) => $emit('update:modelValue', value)"
   />
 
   <q-select
     v-else-if="field.type === 'single' || field.type === 'multiple'"
     ref="input"
     :model-value="modelValue"
-    @update:model-value="(value) => $emit('update:modelValue', value)"
     filled
     dense
     :hint="hintText(field)"
@@ -53,6 +52,7 @@
     :rules="[...validationRules]"
     reactive-rules
     clearable
+    @update:model-value="(value) => $emit('update:modelValue', value)"
   />
 </template>
 
@@ -62,6 +62,17 @@ export default {
   name: "CustomField",
   props: ["field", "modelValue"],
   emits: ["update:modelValue"],
+  computed: {
+    validationRules() {
+      const rules = [];
+
+      if (this.field.required) {
+        rules.push((val) => !!val || `${this.field.name} is required`);
+      }
+
+      return rules;
+    },
+  },
   methods: {
     validate(...args) {
       return this.$refs.input.validate(...args);
@@ -84,17 +95,6 @@ export default {
         field.default_value_string.length >= 130
         ? "q-mb-xl q-mt-xl"
         : "";
-    },
-  },
-  computed: {
-    validationRules() {
-      const rules = [];
-
-      if (this.field.required) {
-        rules.push((val) => !!val || `${this.field.name} is required`);
-      }
-
-      return rules;
     },
   },
 };

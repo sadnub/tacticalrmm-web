@@ -2,15 +2,16 @@
   <q-dialog ref="dialog" @hide="onHide">
     <q-card class="q-dialog-plugin" style="min-width: 70vw">
       <q-bar>
-        <q-btn ref="refresh" @click="refresh" class="q-mr-sm" dense flat push icon="refresh" />
+        <q-btn ref="refresh" class="q-mr-sm" dense flat push icon="refresh" @click="refresh" />
         {{ title.slice(0, 27) }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
       <q-card-section>
         <q-table
+          v-model:pagination="pagination"
           style="max-height: 35vh"
           :table-class="{
             'table-bgcolor': !$q.dark.isActive,
@@ -19,7 +20,6 @@
           class="tabs-tbl-sticky"
           :rows="data"
           :columns="columns"
-          v-model:pagination="pagination"
           :rows-per-page-options="[0]"
           row-key="id"
           binary-state-sort
@@ -83,8 +83,8 @@
               <q-td v-if="props.row.check_type === 'ping'">
                 <span
                   style="cursor: pointer; text-decoration: underline"
-                  @click="pingInfo(props.row)"
                   class="ping-cell text-primary"
+                  @click="pingInfo(props.row)"
                   >output</span
                 >
               </q-td>
@@ -98,16 +98,16 @@
               >
                 <span
                   style="cursor: pointer; text-decoration: underline"
-                  @click="showScriptOutput(props.row)"
                   class="script-cell text-primary"
+                  @click="showScriptOutput(props.row)"
                   >output</span
                 >
               </q-td>
               <q-td v-else-if="props.row.check_type === 'eventlog'">
                 <span
                   style="cursor: pointer; text-decoration: underline"
-                  @click="showEventInfo(props.row)"
                   class="eventlog-cell text-primary"
+                  @click="showEventInfo(props.row)"
                   >output</span
                 >
               </q-td>
@@ -136,7 +136,6 @@ import PreDialog from "src/components/ui/PreDialog.vue";
 
 export default {
   name: "PolicyStatus",
-  emits: ["hide", "ok", "cancel"],
   props: {
     item: {
       required: true,
@@ -151,6 +150,7 @@ export default {
       },
     },
   },
+  emits: ["hide", "ok", "cancel"],
   setup() {
     // setup vuex store
     const store = useStore();
@@ -213,6 +213,13 @@ export default {
         ? this.item.readable_desc + " Status"
         : this.item.name + " Status";
     },
+  },
+  mounted() {
+    if (this.type === "task") {
+      this.getTaskData();
+    } else {
+      this.getCheckData();
+    }
   },
   methods: {
     getCheckData() {
@@ -281,13 +288,6 @@ export default {
     onHide() {
       this.$emit("hide");
     },
-  },
-  mounted() {
-    if (this.type === "task") {
-      this.getTaskData();
-    } else {
-      this.getCheckData();
-    }
   },
 };
 </script>

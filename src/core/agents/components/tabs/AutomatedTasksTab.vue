@@ -1,23 +1,20 @@
 <template>
   <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
-    <q-table
+    <tactical-table
+      v-model:pagination="pagination"
       dense
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
-      class="tabs-tbl-sticky"
       :style="{ 'max-height': `${tabHeight}px` }"
       :rows="agentStore.agentTasks"
       :columns="columns"
       row-key="id"
       binary-state-sort
       virtual-scroll
-      v-model:pagination="pagination"
       :loading="agentStore.isLoading"
       :rows-per-page-options="[0]"
       no-data-label="No tasks"
+      column-select
+      storage-key="agent-tasks-tab"
     >
       <template #top>
         <q-btn
@@ -25,10 +22,10 @@
           dense
           flat
           push
+          icon="refresh"
           @click="
             agentStore.selectedAgentId && agentStore.getAgentTasks(agentStore.selectedAgentId)
           "
-          icon="refresh"
         />
         <q-btn icon="add" label="Add Task" no-caps dense flat push @click="showAddTask" />
       </template>
@@ -92,17 +89,17 @@
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
-              <q-item clickable v-close-popup @click="runWinTask(props.row)">
+              <q-item v-close-popup clickable @click="runWinTask(props.row)">
                 <q-item-section side>
                   <q-icon name="play_arrow" />
                 </q-item-section>
                 <q-item-section>Run task now</q-item-section>
               </q-item>
               <q-item
-                clickable
-                v-close-popup
-                @click="showEditTask(props.row)"
                 v-if="!props.row.policy"
+                v-close-popup
+                clickable
+                @click="showEditTask(props.row)"
               >
                 <q-item-section side>
                   <q-icon name="edit" />
@@ -110,10 +107,10 @@
                 <q-item-section>Edit</q-item-section>
               </q-item>
               <q-item
-                clickable
-                v-close-popup
-                @click="deleteTask(props.row)"
                 v-if="!props.row.policy"
+                v-close-popup
+                clickable
+                @click="deleteTask(props.row)"
               >
                 <q-item-section side>
                   <q-icon name="delete" />
@@ -121,7 +118,7 @@
                 <q-item-section>Delete</q-item-section>
               </q-item>
               <q-separator></q-separator>
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup clickable>
                 <q-item-section>Close</q-item-section>
               </q-item>
             </q-list>
@@ -129,10 +126,10 @@
           <!-- tds -->
           <q-td>
             <q-checkbox
-              dense
-              @update:model-value="editTask(props.row, { enabled: !props.row.enabled })"
               v-model="props.row.enabled"
+              dense
               :disable="!!props.row.policy"
+              @update:model-value="editTask(props.row, { enabled: !props.row.enabled })"
             />
           </q-td>
           <!-- text alert -->
@@ -151,10 +148,10 @@
 
             <q-checkbox
               v-else
-              dense
-              @update:model-value="editTask(props.row, { text_alert: !props.row.text_alert })"
               v-model="props.row.text_alert"
+              dense
               :disable="!!props.row.policy"
+              @update:model-value="editTask(props.row, { text_alert: !props.row.text_alert })"
             />
           </q-td>
           <!-- email alert -->
@@ -173,10 +170,10 @@
 
             <q-checkbox
               v-else
-              dense
-              @update:model-value="editTask(props.row, { email_alert: !props.row.email_alert })"
               v-model="props.row.email_alert"
+              dense
               :disable="!!props.row.policy"
+              @update:model-value="editTask(props.row, { email_alert: !props.row.email_alert })"
             />
           </q-td>
           <!-- dashboard alert -->
@@ -195,14 +192,14 @@
 
             <q-checkbox
               v-else
+              v-model="props.row.dashboard_alert"
               dense
+              :disable="!!props.row.policy"
               @update:model-value="
                 editTask(props.row, {
                   dashboard_alert: !props.row.dashboard_alert,
                 })
               "
-              v-model="props.row.dashboard_alert"
-              :disable="!!props.row.policy"
             />
           </q-td>
           <!-- policy check icon -->
@@ -296,7 +293,7 @@
           </q-td>
         </q-tr>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -314,6 +311,9 @@ import { notifyError } from "src/utils/notify";
 // ui imports
 import AutomatedTaskForm from "src/components/tasks/AutomatedTaskForm.vue";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+
+// type imports
 import type { AutomatedTask } from "src/core/tasks/types";
 
 // static data

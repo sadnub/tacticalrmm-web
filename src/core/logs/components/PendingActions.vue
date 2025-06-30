@@ -1,26 +1,21 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="height: 70vh; min-width: 70vw">
+    <q-card class="q-dialog-plugin" style="height: 70vh; min-width: 70vw" persistent>
       <q-bar>
         <q-btn
-          @click="actionStore.getPendingActions"
           class="q-mr-sm"
           dense
           flat
           push
           icon="refresh"
+          @click="actionStore.getPendingActions"
         />
         {{ agent ? `Pending Actions for ${agent.hostname}` : "All Pending Actions" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup />
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-table
+      <tactical-table
         dense
-        :table-class="{
-          'table-bgcolor': !$q.dark.isActive,
-          'table-bgcolor-dark': $q.dark.isActive,
-        }"
-        class="remote-bg-tbl-sticky"
         style="max-height: 65vh"
         :rows="filteredActions"
         :columns="columns"
@@ -31,6 +26,7 @@
         :rows-per-page-options="[0]"
         no-data-label="No Pending Actions"
         :loading="loading"
+        storage-key="pending-actions-table"
       >
         <template #top>
           <q-space />
@@ -41,9 +37,9 @@
                 : `Show ${completedCount} Completed`
             "
             :icon="showCompleted ? 'visibility_off' : 'visibility'"
-            @click="showCompleted = !showCompleted"
             dense
             flat
+            @click="showCompleted = !showCompleted"
           />
         </template>
 
@@ -62,7 +58,7 @@
                   <q-item-section>Cancel Action</q-item-section>
                 </q-item>
                 <q-separator />
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>
@@ -99,7 +95,7 @@
             <q-td v-else></q-td>
           </q-tr>
         </template>
-      </q-table>
+      </tactical-table>
     </q-card>
   </q-dialog>
 </template>
@@ -111,6 +107,9 @@ import { useQuasar, useDialogPluginComponent, type QTableProps } from "quasar";
 import { usePendingActionStore } from "../api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { getNextAgentUpdateTime } from "src/utils/format";
+
+// ui imports
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
 
 // types

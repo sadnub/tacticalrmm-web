@@ -3,7 +3,7 @@
     <q-card style="min-width: 800px">
       <q-splitter v-model="splitterModel">
         <template #before>
-          <q-tabs dense v-model="tab" vertical class="text-primary">
+          <q-tabs v-model="tab" dense vertical class="text-primary">
             <q-tab name="general" label="General" />
             <q-tab name="customfields" label="Custom Fields" />
             <q-tab name="patch" label="Patches" />
@@ -15,7 +15,7 @@
             <q-card-section class="row items-center">
               <div class="text-h6">Edit {{ agent.hostname }}</div>
               <q-space />
-              <q-btn icon="close" flat round dense v-close-popup />
+              <q-btn v-close-popup icon="close" flat round dense />
             </q-card-section>
             <div class="scroll" style="height: 65vh; max-height: 65vh">
               <q-tab-panels
@@ -30,8 +30,8 @@
                     <div class="col-2">Site:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
-                      class="col-8"
                       v-model="agent.site"
+                      class="col-8"
                       :options="siteOptions"
                       filled
                       map-options
@@ -42,10 +42,10 @@
                     <div class="col-2">Type:</div>
                     <div class="col-2"></div>
                     <q-select
+                      v-model="agent.monitoring_type"
                       dense
                       options-dense
                       filled
-                      v-model="agent.monitoring_type"
                       :options="monTypes"
                       class="col-8"
                     />
@@ -53,17 +53,17 @@
                   <q-card-section class="row">
                     <div class="col-2">Description:</div>
                     <div class="col-2"></div>
-                    <q-input filled dense v-model="agent.description" class="col-8" />
+                    <q-input v-model="agent.description" filled dense class="col-8" />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-2">Timezone:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
+                      v-model="timezone"
                       filterable
                       filled
                       dense
                       options-dense
-                      v-model="timezone"
                       :options="allTimezones"
                       class="col-8"
                     />
@@ -71,11 +71,11 @@
                   <q-card-section class="row">
                     <div class="col-10">Run checks every:</div>
                     <q-input
+                      v-model.number="agent.check_interval"
                       dense
                       type="number"
                       filled
                       label="Seconds"
-                      v-model.number="agent.check_interval"
                       class="col-2"
                       :rules="[
                         (val) => !!val || '*Required',
@@ -96,11 +96,11 @@
                       <span class="text-weight-bold">offline</span> if it has not checked in after:
                     </div>
                     <q-input
+                      v-model.number="agent.offline_time"
                       dense
                       type="number"
                       filled
                       label="Minutes"
-                      v-model.number="agent.offline_time"
                       class="col-2"
                       :rules="[
                         (val) => !!val || '*Required',
@@ -121,11 +121,11 @@
                       <span class="text-weight-bold">overdue</span> if it has not checked in after:
                     </div>
                     <q-input
+                      v-model.number="agent.overdue_time"
                       dense
                       type="number"
                       filled
                       label="Minutes"
-                      v-model.number="agent.overdue_time"
                       class="col-2"
                       :rules="[
                         (val) => !!val || '*Required',
@@ -149,7 +149,7 @@
 
                 <!-- custom fields -->
                 <q-tab-panel name="customfields">
-                  <div class="text-subtitle" v-if="customFields.length === 0">
+                  <div v-if="customFields.length === 0" class="text-subtitle">
                     No agent custom fields found. Go to **Settings > Global Settings > Custom
                     Settings**
                   </div>
@@ -174,7 +174,7 @@
                         </q-item-label>
                         <q-item-label>{{ policy ? policy.name : "None" }}</q-item-label>
                       </q-item-section>
-                      <q-item-section side v-if="policy">
+                      <q-item-section v-if="policy" side>
                         <q-item-label>
                           <i>{{ policy.active ? "" : "disabled" }}</i>
                         </q-item-label>
@@ -190,7 +190,7 @@
                           agent.alert_template ? agent.alert_template.name : "None"
                         }}</q-item-label>
                       </q-item-section>
-                      <q-item-section side v-if="agent.alert_template">
+                      <q-item-section v-if="agent.alert_template" side>
                         <q-item-label>
                           <i>{{ agent.alert_template.is_active ? "" : "disabled" }}</i>
                         </q-item-label>
@@ -333,12 +333,12 @@ import { capitalize } from "src/utils/format";
 
 export default {
   name: "EditAgent",
-  emits: [...useDialogPluginComponent.emits],
   components: { PatchPolicyForm, CustomField, TacticalDropdown },
   mixins: [mixins],
   props: {
     agent_id: !String,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup() {
     // quasar dialog setup
     const { dialogRef, onDialogHide } = useDialogPluginComponent();

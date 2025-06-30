@@ -4,17 +4,12 @@
     Only supported for Windows agents at this time
   </div>
   <div v-else>
-    <q-table
+    <tactical-table
+      v-model:pagination="pagination"
       dense
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
-      class="tabs-tbl-sticky"
       :style="{ 'max-height': tabHeight }"
       :rows="updateStore.updates"
       :columns="columns"
-      v-model:pagination="pagination"
       :filter="filter"
       row-key="id"
       binary-state-sort
@@ -22,17 +17,19 @@
       :loading="updateStore.isLoading"
       :rows-per-page-options="[0]"
       no-data-label="No Windows Updates"
+      column-select
+      storage-key="agent-updates-tab"
     >
       <template #top>
         <q-btn
           dense
           flat
           push
+          icon="refresh"
+          class="q-mr-sm"
           @click="
             agentStore.selectedAgentId && updateStore.getAgentUpdates(agentStore.selectedAgentId)
           "
-          icon="refresh"
-          class="q-mr-sm"
         />
         <q-btn
           label="Run Update Scan"
@@ -40,10 +37,10 @@
           flat
           push
           no-caps
+          class="q-mr-sm"
           @click="
             agentStore.selectedAgentId && updateStore.runAgentUpdateScan(agentStore.selectedAgentId)
           "
-          class="q-mr-sm"
         />
         <q-btn
           label="Install Approved Updates"
@@ -51,11 +48,11 @@
           flat
           push
           no-caps
+          class="q-mr-sm"
           @click="
             agentStore.selectedAgentId &&
               updateStore.runAgentUpdateInstall(agentStore.selectedAgentId)
           "
-          class="q-mr-sm"
         />
         <q-space />
 
@@ -77,32 +74,32 @@
             <q-list dense style="min-width: 100px">
               <q-item
                 v-if="!row.installed"
-                clickable
                 v-close-popup
+                clickable
                 @click="editWinUpdate(row.id, 'inherit')"
               >
                 <q-item-section>Inherit</q-item-section>
               </q-item>
               <q-item
                 v-if="!row.installed"
-                clickable
                 v-close-popup
+                clickable
                 @click="editWinUpdate(row.id, 'approve')"
               >
                 <q-item-section>Approve</q-item-section>
               </q-item>
               <q-item
                 v-if="!row.installed"
-                clickable
                 v-close-popup
+                clickable
                 @click="editWinUpdate(row.id, 'ignore')"
               >
                 <q-item-section>Ignore</q-item-section>
               </q-item>
               <q-item
                 v-if="!row.installed"
-                clickable
                 v-close-popup
+                clickable
                 @click="editWinUpdate(row.id, 'nothing')"
               >
                 <q-item-section>Do Nothing</q-item-section>
@@ -152,7 +149,7 @@
           <q-td>{{ dashboardStore.formatDate(row.date_installed) }}</q-td>
         </q-tr>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -171,6 +168,7 @@ import type { WindowsUpdate, PatchAction } from "../../types";
 // ui imports
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import WinUpdateDialog from "./WinUpdateDialog.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // static data
 const columns: QTableProps["columns"] = [

@@ -27,27 +27,27 @@
             <q-item-label caption>{{ getTimeLapse(alert.alert_time) }}</q-item-label>
             <q-item-label>
               <q-icon
+                v-close-popup
                 name="snooze"
                 size="xs"
                 class="cursor-pointer"
                 @click="snoozeAlert(alert)"
-                v-close-popup
               >
                 <q-tooltip>Snooze alert</q-tooltip>
               </q-icon>
               <q-icon
+                v-close-popup
                 name="flag"
                 size="xs"
                 class="cursor-pointer"
                 @click="resolveAlert(alert)"
-                v-close-popup
               >
                 <q-tooltip>Resolve alert</q-tooltip>
               </q-icon>
             </q-item-label>
           </q-item-section>
         </q-item>
-        <q-item clickable v-close-popup @click="showOverview"
+        <q-item v-close-popup clickable @click="showOverview"
           >View All Alerts ({{ alertsCount }})</q-item
         >
       </q-list>
@@ -85,6 +85,13 @@ export default {
       else if (severities.includes("warning")) return this.dash_warning_color;
       else return this.dash_info_color;
     },
+  },
+  mounted() {
+    this.getAlerts();
+    this.pollAlerts();
+  },
+  beforeUnmount() {
+    clearInterval(this.poll);
   },
   methods: {
     getAlerts() {
@@ -171,13 +178,6 @@ export default {
         60 * 1 * 1000,
       );
     },
-  },
-  mounted() {
-    this.getAlerts();
-    this.pollAlerts();
-  },
-  beforeUnmount() {
-    clearInterval(this.poll);
   },
 };
 </script>

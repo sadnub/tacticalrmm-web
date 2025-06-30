@@ -3,7 +3,7 @@
     <q-card-section class="row items-center">
       <div class="text-h6">Code Signing</div>
       <q-space />
-      <q-btn icon="close" flat round dense v-close-popup />
+      <q-btn v-close-popup icon="close" flat round dense />
     </q-card-section>
     <q-card-section class="row">
       <q-btn
@@ -11,8 +11,8 @@
         label="Code sign all agents"
         color="positive"
         class="full-width"
-        @click="doCodeSign"
         :loading="loading"
+        @click="doCodeSign"
       >
         <q-tooltip>Force all existing agents to be updated to the code-signed version</q-tooltip>
         <template #loading>
@@ -25,9 +25,9 @@
         <div class="col-2">Token:</div>
         <div class="col-1"></div>
         <q-input
+          v-model="settings.token"
           filled
           dense
-          v-model="settings.token"
           class="col-9 q-pa-none"
           :rules="[(val) => !!val || 'Token is required']"
         />

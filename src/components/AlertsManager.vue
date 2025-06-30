@@ -5,15 +5,15 @@
         <q-bar>
           <q-btn
             ref="refresh"
-            @click="refresh"
             class="q-mr-sm"
             dense
             flat
             push
             icon="refresh"
+            @click="refresh"
           />Alerts Manager
           <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
+          <q-btn v-close-popup dense flat icon="close">
             <q-tooltip class="bg-white text-primary">Close</q-tooltip>
           </q-btn>
         </q-bar>
@@ -32,10 +32,10 @@
             />
           </div>
           <q-table
+            v-model:pagination="pagination"
             dense
             :rows="templates"
             :columns="columns"
-            v-model:pagination="pagination"
             row-key="id"
             binary-state-sort
             hide-pagination
@@ -85,13 +85,13 @@
                 <!-- context menu -->
                 <q-menu context-menu>
                   <q-list dense style="min-width: 200px">
-                    <q-item clickable v-close-popup @click="showEditTemplateModal(props.row)">
+                    <q-item v-close-popup clickable @click="showEditTemplateModal(props.row)">
                       <q-item-section side>
                         <q-icon name="edit" />
                       </q-item-section>
                       <q-item-section>Edit</q-item-section>
                     </q-item>
-                    <q-item clickable v-close-popup @click="deleteTemplate(props.row)">
+                    <q-item v-close-popup clickable @click="deleteTemplate(props.row)">
                       <q-item-section side>
                         <q-icon name="delete" />
                       </q-item-section>
@@ -100,7 +100,7 @@
 
                     <q-separator></q-separator>
 
-                    <q-item clickable v-close-popup @click="showAlertExclusions(props.row)">
+                    <q-item v-close-popup clickable @click="showAlertExclusions(props.row)">
                       <q-item-section side>
                         <q-icon name="rule" />
                       </q-item-section>
@@ -109,7 +109,7 @@
 
                     <q-separator></q-separator>
 
-                    <q-item clickable v-close-popup>
+                    <q-item v-close-popup clickable>
                       <q-item-section>Close</q-item-section>
                     </q-item>
                   </q-list>
@@ -117,9 +117,9 @@
                 <!-- enabled checkbox -->
                 <q-td>
                   <q-checkbox
+                    v-model="props.row.is_active"
                     dense
                     @update:model-value="toggleEnabled(props.row)"
-                    v-model="props.row.is_active"
                   />
                 </q-td>
                 <!-- agent settings -->
@@ -255,6 +255,9 @@ export default {
       },
     };
   },
+  mounted() {
+    this.getTemplates();
+  },
   methods: {
     getTemplates() {
       this.$q.loading.show();
@@ -367,9 +370,6 @@ export default {
     onHide() {
       this.$emit("hide");
     },
-  },
-  mounted() {
-    this.getTemplates();
   },
 };
 </script>

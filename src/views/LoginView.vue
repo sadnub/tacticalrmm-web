@@ -9,10 +9,10 @@
             </div>
           </q-card-section>
           <q-card-section>
-            <q-form ref="form" @submit.prevent="checkCreds" class="q-gutter-md">
+            <q-form ref="form" class="q-gutter-md" @submit.prevent="checkCreds">
               <q-input
-                filled
                 v-model="credentials.username"
+                filled
                 label="Username"
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || 'This field is required']"
@@ -47,9 +47,9 @@
               <q-item
                 v-for="provider in ssoProviders"
                 :key="provider.id"
-                @click="openSSOProviderRedirect(provider.id)"
                 clickable
                 class="q-pa-xs hover-bg"
+                @click="openSSOProviderRedirect(provider.id)"
               >
                 <q-item-section avatar>
                   <q-icon :name="provider.icon ?? 'mdi-key'" size="sm" class="text-primary" />
@@ -63,23 +63,23 @@
         </q-card>
 
         <!-- 2 factor modal -->
-        <q-dialog persistent v-model="prompt">
+        <q-dialog v-model="prompt" persistent>
           <q-card style="min-width: 400px">
             <q-form ref="formToken" @submit.prevent="onSubmit">
               <q-card-section class="text-center text-h6">Two-Factor Token</q-card-section>
 
               <q-card-section>
                 <q-input
+                  v-model="twofactor"
                   autofocus
                   filled
                   autocomplete="one-time-code"
-                  v-model="twofactor"
                   :rules="[(val) => (val && val.length > 0) || 'This field is required']"
                 />
               </q-card-section>
 
               <q-card-actions align="right" class="text-primary">
-                <q-btn flat label="Cancel" v-close-popup />
+                <q-btn v-close-popup flat label="Cancel" />
                 <q-btn flat label="Submit" type="submit" />
               </q-card-actions>
             </q-form>

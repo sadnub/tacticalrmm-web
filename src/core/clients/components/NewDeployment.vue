@@ -1,19 +1,19 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="width: 40vw">
       <q-bar>
         Add Deployment
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary" />
         </q-btn>
       </q-bar>
       <q-card-section>
         <tactical-dropdown
+          v-model="state.site"
           :rules="[(val) => !!val || '*Required']"
           filled
           label="Site"
-          v-model="state.site"
           :options="siteOptions"
           map-options
           filterable
@@ -31,21 +31,21 @@
       </q-card-section>
       <q-card-section>
         <q-input
+          v-model="state.expires"
           type="datetime-local"
           dense
           label="Expiry"
           stack-label
           filled
-          v-model="state.expires"
         />
       </q-card-section>
       <q-card-section class="q-gutter-sm">
         <q-checkbox v-model="state.rdp" dense label="Enable RDP" />
         <q-checkbox v-model="state.ping" dense label="Enable Ping" />
         <q-checkbox
+          v-show="state.agenttype === 'workstation'"
           v-model="state.power"
           dense
-          v-show="state.agenttype === 'workstation'"
           label="Disable sleep/hibernate"
         />
       </q-card-section>
@@ -55,7 +55,7 @@
         <q-radio v-model="state.goarch" :val="GOARCH_i386" label="32 bit" />
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn dense flat label="Cancel" v-close-popup />
+        <q-btn v-close-popup dense flat label="Cancel" />
         <q-btn :loading="loading" dense flat label="Create" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>

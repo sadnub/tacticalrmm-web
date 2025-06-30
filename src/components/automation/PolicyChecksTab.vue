@@ -7,48 +7,48 @@
         dense
         flat
         push
-        @click="getChecks"
         icon="refresh"
+        @click="getChecks"
       />
       <q-btn-dropdown v-if="!!selectedPolicy" icon="add" label="New" no-caps dense flat>
         <q-list dense style="min-width: 200px">
-          <q-item clickable v-close-popup @click="showCheckModal('diskspace')">
+          <q-item v-close-popup clickable @click="showCheckModal('diskspace')">
             <q-item-section side>
               <q-icon size="xs" name="far fa-hdd" />
             </q-item-section>
             <q-item-section>Disk Space Check</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showCheckModal('ping')">
+          <q-item v-close-popup clickable @click="showCheckModal('ping')">
             <q-item-section side>
               <q-icon size="xs" name="fas fa-network-wired" />
             </q-item-section>
             <q-item-section>Ping Check</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showCheckModal('cpuload')">
+          <q-item v-close-popup clickable @click="showCheckModal('cpuload')">
             <q-item-section side>
               <q-icon size="xs" name="fas fa-microchip" />
             </q-item-section>
             <q-item-section>CPU Load Check</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showCheckModal('memory')">
+          <q-item v-close-popup clickable @click="showCheckModal('memory')">
             <q-item-section side>
               <q-icon size="xs" name="fas fa-memory" />
             </q-item-section>
             <q-item-section>Memory Check</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showCheckModal('winsvc')">
+          <q-item v-close-popup clickable @click="showCheckModal('winsvc')">
             <q-item-section side>
               <q-icon size="xs" name="fas fa-cogs" />
             </q-item-section>
             <q-item-section>Windows Service Check</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showCheckModal('script')">
+          <q-item v-close-popup clickable @click="showCheckModal('script')">
             <q-item-section side>
               <q-icon size="xs" name="fas fa-terminal" />
             </q-item-section>
             <q-item-section>Script Check</q-item-section>
           </q-item>
-          <q-item clickable v-close-popup @click="showCheckModal('eventlog')">
+          <q-item v-close-popup clickable @click="showCheckModal('eventlog')">
             <q-item-section side>
               <q-icon size="xs" name="fas fa-clipboard-list" />
             </q-item-section>
@@ -58,6 +58,7 @@
       </q-btn-dropdown>
 
       <q-table
+        v-model:pagination="pagination"
         :table-class="{
           'table-bgcolor': !$q.dark.isActive,
           'table-bgcolor-dark': $q.dark.isActive,
@@ -65,7 +66,6 @@
         class="tabs-tbl-sticky"
         :rows="checks"
         :columns="columns"
-        v-model:pagination="pagination"
         :rows-per-page-options="[0]"
         row-key="id"
         binary-state-sort
@@ -116,8 +116,8 @@
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
                 <q-item
-                  clickable
                   v-close-popup
+                  clickable
                   @click="showCheckModal(props.row.check_type, props.row)"
                 >
                   <q-item-section side>
@@ -125,7 +125,7 @@
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="deleteCheck(props.row)">
+                <q-item v-close-popup clickable @click="deleteCheck(props.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -134,7 +134,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup @click="showPolicyStatus(props.row)">
+                <q-item v-close-popup clickable @click="showPolicyStatus(props.row)">
                   <q-item-section side>
                     <q-icon name="sync" />
                   </q-item-section>
@@ -143,7 +143,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>
@@ -151,33 +151,33 @@
             <!-- tds -->
             <q-td>
               <q-checkbox
+                v-model="props.row.text_alert"
                 dense
                 @update:model-value="checkAlert(props.row.id, 'Text', props.row.text_alert)"
-                v-model="props.row.text_alert"
               />
             </q-td>
             <q-td>
               <q-checkbox
+                v-model="props.row.email_alert"
                 dense
                 @update:model-value="checkAlert(props.row.id, 'Email', props.row.email_alert)"
-                v-model="props.row.email_alert"
               />
             </q-td>
             <q-td>
               <q-checkbox
+                v-model="props.row.dashboard_alert"
                 dense
                 @update:model-value="
                   checkAlert(props.row.id, 'Dashboard', props.row.dashboard_alert)
                 "
-                v-model="props.row.dashboard_alert"
               />
             </q-td>
             <q-td>{{ props.row.readable_desc }}</q-td>
             <q-td>
               <span
                 style="cursor: pointer; text-decoration: underline"
-                @click="showPolicyStatus(props.row)"
                 class="status-cell text-primary"
+                @click="showPolicyStatus(props.row)"
                 >See Status</span
               >
             </q-td>
@@ -250,6 +250,9 @@ export default {
   },
   computed: {
     ...mapState(["dash_positive_color", "dash_warning_color"]),
+  },
+  created() {
+    this.getChecks();
   },
   methods: {
     getChecks() {
@@ -345,9 +348,6 @@ export default {
         })
         .onOk(this.getChecks);
     },
-  },
-  created() {
-    this.getChecks();
   },
 };
 </script>

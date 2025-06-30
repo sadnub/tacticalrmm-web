@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin">
       <q-bar>
         Delete {{ object.name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -14,9 +14,9 @@
         </q-card-section>
         <q-card-section v-if="filteredSiteOptions.length > 0">
           <tactical-dropdown
+            v-model="site"
             label="Site to move agents to"
             filled
-            v-model="site"
             :options="filteredSiteOptions"
             map-options
             :rules="[
@@ -27,7 +27,7 @@
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn dense flat push label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat push label="Cancel" />
           <q-btn
             :loading="isLoading"
             :disable="filteredSiteOptions.length === 0"

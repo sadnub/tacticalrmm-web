@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide" persistent @keydown.esc="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide" @keydown.esc="onDialogHide">
     <q-card class="q-dialog-plugin" :style="{ 'min-width': !ret ? '40vw' : '70vw' }">
       <q-bar>
         Send command on {{ agent.hostname }}
@@ -8,7 +8,7 @@
           >Websocket diconnected!</q-chip
         >
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -18,30 +18,30 @@
           <div class="q-gutter-sm">
             <q-radio
               v-if="agent.plat !== 'windows'"
-              dense
               v-model="state.shell"
+              dense
               val="/bin/bash"
               label="Bash"
               @update:model-value="state.custom_shell = null"
             />
             <q-radio
               v-if="agent.plat !== 'windows'"
-              dense
               v-model="state.shell"
+              dense
               val="custom"
               label="Custom"
             />
             <q-radio
               v-if="agent.plat === 'windows'"
-              dense
               v-model="state.shell"
+              dense
               val="cmd"
               label="CMD"
             />
             <q-radio
               v-if="agent.plat === 'windows'"
-              dense
               v-model="state.shell"
+              dense
               val="powershell"
               label="Powershell"
             />
@@ -84,7 +84,7 @@
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat dense push label="Cancel" v-close-popup />
+          <q-btn v-close-popup flat dense push label="Cancel" />
           <q-btn
             :loading="loading"
             :disable="!wsConnected"
@@ -119,10 +119,10 @@ import { getWSUrl } from "src/websocket/channels";
 
 export default {
   name: "SendCommand",
-  emits: [...useDialogPluginComponent.emits],
   props: {
     agent: !Object,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup(props) {
     const store = useStore();
     // setup quasar dialog plugin

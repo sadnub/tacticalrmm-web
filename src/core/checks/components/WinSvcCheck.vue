@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? `Edit Service Check` : "Add Service Check" }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -28,11 +28,11 @@
               />
               <q-select
                 v-if="localCheck.svc_policy_mode === 'default' && !check"
+                v-model="localCheck.svc_name"
                 :rules="[(val) => !!val || '*Required']"
                 dense
                 options-dense
                 filled
-                v-model="localCheck.svc_name"
                 :options="serviceOptions"
                 label="Service"
                 map-options
@@ -41,18 +41,18 @@
               />
               <q-input
                 v-if="localCheck.svc_policy_mode === 'manual'"
+                v-model="localCheck.svc_name"
                 :rules="[(val) => !!val || '*Required']"
                 filled
                 dense
-                v-model="localCheck.svc_name"
                 label="Service Name"
               />
               <q-input
                 v-if="localCheck.svc_policy_mode === 'manual'"
+                v-model="localCheck.svc_display_name"
                 :rules="[(val) => !!val || '*Required']"
                 filled
                 dense
-                v-model="localCheck.svc_display_name"
                 label="Display Name"
               />
             </div>
@@ -60,11 +60,11 @@
             <!-- disable selection if editing -->
             <q-select
               v-if="isAgent(parent)"
+              v-model="localCheck.svc_name"
               :rules="[(val) => !!val || '*Required']"
               dense
               options-dense
               filled
-              v-model="localCheck.svc_name"
               :options="serviceOptions"
               label="Service"
               map-options
@@ -90,39 +90,39 @@
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.alert_severity"
               filled
               dense
               options-dense
               map-options
               emit-value
-              v-model="localCheck.alert_severity"
               :options="severityOptions"
               label="Alert Severity"
             />
           </q-card-section>
           <q-card-section>
             <q-select
+              v-model="localCheck.fails_b4_alert"
               filled
               dense
               options-dense
-              v-model="localCheck.fails_b4_alert"
               :options="failOptions"
               label="Number of consecutive failures before alert"
             />
           </q-card-section>
           <q-card-section>
             <q-input
+              v-model.number="localCheck.run_interval"
               dense
               filled
               type="number"
-              v-model.number="localCheck.run_interval"
               label="Run this check every (seconds)"
               hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
             />
           </q-card-section>
         </div>
         <q-card-actions align="right">
-          <q-btn dense flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup dense flat label="Cancel" />
           <q-btn
             :loading="checkStore.isLoading"
             dense

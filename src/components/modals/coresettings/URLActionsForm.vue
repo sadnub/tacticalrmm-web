@@ -15,7 +15,7 @@
               : "Add Web Hook"
         }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -24,10 +24,10 @@
         <!-- name -->
         <q-card-section>
           <q-input
+            v-model="localAction.name"
             label="Name"
             filled
             dense
-            v-model="localAction.name"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
@@ -35,22 +35,22 @@
         <!-- description -->
         <q-card-section>
           <q-input
+            v-model="localAction.desc"
             label="Description"
             filled
             dense
             type="textarea"
             rows="2"
-            v-model="localAction.desc"
           />
         </q-card-section>
 
         <!-- pattern -->
         <q-card-section>
           <q-input
+            v-model="localAction.pattern"
             label="URL Pattern"
             filled
             dense
-            v-model="localAction.pattern"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
@@ -80,7 +80,7 @@
 
       <q-card-actions align="right">
         <q-btn v-if="type === 'rest'" flat label="Test" color="primary" @click="testWebHook" />
-        <q-btn flat label="Cancel" v-close-popup />
+        <q-btn v-close-popup flat label="Cancel" />
         <q-btn flat label="Submit" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>

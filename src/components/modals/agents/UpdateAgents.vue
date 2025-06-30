@@ -3,7 +3,7 @@
     <q-bar>
       Update Agents
       <q-space />
-      <q-btn dense flat icon="close" v-close-popup>
+      <q-btn v-close-popup dense flat icon="close">
         <q-tooltip class="bg-white text-primary">Close</q-tooltip>
       </q-btn>
     </q-bar>
@@ -17,7 +17,7 @@
     </q-banner>
     <q-card-section>
       Select Version
-      <q-select square disable dense options-dense filled v-model="version" :options="versions" />
+      <q-select v-model="version" square disable dense options-dense filled :options="versions" />
     </q-card-section>
     <q-card-section v-show="version !== null">
       Select Agent
@@ -28,8 +28,8 @@
         v-show="group.length !== 0"
         label="Update"
         color="primary"
-        @click="update"
         class="q-ml-xl"
+        @click="update"
       />
       <q-separator />
       <q-option-group
@@ -48,8 +48,8 @@
 import mixins from "src/mixins/mixins";
 export default {
   name: "UpdateAgents",
-  emits: ["close"],
   mixins: [mixins],
+  emits: ["close"],
   data() {
     return {
       versions: [],
@@ -58,6 +58,24 @@ export default {
       group: [],
       selectAll: false,
     };
+  },
+  computed: {
+    agentIds() {
+      return this.agents.map((k) => k.agent_id);
+    },
+    agentOptions() {
+      const options = [];
+      for (const i of Object.values(this.agents)) {
+        const opt = {};
+        opt["label"] = `${i.hostname} (${i.client} > ${i.site})`;
+        opt["value"] = i.agent_id;
+        options.push(opt);
+      }
+      return options.sort((a, b) => a.label.localeCompare(b.label));
+    },
+  },
+  mounted() {
+    this.getVersions();
   },
   methods: {
     selectAllAction() {
@@ -84,24 +102,6 @@ export default {
         this.notifySuccess("Agents will now be updated");
       });
     },
-  },
-  computed: {
-    agentIds() {
-      return this.agents.map((k) => k.agent_id);
-    },
-    agentOptions() {
-      const options = [];
-      for (const i of Object.values(this.agents)) {
-        const opt = {};
-        opt["label"] = `${i.hostname} (${i.client} > ${i.site})`;
-        opt["value"] = i.agent_id;
-        options.push(opt);
-      }
-      return options.sort((a, b) => a.label.localeCompare(b.label));
-    },
-  },
-  mounted() {
-    this.getVersions();
   },
 };
 </script>

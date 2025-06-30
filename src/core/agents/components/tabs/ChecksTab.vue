@@ -1,23 +1,20 @@
 <template>
   <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
-    <q-table
+    <tactical-table
+      v-model:pagination="pagination"
       dense
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
-      class="tabs-tbl-sticky"
       :style="{ 'max-height': tabHeight }"
       :rows="agentStore.agentChecks"
       :columns="columns"
       row-key="id"
       binary-state-sort
-      v-model:pagination="pagination"
       :loading="agentStore.isLoading"
       :rows-per-page-options="[0]"
       virtual-scroll
       no-data-label="No checks"
+      column-select
+      storage-key="agent-checks-tab"
     >
       <template #loading>
         <q-inner-loading showing color="primary" />
@@ -30,15 +27,15 @@
           dense
           flat
           push
-          @click="agentStore.getAgentChecks(agentStore.selectedAgentId)"
           icon="refresh"
+          @click="agentStore.getAgentChecks(agentStore.selectedAgentId)"
         />
         <q-btn-dropdown icon="add" label="New" no-caps dense flat class="q-mr-md">
           <q-list dense style="min-width: 200px">
             <q-item
               v-if="agentStore.selectedAgentPlatform === 'windows'"
-              clickable
               v-close-popup
+              clickable
               @click="showCheckModal('diskspace')"
             >
               <q-item-section side>
@@ -46,7 +43,7 @@
               </q-item-section>
               <q-item-section>Disk Space Check</q-item-section>
             </q-item>
-            <q-item clickable v-close-popup @click="showCheckModal('ping')">
+            <q-item v-close-popup clickable @click="showCheckModal('ping')">
               <q-item-section side>
                 <q-icon size="xs" name="fas fa-network-wired" />
               </q-item-section>
@@ -54,8 +51,8 @@
             </q-item>
             <q-item
               v-if="agentStore.selectedAgentPlatform === 'windows'"
-              clickable
               v-close-popup
+              clickable
               @click="showCheckModal('cpuload')"
             >
               <q-item-section side>
@@ -65,8 +62,8 @@
             </q-item>
             <q-item
               v-if="agentStore.selectedAgentPlatform === 'windows'"
-              clickable
               v-close-popup
+              clickable
               @click="showCheckModal('memory')"
             >
               <q-item-section side>
@@ -76,8 +73,8 @@
             </q-item>
             <q-item
               v-if="agentStore.selectedAgentPlatform === 'windows'"
-              clickable
               v-close-popup
+              clickable
               @click="showCheckModal('winsvc')"
             >
               <q-item-section side>
@@ -85,7 +82,7 @@
               </q-item-section>
               <q-item-section>Windows Service Check</q-item-section>
             </q-item>
-            <q-item clickable v-close-popup @click="showCheckModal('script')">
+            <q-item v-close-popup clickable @click="showCheckModal('script')">
               <q-item-section side>
                 <q-icon size="xs" name="fas fa-terminal" />
               </q-item-section>
@@ -93,8 +90,8 @@
             </q-item>
             <q-item
               v-if="agentStore.selectedAgentPlatform === 'windows'"
-              clickable
               v-close-popup
+              clickable
               @click="showCheckModal('eventlog')"
             >
               <q-item-section side>
@@ -111,8 +108,8 @@
           push
           no-caps
           icon="play_arrow"
-          @click="agentStore.runAgentChecks(agentStore.selectedAgentId)"
           class="q-mr-md"
+          @click="agentStore.runAgentChecks(agentStore.selectedAgentId)"
         />
         <q-btn
           label="Reset All Checks Status"
@@ -165,10 +162,10 @@
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
               <q-item
-                clickable
                 v-close-popup
-                @click="showCheckModal(props.row.check_type, props.row)"
+                clickable
                 :disable="!!props.row.policy"
+                @click="showCheckModal(props.row.check_type, props.row)"
               >
                 <q-item-section side>
                   <q-icon name="edit" />
@@ -176,10 +173,10 @@
                 <q-item-section>Edit</q-item-section>
               </q-item>
               <q-item
-                clickable
                 v-close-popup
-                @click="deleteCheck(props.row)"
+                clickable
                 :disable="!!props.row.policy"
+                @click="deleteCheck(props.row)"
               >
                 <q-item-section side>
                   <q-icon name="delete" />
@@ -187,14 +184,14 @@
                 <q-item-section>Delete</q-item-section>
               </q-item>
               <q-separator></q-separator>
-              <q-item clickable v-close-popup @click="resetCheckStatus(props.row)">
+              <q-item v-close-popup clickable @click="resetCheckStatus(props.row)">
                 <q-item-section side>
                   <q-icon name="info" />
                 </q-item-section>
                 <q-item-section>Reset Check Status</q-item-section>
               </q-item>
               <q-separator></q-separator>
-              <q-item clickable v-close-popup>
+              <q-item v-close-popup clickable>
                 <q-item-section>Close</q-item-section>
               </q-item>
             </q-list>
@@ -216,10 +213,10 @@
 
             <q-checkbox
               v-else
-              dense
-              @update:model-value="editCheck(props.row, { text_alert: !props.row.text_alert })"
               v-model="props.row.text_alert"
+              dense
               :disable="!!props.row.policy"
+              @update:model-value="editCheck(props.row, { text_alert: !props.row.text_alert })"
             />
           </q-td>
           <!-- email alert -->
@@ -238,10 +235,10 @@
 
             <q-checkbox
               v-else
-              dense
-              @update:model-value="editCheck(props.row, { email_alert: !props.row.email_alert })"
               v-model="props.row.email_alert"
+              dense
               :disable="!!props.row.policy"
+              @update:model-value="editCheck(props.row, { email_alert: !props.row.email_alert })"
             />
           </q-td>
           <!-- dashboard alert -->
@@ -260,14 +257,14 @@
 
             <q-checkbox
               v-else
+              v-model="props.row.dashboard_alert"
               dense
+              :disable="!!props.row.policy"
               @update:model-value="
                 editCheck(props.row, {
                   dashboard_alert: !props.row.dashboard_alert,
                 })
               "
-              v-model="props.row.dashboard_alert"
-              :disable="!!props.row.policy"
             />
           </q-td>
           <!-- policy check icon -->
@@ -375,7 +372,7 @@
           <q-td v-else></q-td>
         </q-tr>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -385,7 +382,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar, type QTableProps } from "quasar";
 import { useAgentStore } from "../../api";
 import { useCheckStore } from "src/core/checks/api";
-
+import { useDashboardStore } from "src/stores/dashboard";
 import { truncateText } from "src/utils/format";
 import { notifyWarning } from "src/utils/notify";
 
@@ -401,7 +398,9 @@ import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import EventLogCheckOutput from "src/core/checks/components//EventLogCheckOutput.vue";
 import CheckGraph from "src/components/graphs/CheckGraph.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
-import { useDashboardStore } from "src/stores/dashboard";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+
+// type imports
 import type { Check, CheckResult, CheckType } from "src/core/checks/types";
 
 // static data

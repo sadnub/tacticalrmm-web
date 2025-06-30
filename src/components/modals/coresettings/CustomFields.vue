@@ -34,15 +34,15 @@
       <q-scroll-area :thumb-style="thumbStyle" style="height: 50vh">
         <q-tab-panels v-model="tab" :animated="false">
           <q-tab-panel name="client">
-            <CustomFieldsTable @refresh="getCustomFields" :data="clientFields" />
+            <CustomFieldsTable :data="clientFields" @refresh="getCustomFields" />
           </q-tab-panel>
 
           <q-tab-panel name="site">
-            <CustomFieldsTable @refresh="getCustomFields" :data="siteFields" />
+            <CustomFieldsTable :data="siteFields" @refresh="getCustomFields" />
           </q-tab-panel>
 
           <q-tab-panel name="agent">
-            <CustomFieldsTable @refresh="getCustomFields" :data="agentFields" />
+            <CustomFieldsTable :data="agentFields" @refresh="getCustomFields" />
           </q-tab-panel>
         </q-tab-panels>
       </q-scroll-area>
@@ -83,6 +83,9 @@ export default {
       return this.customFields.filter((field) => field.model === "client");
     },
   },
+  mounted() {
+    this.getCustomFields();
+  },
   methods: {
     getCustomFields() {
       this.$q.loading.show();
@@ -109,9 +112,6 @@ export default {
           this.getCustomFields();
         });
     },
-  },
-  mounted() {
-    this.getCustomFields();
   },
 };
 </script>

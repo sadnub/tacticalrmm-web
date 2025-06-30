@@ -4,7 +4,7 @@
       <q-bar>
         {{ modalTitle }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -24,8 +24,8 @@
         <q-card-section>
           <tactical-dropdown
             v-if="state.target === 'client'"
-            :rules="[(val) => !!val || '*Required']"
             v-model="state.client"
+            :rules="[(val) => !!val || '*Required']"
             :options="clientOptions"
             label="Select Client"
             filled
@@ -34,8 +34,8 @@
           />
           <tactical-dropdown
             v-else-if="state.target === 'site'"
-            :rules="[(val) => !!val || '*Required']"
             v-model="state.site"
+            :rules="[(val) => !!val || '*Required']"
             :options="siteOptions"
             label="Select Site"
             filled
@@ -44,8 +44,8 @@
           />
           <tactical-dropdown
             v-else-if="state.target === 'agents'"
-            :rules="[(val) => !!val || '*Required']"
             v-model="state.agents"
+            :rules="[(val) => !!val || '*Required']"
             :options="agentOptions"
             label="Select Agents"
             filled
@@ -81,8 +81,8 @@
 
         <q-card-section v-if="mode === 'script'" class="q-pt-none">
           <tactical-dropdown
-            :rules="[(val) => !!val || '*Required']"
             v-model="state.script"
+            :rules="[(val) => !!val || '*Required']"
             :options="filterByPlatformOptions"
             label="Select Script"
             filled
@@ -164,8 +164,8 @@
         <q-card-section v-if="mode === 'script'" class="q-pt-none">
           <div class="q-gutter-sm">
             <q-checkbox
-              label="Save results to Custom Field"
               v-model="collector"
+              label="Save results to Custom Field"
               @update:model-value="
                 state.custom_field = null;
                 state.collector_all_output = false;
@@ -177,9 +177,9 @@
 
         <q-card-section v-if="mode === 'script' && collector">
           <tactical-dropdown
+            v-model="state.custom_field"
             :rules="[(val) => !!val || '*Required']"
             filled
-            v-model="state.custom_field"
             :options="customFieldOptions"
             label="Select custom field"
             map-options
@@ -223,7 +223,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn label="Cancel" v-close-popup />
+          <q-btn v-close-popup label="Cancel" />
           <q-btn label="Run" color="primary" type="submit" :disable="loading" :loading="loading" />
         </q-card-actions>
       </q-form>
@@ -276,10 +276,10 @@ const patchModeOptions = [
 export default defineComponent({
   name: "BulkAction",
   components: { TacticalDropdown },
-  emits: [...useDialogPluginComponent.emits],
   props: {
     mode: !String,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup(props) {
     const shellOptions = computed(() => {
       if (state.osType === "windows") {

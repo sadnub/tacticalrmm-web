@@ -10,7 +10,7 @@ For details, see: https://license.tacticalrmm.com/ee
       <span v-if="copiedBlock" class="float-right">Copied!</span></q-item-label
     >
     <q-item v-for="(block, i) in templateBlocks" :key="i" :inset-level="block.warning ? 0 : 1">
-      <q-item-section avatar v-if="block.warning">
+      <q-item-section v-if="block.warning" avatar>
         <q-icon name="warning" color="warning">
           <q-tooltip
             >Block not found in template. Click on the block to copy and paste into

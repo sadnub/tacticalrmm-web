@@ -1,10 +1,10 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ title }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -15,10 +15,10 @@
         <!-- name -->
         <q-card-section>
           <q-input
+            v-model="localKey.name"
             label="Name"
             filled
             dense
-            v-model="localKey.name"
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
@@ -26,8 +26,8 @@
         <!-- user -->
         <q-card-section>
           <tactical-dropdown
-            filled
             v-model="localKey.user"
+            filled
             label="User"
             :options="userOptions"
             map-options
@@ -37,23 +37,23 @@
 
         <!-- key -->
         <q-card-section v-if="apiKey">
-          <q-input readonly label="Key" filled dense v-model="localKey.key" />
+          <q-input v-model="localKey.key" readonly label="Key" filled dense />
         </q-card-section>
 
         <!-- expiration -->
         <q-card-section>
           <q-input
+            v-model="localKey.expiration"
             type="datetime-local"
             dense
             label="Key Expiration (Not required)"
             stack-label
             filled
-            v-model="localKey.expiration"
           />
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn v-close-popup flat label="Cancel" />
           <q-btn flat label="Submit" color="primary" type="submit" :loading="loading" />
         </q-card-actions>
       </q-form>

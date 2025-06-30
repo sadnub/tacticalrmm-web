@@ -4,7 +4,7 @@
       <q-bar>
         Script Test
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -45,12 +45,12 @@ export default {
   components: {
     ScriptOutputCopyClip,
   },
-  emits: [...useDialogPluginComponent.emits],
   props: {
     script: !Object,
     agent: !String,
     ctx: !String,
   },
+  emits: [...useDialogPluginComponent.emits],
   setup(props) {
     // setup quasar dialog plugin
     const { dialogRef, onDialogHide } = useDialogPluginComponent();

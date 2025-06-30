@@ -1,18 +1,18 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         <q-btn
-          @click="clientStore.getClient(props.client.id, { force: true })"
           class="q-mr-sm"
           dense
           flat
           push
           icon="refresh"
+          @click="clientStore.getClient(props.client.id, { force: true })"
         />Sites for
         {{ client.name }}
         <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
+        <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
         </q-btn>
       </q-bar>
@@ -44,13 +44,13 @@
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item clickable v-close-popup @click="showEditSite(row)">
+                <q-item v-close-popup clickable @click="showEditSite(row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="showSiteDeleteModal(row)">
+                <q-item v-close-popup clickable @click="showSiteDeleteModal(row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -59,7 +59,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item clickable v-close-popup>
+                <q-item v-close-popup clickable>
                   <q-item-section>Close</q-item-section>
                 </q-item>
               </q-list>

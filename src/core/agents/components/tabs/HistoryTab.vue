@@ -1,11 +1,7 @@
 <template>
   <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
-    <q-table
-      :table-class="{
-        'table-bgcolor': !$q.dark.isActive,
-        'table-bgcolor-dark': $q.dark.isActive,
-      }"
+    <tactical-table
       :rows="agentStore.agentHistory"
       :columns="columns"
       :pagination="{ sortBy: 'time', descending: true, rowsPerPage: 0 }"
@@ -16,16 +12,18 @@
       virtual-scroll
       dense
       binary-state-sort
+      column-select
+      storage-key="agent-history-tab"
     >
       <template #top>
         <q-btn
           dense
           flat
           push
+          icon="refresh"
           @click="
             agentStore.selectedAgentId && agentStore.getAgentHistory(agentStore.selectedAgentId)
           "
-          icon="refresh"
         />
         <q-space />
         <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
@@ -54,7 +52,7 @@
           </span>
         </q-td>
       </template>
-    </q-table>
+    </tactical-table>
   </div>
 </template>
 
@@ -70,6 +68,7 @@ import { useDashboardStore } from "src/stores/dashboard";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
+import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // setup stores
 const dashboardStore = useDashboardStore();

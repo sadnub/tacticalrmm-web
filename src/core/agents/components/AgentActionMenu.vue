@@ -1,21 +1,21 @@
 <template>
   <q-list dense style="min-width: 200px">
     <!-- edit agent -->
-    <q-item clickable v-close-popup @click="showEditAgent(agent.agent_id)">
+    <q-item v-close-popup clickable @click="showEditAgent(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-edit" />
       </q-item-section>
       <q-item-section>Edit {{ agent.hostname }}</q-item-section>
     </q-item>
     <!-- agent pending actions -->
-    <q-item clickable v-close-popup @click="showPendingActionsModal(agent)">
+    <q-item v-close-popup clickable @click="showPendingActionsModal(agent)">
       <q-item-section side>
         <q-icon size="xs" name="far fa-clock" />
       </q-item-section>
       <q-item-section>Pending Agent Actions</q-item-section>
     </q-item>
     <!-- take control -->
-    <q-item clickable v-ripple v-close-popup @click="agentStore.runTakeControl(agent.agent_id)">
+    <q-item v-ripple v-close-popup clickable @click="agentStore.runTakeControl(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-desktop" />
       </q-item-section>
@@ -24,7 +24,7 @@
     </q-item>
 
     <!-- vnc -->
-    <q-item clickable v-ripple v-close-popup @click="launchWebVNC(agent.agent_id)">
+    <q-item v-ripple v-close-popup clickable @click="launchWebVNC(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="screen_share" />
       </q-item-section>
@@ -32,7 +32,7 @@
       <q-item-section>VNC</q-item-section>
     </q-item>
 
-    <q-item clickable v-ripple @click="actionStore.getURLActions">
+    <q-item v-ripple clickable @click="actionStore.getURLActions">
       <q-item-section side>
         <q-icon size="xs" name="open_in_new" />
       </q-item-section>
@@ -45,9 +45,9 @@
           <q-item
             v-for="action in actionStore.webActions"
             :key="action.id"
+            v-close-popup
             dense
             clickable
-            v-close-popup
             @click="actionStore.runURLAction(action.id, 'agent', agent.agent_id)"
           >
             {{ action.name }}
@@ -56,21 +56,21 @@
       </q-menu>
     </q-item>
 
-    <q-item clickable v-ripple v-close-popup @click="showSendCommand(agent)">
+    <q-item v-ripple v-close-popup clickable @click="showSendCommand(agent)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-terminal" />
       </q-item-section>
       <q-item-section>Send Command</q-item-section>
     </q-item>
 
-    <q-item clickable v-ripple v-close-popup @click="showRunScript(agent)">
+    <q-item v-ripple v-close-popup clickable @click="showRunScript(agent)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-terminal" />
       </q-item-section>
       <q-item-section>Run Script</q-item-section>
     </q-item>
 
-    <q-item clickable v-ripple>
+    <q-item v-ripple clickable>
       <q-item-section side>
         <q-icon size="xs" name="star" />
       </q-item-section>
@@ -83,9 +83,9 @@
           <q-item
             v-for="script in favoriteScriptOptions"
             :key="script.value"
+            v-close-popup
             dense
             clickable
-            v-close-popup
             @click="showRunScript(agent, script)"
           >
             {{ script.label }}
@@ -95,8 +95,8 @@
     </q-item>
 
     <q-item
-      clickable
       v-close-popup
+      clickable
       @click="agentStore.runRemoteBackground(agent.agent_id, agent.plat)"
     >
       <q-item-section side>
@@ -106,7 +106,7 @@
     </q-item>
 
     <!-- maintenance mode -->
-    <q-item clickable v-close-popup @click="toggleMaintenance(agent)">
+    <q-item v-close-popup clickable @click="toggleMaintenance(agent)">
       <q-item-section side>
         <q-icon size="xs" name="construction" />
       </q-item-section>
@@ -127,24 +127,24 @@
 
       <q-menu auto-close anchor="top right" self="top left">
         <q-list dense style="min-width: 100px">
-          <q-item clickable v-ripple @click="runPatchStatusScan(agent)">
+          <q-item v-ripple clickable @click="runPatchStatusScan(agent)">
             <q-item-section>Run Patch Status Scan</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="installPatches(agent)">
+          <q-item v-ripple clickable @click="installPatches(agent)">
             <q-item-section>Install Patches Now</q-item-section>
           </q-item>
         </q-list>
       </q-menu>
     </q-item>
 
-    <q-item clickable v-close-popup @click="runChecks(agent)">
+    <q-item v-close-popup clickable @click="runChecks(agent)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-check-double" />
       </q-item-section>
       <q-item-section>Run Checks</q-item-section>
     </q-item>
 
-    <q-item clickable v-close-popup @click="wakeUp(agent)">
+    <q-item v-close-popup clickable @click="wakeUp(agent)">
       <q-item-section side>
         <q-icon size="xs" name="offline_bolt" />
       </q-item-section>
@@ -163,25 +163,25 @@
       <q-menu auto-close anchor="top right" self="top left">
         <q-list dense style="min-width: 100px">
           <!-- reboot now -->
-          <q-item clickable v-ripple @click="rebootNow(agent)">
+          <q-item v-ripple clickable @click="rebootNow(agent)">
             <q-item-section>Now</q-item-section>
           </q-item>
           <!-- reboot later -->
-          <q-item clickable v-ripple @click="showRebootLaterModal(agent)">
+          <q-item v-ripple clickable @click="showRebootLaterModal(agent)">
             <q-item-section>Later</q-item-section>
           </q-item>
         </q-list>
       </q-menu>
     </q-item>
 
-    <q-item clickable v-close-popup @click="shutdown(agent)">
+    <q-item v-close-popup clickable @click="shutdown(agent)">
       <q-item-section side>
         <q-icon size="xs" name="power" />
       </q-item-section>
       <q-item-section>Shutdown</q-item-section>
     </q-item>
 
-    <q-item clickable v-close-popup @click="showPolicyAdd(agent)">
+    <q-item v-close-popup clickable @click="showPolicyAdd(agent)">
       <q-item-section side>
         <q-icon size="xs" name="policy" />
       </q-item-section>
@@ -189,12 +189,12 @@
     </q-item>
 
     <q-item
-      clickable
       v-if="
         $integrations &&
         $integrations.agentMenuIntegrations &&
         $integrations.agentMenuIntegrations.length > 0
       "
+      clickable
     >
       <q-item-section side>
         <q-icon size="xs" name="analytics" />
@@ -203,17 +203,17 @@
       <q-item-section side>
         <q-icon name="keyboard_arrow_right" />
       </q-item-section>
-      <integrations-context-menu type="agent" :id="agent.agent_id" />
+      <integrations-context-menu :id="agent.agent_id" type="agent" />
     </q-item>
 
-    <q-item clickable v-close-popup @click="showAgentRecovery(agent)">
+    <q-item v-close-popup clickable @click="showAgentRecovery(agent)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-first-aid" />
       </q-item-section>
       <q-item-section>Agent Recovery</q-item-section>
     </q-item>
 
-    <q-item clickable v-close-popup @click="pingAgent(agent)">
+    <q-item v-close-popup clickable @click="pingAgent(agent)">
       <q-item-section side>
         <q-icon size="xs" name="delete" />
       </q-item-section>
@@ -221,7 +221,7 @@
     </q-item>
 
     <q-separator />
-    <q-item clickable v-close-popup>
+    <q-item v-close-popup clickable>
       <q-item-section>Close</q-item-section>
     </q-item>
   </q-list>

@@ -57,29 +57,29 @@
         >
           <div class="q-gutter-sm q-pr-sm">
             <q-input
+              v-model="script.name"
               filled
               dense
               :readonly="readonly"
-              v-model="script.name"
               label="Name"
               :rules="[(val) => !!val || '*Required']"
               hide-bottom-space
             />
             <q-input
+              v-model="script.description"
               filled
               dense
               :readonly="readonly"
-              v-model="script.description"
               label="Description"
               type="textarea"
               rows="2"
             />
             <q-select
+              v-model="script.shell"
               :readonly="readonly"
               options-dense
               filled
               dense
-              v-model="script.shell"
               :options="shellOptions"
               emit-value
               map-options
@@ -96,8 +96,8 @@
               :readonly="readonly"
             />
             <tactical-dropdown
-              filled
               v-model="script.category"
+              filled
               :options="categories"
               use-input
               clearable
@@ -130,11 +130,11 @@
               :readonly="readonly"
             />
             <q-input
+              v-model.number="script.default_timeout"
               type="number"
               filled
               dense
               :readonly="readonly"
-              v-model.number="script.default_timeout"
               label="Timeout (seconds)"
               :rules="[(val) => val >= 5 || 'Minimum is 5']"
               hide-bottom-space
@@ -147,10 +147,10 @@
               </q-tooltip>
             </q-checkbox>
             <q-input
+              v-model="script.syntax"
               label="Syntax"
               type="textarea"
               style="height: 150px; overflow-y: auto; resize: none"
-              v-model="script.syntax"
               dense
               filled
               :readonly="readonly"
@@ -165,11 +165,11 @@
       </div>
       <q-card-actions>
         <tactical-dropdown
+          v-model="agent"
           style="width: 550px"
           dense
           :loading="agentLoading"
           filled
-          v-model="agent"
           :options="agentOptions"
           label="Agent to run test script on"
           map-options

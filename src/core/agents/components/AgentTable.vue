@@ -1,6 +1,7 @@
 <template>
   <div class="q-pa-none">
     <tactical-table
+      v-model:pagination="pagination"
       dense
       :table-style="{ 'max-height': `${tableHeight}px` }"
       :rows="filteredAgents"
@@ -11,7 +12,6 @@
       row-key="id"
       binary-state-sort
       virtual-scroll
-      v-model:pagination="pagination"
       :rows-per-page-options="[0]"
       no-data-label="No Agents"
       :loading="agentStore.isLoading"
@@ -41,8 +41,8 @@
           dense
           filled
           clearable
-          @clear="clearFilter"
           class="q-pr-md q-pb-xs"
+          @clear="clearFilter"
         >
           <template #prepend>
             <q-icon name="search" color="primary" />
@@ -97,7 +97,7 @@
 
                   <q-item>
                     <q-item-section side>
-                      <q-radio val="all" v-model="filterAvailability" />
+                      <q-radio v-model="filterAvailability" val="all" />
                     </q-item-section>
 
                     <q-item-section>
@@ -107,7 +107,7 @@
 
                   <q-item>
                     <q-item-section side>
-                      <q-radio val="online" v-model="filterAvailability" />
+                      <q-radio v-model="filterAvailability" val="online" />
                     </q-item-section>
 
                     <q-item-section>
@@ -117,7 +117,7 @@
 
                   <q-item>
                     <q-item-section side>
-                      <q-radio val="offline" v-model="filterAvailability" />
+                      <q-radio v-model="filterAvailability" val="offline" />
                     </q-item-section>
 
                     <q-item-section>
@@ -127,7 +127,7 @@
 
                   <q-item>
                     <q-item-section side>
-                      <q-radio val="overdue" v-model="filterAvailability" />
+                      <q-radio v-model="filterAvailability" val="overdue" />
                     </q-item-section>
 
                     <q-item-section>
@@ -137,7 +137,7 @@
 
                   <q-item>
                     <q-item-section side>
-                      <q-radio val="offline_30days" v-model="filterAvailability" />
+                      <q-radio v-model="filterAvailability" val="offline_30days" />
                     </q-item-section>
 
                     <q-item-section>
@@ -226,9 +226,9 @@
       <!-- body slots -->
       <template #body="props">
         <q-tr
-          @contextmenu="agentRowSelected(props.row.agent_id)"
           :props="props"
           :class="rowSelectedClass(props.row.agent_id)"
+          @contextmenu="agentRowSelected(props.row.agent_id)"
           @click="agentRowSelected(props.row.agent_id)"
           @dblclick="rowDoubleClicked(props.row.agent_id, props.row.plat)"
         >
@@ -250,9 +250,9 @@
 
             <q-checkbox
               v-else
+              v-model="props.row.overdue_text_alert"
               dense
               @update:model-value="overdueAlert('text', props.row, props.row.overdue_text_alert)"
-              v-model="props.row.overdue_text_alert"
             >
               <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
             </q-checkbox>
@@ -272,9 +272,9 @@
 
             <q-checkbox
               v-else
+              v-model="props.row.overdue_email_alert"
               dense
               @update:model-value="overdueAlert('email', props.row, props.row.overdue_email_alert)"
-              v-model="props.row.overdue_email_alert"
             >
               <q-tooltip>Send an email when an agent is overdue</q-tooltip>
             </q-checkbox>
@@ -294,11 +294,11 @@
 
             <q-checkbox
               v-else
+              v-model="props.row.overdue_dashboard_alert"
               dense
               @update:model-value="
                 overdueAlert('dashboard', props.row, props.row.overdue_dashboard_alert)
               "
-              v-model="props.row.overdue_dashboard_alert"
             >
               <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
             </q-checkbox>
@@ -388,10 +388,10 @@
           <q-td key="hostname" :props="props">{{ props.row.hostname }}</q-td>
           <q-td key="description" :props="props">{{ props.row.description }}</q-td>
           <q-td key="user" :props="props">
-            <span class="text-italic" v-if="props.row.italic">{{ props.row.logged_username }}</span>
+            <span v-if="props.row.italic" class="text-italic">{{ props.row.logged_username }}</span>
             <span v-else>{{ props.row.logged_username }}</span>
           </q-td>
-          <q-td :props="props" key="patchespending">
+          <q-td key="patchespending" :props="props">
             <q-icon
               v-if="props.row.has_patches_pending"
               name="verified_user"
@@ -401,14 +401,14 @@
               <q-tooltip>Patches Pending</q-tooltip>
             </q-icon>
           </q-td>
-          <q-td :props="props" key="pendingactions">
+          <q-td key="pendingactions" :props="props">
             <q-icon
               v-if="props.row.pending_actions_count > 0"
-              @click="showPendingActionsModal(props.row)"
               name="far fa-clock"
               size="1.4em"
               :color="dashWarningColor"
               class="cursor-pointer"
+              @click="showPendingActionsModal(props.row)"
             >
               <q-tooltip>Pending Action Count: {{ props.row.pending_actions_count }}</q-tooltip>
             </q-icon>
