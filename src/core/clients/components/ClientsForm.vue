@@ -95,7 +95,7 @@ async function submit() {
   if (props.client) clientStore.updateClient(props.client.id, data);
   else clientStore.addClient(data);
 
-  await until(() => clientStore.isLoading).not.toBeTruthy();
+  await until(() => clientStore.isLoading).toBe(false);
 
   if (clientStore.isError) return;
 

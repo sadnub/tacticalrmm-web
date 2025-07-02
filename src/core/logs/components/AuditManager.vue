@@ -9,6 +9,7 @@
       </q-btn>
     </q-bar>
     <tactical-table
+      v-model:pagination="requestData.pagination"
       :title="modal ? 'Audit Logs' : ''"
       :rows="auditLogStore.auditLog"
       :columns="columns"
@@ -16,16 +17,15 @@
         'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
       }"
       row-key="id"
-      v-model:pagination="requestData.pagination"
       dense
       binary-state-sort
       :rows-per-page-options="[25, 50, 100, 500, 1000]"
       no-data-label="No data found"
-      @request="onRequest"
       virtual-scroll
       :loading="loading"
-      column-select,
+      column-select
       storage-key="audit-manager"
+      @request="onRequest"
       @row-click="openAuditDetail"
     >
       <template #top>
@@ -108,7 +108,7 @@
         <q-btn v-if="!agent" color="primary" label="Search" @click="search" />
 
         <q-space />
-        <export-table-btn :data="auditLogStore.auditLog" :columns="columns" />
+        <tactical-table-export />
       </template>
       <template #body-cell-action="{ value }">
         <q-td>
@@ -124,7 +124,7 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, reactive, watch, onMounted } from "vue";
-import { type QTableProps, useQuasar } from "quasar";
+import { useQuasar } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useUserDropdown } from "src/core/accounts/composables";
@@ -134,15 +134,13 @@ import { formatDate, formatTableColumnText } from "src/utils/format";
 
 // ui imported
 import AuditLogDetailModal from "./AuditLogDetailModal.vue";
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // types
 import type { AuditAction, AuditLog, GetAuditLogRequest, Pagination } from "../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "entry_time",
     label: "Time",
@@ -273,7 +271,7 @@ const filterTypeOptions = [
 ];
 
 const props = defineProps<{
-  agent: string;
+  agent?: string;
   modal: boolean;
 }>();
 
@@ -363,12 +361,15 @@ watch(filterType, () => {
 
 if (props.agent) {
   requestData.agentFilter = [props.agent];
-  watch([requestData.userFilter, requestData.actionFilter, requestData.timeFilter], search);
+  watch(
+    [() => requestData.userFilter, () => requestData.actionFilter, () => requestData.timeFilter],
+    search,
+  );
   watch(
     () => props.agent,
     (newValue) => {
       if (newValue) {
-        requestData.agentFilter = [props.agent];
+        requestData.agentFilter = [newValue];
         search();
       }
     },

@@ -102,6 +102,17 @@ export const useCheckStore = defineStore("checks", () => {
       });
   }
 
+  async function getCheckHistory(checkResultId: number, timeFilter: number) {
+    isLoading.value = true;
+    try {
+      const { data } = await axios.patch(`/checks/${checkResultId}/history/`, { timeFilter });
+      return Object.freeze(data);
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
   return {
     checks,
     isLoading,
@@ -111,5 +122,6 @@ export const useCheckStore = defineStore("checks", () => {
     updateCheck,
     removeCheck,
     resetCheck,
+    getCheckHistory,
   };
 });

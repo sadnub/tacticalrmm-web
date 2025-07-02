@@ -7,7 +7,7 @@
     <tactical-table
       v-model:pagination="pagination"
       dense
-      :style="{ 'max-height': tabHeight }"
+      :style="{ 'max-height': `${tabHeight}px` }"
       :rows="updateStore.updates"
       :columns="columns"
       :filter="filter"
@@ -51,7 +51,7 @@
           class="q-mr-sm"
           @click="
             agentStore.selectedAgentId &&
-              updateStore.runAgentUpdateInstall(agentStore.selectedAgentId)
+            updateStore.runAgentUpdateInstall(agentStore.selectedAgentId)
           "
         />
         <q-space />
@@ -61,92 +61,114 @@
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
-        <export-table-btn :data="updateStore.updates" :columns="columns" />
+        <tactical-table-export />
       </template>
 
       <template #loading>
         <q-inner-loading showing color="primary" />
       </template>
 
-      <template #body="{ row }">
-        <q-tr>
+      <template #body="props">
+        <q-tr :props="props">
+          <!-- context menu-->
           <q-menu context-menu>
             <q-list dense style="min-width: 100px">
               <q-item
-                v-if="!row.installed"
+                v-if="!props.row.installed"
                 v-close-popup
                 clickable
-                @click="editWinUpdate(row.id, 'inherit')"
+                @click="editWinUpdate(props.row.id, 'inherit')"
               >
                 <q-item-section>Inherit</q-item-section>
               </q-item>
               <q-item
-                v-if="!row.installed"
+                v-if="!props.row.installed"
                 v-close-popup
                 clickable
-                @click="editWinUpdate(row.id, 'approve')"
+                @click="editWinUpdate(props.row.id, 'approve')"
               >
                 <q-item-section>Approve</q-item-section>
               </q-item>
               <q-item
-                v-if="!row.installed"
+                v-if="!props.row.installed"
                 v-close-popup
                 clickable
-                @click="editWinUpdate(row.id, 'ignore')"
+                @click="editWinUpdate(props.row.id, 'ignore')"
               >
                 <q-item-section>Ignore</q-item-section>
               </q-item>
               <q-item
-                v-if="!row.installed"
+                v-if="!props.row.installed"
                 v-close-popup
                 clickable
-                @click="editWinUpdate(row.id, 'nothing')"
+                @click="editWinUpdate(props.row.id, 'nothing')"
               >
                 <q-item-section>Do Nothing</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
-          <!-- policy -->
-          <q-td>
-            <q-icon v-if="row.action === 'nothing'" name="fiber_manual_record" color="grey">
-              <q-tooltip>Do Nothing</q-tooltip>
-            </q-icon>
-            <q-icon v-else-if="row.action === 'approve'" name="fas fa-check" color="primary">
-              <q-tooltip>Approve</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="row.action === 'ignore'"
-              name="fas fa-check"
-              :color="dashNegativeColor"
-            >
-              <q-tooltip>Ignore</q-tooltip>
-            </q-icon>
-            <q-icon v-else-if="row.action === 'inherit'" name="fiber_manual_record" color="accent">
-              <q-tooltip>Inherit</q-tooltip>
-            </q-icon>
+
+          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <!-- action -->
+            <template v-if="col.name === 'action'">
+              <q-icon v-if="col.value === 'nothing'" name="fiber_manual_record" color="grey">
+                <q-tooltip>Do Nothing</q-tooltip>
+              </q-icon>
+              <q-icon v-else-if="col.value === 'approve'" name="fas fa-check" color="primary">
+                <q-tooltip>Approve</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="col.value === 'ignore'"
+                name="fas fa-check"
+                :color="dashNegativeColor"
+              >
+                <q-tooltip>Ignore</q-tooltip>
+              </q-icon>
+              <q-icon v-else-if="col.value === 'inherit'" name="fiber_manual_record" color="accent">
+                <q-tooltip>Inherit</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- installed -->
+            <template v-else-if="col.name === 'installed'">
+              <q-icon v-if="col.value" name="fas fa-check" :color="dashPositiveColor">
+                <q-tooltip>Installed</q-tooltip>
+              </q-icon>
+              <q-icon v-else-if="col.value == 'approve'" name="fas fa-tasks" color="primary">
+                <q-tooltip>Pending</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="col.value == 'ignore'"
+                name="fas fa-ban"
+                :color="dashNegativeColor"
+              >
+                <q-tooltip>Ignored</q-tooltip>
+              </q-icon>
+              <q-icon v-else name="fas fa-exclamation" :color="dashWarningColor">
+                <q-tooltip>Missing</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- title -->
+            <template v-else-if="col.name === 'title'">
+              <truncate-text :text="col.value" />
+            </template>
+
+            <!-- description -->
+            <template v-else-if="col.name === 'description'">
+              <span
+                style="cursor: pointer; text-decoration: underline"
+                class="text-primary"
+                @click="showUpdateDetails(props.row)"
+              >
+                <truncate-text :text="col.value" />
+              </span>
+            </template>
+
+            <template v-else>
+              {{ col.value }}
+            </template>
           </q-td>
-          <q-td>
-            <q-icon v-if="row.installed" name="fas fa-check" :color="dashPositiveColor">
-              <q-tooltip>Installed</q-tooltip>
-            </q-icon>
-            <q-icon v-else-if="row.action == 'approve'" name="fas fa-tasks" color="primary">
-              <q-tooltip>Pending</q-tooltip>
-            </q-icon>
-            <q-icon v-else-if="row.action == 'ignore'" name="fas fa-ban" :color="dashNegativeColor">
-              <q-tooltip>Ignored</q-tooltip>
-            </q-icon>
-            <q-icon v-else name="fas fa-exclamation" :color="dashWarningColor">
-              <q-tooltip>Missing</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td>{{ !row.severity ? "Other" : row.severity }}</q-td>
-          <q-td>{{ truncateText(row.title, 50) }}</q-td>
-          <q-td @click="showUpdateDetails(row)">
-            <span style="cursor: pointer; text-decoration: underline" class="text-primary">{{
-              truncateText(row.description, 50)
-            }}</span>
-          </q-td>
-          <q-td>{{ dashboardStore.formatDate(row.date_installed) }}</q-td>
         </q-tr>
       </template>
     </tactical-table>
@@ -156,32 +178,30 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, reactive, computed, watch, onMounted } from "vue";
-import { useQuasar, type QTableProps } from "quasar";
+import { useQuasar } from "quasar";
 import { useWinUpdateStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAgentStore } from "../../api";
-import { truncateText } from "src/utils/format";
+
+// ui imports
+import WinUpdateDialog from "./WinUpdateDialog.vue";
 
 // type imports
 import type { WindowsUpdate, PatchAction } from "../../types";
-
-// ui imports
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import WinUpdateDialog from "./WinUpdateDialog.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "action",
     field: "action",
-    label: "",
+    label: "Action",
     align: "left",
   },
   {
     name: "installed",
     field: "installed",
-    label: "",
+    label: "Installed",
     align: "left",
   },
   {
@@ -190,6 +210,7 @@ const columns: QTableProps["columns"] = [
     field: "severity",
     align: "left",
     sortable: true,
+    format: (val: string) => (val ? val : "Other"),
   },
   {
     name: "title",
@@ -211,6 +232,7 @@ const columns: QTableProps["columns"] = [
     field: "date_installed",
     align: "left",
     sortable: true,
+    format: (val: string) => dashboardStore.formatDate(val),
   },
 ];
 

@@ -1,16 +1,15 @@
 <template>
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
-    <q-card style="min-width: 85vh">
-      <q-form ref="form" @submit="onSubmit">
-        <q-card-section class="row items-center">
-          <div class="text-h6">{{ user ? "Edit User" : "Add User" }}</div>
-          <q-space />
-          <q-btn v-close-popup icon="close" flat round dense />
-        </q-card-section>
-
+    <q-card style="min-width: 30vw" class="q-dialog-plugin">
+      <q-bar>
+        {{ user ? "Edit User" : "Add User" }}
+        <q-space />
+        <q-btn v-close-popup dense flat icon="close" />
+      </q-bar>
+      <q-form @submit.prevent="onSubmit">
         <q-card-section class="row">
-          <div class="col-2">Username:</div>
-          <div class="col-10">
+          <div class="col-3">Username:</div>
+          <div class="col-9">
             <q-input
               v-model="localUser.username"
               filled
@@ -21,8 +20,8 @@
           </div>
         </q-card-section>
         <q-card-section v-if="!user" class="row">
-          <div class="col-2">Password:</div>
-          <div class="col-10">
+          <div class="col-3">Password:</div>
+          <div class="col-9">
             <q-input
               v-model="localUser.password"
               filled
@@ -42,8 +41,8 @@
           </div>
         </q-card-section>
         <q-card-section class="row">
-          <div class="col-2">Email:</div>
-          <div class="col-10">
+          <div class="col-3">Email:</div>
+          <div class="col-9">
             <q-input
               v-model="localUser.email"
               filled
@@ -54,25 +53,25 @@
           </div>
         </q-card-section>
         <q-card-section class="row">
-          <div class="col-2">First Name:</div>
-          <div class="col-10">
+          <div class="col-3">First Name:</div>
+          <div class="col-9">
             <q-input v-model="localUser.first_name" filled dense />
           </div>
         </q-card-section>
         <q-card-section class="row">
-          <div class="col-2">Last Name:</div>
-          <div class="col-10">
+          <div class="col-3">Last Name:</div>
+          <div class="col-9">
             <q-input v-model="localUser.last_name" filled dense />
           </div>
         </q-card-section>
         <q-card-section class="row">
-          <div class="col-2">Active:</div>
-          <div class="col-10">
+          <div class="col-3">Active:</div>
+          <div class="col-9">
             <q-checkbox v-model="localUser.is_active" :disable="isLoggedInUser" />
           </div>
         </q-card-section>
         <q-card-section class="row">
-          <div class="col-2">Role:</div>
+          <div class="col-3">Role:</div>
           <template v-if="roleOptions.length === 0"
             ><span
               >No roles have been created. Create some from Settings > Permissions Manager</span
@@ -87,7 +86,7 @@
               dense
               options-dense
               :options="roleOptions"
-              class="col-10"
+              class="col-9"
           /></template>
         </q-card-section>
         <q-card-section>
@@ -98,9 +97,10 @@
             :disable="isLoggedInUser"
           />
         </q-card-section>
-        <q-card-section class="row items-center">
-          <q-btn :disable="!disableSave" label="Save" color="primary" type="submit" />
-        </q-card-section>
+        <q-card-actions align="right" class="row items-center">
+          <q-btn v-close-popup label="Cancel" />
+          <q-btn label="Save" color="primary" type="submit" />
+        </q-card-actions>
       </q-form>
     </q-card>
   </q-dialog>
@@ -148,14 +148,6 @@ const localUser = reactive<User>({
 });
 
 const isLoggedInUser = computed(() => props.user && localUser.username === loggedInUser.value);
-
-const disableSave = computed(() => {
-  if (props.user) {
-    return localUser.username;
-  } else {
-    return localUser.username && localUser.password;
-  }
-});
 
 async function onSubmit() {
   if (props.user) {

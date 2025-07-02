@@ -79,6 +79,11 @@ export const usePendingActionStore = defineStore("pendingActions", () => {
   };
 });
 
+export interface AuditLogResponse {
+  audit_logs: AuditLog[];
+  total: number;
+}
+
 export const useAuditLogStore = defineStore("auditLogs", () => {
   const auditLog = ref<AuditLog[]>([]);
   const rowsNumber = ref(0);
@@ -89,9 +94,10 @@ export const useAuditLogStore = defineStore("auditLogs", () => {
     isLoading.value = true;
     isError.value = false;
     axios
-      .patch<AuditLog[]>("/logs/audit/", payload)
-      .then(({ data }) => {
-        auditLog.value = data;
+      .patch<AuditLogResponse>("/logs/audit/", payload)
+      .then(({ data: { audit_logs, total } }) => {
+        auditLog.value = audit_logs;
+        rowsNumber.value = total;
       })
       .catch(() => {
         isError.value = true;

@@ -6,7 +6,7 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-form ref="form" @submit="onSubmit">
+      <q-form @submit.prevent="onSubmit">
         <q-card-section class="row">
           <q-input
             v-model="localRole.name"
@@ -395,7 +395,7 @@ async function onSubmit() {
   else roleStore.addRole(localRole);
 
   // stops the dialog from closing when there is an error
-  await until(roleStore.isLoading).not.toBeTruthy();
+  await until(() => roleStore.isLoading).toBe(false);
   if (roleStore.isError) return;
 
   onDialogOK();

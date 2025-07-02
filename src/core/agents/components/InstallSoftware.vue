@@ -22,11 +22,13 @@
           row-key="name"
         >
           <template #top-left>
-            <q-input v-model="filter" filled label="Search" dense clearable>
+            <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
               <template #prepend>
                 <q-icon name="search" />
               </template>
             </q-input>
+
+            <tactical-table-export />
           </template>
           <template #body="{ row }">
             <q-tr :props="props">
@@ -46,13 +48,14 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { type QTableColumn, useDialogPluginComponent, useQuasar } from "quasar";
+import { useDialogPluginComponent, useQuasar } from "quasar";
 import { useChocosStore } from "src/core/software/api";
 import { useAgentStore } from "../api";
 import { until } from "@vueuse/shared";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableColumn[] = [
+const columns: TacticalColumn[] = [
   { name: "install", align: "left", field: "", label: "Install", sortable: false },
   {
     name: "name",

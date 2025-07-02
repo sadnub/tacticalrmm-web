@@ -1,5 +1,5 @@
 import type { CustomFieldValue } from "src/core/settings/types";
-
+import type { AgentMonitoringType } from "../agents/types";
 export interface Client {
   id: number;
   name: string;
@@ -43,4 +43,21 @@ export interface ClientCustomFieldValue extends CustomFieldValue {
 
 export interface SiteCustomFieldValue extends CustomFieldValue {
   site?: number;
+}
+
+export type GoArch = "amd64" | "386" | "arm64" | "arm";
+
+export interface Deployment {
+  id?: number;
+  uid?: string;
+  site: number | null;
+  agenttype: AgentMonitoringType;
+  goarch: GoArch;
+  expires?: string;
+  created?: string;
+  auth_token?: number;
+  token_key?: string;
+  power: boolean;
+  rdp: boolean;
+  ping: boolean;
 }

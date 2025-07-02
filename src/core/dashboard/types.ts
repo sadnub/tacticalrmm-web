@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+import type { InjectionKey } from "vue";
+import type { QTableColumn } from "quasar";
 import type { Client, Site } from "src/core/clients/types";
 
 export type Option =
@@ -43,3 +44,11 @@ export interface ClientTreeNode {
   client?: Client;
   site?: Site;
 }
+
+export interface TacticalColumn extends QTableColumn {
+  truncate?: boolean;
+}
+
+// for tactical table export csv injected method
+export type TableExportFunction = () => void;
+export const tableExportKey: InjectionKey<TableExportFunction> = Symbol("tableExport");

@@ -97,10 +97,10 @@ export const useDashboardStore = defineStore(
 
     function setTableHeight(val: number) {
       // top toolbar is 50px. Filebar is 40px and agent filter tabs are 44px
-      tableHeight.value = Screen.height - 50 - 40 - 90 - val;
+      tableHeight.value = Math.floor(Screen.height - 50 - 40 - 90 - val);
 
       // q-tabs are 37px
-      tabHeight.value = val - 37;
+      tabHeight.value = Math.floor(val - 37);
     }
 
     const { data } = useDashWSConnection();

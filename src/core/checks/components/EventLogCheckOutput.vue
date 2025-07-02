@@ -31,10 +31,7 @@
                 <q-icon name="search" color="primary" />
               </template>
             </q-input>
-            <export-table-btn
-              :data="evtLogData.check_result?.extra_details.log"
-              :columns="columns"
-            />
+            <tactical-table-export />
           </template>
         </tactical-table>
       </div>
@@ -46,18 +43,14 @@
 <script lang="ts" setup>
 // composition imports
 import { ref } from "vue";
-import type { QTableProps } from "quasar";
 import { useDialogPluginComponent } from "quasar";
-
-//ui imports
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // type imports
 import type { Check } from "../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "eventType",
     label: "Type",

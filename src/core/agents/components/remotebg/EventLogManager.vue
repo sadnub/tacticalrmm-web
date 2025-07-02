@@ -42,7 +42,7 @@
           flat
           push
           icon="refresh"
-          @click="agentStore.getAgentEventLog(props.agentId, logType, days)"
+          @click="agentStore.getAgentEventLog(agentId, logType, days)"
         />
         <q-space />
         <q-radio
@@ -50,36 +50,32 @@
           color="cyan"
           val="Application"
           label="Application"
-          @update:model-value="agentStore.getAgentEventLog(props.agentId, logType, days)"
+          @update:model-value="agentStore.getAgentEventLog(agentId, logType, days)"
         />
         <q-radio v-model="logType" color="cyan" val="System" label="System" />
         <q-radio v-model="logType" color="cyan" val="Security" label="Security" />
         <q-space />
-        <q-input v-model="filter" style="width: 300px" filled label="Search" dense clearable>
+        <q-input
+          v-model="filter"
+          style="width: 300px"
+          filled
+          label="Search"
+          dense
+          clearable
+          class="q=pr-sm"
+        >
           <template #prepend>
             <q-icon name="search" />
           </template>
         </q-input>
-        <!-- file download doesn't work so disabling -->
-        <export-table-btn
-          v-show="false"
-          class="q-ml-sm"
-          :columns="columns"
-          :data="agentStore.agentEventLog"
-        />
+        <tactical-table-export />
       </template>
-      <template #body="{ row }">
-        <q-tr>
-          <q-td>{{ row.eventType }}</q-td>
-          <q-td>{{ row.source }}</q-td>
-          <q-td>{{ row.eventID }}</q-td>
-          <q-td>{{ row.time }}</q-td>
-          <q-td @click="showEventMessage(row.message)">
-            <span style="cursor: pointer; text-decoration: underline" class="text-primary">{{
-              truncateText(row.message, 30)
-            }}</span>
-          </q-td>
-        </q-tr>
+      <template #body-cell-message="cellProps">
+        <q-td :props="cellProps" @click="showEventMessage(cellProps.value)">
+          <span style="cursor: pointer; text-decoration: underline" class="text-primary">
+            <truncate-text :text="cellProps.value" />
+          </span>
+        </q-td>
       </template>
     </tactical-table>
   </div>
@@ -88,17 +84,15 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
-import { useQuasar, type QTableProps } from "quasar";
+import { useQuasar } from "quasar";
 import { useAgentStore } from "../../api";
-import { truncateText } from "src/utils/format";
 
 // ui imports
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "eventType",
     label: "Type",

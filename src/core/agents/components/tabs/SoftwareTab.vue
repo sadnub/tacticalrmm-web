@@ -32,7 +32,7 @@
           icon="refresh"
           @click="
             agentStore.selectedAgentId &&
-              agentStore.refreshAgentSoftware(agentStore.selectedAgentId)
+            agentStore.refreshAgentSoftware(agentStore.selectedAgentId)
           "
         />
         <q-btn
@@ -52,7 +52,7 @@
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
-        <export-table-btn :data="agentStore.agentSoftware" :columns="columns" />
+        <tactical-table-export />
       </template>
     </tactical-table>
   </div>
@@ -61,17 +61,18 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
-import { useQuasar, type QTableProps } from "quasar";
+import { useQuasar } from "quasar";
 import { useAgentStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
 import InstallSoftware from "src/core/agents/components/InstallSoftware.vue";
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+
+// type imports
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "name",
     align: "left",

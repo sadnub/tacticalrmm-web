@@ -57,25 +57,17 @@
               </q-item>
             </q-list>
           </q-menu>
-          <!-- name -->
-          <q-td>
-            {{ props.row.name }}
-          </q-td>
-          <q-td>
-            {{ props.row.username }}
-          </q-td>
-          <!-- expiration -->
-          <q-td>
-            {{ dashboardStore.formatDate(props.row.expiration) }}
-          </q-td>
-          <!-- created time -->
-          <q-td>
-            {{ dashboardStore.formatDate(props.row.created_time) }}
-          </q-td>
-          <q-td>
-            <q-icon size="sm" name="content_copy" @click="copyKeyToClipboard(props.row.key)">
-              <q-tooltip>Copy API Key to clipboard</q-tooltip>
-            </q-icon>
+
+          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <template v-if="col.name === 'actions'">
+              <q-icon size="sm" name="content_copy" @click="copyKeyToClipboard(props.row.key)">
+                <q-tooltip>Copy API Key to clipboard</q-tooltip>
+              </q-icon>
+            </template>
+
+            <template v-else>
+              {{ col.value }}
+            </template>
           </q-td>
         </q-tr>
       </template>
@@ -86,21 +78,22 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, onMounted } from "vue";
-import { useQuasar, copyToClipboard, type QTableColumn } from "quasar";
+import { useQuasar, copyToClipboard } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAPIKeyStore } from "../api";
 import { notifySuccess, notifyError } from "src/utils/notify";
 import APIKeysForm from "src/core/settings/components/APIKeysForm.vue";
 import type { APIKey } from "../types";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
-const columns: QTableColumn[] = [
+const columns: TacticalColumn[] = [
   {
     name: "name",
     label: "Name",
     field: "name",
     align: "left",
     sortable: true,
+    required: true,
   },
   {
     name: "username",
@@ -115,6 +108,7 @@ const columns: QTableColumn[] = [
     field: "expiration",
     align: "left",
     sortable: true,
+    format: (val: string) => dashboardStore.formatDate(val),
   },
   {
     name: "created_time",
@@ -122,11 +116,13 @@ const columns: QTableColumn[] = [
     field: "created_time",
     align: "left",
     sortable: true,
+    format: (val: string) => dashboardStore.formatDate(val),
   },
   {
     name: "actions",
-    label: "",
+    label: "Actions",
     field: "actions",
+    required: true,
   },
 ];
 

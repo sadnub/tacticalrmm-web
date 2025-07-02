@@ -25,7 +25,7 @@
         />
         <q-btn icon="add" label="Add Note" no-caps dense flat push @click="addNote" />
         <q-space />
-        <export-table-btn :data="agentStore.agentNotes" :columns="columns" />
+        <tactical-table-export />
       </template>
 
       <template #loading>
@@ -77,19 +77,16 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
-import { useQuasar, type QTableProps } from "quasar";
+import { useQuasar } from "quasar";
 import { useAgentStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
 
-// ui imports
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
-
 // type imports
 import type { AgentNote } from "../../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "entry_time",
     label: "Date",

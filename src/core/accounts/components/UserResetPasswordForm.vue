@@ -1,12 +1,12 @@
 <template>
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="width: 60vw">
+      <q-bar>
+        {{ user.username }} Password Reset
+        <q-space />
+        <q-btn v-close-popup dense flat icon="close" />
+      </q-bar>
       <q-form ref="form" @submit="onSubmit">
-        <q-card-section class="row items-center">
-          <div class="text-h6">{{ user.username }} Password Reset</div>
-          <q-space />
-          <q-btn v-close-popup icon="close" flat round dense />
-        </q-card-section>
         <q-card-section class="row">
           <div class="col-2">New Password:</div>
           <div class="col-10">
@@ -27,9 +27,10 @@
             </q-input>
           </div>
         </q-card-section>
-        <q-card-section class="row items-center">
+        <q-card-actions align="right">
+          <q-btn v-close-popup label="Cancel" />
           <q-btn label="Reset" color="primary" type="submit" />
-        </q-card-section>
+        </q-card-actions>
       </q-form>
     </q-card>
   </q-dialog>

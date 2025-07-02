@@ -1,5 +1,5 @@
 <template>
-  <q-layout container view="hHh lpr lfr">
+  <q-layout container view="hHh lpr lfr" class="hide-scrollbar">
     <q-header :class="{ 'bg-dark': $q.dark.isActive, 'bg-light': !$q.dark.isActive }">
       <q-tabs
         v-model="subtab"

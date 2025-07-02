@@ -28,21 +28,27 @@
             label="Remove All Sessions"
             size="sm"
             color="negative"
+            class="q-pr-sm"
             @click="removeAllSessions"
           />
+
+          <tactical-table-export />
         </template>
-        <template #body="{ row }">
+        <template #body="bodyProps">
           <q-tr>
-            <!-- rows -->
-            <q-td>{{ row.created }}</q-td>
-            <q-td>{{ row.expiry }}</q-td>
-            <q-td>
-              <q-btn
-                size="sm"
-                label="Disconnect"
-                color="negative"
-                @click="removeSession(row)"
-              ></q-btn>
+            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+              <template v-if="col.name === 'action'">
+                <q-btn
+                  size="sm"
+                  label="Disconnect"
+                  color="negative"
+                  @click="removeSession(bodyProps.row)"
+                ></q-btn>
+              </template>
+
+              <template v-else>
+                {{ col.value }}
+              </template>
             </q-td>
           </q-tr>
         </template>
@@ -54,15 +60,15 @@
 <script setup lang="ts">
 // composition imports
 import { onMounted } from "vue";
-import { useDialogPluginComponent, useQuasar, type QTableColumn } from "quasar";
+import { useDialogPluginComponent, useQuasar } from "quasar";
 import { useUserStore } from "../api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 //types
 import type { User, UserSession } from "../types";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
-const columns: QTableColumn[] = [
+const columns: TacticalColumn[] = [
   {
     name: "created",
     label: "Created",

@@ -19,7 +19,7 @@
     </template>
 
     <template #header-cell-columnSelect>
-      <q-th :props="props" auto-width>
+      <q-th auto-width>
         <q-btn dense flat icon="more_horiz">
           <q-menu>
             <q-option-group v-model="visibleColumns" :options="columnOptions" type="checkbox" />
@@ -32,25 +32,26 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { type TableExportFunction, tableExportKey, type TacticalColumn } from "../types";
 export default defineComponent({
   inheritAttrs: false,
 });
 </script>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, defineExpose, useTemplateRef, provide } from "vue";
 import { useStorage } from "@vueuse/core";
-import type { QTableColumn, QTableProps } from "quasar";
+import type { QTable, QTableProps } from "quasar";
+import { exportToCsv } from "src/utils/csv";
 
 const props = withDefaults(
   defineProps<{
     rows: QTableProps["rows"];
-    columns: QTableColumn[];
+    columns: TacticalColumn[];
     columnSelect?: boolean;
-    excludeColumns?: string[];
     storageKey?: string;
   }>(),
-  { columnSelect: false, excludeColumns: () => [], storageKey: "" },
+  { columnSelect: false, storageKey: "" },
 );
 
 const columnSelectCol = {
@@ -58,15 +59,14 @@ const columnSelectCol = {
   label: "Column Select",
   field: "columnSelect",
   required: true,
+  sortable: false,
 };
 
 const localColumns = computed(() =>
   props.columnSelect ? [...props.columns, columnSelectCol] : [...props.columns],
 );
 
-const defaultNames = computed(() =>
-  localColumns.value.map((c) => c.name).filter((n) => !props.excludeColumns.includes(n)),
-);
+const defaultNames = computed(() => localColumns.value.map((c) => c.name));
 
 const storedNames = props.storageKey
   ? useStorage<string[]>(`${props.storageKey}-columns`, [])
@@ -82,11 +82,33 @@ const visibleColumns = computed<string[]>({
   },
 });
 
+// exclude 'required' columns from the columnOptions
 const columnOptions = computed(() =>
-  localColumns.value
-    .filter((c) => c.name !== "columnSelect" && !props.excludeColumns.includes(c.name))
-    .map((c) => ({ label: c.label, value: c.name })),
+  localColumns.value.filter((col) => !col.required).map((c) => ({ label: c.label, value: c.name })),
 );
+
+const tacticalTable = useTemplateRef<QTable>("tacticalTable");
+
+function handleExportCsv() {
+  if (!tacticalTable.value) {
+    console.error("Table reference is not available.");
+    return;
+  }
+
+  const visibleCols = localColumns.value.filter(
+    (col) => visibleColumns.value.includes(col.name) && col.name !== "columnSelect",
+  );
+
+  const rowsToExport = tacticalTable.value.filteredSortedRows;
+
+  exportToCsv(visibleCols, rowsToExport, "table-export");
+}
+
+// expose handleExportCsv on the tactical table instance and to child components
+provide<TableExportFunction>(tableExportKey, handleExportCsv);
+defineExpose({
+  exportTable: handleExportCsv,
+});
 </script>
 
 <style lang="sass">
@@ -125,13 +147,4 @@ const columnOptions = computed(() =>
   tbody
     /* height of all previous header rows */
     scroll-margin-top: 48px
-
-td.filter-inputs
-  .q-field--dense .q-field__control, .q-field--dense .q-field__marginal
-    height: 30px
-  .q-field--auto-height.q-field--dense .q-field__control, .q-field--auto-height.q-field--dense .q-field__native
-    min-height: 30px
-  .q-field__control
-    padding-right: 5px
-    padding-left: 10px
 </style>

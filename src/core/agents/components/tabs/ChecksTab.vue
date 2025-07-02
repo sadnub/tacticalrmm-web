@@ -4,7 +4,7 @@
     <tactical-table
       v-model:pagination="pagination"
       dense
-      :style="{ 'max-height': tabHeight }"
+      :style="{ 'max-height': `${tabHeight}px` }"
       :rows="agentStore.agentChecks"
       :columns="columns"
       row-key="id"
@@ -120,6 +120,24 @@
           icon="restart_alt"
           @click="resetAllChecks"
         />
+
+        <q-space />
+
+        <q-input
+          v-model="search"
+          style="width: 300px"
+          filled
+          label="Search"
+          dense
+          clearable
+          class="q-pr-sm"
+        >
+          <template #prepend>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+
+        <tactical-table-export />
       </template>
 
       <!-- header slots -->
@@ -144,7 +162,7 @@
           </q-icon>
         </q-th>
       </template>
-      <template #header-cell-statusicon="props">
+      <template #header-cell-status="props">
         <q-th auto-width :props="props"></q-th>
       </template>
       <template #header-cell-policystatus="props">
@@ -196,180 +214,182 @@
               </q-item>
             </q-list>
           </q-menu>
-          <!-- tds -->
-          <!-- text alert -->
-          <q-td>
-            <q-checkbox
-              v-if="props.row.alert_template && props.row.alert_template.always_text != null"
-              v-model="props.row.alert_template.always_text"
-              disable
-              dense
-            >
-              <q-tooltip>
-                Setting is overridden by alert template:
-                {{ props.row.alert_template.name }}
-              </q-tooltip>
-            </q-checkbox>
 
-            <q-checkbox
-              v-else
-              v-model="props.row.text_alert"
-              dense
-              :disable="!!props.row.policy"
-              @update:model-value="editCheck(props.row, { text_alert: !props.row.text_alert })"
-            />
-          </q-td>
-          <!-- email alert -->
-          <q-td>
-            <q-checkbox
-              v-if="props.row.alert_template && props.row.alert_template.always_email != null"
-              v-model="props.row.alert_template.always_email"
-              disable
-              dense
-            >
-              <q-tooltip>
-                Setting is overridden by alert template:
-                {{ props.row.alert_template.name }}
-              </q-tooltip>
-            </q-checkbox>
+          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <!-- text alert -->
+            <template v-if="col.name === 'smsalert'">
+              <q-checkbox
+                v-if="props.row.alert_template && props.row.alert_template.always_text != null"
+                v-model="props.row.alert_template.always_text"
+                disable
+                dense
+              >
+                <q-tooltip>
+                  Setting is overridden by alert template:
+                  {{ props.row.alert_template.name }}
+                </q-tooltip>
+              </q-checkbox>
 
-            <q-checkbox
-              v-else
-              v-model="props.row.email_alert"
-              dense
-              :disable="!!props.row.policy"
-              @update:model-value="editCheck(props.row, { email_alert: !props.row.email_alert })"
-            />
-          </q-td>
-          <!-- dashboard alert -->
-          <q-td>
-            <q-checkbox
-              v-if="props.row.alert_template && props.row.alert_template.always_alert !== null"
-              v-model="props.row.alert_template.always_alert"
-              disable
-              dense
-            >
-              <q-tooltip>
-                Setting is overridden by alert template:
-                {{ props.row.alert_template.name }}
-              </q-tooltip>
-            </q-checkbox>
+              <q-checkbox
+                v-else
+                v-model="props.row.text_alert"
+                dense
+                :disable="!!props.row.policy"
+                @update:model-value="editCheck(props.row, { text_alert: !props.row.text_alert })"
+              />
+            </template>
 
-            <q-checkbox
-              v-else
-              v-model="props.row.dashboard_alert"
-              dense
-              :disable="!!props.row.policy"
-              @update:model-value="
-                editCheck(props.row, {
-                  dashboard_alert: !props.row.dashboard_alert,
-                })
-              "
-            />
+            <!-- email alert -->
+            <template v-else-if="col.name === 'emailalert'">
+              <q-checkbox
+                v-if="props.row.alert_template && props.row.alert_template.always_email != null"
+                v-model="props.row.alert_template.always_email"
+                disable
+                dense
+              >
+                <q-tooltip>
+                  Setting is overridden by alert template:
+                  {{ props.row.alert_template.name }}
+                </q-tooltip>
+              </q-checkbox>
+
+              <q-checkbox
+                v-else
+                v-model="props.row.email_alert"
+                dense
+                :disable="!!props.row.policy"
+                @update:model-value="editCheck(props.row, { email_alert: !props.row.email_alert })"
+              />
+            </template>
+
+            <!-- dashboard alert -->
+            <template v-else-if="col.name === 'dashboardalert'">
+              <q-checkbox
+                v-if="props.row.alert_template && props.row.alert_template.always_alert !== null"
+                v-model="props.row.alert_template.always_alert"
+                disable
+                dense
+              >
+                <q-tooltip>
+                  Setting is overridden by alert template:
+                  {{ props.row.alert_template.name }}
+                </q-tooltip>
+              </q-checkbox>
+
+              <q-checkbox
+                v-else
+                v-model="props.row.dashboard_alert"
+                dense
+                :disable="!!props.row.policy"
+                @update:model-value="
+                  editCheck(props.row, {
+                    dashboard_alert: !props.row.dashboard_alert,
+                  })
+                "
+              />
+            </template>
+
+            <!-- policy check icon -->
+            <template v-else-if="col.name === 'policystatus'">
+              <template v-if="props.row.policy">
+                <q-icon style="font-size: 1.3rem" name="policy">
+                  <q-tooltip>This check is managed by a policy</q-tooltip>
+                </q-icon>
+              </template>
+
+              <template v-else-if="props.row.overridden_by_policy">
+                <q-icon style="font-size: 1.3rem" name="remove_circle_outline">
+                  <q-tooltip>This check is overriden by a policy</q-tooltip>
+                </q-icon>
+              </template>
+            </template>
+
+            <!-- status icon -->
+            <template v-else-if="col.name === 'status'">
+              <template
+                v-if="props.row.check_result && props.row.check_result.status === 'passing'"
+              >
+                <q-icon style="font-size: 1.3rem" :color="dashPositiveColor" name="check_circle">
+                  <q-tooltip>Passing</q-tooltip>
+                </q-icon>
+              </template>
+
+              <template
+                v-else-if="props.row.check_result && props.row.check_result.status === 'failing'"
+              >
+                <q-icon
+                  v-if="getAlertSeverity(props.row) === 'info'"
+                  style="font-size: 1.3rem"
+                  :color="dashInfoColor"
+                  name="info"
+                >
+                  <q-tooltip>Informational</q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="getAlertSeverity(props.row) === 'warning'"
+                  style="font-size: 1.3rem"
+                  :color="dashWarningColor"
+                  name="warning"
+                >
+                  <q-tooltip>Warning</q-tooltip>
+                </q-icon>
+                <q-icon v-else style="font-size: 1.3rem" :color="dashNegativeColor" name="error">
+                  <q-tooltip>Error</q-tooltip>
+                </q-icon>
+              </template>
+            </template>
+
+            <!-- check description -->
+            <template v-else-if="col.name === 'desc'">
+              <truncate-text :text="props.row.readable_desc" />
+            </template>
+
+            <!-- more info -->
+            <template v-else-if="col.name === 'moreinfo'">
+              <span
+                v-if="props.row.check_result.id"
+                style="cursor: pointer; text-decoration: underline"
+                class="text-primary"
+                @click="showCheckGraphModal(props.row)"
+                >Show Run History</span
+              >
+              &nbsp;&nbsp;&nbsp;
+              <span
+                v-if="props.row.check_type === 'ping' && props.row.check_result.id"
+                style="cursor: pointer; text-decoration: underline"
+                class="text-primary"
+                @click="showPingInfo(props.row)"
+                >{{
+                  grep(props.row.check_result.more_info, ["transmitted", "received", "packet loss"])
+                }}</span
+              >
+              <span
+                v-else-if="props.row.check_type === 'script' && props.row.check_result.id"
+                style="cursor: pointer; text-decoration: underline"
+                class="text-primary"
+                @click="showScriptOutput(props.row.check_result)"
+                >{{ processOutput(props.row.check_result) }}</span
+              >
+              <span
+                v-else-if="props.row.check_type === 'eventlog' && props.row.check_result.id"
+                style="cursor: pointer; text-decoration: underline"
+                class="text-primary"
+                @click="showEventInfo(props.row)"
+                >Last Output</span
+              >
+              <span
+                v-else-if="
+                  ['diskspace', 'cpuload', 'memory'].includes(props.row.check_type) ||
+                  (props.row.check_type === 'winsvc' && props.row.check_result.id)
+                "
+                >{{ props.row.check_result.more_info }}</span
+              >
+            </template>
+
+            <template v-else>
+              {{ col.value }}
+            </template>
           </q-td>
-          <!-- policy check icon -->
-          <q-td v-if="props.row.policy">
-            <q-icon style="font-size: 1.3rem" name="policy">
-              <q-tooltip>This check is managed by a policy</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td v-else-if="props.row.overridden_by_policy">
-            <q-icon style="font-size: 1.3rem" name="remove_circle_outline">
-              <q-tooltip>This check is overriden by a policy</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td v-else></q-td>
-          <!-- status icon -->
-          <q-td v-if="Object.keys(props.row.check_result).length === 0"></q-td>
-          <q-td v-else-if="props.row.check_result.status === 'passing'">
-            <q-icon style="font-size: 1.3rem" :color="dashPositiveColor" name="check_circle">
-              <q-tooltip>Passing</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td v-else-if="props.row.check_result.status === 'failing'">
-            <q-icon
-              v-if="getAlertSeverity(props.row) === 'info'"
-              style="font-size: 1.3rem"
-              :color="dashInfoColor"
-              name="info"
-            >
-              <q-tooltip>Informational</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="getAlertSeverity(props.row) === 'warning'"
-              style="font-size: 1.3rem"
-              :color="dashWarningColor"
-              name="warning"
-            >
-              <q-tooltip>Warning</q-tooltip>
-            </q-icon>
-            <q-icon v-else style="font-size: 1.3rem" :color="dashNegativeColor" name="error">
-              <q-tooltip>Error</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td v-else></q-td>
-          <!-- check description -->
-          <q-td>
-            <span>
-              {{ truncateText(props.row.readable_desc, 40) }}
-              <q-tooltip v-if="props.row.readable_desc.length > 40">{{
-                props.row.readable_desc
-              }}</q-tooltip>
-            </span></q-td
-          >
-          <!-- more info -->
-          <q-td>
-            <span
-              v-if="props.row.check_result.id"
-              style="cursor: pointer; text-decoration: underline"
-              class="text-primary"
-              @click="showCheckGraphModal(props.row)"
-              >Show Run History</span
-            >
-            &nbsp;&nbsp;&nbsp;
-            <span
-              v-if="props.row.check_type === 'ping' && props.row.check_result.id"
-              style="cursor: pointer; text-decoration: underline"
-              class="text-primary"
-              @click="showPingInfo(props.row)"
-              >{{
-                grep(props.row.check_result.more_info, ["transmitted", "received", "packet loss"])
-              }}</span
-            >
-            <span
-              v-else-if="props.row.check_type === 'script' && props.row.check_result.id"
-              style="cursor: pointer; text-decoration: underline"
-              class="text-primary"
-              @click="showScriptOutput(props.row.check_result)"
-              >{{ processOutput(props.row.check_result) }}</span
-            >
-            <span
-              v-else-if="props.row.check_type === 'eventlog' && props.row.check_result.id"
-              style="cursor: pointer; text-decoration: underline"
-              class="text-primary"
-              @click="showEventInfo(props.row)"
-              >Last Output</span
-            >
-            <span
-              v-else-if="
-                ['diskspace', 'cpuload', 'memory'].includes(props.row.check_type) ||
-                (props.row.check_type === 'winsvc' && props.row.check_result.id)
-              "
-              >{{ props.row.check_result.more_info }}</span
-            >
-          </q-td>
-          <q-td>{{
-            props.row.check_result.last_run
-              ? dashboardStore.formatDate(props.row.check_result.last_run)
-              : "Never"
-          }}</q-td>
-          <q-td v-if="props.row.assignedtasks.length > 1"
-            >{{ props.row.assignedtasks.length }} Tasks</q-td
-          >
-          <q-td v-else-if="props.row.assignedtasks.length === 1">{{
-            props.row.assignedtasks[0].name
-          }}</q-td>
-          <q-td v-else></q-td>
         </q-tr>
       </template>
     </tactical-table>
@@ -379,11 +399,10 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
-import { useQuasar, type QTableProps } from "quasar";
+import { useQuasar } from "quasar";
 import { useAgentStore } from "../../api";
 import { useCheckStore } from "src/core/checks/api";
 import { useDashboardStore } from "src/stores/dashboard";
-import { truncateText } from "src/utils/format";
 import { notifyWarning } from "src/utils/notify";
 
 // ui imports
@@ -396,26 +415,28 @@ import EventLogCheck from "src/core/checks/components//EventLogCheck.vue";
 import ScriptCheck from "src/core/checks/components//ScriptCheck.vue";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import EventLogCheckOutput from "src/core/checks/components//EventLogCheckOutput.vue";
-import CheckGraph from "src/components/graphs/CheckGraph.vue";
+import CheckGraph from "src/core/checks/components/CheckGraph.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // type imports
 import type { Check, CheckResult, CheckType } from "src/core/checks/types";
+import type { AutomatedTask } from "src/core/tasks/types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
-  { name: "smsalert", field: "text_alert", label: "", align: "left" },
-  { name: "emailalert", field: "email_alert", label: "", align: "left" },
-  { name: "dashboardalert", field: "dashboard_alert", label: "", align: "left" },
-  { name: "policystatus", field: "policystatus", label: "", align: "left" },
-  { name: "statusicon", field: "statusicon", label: "", align: "left" },
+const columns: TacticalColumn[] = [
+  { name: "smsalert", field: "text_alert", label: "SMS Alert", align: "left" },
+  { name: "emailalert", field: "email_alert", label: "Email Alert", align: "left" },
+  { name: "dashboardalert", field: "dashboard_alert", label: "Dashboard Alert", align: "left" },
+  { name: "policystatus", field: "policystatus", label: "Policy Status", align: "left" },
+  { name: "status", field: "statusicon", label: "Check Status", align: "left" },
   {
     name: "desc",
     field: "readable_desc",
     label: "Description",
     align: "left",
     sortable: true,
+    required: true,
   },
   {
     name: "moreinfo",
@@ -427,9 +448,10 @@ const columns: QTableProps["columns"] = [
   {
     name: "datetime",
     label: "Last Run",
-    field: "last_run",
+    field: (row) => row.check_result?.last_run,
     align: "left",
     sortable: true,
+    format: (val: string) => (val ? dashboardStore.formatDate(val) : "Never"),
   },
   {
     name: "assignedtasks",
@@ -437,6 +459,12 @@ const columns: QTableProps["columns"] = [
     field: "assigned_task",
     align: "left",
     sortable: true,
+    format: (val: AutomatedTask[]) => {
+      if (!val) return "";
+      else if (val.length > 1) return `${val.length} Tasks`;
+      else if (val.length === 1 && val[0]) return val[0].name;
+      else return "";
+    },
   },
 ];
 
@@ -466,6 +494,7 @@ const pagination = ref({
   descending: false,
 });
 
+const search = ref("");
 // TODO this will break when we add translations
 function grep(text: string, stringsToMatch: string[]) {
   try {

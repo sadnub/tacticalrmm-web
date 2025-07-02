@@ -25,8 +25,7 @@
         virtual-scroll
         :rows-per-page-options="[0]"
         no-data-label="No Pending Actions"
-        :loading="loading"
-        storage-key="pending-actions-table"
+        :loading="actionStore.isLoading"
       >
         <template #top>
           <q-space />
@@ -43,14 +42,17 @@
           />
         </template>
 
-        <template #body="{ row }">
+        <template #body="bodyProps">
           <q-tr class="cursor-pointer">
             <q-menu context-menu auto-close>
               <q-list dense>
                 <q-item
-                  :disable="row.status === 'completed' || row.action_type === 'agentinstall'"
+                  :disable="
+                    bodyProps.row.status === 'completed' ||
+                    bodyProps.row.action_type === 'agentinstall'
+                  "
                   clickable
-                  @click="cancelPendingAction(row)"
+                  @click="cancelPendingAction(bodyProps.row)"
                 >
                   <q-item-section side>
                     <q-icon name="fas fa-trash-alt" size="xs" />
@@ -63,36 +65,40 @@
                 </q-item>
               </q-list>
             </q-menu>
-            <q-td v-if="row.action_type === 'schedreboot'">
-              <q-icon name="power_settings_new" size="sm" />
+
+            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+              <!-- action type -->
+              <template v-if="col.name === 'type'">
+                <template v-if="col.value === 'schedreboot'">
+                  <q-icon name="power_settings_new" size="sm" />
+                </template>
+                <template v-else-if="col.value === 'agentupdate'">
+                  <q-icon name="update" size="sm" />
+                </template>
+                <template v-else-if="col.value === 'chocoinstall'">
+                  <q-icon name="download" size="sm" />
+                </template>
+              </template>
+
+              <!-- more details -->
+              <template v-else-if="col.name === 'details'">
+                <q-btn
+                  v-if="
+                    bodyProps.row.action_type === 'chocoinstall' &&
+                    bodyProps.row.status === 'completed'
+                  "
+                  color="primary"
+                  icon="preview"
+                  size="sm"
+                  label="View output"
+                  @click="showOutput(col.value)"
+                />
+              </template>
+
+              <template v-else>
+                {{ col.value }}
+              </template>
             </q-td>
-            <q-td v-else-if="row.action_type === 'agentupdate'">
-              <q-icon name="update" size="sm" />
-            </q-td>
-            <q-td v-else-if="row.action_type === 'chocoinstall'">
-              <q-icon name="download" size="sm" />
-            </q-td>
-            <q-td v-if="row.status !== 'completed'">
-              <span v-if="row.action_type === 'agentupdate'">{{ getNextAgentUpdateTime() }}</span>
-              <span v-else>{{
-                row.action_type === "schedreboot" ? dashboardStore.formatDate(row.due) : row.due
-              }}</span>
-            </q-td>
-            <q-td v-else>Completed</q-td>
-            <q-td>{{ row.description }}</q-td>
-            <q-td v-if="!agent">{{ row.hostname }}</q-td>
-            <q-td v-if="!agent">{{ row.client }}</q-td>
-            <q-td v-if="!agent">{{ row.site }}</q-td>
-            <q-td v-if="row.action_type === 'chocoinstall' && row.status === 'completed'">
-              <q-btn
-                color="primary"
-                icon="preview"
-                size="sm"
-                label="View output"
-                @click="showOutput(row.details.output)"
-              />
-            </q-td>
-            <q-td v-else></q-td>
           </q-tr>
         </template>
       </tactical-table>
@@ -103,22 +109,21 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, onMounted } from "vue";
-import { useQuasar, useDialogPluginComponent, type QTableProps } from "quasar";
+import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePendingActionStore } from "../api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { getNextAgentUpdateTime } from "src/utils/format";
 
 // ui imports
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
 
 // types
 import type { Agent } from "src/core/agents/types";
 import type { PendingAction } from "../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 // static data
-const columns: QTableProps["columns"] = [
-  { name: "id", field: "id", label: "" },
-  { name: "status", field: "status", label: "" },
+const columns: TacticalColumn[] = [
+  { name: "status", field: "status", label: "Status" },
   {
     name: "type",
     label: "Type",
@@ -126,7 +131,20 @@ const columns: QTableProps["columns"] = [
     align: "left",
     sortable: true,
   },
-  { name: "due", label: "Due", field: "due", align: "left", sortable: true },
+  {
+    name: "due",
+    label: "Due",
+    field: "due",
+    align: "left",
+    sortable: true,
+    format: (_, row) => {
+      if (row.status !== "completed")
+        if (row.action_type === "agentupdate") return getNextAgentUpdateTime();
+        else
+          return row.action_type === "schedreboot" ? dashboardStore.formatDate(row.due) : row.due;
+      else return "Completed";
+    },
+  },
   {
     name: "desc",
     label: "Description",
@@ -149,7 +167,14 @@ const columns: QTableProps["columns"] = [
     sortable: true,
   },
   { name: "site", label: "Site", field: "site", align: "left", sortable: true },
-  { name: "details", field: "details", label: "", align: "left", sortable: false },
+  {
+    name: "details",
+    field: "details",
+    label: "Details",
+    align: "left",
+    sortable: false,
+    required: true,
+  },
 ];
 
 const props = defineProps<{
@@ -167,7 +192,6 @@ const dashboardStore = useDashboardStore();
 
 // pending actions logic
 const showCompleted = ref(false);
-const loading = ref(false);
 const completedCount = computed(() => {
   try {
     return actionStore.pendingActions.filter((action) => action.status === "completed").length;
@@ -204,14 +228,14 @@ function cancelPendingAction(action: PendingAction) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    loading.value = true;
+    actionStore.isLoading = true;
 
     actionStore.deletePendingAction(action.id);
 
     // TODO: Only update the agent and not pull every single agent
     // store.dispatch("refreshDashboard");
 
-    loading.value = false;
+    actionStore.isLoading = false;
   });
 }
 

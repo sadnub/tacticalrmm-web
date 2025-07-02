@@ -36,10 +36,10 @@
         <!-- type select -->
         <q-card-section>
           <q-select
+            v-model="localField.type"
             label="Field Type"
             :options="typeOptions"
             map-options
-            v-model="localField.type"
             emit-value
             filled
             dense

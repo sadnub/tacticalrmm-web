@@ -223,9 +223,9 @@ const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWar
 
 const serial_number = computed(() => {
   if (agentStore.selectedAgent?.plat === "windows") {
-    return agentStore.selectedAgent?.wmi_detail.bios?.[0]?.[0]?.SerialNumber;
+    return agentStore.selectedAgent?.wmi_detail?.bios?.[0]?.[0].SerialNumber || "";
   } else {
-    return agentStore.selectedAgent?.wmi_detail.serialnumber;
+    return agentStore.selectedAgent?.wmi_detail?.serialnumber || "";
   }
 });
 

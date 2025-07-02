@@ -2,7 +2,13 @@
   <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
     <q-card style="min-width: 60vw; height: 75vh">
       <q-bar>
-        <q-btn class="q-mr-sm" dense flat icon="refresh" @click="roleStore.getRoles" />
+        <q-btn
+          class="q-mr-sm"
+          dense
+          flat
+          icon="refresh"
+          @click="roleStore.getRoles({ force: true })"
+        />
         <q-space />Manage Roles
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -23,6 +29,23 @@
       >
         <template #top>
           <q-btn flat dense icon="add" label="New Role" @click="showAddRoleModal" />
+          <q-space />
+
+          <q-input
+            v-model="search"
+            style="width: 300px"
+            filled
+            label="Search"
+            dense
+            clearable
+            class="q-pr-sm"
+          >
+            <template #prepend>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+
+          <tactical-table-export />
         </template>
         <template #body="props">
           <q-tr :props="props" class="cursor-pointer" @dblclick="showEditRoleModal(props.row)">
@@ -52,12 +75,16 @@
                 </q-item>
               </q-list>
             </q-menu>
-            <q-td key="name" :props="props">{{ props.row.name }}</q-td>
-            <q-td key="is_superuser" :props="props">
-              <q-icon v-if="props.row.is_superuser" name="done" color="primary" size="sm" />
-            </q-td>
-            <q-td key="user_count" :props="props">
-              {{ props.row.user_count }}
+
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">
+              <!-- is super user column-->
+              <template v-if="col.name === 'is_superuser'">
+                <q-icon v-if="props.row.is_superuser" name="done" color="primary" size="sm" />
+              </template>
+
+              <template v-else>
+                {{ col.value }}
+              </template>
             </q-td>
           </q-tr>
         </template>
@@ -68,20 +95,20 @@
 
 <script lang="ts" setup>
 // composition imports
-import { onMounted } from "vue";
-import { useQuasar, useDialogPluginComponent, type QTableProps } from "quasar";
+import { onMounted, ref } from "vue";
+import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useRoleStore } from "../api";
 
 // type imports
 import type { Role } from "../types";
 
 // ui imports
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 import RolesForm from "./RolesForm.vue";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableProps["columns"] = [
-  { name: "name", label: "Name", field: "name", align: "left", sortable: true },
+const columns: TacticalColumn[] = [
+  { name: "name", label: "Name", field: "name", align: "left", sortable: true, required: true },
   {
     name: "is_superuser",
     label: "Superuser",
@@ -106,6 +133,8 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // setup stores
 const roleStore = useRoleStore();
+
+const search = ref("");
 
 function showEditRoleModal(role: Role) {
   $q.dialog({

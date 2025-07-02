@@ -5,7 +5,7 @@
       :rows="agentStore.agentHistory"
       :columns="columns"
       :pagination="{ sortBy: 'time', descending: true, rowsPerPage: 0 }"
-      :style="{ 'max-height': tabHeight }"
+      :style="{ 'max-height': `${tabHeight}px` }"
       :loading="agentStore.isLoading"
       :rows-per-page-options="[0]"
       :filter="filter"
@@ -31,22 +31,22 @@
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
-        <export-table-btn :data="agentStore.agentHistory" :columns="columns" />
+        <tactical-table-export />
       </template>
 
       <template #loading>
         <q-inner-loading showing color="primary" />
       </template>
 
-      <template #body-cell-output="props">
-        <q-td :props="props">
+      <template #body-cell-output="qprops">
+        <q-td :props="qprops">
           <span
             style="cursor: pointer; text-decoration: underline"
             class="text-primary"
             @click="
-              props.row.type === 'cmd_run'
-                ? showCommandOutput(props.row.command, props.row.results)
-                : showScriptOutput(props.row.script_results)
+              qprops.row.type === 'cmd_run'
+                ? showCommandOutput(qprops.row.command, qprops.row.results)
+                : showScriptOutput(qprops.row.script_results)
             "
             >Output
           </span>
@@ -59,22 +59,23 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
-import { useQuasar, Notify, type QTableProps } from "quasar";
+import { useQuasar, Notify } from "quasar";
 import { formatTableColumnText, truncateText } from "src/utils/format";
 import { useAgentStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
 import PreDialog from "src/components/ui/PreDialog.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+
+// type imports
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // setup stores
 const dashboardStore = useDashboardStore();
 
 // static data
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "time",
     label: "Time",

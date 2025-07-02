@@ -4,7 +4,13 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { notifySuccess } from "src/utils/notify";
 import { useDashboardStore } from "src/stores/dashboard";
-import type { Client, ClientCustomFieldValue, Site, SiteCustomFieldValue } from "./types";
+import type {
+  Client,
+  ClientCustomFieldValue,
+  Site,
+  SiteCustomFieldValue,
+  Deployment,
+} from "./types";
 
 export const useClientStore = defineStore(
   "clients",
@@ -26,7 +32,6 @@ export const useClientStore = defineStore(
       axios
         .get<Client[]>("/clients/")
         .then(({ data }) => {
-          console.log(data);
           if (data.length === 0) void router.push({ name: "InitialSetup" });
           clients.value = data;
         })
@@ -56,7 +61,6 @@ export const useClientStore = defineStore(
       axios
         .post<Client>("/clients/", payload)
         .then(({ data }) => {
-          console.log(data);
           clients.value.unshift(data);
           notifySuccess("Client was added successfully");
         })
@@ -81,7 +85,6 @@ export const useClientStore = defineStore(
       axios
         .put<Client>(`/clients/${id}/`, payload)
         .then(({ data }) => {
-          console.log(data);
           const index = clients.value.findIndex((client: Client) => client.id === id);
           if (index !== -1) {
             clients.value[index] = data;
@@ -104,7 +107,6 @@ export const useClientStore = defineStore(
       axios
         .get(`/clients/${id}/`)
         .then(({ data }) => {
-          console.log(data);
           client.value = data;
         })
         .catch(() => {
@@ -294,6 +296,87 @@ export const useSiteStore = defineStore(
     cache: {
       getSites: {
         duration: 1 * 60 * 1000,
+      },
+    },
+  },
+);
+
+export const useDeploymentStore = defineStore(
+  "deployments",
+  () => {
+    const deployments = ref<Deployment[]>([]);
+    const isLoading = ref(false);
+    const isError = ref(false);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    function getDeployments(_args?: { force: true }) {
+      isLoading.value = true;
+      isError.value = false;
+
+      axios
+        .get<Deployment[]>("/clients/deployments/")
+        .then(({ data }) => {
+          deployments.value = data;
+        })
+        .catch(() => {
+          isError.value = true;
+        })
+        .finally(() => {
+          isLoading.value = false;
+        });
+    }
+
+    function addDeployment(payload: Deployment) {
+      isLoading.value = true;
+      isError.value = false;
+
+      axios
+        .post<Deployment>("/clients/deployments/", payload)
+        .then(({ data }) => {
+          deployments.value.unshift(data);
+        })
+        .catch(() => {
+          isError.value = true;
+        })
+        .finally(() => {
+          isLoading.value = false;
+        });
+    }
+
+    function removeDeployment(id: number) {
+      isLoading.value = true;
+      isError.value = false;
+
+      axios
+        .delete(`/client/deployments/${id}/`)
+        .then(() => {
+          const index = deployments.value.findIndex((d) => d.id === id);
+          if (index !== -1) {
+            deployments.value.splice(index, 1);
+          }
+        })
+        .catch(() => {
+          isError.value = true;
+        })
+        .finally(() => {
+          isLoading.value = false;
+        });
+    }
+
+    return {
+      deployments,
+      isLoading,
+      isError,
+
+      getDeployments,
+      addDeployment,
+      removeDeployment,
+    };
+  },
+  {
+    cache: {
+      getDeployments: {
+        duration: 30 * 1000,
       },
     },
   },

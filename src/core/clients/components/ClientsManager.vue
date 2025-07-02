@@ -27,11 +27,18 @@
         :rows-per-page-options="[0]"
         no-data-label="No Clients"
         :loading="clientStore.isLoading"
-        storage-key="clients-table"
+        storage-key="clients-manager"
       >
         <!-- top slot -->
         <template #top>
           <q-btn label="New" dense flat push no-caps icon="add" @click="showAddClient" />
+          <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm">
+            <template #prepend>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+
+          <tactical-table-export />
         </template>
 
         <!-- loading slot -->
@@ -40,18 +47,18 @@
         </template>
 
         <!-- body slots -->
-        <template #body="{ row }">
-          <q-tr class="cursor-pointer" @dblclick="showEditClient(row)">
+        <template #body="bodyProps">
+          <q-tr class="cursor-pointer" @dblclick="showEditClient(bodyProps.row)">
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item v-close-popup clickable @click="showEditClient(row)">
+                <q-item v-close-popup clickable @click="showEditClient(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item v-close-popup clickable @click="showClientDeleteModal(row)">
+                <q-item v-close-popup clickable @click="showClientDeleteModal(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
@@ -60,7 +67,7 @@
 
                 <q-separator></q-separator>
 
-                <q-item v-close-popup clickable @click="showAddSite(row)">
+                <q-item v-close-popup clickable @click="showAddSite(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="add" />
                   </q-item-section>
@@ -74,19 +81,21 @@
                 </q-item>
               </q-list>
             </q-menu>
-            <!-- name -->
-            <q-td>
-              {{ row.name }}
+
+            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+              <template v-if="col.name === 'sites'">
+                <span
+                  style="cursor: pointer; text-decoration: underline"
+                  class="text-primary"
+                  @click="showSitesTable(bodyProps.row)"
+                  >Show Sites ({{ bodyProps.row.sites.length }})</span
+                >
+              </template>
+
+              <template v-else>
+                {{ col.value }}
+              </template>
             </q-td>
-            <q-td>
-              <span
-                style="cursor: pointer; text-decoration: underline"
-                class="text-primary"
-                @click="showSitesTable(row)"
-                >Show Sites ({{ row.sites.length }})</span
-              >
-            </q-td>
-            <q-td>{{ row.agent_count }}</q-td>
           </q-tr>
         </template>
       </tactical-table>
@@ -96,8 +105,8 @@
 
 <script lang="ts" setup>
 // composition imports
-import { onMounted } from "vue";
-import { useQuasar, useDialogPluginComponent, type QTableColumn } from "quasar";
+import { onMounted, ref } from "vue";
+import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useClientStore } from "../api";
 
 // ui imports
@@ -106,10 +115,10 @@ import SitesForm from "./SitesForm.vue";
 import DeleteClient from "./DeleteClient.vue";
 import SitesTable from "./SitesTable.vue";
 import type { Client } from "../types";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableColumn[] = [
+const columns: TacticalColumn[] = [
   { name: "name", label: "Name", field: "name", align: "left" },
   { name: "sites", label: "Sites", field: "sites", align: "left" },
   {
@@ -128,6 +137,8 @@ defineEmits(useDialogPluginComponent.emits);
 // setup quasar dialog
 const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
+
+const search = ref("");
 
 function showClientDeleteModal(client: Client) {
   // agents are still assigned to client. Need to open modal to select which site to move to

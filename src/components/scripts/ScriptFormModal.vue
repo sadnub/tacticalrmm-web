@@ -22,9 +22,7 @@
           @click="generateScriptOpenAI"
         />
         <q-space />
-        <q-btn dense flat icon="close" @click="closeEditor">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn dense flat icon="close" @click="closeEditor" />
       </q-bar>
       <q-banner
         v-if="script.script_body && missingShebang"
@@ -32,8 +30,7 @@
         inline-actions
         class="text-black bg-warning"
       >
-        <template #avatar>
-          <q-icon class="text-center" name="warning" color="black" /> </template
+        <template #avatar> <q-icon class="text-center" name="warning" color="black" /> </template
         >Shell/Python scripts on Linux/Mac need a shebang at the top of the script e.g.
         <code>#!/bin/bash</code> or <code>#!/usr/bin/python3</code><br />Add one to get rid of this
         warning. Ignore if windows.
@@ -412,7 +409,6 @@ function loadEditor() {
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-   
   editor = monaco.editor.create(scriptEditor.value!, {
     readOnly: props.readonly,
     automaticLayout: true,

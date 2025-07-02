@@ -89,3 +89,12 @@ export function isAgent(parent: Agent | Policy): parent is Agent {
 export function isPolicy(parent: Agent | Policy): parent is Policy {
   return parent && "enforced" in parent;
 }
+
+export interface CheckHistory {
+  id: number;
+  check_id: number;
+  agent_id: string;
+  x: string;
+  y: number;
+  results: Record<string, string>;
+}

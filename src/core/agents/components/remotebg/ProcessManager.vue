@@ -10,6 +10,8 @@
     binary-state-sort
     :rows-per-page-options="[0]"
     :loading="agentStore.isLoading"
+    column-select
+    storage-key="process-manager"
   >
     <template #top>
       <div class="q-gutter-md flex flex-center items-center">
@@ -70,18 +72,20 @@
 
         <q-space />
 
-        <q-input v-model="filter" filled label="Search" dense clearable>
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
           <template #prepend>
             <q-icon name="search" />
           </template>
         </q-input>
+
+        <tactical-table-export />
       </div>
     </template>
-    <template #body="{ row }">
-      <q-tr :props="props" class="cursor-pointer">
+    <template #body="bodyProps">
+      <q-tr :props="bodyProps" class="cursor-pointer">
         <q-menu context-menu auto-close>
           <q-list dense style="min-width: 200px">
-            <q-item clickable @click="agentStore.killAgentProcess(agentId, row.pid)">
+            <q-item clickable @click="agentStore.killAgentProcess(agentId, bodyProps.row.pid)">
               <q-item-section side>
                 <q-icon name="fas fa-trash-alt" size="xs" />
               </q-item-section>
@@ -93,11 +97,8 @@
             </q-item>
           </q-list>
         </q-menu>
-        <q-td>{{ row.name }}</q-td>
-        <q-td>{{ row.cpu_percent }}%</q-td>
-        <q-td>{{ bytes2Human(row.membytes) }}</q-td>
-        <q-td>{{ row.username }}</q-td>
-        <q-td>{{ row.pid }}</q-td>
+
+        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps"> </q-td>
       </q-tr>
     </template>
   </tactical-table>
@@ -106,14 +107,11 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useIntervalFn } from "@vueuse/core";
-import type { QTableProps } from "quasar";
 import { useAgentStore } from "../../api";
 import { bytes2Human } from "src/utils/format";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
-// ui imports
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
-
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "name",
     label: "Name",

@@ -8,13 +8,13 @@
       :filter="search"
       :filter-method="filterTable"
       :columns="columns"
-      :visible-columns="visibleColumns"
       row-key="id"
       binary-state-sort
       virtual-scroll
       :rows-per-page-options="[0]"
       no-data-label="No Agents"
       :loading="agentStore.isLoading"
+      column-select
       storage-key="agent-table"
     >
       <template #top>
@@ -159,6 +159,8 @@
             </q-btn>
           </template>
         </q-input>
+
+        <tactical-table-export />
       </template>
       <!-- header slots -->
       <template #header-cell-smsalert="props">
@@ -209,14 +211,14 @@
           </q-icon>
         </q-th>
       </template>
-      <template #header-cell-agentstatus="props">
+      <template #header-cell-status="props">
         <q-th auto-width :props="props">
           <q-icon name="fas fa-signal" size="1.2em">
             <q-tooltip>Agent Status</q-tooltip>
           </q-icon>
         </q-th>
       </template>
-      <template #header-cell-needs_reboot="props">
+      <template #header-cell-needsreboot="props">
         <q-th auto-width :props="props">
           <q-icon name="fas fa-power-off" size="1.2em">
             <q-tooltip>Reboot</q-tooltip>
@@ -235,215 +237,226 @@
           <q-menu context-menu>
             <AgentActionMenu :agent="props.row" />
           </q-menu>
-          <q-td>
-            <q-checkbox
-              v-if="props.row.alert_template && props.row.alert_template.always_text !== null"
-              v-model="props.row.alert_template.always_text"
-              disable
-              dense
-            >
-              <q-tooltip>
-                Setting is overridden by alert template:
-                {{ props.row.alert_template.name }}
-              </q-tooltip>
-            </q-checkbox>
 
-            <q-checkbox
-              v-else
-              v-model="props.row.overdue_text_alert"
-              dense
-              @update:model-value="overdueAlert('text', props.row, props.row.overdue_text_alert)"
-            >
-              <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
-            </q-checkbox>
-          </q-td>
-          <q-td>
-            <q-checkbox
-              v-if="props.row.alert_template && props.row.alert_template.always_email !== null"
-              v-model="props.row.alert_template.always_email"
-              disable
-              dense
-            >
-              <q-tooltip>
-                Setting is overridden by alert template:
-                {{ props.row.alert_template.name }}
-              </q-tooltip>
-            </q-checkbox>
+          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <!-- status -->
+            <template v-if="col.name === 'status'">
+              <q-icon
+                v-if="props.row.status === 'overdue'"
+                name="fas fa-signal"
+                size="1.2em"
+                :color="dashNegativeColor"
+              >
+                <q-tooltip>Agent overdue</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="props.row.status === 'offline'"
+                name="fas fa-signal"
+                size="1.2em"
+                :color="dashWarningColor"
+              >
+                <q-tooltip>Agent offline</q-tooltip>
+              </q-icon>
+              <q-icon v-else name="fas fa-signal" size="1.2em" :color="dashPositiveColor">
+                <q-tooltip>Agent online</q-tooltip>
+              </q-icon>
+            </template>
 
-            <q-checkbox
-              v-else
-              v-model="props.row.overdue_email_alert"
-              dense
-              @update:model-value="overdueAlert('email', props.row, props.row.overdue_email_alert)"
-            >
-              <q-tooltip>Send an email when an agent is overdue</q-tooltip>
-            </q-checkbox>
-          </q-td>
-          <q-td>
-            <q-checkbox
-              v-if="props.row.alert_template && props.row.alert_template.always_alert !== null"
-              v-model="props.row.alert_template.always_alert"
-              disable
-              dense
-            >
-              <q-tooltip>
-                Setting is overridden by alert template:
-                {{ props.row.alert_template.name }}
-              </q-tooltip>
-            </q-checkbox>
+            <!-- smsalert -->
+            <template v-else-if="col.name === 'smsalert'">
+              <q-checkbox
+                v-if="props.row.alert_template && props.row.alert_template.always_text !== null"
+                v-model="props.row.alert_template.always_text"
+                disable
+                dense
+              >
+                <q-tooltip>
+                  Setting is overridden by alert template:
+                  {{ props.row.alert_template.name }}
+                </q-tooltip>
+              </q-checkbox>
 
-            <q-checkbox
-              v-else
-              v-model="props.row.overdue_dashboard_alert"
-              dense
-              @update:model-value="
-                overdueAlert('dashboard', props.row, props.row.overdue_dashboard_alert)
-              "
-            >
-              <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
-            </q-checkbox>
-          </q-td>
+              <q-checkbox
+                v-else
+                v-model="props.row.overdue_text_alert"
+                dense
+                @update:model-value="overdueAlert('text', props.row, props.row.overdue_text_alert)"
+              >
+                <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
+              </q-checkbox>
+            </template>
 
-          <q-td key="plat" :props="props">
-            <q-icon
-              v-if="props.row.plat === 'windows'"
-              name="mdi-microsoft-windows"
-              size="sm"
-              color="primary"
-            >
-              <q-tooltip>Microsoft Windows</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.plat === 'linux'"
-              name="mdi-linux"
-              size="sm"
-              color="primary"
-            >
-              <q-tooltip>Linux</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.plat === 'darwin'"
-              name="mdi-apple"
-              size="sm"
-              color="primary"
-            >
-              <q-tooltip>macOS</q-tooltip>
-            </q-icon>
-          </q-td>
+            <!-- emailalert -->
+            <template v-else-if="col.name === 'emailalert'">
+              <q-checkbox
+                v-if="props.row.alert_template && props.row.alert_template.always_email !== null"
+                v-model="props.row.alert_template.always_email"
+                disable
+                dense
+              >
+                <q-tooltip>
+                  Setting is overridden by alert template:
+                  {{ props.row.alert_template.name }}
+                </q-tooltip>
+              </q-checkbox>
 
-          <q-td key="mon-type" :props="props">
-            <q-icon
-              v-if="props.row.monitoring_type === 'server'"
-              name="dns"
-              size="sm"
-              color="primary"
-            >
-              <q-tooltip>Server</q-tooltip>
-            </q-icon>
-            <q-icon v-else name="computer" size="sm" color="primary">
-              <q-tooltip>Workstation</q-tooltip>
-            </q-icon>
-          </q-td>
+              <q-checkbox
+                v-else
+                v-model="props.row.overdue_email_alert"
+                dense
+                @update:model-value="
+                  overdueAlert('email', props.row, props.row.overdue_email_alert)
+                "
+              >
+                <q-tooltip>Send an email when an agent is overdue</q-tooltip>
+              </q-checkbox>
+            </template>
 
-          <q-td key="checks-status" :props="props">
-            <q-icon
-              v-if="props.row.maintenance_mode"
-              name="construction"
-              size="1.2em"
-              :color="dashPositiveColor"
-            >
-              <q-tooltip>Maintenance Mode Enabled</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.checks.failing > 0"
-              name="fas fa-check-double"
-              size="1.2em"
-              :color="dashNegativeColor"
-            >
-              <q-tooltip>Checks failing</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.checks.warning > 0"
-              name="fas fa-check-double"
-              size="1.2em"
-              :color="dashWarningColor"
-            >
-              <q-tooltip>Checks warning</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.checks.info > 0"
-              name="fas fa-check-double"
-              size="1.2em"
-              :color="dashInfoColor"
-            >
-              <q-tooltip>Checks info</q-tooltip>
-            </q-icon>
-            <q-icon v-else name="fas fa-check-double" size="1.2em" :color="dashPositiveColor">
-              <q-tooltip>Checks passing</q-tooltip>
-            </q-icon>
-          </q-td>
+            <!-- dashboardalert -->
+            <template v-else-if="col.name === 'dashboardalert'">
+              <q-checkbox
+                v-if="props.row.alert_template && props.row.alert_template.always_alert !== null"
+                v-model="props.row.alert_template.always_alert"
+                disable
+                dense
+              >
+                <q-tooltip>
+                  Setting is overridden by alert template:
+                  {{ props.row.alert_template.name }}
+                </q-tooltip>
+              </q-checkbox>
 
-          <q-td key="client_name" :props="props">{{ props.row.client_name }}</q-td>
-          <q-td key="site_name" :props="props">{{ props.row.site_name }}</q-td>
-          <q-td key="hostname" :props="props">{{ props.row.hostname }}</q-td>
-          <q-td key="description" :props="props">{{ props.row.description }}</q-td>
-          <q-td key="user" :props="props">
-            <span v-if="props.row.italic" class="text-italic">{{ props.row.logged_username }}</span>
-            <span v-else>{{ props.row.logged_username }}</span>
+              <q-checkbox
+                v-else
+                v-model="props.row.overdue_dashboard_alert"
+                dense
+                @update:model-value="
+                  overdueAlert('dashboard', props.row, props.row.overdue_dashboard_alert)
+                "
+              >
+                <q-tooltip>Show a dashboard alert when agent is overdue</q-tooltip>
+              </q-checkbox>
+            </template>
+
+            <!-- platform -->
+            <template v-else-if="col.name === 'plat'">
+              <q-icon
+                v-if="props.row.plat === 'windows'"
+                name="mdi-microsoft-windows"
+                size="sm"
+                color="primary"
+              >
+                <q-tooltip>Microsoft Windows</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="props.row.plat === 'linux'"
+                name="mdi-linux"
+                size="sm"
+                color="primary"
+              >
+                <q-tooltip>Linux</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="props.row.plat === 'darwin'"
+                name="mdi-apple"
+                size="sm"
+                color="primary"
+              >
+                <q-tooltip>macOS</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- mon type -->
+            <template v-else-if="col.name === 'mon-type'">
+              <q-icon
+                v-if="props.row.monitoring_type === 'server'"
+                name="dns"
+                size="sm"
+                color="primary"
+              >
+                <q-tooltip>Server</q-tooltip>
+              </q-icon>
+              <q-icon v-else name="computer" size="sm" color="primary">
+                <q-tooltip>Workstation</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- checks status -->
+            <template v-else-if="col.name === 'checks-status'">
+              <q-icon
+                v-if="props.row.maintenance_mode"
+                name="construction"
+                size="1.2em"
+                :color="dashPositiveColor"
+              >
+                <q-tooltip>Maintenance Mode Enabled</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="props.row.checks.failing > 0"
+                name="fas fa-check-double"
+                size="1.2em"
+                :color="dashNegativeColor"
+              >
+                <q-tooltip>Checks failing</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="props.row.checks.warning > 0"
+                name="fas fa-check-double"
+                size="1.2em"
+                :color="dashWarningColor"
+              >
+                <q-tooltip>Checks warning</q-tooltip>
+              </q-icon>
+              <q-icon
+                v-else-if="props.row.checks.info > 0"
+                name="fas fa-check-double"
+                size="1.2em"
+                :color="dashInfoColor"
+              >
+                <q-tooltip>Checks info</q-tooltip>
+              </q-icon>
+              <q-icon v-else name="fas fa-check-double" size="1.2em" :color="dashPositiveColor">
+                <q-tooltip>Checks passing</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- patchespending -->
+            <template v-else-if="col.name === 'patchespending'">
+              <q-icon
+                v-if="props.row.has_patches_pending"
+                name="verified_user"
+                size="1.5em"
+                color="primary"
+              >
+                <q-tooltip>Patches Pending</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- pendingactions -->
+            <template v-else-if="col.name === 'pendingactions'">
+              <q-icon
+                v-if="props.row.pending_actions_count > 0"
+                name="far fa-clock"
+                size="1.4em"
+                :color="dashWarningColor"
+                class="cursor-pointer"
+                @click="showPendingActionsModal(props.row)"
+              >
+                <q-tooltip>Pending Action Count: {{ props.row.pending_actions_count }}</q-tooltip>
+              </q-icon>
+            </template>
+
+            <!-- needs reboot -->
+            <template v-else-if="col.name === 'needsreboot'">
+              <q-icon v-if="props.row.needs_reboot" name="fas fa-power-off" color="primary">
+                <q-tooltip>Reboot required</q-tooltip>
+              </q-icon>
+            </template>
+
+            <template v-else>
+              {{ col.value }}
+            </template>
           </q-td>
-          <q-td key="patchespending" :props="props">
-            <q-icon
-              v-if="props.row.has_patches_pending"
-              name="verified_user"
-              size="1.5em"
-              color="primary"
-            >
-              <q-tooltip>Patches Pending</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td key="pendingactions" :props="props">
-            <q-icon
-              v-if="props.row.pending_actions_count > 0"
-              name="far fa-clock"
-              size="1.4em"
-              :color="dashWarningColor"
-              class="cursor-pointer"
-              @click="showPendingActionsModal(props.row)"
-            >
-              <q-tooltip>Pending Action Count: {{ props.row.pending_actions_count }}</q-tooltip>
-            </q-icon>
-          </q-td>
-          <!-- needs reboot -->
-          <q-td key="needsreboot">
-            <q-icon v-if="props.row.needs_reboot" name="fas fa-power-off" color="primary">
-              <q-tooltip>Reboot required</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td key="agentstatus">
-            <q-icon
-              v-if="props.row.status === 'overdue'"
-              name="fas fa-signal"
-              size="1.2em"
-              :color="dashNegativeColor"
-            >
-              <q-tooltip>Agent overdue</q-tooltip>
-            </q-icon>
-            <q-icon
-              v-else-if="props.row.status === 'offline'"
-              name="fas fa-signal"
-              size="1.2em"
-              :color="dashWarningColor"
-            >
-              <q-tooltip>Agent offline</q-tooltip>
-            </q-icon>
-            <q-icon v-else name="fas fa-signal" size="1.2em" :color="dashPositiveColor">
-              <q-tooltip>Agent online</q-tooltip>
-            </q-icon>
-          </q-td>
-          <q-td key="last_seen" :props="props">{{
-            dashboardStore.formatDate(props.row.last_seen)
-          }}</q-td>
-          <q-td key="boot_time" :props="props">{{ getTimeLapse(props.row.boot_time) }}</q-td>
         </q-tr>
       </template>
     </tactical-table>
@@ -463,11 +476,11 @@ import { capitalize, getTimeLapse } from "src/utils/format";
 // ui imports
 import EditAgent from "src/components/modals/agents/EditAgent.vue";
 import PendingActions from "src/core/logs/components/PendingActions.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 import AgentActionMenu from "./AgentActionMenu.vue";
 
 // type imports
 import type { Agent } from "../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 const $q = useQuasar();
 
@@ -494,17 +507,24 @@ const filterActionsPending = ref(false);
 const filterChecksFailing = ref(false);
 const filterRebootNeeded = ref(false);
 
-const columns: QTableColumn[] = [
-  { name: "smsalert", align: "left", label: "", field: "" },
-  { name: "emailalert", align: "left", label: "", field: "" },
-  { name: "dashboardalert", align: "left", label: "", field: "" },
-  { name: "plat", label: "", field: "plat", sortable: true, align: "left" },
-  { name: "mon-type", label: "", field: "monitoring_type", sortable: true, align: "left" },
+const columns: TacticalColumn[] = [
+  { name: "status", field: "status", align: "left", label: "Agent Status", sortable: true },
+  { name: "smsalert", align: "left", label: "SMS Alert", field: "", sortable: false },
+  { name: "emailalert", align: "left", label: "Email Alert", field: "", sortable: false },
+  { name: "dashboardalert", align: "left", label: "Dashboard Alert", field: "", sortable: false },
+  { name: "plat", label: "Platform", field: "plat", sortable: true, align: "left" },
+  {
+    name: "mon-type",
+    label: "Agent Type",
+    field: "monitoring_type",
+    sortable: true,
+    align: "left",
+  },
   {
     name: "checks-status",
     align: "left",
     field: "checks",
-    label: "",
+    label: "Checks Status",
     sortable: true,
     sort: (a, b) =>
       parseInt(b.failing) - parseInt(a.failing) ||
@@ -521,12 +541,18 @@ const columns: QTableColumn[] = [
     sortable: true,
     align: "left",
   },
-  { name: "user", label: "User", field: "logged_username", sortable: true, align: "left" },
-  { name: "italic", field: "italic", label: "" },
+  {
+    name: "user",
+    label: "User",
+    field: (row) => (row.italic ? row.italic : row.logged_username),
+    sortable: true,
+    align: "left",
+    classes: (row) => (row.italic ? "text-italic" : ""),
+  },
   {
     name: "patchespending",
     field: "has_patches_pending",
-    label: "",
+    label: "Patches Pending",
     align: "left",
     sortable: true,
   },
@@ -534,39 +560,33 @@ const columns: QTableColumn[] = [
     name: "pendingactions",
     field: "pending_actions_count",
     align: "left",
-    label: "",
+    label: "Pending Actions",
     sortable: true,
   },
-  { name: "needs_reboot", field: "needs_reboot", align: "left", label: "", sortable: true },
-  { name: "agentstatus", field: "status", align: "left", label: "", sortable: true },
+  {
+    name: "needsreboot",
+    field: "needs_reboot",
+    align: "left",
+    label: "Reboot Needed",
+    sortable: true,
+  },
   {
     name: "last_seen",
     label: "Last Response",
     field: "last_seen",
     sortable: true,
     align: "left",
+    format: (val: string) => dashboardStore.formatDate(val),
   },
-  { name: "boot_time", label: "Boot Time", field: "boot_time", sortable: true, align: "left" },
+  {
+    name: "boot_time",
+    label: "Boot Time",
+    field: "boot_time",
+    sortable: true,
+    align: "left",
+    format: (val: number) => getTimeLapse(val),
+  },
 ];
-const visibleColumns = ref([
-  "smsalert",
-  "plat",
-  "mon-type",
-  "emailalert",
-  "dashboardalert",
-  "checks-status",
-  "client_name",
-  "site_name",
-  "hostname",
-  "description",
-  "user",
-  "patchespending",
-  "pendingactions",
-  "agentstatus",
-  "needs_reboot",
-  "last_seen",
-  "boot_time",
-]);
 
 const isFilteringTable = computed(
   () =>

@@ -25,30 +25,32 @@
           <q-icon name="search" />
         </template>
       </q-input>
-      <!-- file download doesn't work so disabling -->
-      <export-table-btn v-show="false" class="q-ml-sm" :columns="columns" :data="services" />
+      <tactical-table-export />
     </template>
-    <template #body="{ row }">
-      <q-tr class="cursor-pointer" @dblclick="showServiceDetail(row)">
+    <template #body="bodyProps">
+      <q-tr class="cursor-pointer" @dblclick="showServiceDetail(bodyProps.row)">
         <q-menu context-menu auto-close>
           <q-list dense style="min-width: 200px">
             <q-item
               clickable
-              @click="agentStore.sendAgentServiceAction(agentId, row.name, 'start')"
+              @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'start')"
             >
               <q-item-section>Start</q-item-section>
             </q-item>
-            <q-item clickable @click="agentStore.sendAgentServiceAction(agentId, row.name, 'stop')">
+            <q-item
+              clickable
+              @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'stop')"
+            >
               <q-item-section>Stop</q-item-section>
             </q-item>
             <q-item
               clickable
-              @click="agentStore.sendAgentServiceAction(agentId, row.name, 'restart')"
+              @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'restart')"
             >
               <q-item-section>Restart</q-item-section>
             </q-item>
             <q-separator />
-            <q-item clickable @click="showServiceDetail(row)">
+            <q-item clickable @click="showServiceDetail(bodyProps.row)">
               <q-item-section>Service Details</q-item-section>
             </q-item>
             <q-separator />
@@ -57,19 +59,17 @@
             </q-item>
           </q-list>
         </q-menu>
-        <q-td key="display_name" :props="props">
-          <q-icon name="fas fa-cogs" />
-          &nbsp;&nbsp;&nbsp;{{ truncateText(row.display_name, 30) }}
+
+        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="props">
+          <template v-if="col.name === 'display_name'">
+            <q-icon name="fas fa-cogs" />
+            <truncate-text :text="col.value" />
+          </template>
+
+          <template v-else>
+            {{ col.value }}
+          </template>
         </q-td>
-        <q-td key="name" :props="props">{{ row.name }}</q-td>
-        <q-td key="start_type" :props="props">{{
-          row.start_type.toLowerCase() === "automatic" && row.autodelay
-            ? `${row.start_type} (Delayed)`
-            : `${row.start_type}`
-        }}</q-td>
-        <q-td key="pid" :props="props">{{ row.pid === 0 ? "" : row.pid }}</q-td>
-        <q-td key="status" :props="props">{{ row.status }}</q-td>
-        <q-td key="username" :props="props">{{ row.username ? row.username : "LocalSystem" }}</q-td>
       </q-tr>
     </template>
   </tactical-table>
@@ -78,20 +78,18 @@
 <script lang="ts" setup>
 // composition imports
 import { ref, computed, onMounted } from "vue";
-import { useQuasar, type QTableColumn } from "quasar";
-import { truncateText } from "src/utils/format";
+import { useQuasar } from "quasar";
 import { useAgentStore } from "../../api";
 
 // ui imports
 import ServiceDetail from "src/components/agents/remotebg/ServiceDetail.vue";
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
 
 // type imports
 import type { AgentService } from "../../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
-const columns: QTableColumn[] = [
+const columns: TacticalColumn[] = [
   {
     name: "display_name",
     label: "Display Name",
@@ -112,6 +110,11 @@ const columns: QTableColumn[] = [
     field: "start_type",
     align: "left",
     sortable: true,
+    format: (val, row) => {
+      return val.toLowerCase() === "automatic" && row.autodelay
+        ? `${row.start_type} (Delayed)`
+        : `${row.start_type}`;
+    },
   },
   {
     name: "pid",
@@ -119,6 +122,7 @@ const columns: QTableColumn[] = [
     field: "pid",
     align: "left",
     sortable: true,
+    format: (val: number) => (val === 0 ? "" : String(val)),
   },
   {
     name: "status",
@@ -133,6 +137,7 @@ const columns: QTableColumn[] = [
     field: "username",
     align: "left",
     sortable: true,
+    format: (val: string) => (val ? val : "LocalSystem"),
   },
 ];
 

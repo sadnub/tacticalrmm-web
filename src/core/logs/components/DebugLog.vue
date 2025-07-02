@@ -22,7 +22,7 @@
       :columns="columns"
       :title="modal ? 'Debug Logs' : ''"
       :pagination="{ sortBy: 'entry_time', descending: true, rowsPerPage: 0 }"
-      :loading="loading"
+      :loading="debugLogStore.isLoading"
       :filter="filter"
       virtual-scroll
       dense
@@ -93,7 +93,7 @@
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
-        <export-table-btn :data="debugLogStore.debugLog" :columns="columns" />
+        <tactical-table-export />
       </template>
 
       <template #top-row>
@@ -111,19 +111,14 @@
 <script lang="ts" setup>
 // composition api
 import { ref, reactive, watch, computed, onMounted } from "vue";
-import { type QTableProps } from "quasar";
 import { useDebugLogStore } from "../api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { formatTableColumnText } from "src/utils/format";
 
-// ui components
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-import ExportTableBtn from "src/components/ui/ExportTableBtn.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
-
 // types
 import type { GetDebugLogRequest } from "../types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
 const logTypeOptions = [
@@ -134,7 +129,7 @@ const logTypeOptions = [
   { label: "Scripting", value: "scripting" },
 ];
 
-const columns: QTableProps["columns"] = [
+const columns: TacticalColumn[] = [
   {
     name: "entry_time",
     label: "Time",
@@ -197,7 +192,6 @@ const requestData = reactive<GetDebugLogRequest>({
   logTypeFilter: null,
 });
 
-const loading = ref(false);
 const filter = ref("");
 
 if (props.agent) {
