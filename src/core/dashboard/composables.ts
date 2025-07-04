@@ -1,13 +1,13 @@
 import { uid } from "quasar";
 
-import type { QTreeFileNode } from "../types/filebrowser";
+import type { QTreeFileNode } from "./types";
 
 export function useFileBrowser() {
   function createFileNode(
     name: string,
     path: string,
     size = "0",
-    asset_id?: string
+    asset_id?: string,
   ): QTreeFileNode {
     return {
       id: uid(),
@@ -24,7 +24,7 @@ export function useFileBrowser() {
     name: string,
     path: string,
     icon = "folder",
-    color = "yellow-9"
+    color = "yellow-9",
   ): QTreeFileNode {
     return {
       id: uid(),

@@ -19,7 +19,7 @@ import type {
   VariableAnalysis,
   SharedTemplate,
 } from "../types/reporting";
-import type { QTreeFileNode } from "src/types/filebrowser";
+import type { QTreeFileNode } from "src/core/dashboard/types";
 import { notifySuccess } from "src/utils/notify";
 import { exportFile, Dialog } from "quasar";
 import { until } from "@vueuse/shared";

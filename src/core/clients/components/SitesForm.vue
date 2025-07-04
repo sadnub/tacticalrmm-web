@@ -64,7 +64,6 @@ import { formatCustomFields } from "src/utils/format";
 
 // ui imports
 import CustomField from "src/components/ui/CustomField.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // type imports
 import type { Site } from "../types";

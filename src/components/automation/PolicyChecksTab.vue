@@ -197,7 +197,6 @@
 
 <script>
 import { mapState } from "vuex";
-import mixins from "src/mixins/mixins";
 import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
 import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
 import PingCheck from "src/core/checks/components/PingCheck.vue";
@@ -209,7 +208,6 @@ import EventLogCheck from "src/core/checks/components/EventLogCheck.vue";
 
 export default {
   name: "PolicyChecksTab",
-  mixins: [mixins],
   props: {
     selectedPolicy: !Number,
   },

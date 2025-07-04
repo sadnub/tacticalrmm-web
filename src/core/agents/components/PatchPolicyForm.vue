@@ -193,12 +193,8 @@
 </template>
 
 <script>
-import { scheduledTimes, monthDays } from "src/mixins/data";
-import mixins from "src/mixins/mixins";
-
 export default {
   name: "PatchPolicyForm",
-  mixins: [mixins],
   props: {
     policy: Object,
     agent: Object,

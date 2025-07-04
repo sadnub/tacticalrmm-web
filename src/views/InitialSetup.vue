@@ -91,8 +91,6 @@ import { useRouter } from "vue-router";
 import { useCoreStore } from "src/core/settings/api";
 import { useClientStore } from "src/core/clients/api";
 
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-
 // setup stores
 const coreStore = useCoreStore();
 const clientStore = useClientStore();

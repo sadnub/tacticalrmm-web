@@ -1,14 +1,6 @@
 import { date } from "quasar";
 import { validateTimePeriod } from "src/utils/validation";
-import trmmLogo from "src/assets/trmm_256.png";
-
-import type { Script } from "src/types/scripts";
-import type { Agent } from "src/types/agents";
-import type { Client, ClientWithSites } from "src/types/clients";
-import type { User } from "src/types/accounts";
-import type { Check } from "src/types/checks";
 import type { CustomField, CustomFieldValue, CustomFieldValueField } from "src/core/settings/types";
-import type { URLAction } from "src/types/core/urlactions";
 
 // dropdown options formatting
 export interface SelectOptionCategory {
@@ -31,218 +23,21 @@ export function removeExtraOptionCategories(array: Option[]) {
     const currentOption = array[i];
     const nextOption = array[i + 1];
 
-    // Determine if current and next options are categories
     const isCurrentCategory = typeof currentOption === "object" && "category" in currentOption;
     const isNextCategory = typeof nextOption === "object" && "category" in nextOption;
 
     if (i === array.length - 1) {
-      // Always add the last item if it's not a category
-      if (!isCurrentCategory) {
+      if (!isCurrentCategory && currentOption) {
         tmp.push(currentOption);
       }
-    } else if (!(isCurrentCategory && isNextCategory)) {
-      // Add the current option if it's not followed by a category option
+    } else if (!(isCurrentCategory && isNextCategory) && currentOption) {
       tmp.push(currentOption);
     }
   }
   return tmp;
 }
-interface FormatOptionsParams {
-  label: string; // Key to use for the label
-  value?: string; // Key to use for the value, defaults to "id"
-  flat?: boolean; // Whether to return a flat array of strings
-  allowDuplicates?: boolean; // Whether to allow duplicate labels
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  appendToOptionObject?: { [key: string]: any }; // Additional properties to append to each option object
-  copyPropertiesList?: string[]; // List of properties to copy from the original objects
-}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function _formatOptions<T extends { [key: string]: any }>(
-  data: T[],
-  {
-    label,
-    value = "id",
-    flat = false,
-    allowDuplicates = true,
-    appendToOptionObject = {},
-    copyPropertiesList = [],
-  }: FormatOptionsParams,
-): Option[] | string[] {
-  if (!flat) {
-    return data.map((item) => {
-      const option: Partial<Option> = {
-        label: item[label],
-        value: item[value],
-        ...appendToOptionObject,
-      };
-
-      copyPropertiesList.forEach((prop) => {
-        if (Object.hasOwn(item, prop)) {
-          option[prop] = item[prop];
-        }
-      });
-
-      return option as Option;
-    });
-  } else {
-    const labels = data.map((item) => item[label]);
-    return allowDuplicates ? labels : [...new Set(labels)];
-  }
-}
-
-export function formatScriptOptions(data: Script[]): Option[] {
-  const categoryMap = new Map<string, Script[]>();
-  let hasUnassigned = false;
-
-  data.forEach((script) => {
-    const category = script.category || "Unassigned";
-    if (!script.category) hasUnassigned = true;
-
-    if (!categoryMap.has(category)) {
-      categoryMap.set(category, []);
-    }
-    categoryMap.get(category)!.push(script);
-  });
-
-  const categories = Array.from(categoryMap.keys());
-  if (hasUnassigned) {
-    // Ensure "Unassigned" is the last category
-    const index = categories.indexOf("Unassigned");
-    categories.splice(index, 1);
-    categories.push("Unassigned");
-  }
-
-  categories.sort();
-
-  const options: Option[] = [];
-  categories.forEach((cat) => {
-    options.push({ category: cat });
-
-    const scripts = categoryMap.get(cat)!.sort((a, b) => a.name.localeCompare(b.name));
-    scripts.forEach((script) => {
-      const option: Option = {
-        img_right: script.script_type === "builtin" ? trmmLogo : undefined,
-        label: script.name,
-        value: script.id,
-        default_timeout: script.default_timeout,
-        args: script.args,
-        env_vars: script.env_vars,
-        filename: script.filename,
-        syntax: script.syntax,
-        script_type: script.script_type,
-        shell: script.shell,
-        supported_platforms: script.supported_platforms,
-      };
-      options.push(option);
-    });
-  });
-
-  return options;
-}
-
-export function formatAgentOptions(
-  data: Agent[],
-  flat = false,
-  value_field: keyof Agent = "agent_id",
-): Option[] | string[] {
-  if (flat) {
-    // Returns just agent hostnames in an array
-    return _formatOptions(data, {
-      label: "hostname",
-      value: value_field as string,
-      flat: true,
-      allowDuplicates: false,
-    });
-  } else {
-    // Returns options with categories in object format
-    const options: Option[] = [];
-    const agents = data.map((agent) => ({
-      label: agent.hostname,
-      value: agent[value_field] as string,
-      cat: `${agent.client} > ${agent.site}`,
-    }));
-
-    const categories = [...new Set(agents.map((agent) => agent.cat))].sort();
-
-    categories.forEach((cat) => {
-      options.push({ category: cat });
-      const agentsInCategory = agents.filter((agent) => agent.cat === cat);
-      const sortedAgents = agentsInCategory.sort((a, b) => a.label.localeCompare(b.label));
-      options.push(...sortedAgents.map(({ label, value, cat }) => ({ label, value, cat })));
-    });
-
-    return options;
-  }
-}
-
-export function formatCustomFieldOptions(data: CustomField[], flat = false): Option[] {
-  if (flat) {
-    // For a flat list, simply format the options based on the "name" property
-    return _formatOptions(data, { label: "name", flat: true });
-  } else {
-    // Predefined categories for organizing the custom fields
-    const categories = ["Client", "Site", "Agent"];
-    const options: Option[] = [];
-
-    categories.forEach((cat) => {
-      // Add a category header as an option
-      options.push({ category: cat, label: cat, value: cat });
-
-      // Filter and map the custom fields that match the current category
-      const matchingFields = data
-        .filter((custom_field) => custom_field.model === cat.toLowerCase())
-        .map((custom_field) => ({
-          label: custom_field.name,
-          value: custom_field.id,
-          cat: cat,
-        }));
-
-      // Sort the filtered custom fields by their labels and add them to the options
-      const sortedFields = matchingFields.sort((a, b) => a.label.localeCompare(b.label));
-      options.push(...sortedFields);
-    });
-
-    return options;
-  }
-}
-
-export function formatClientOptions(data: Client[], flat = false) {
-  return _formatOptions(data, { label: "name", flat: flat });
-}
-
-export function formatSiteOptions(data: ClientWithSites[], flat = false) {
-  const options = [] as Option[];
-  data.forEach((client) => {
-    options.push({ category: client.name });
-    options.push(
-      ..._formatOptions(client.sites, {
-        label: "name",
-        flat: flat,
-        appendToOptionObject: { cat: client.name },
-      }),
-    );
-  });
-
-  return options;
-}
-
-export function formatUserOptions(data: User[], flat = false) {
-  return _formatOptions(data, { label: "username", flat: flat });
-}
-
-export function formatCheckOptions(data: Check[], flat = false) {
-  return _formatOptions(data, { label: "readable_desc", flat: flat });
-}
-
-export function formatURLActionOptions(data: URLAction[], flat = false) {
-  return _formatOptions(data, {
-    label: "name",
-    flat: flat,
-    copyPropertiesList: ["action_type"],
-  });
-}
-
+// format data for ui custom field inputs
 export function formatCustomFields(
   fields: CustomField[],
   values: Record<string, CustomFieldValueField>,
@@ -283,7 +78,6 @@ export function formatScriptSyntax(syntax: string) {
 }
 
 // date formatting
-
 export function getTimeLapse(unixtime: number) {
   if (date.inferDateFormat(unixtime) === "string") {
     unixtime = parseInt(date.formatDate(unixtime, "X"));
@@ -342,13 +136,14 @@ export function formatDateInputField(isoDateString: string | number, noTimezone 
 export function formatDateStringwithTimezone(localDateString: string) {
   return date.formatDate(localDateString, "YYYY-MM-DDTHH:mm:ssZ");
 }
-// string formatting
 
+// string formatting
 export function capitalize(string: string) {
   if (string.length > 0) return string[0]!.toUpperCase() + string.substring(1);
   else return string;
 }
 
+// turns underscores into spaces and capitalized words
 export function formatTableColumnText(text: string) {
   let string = "";
   // split at underscore if exists
@@ -399,7 +194,7 @@ export function convertPeriodToSeconds(period: string) {
 }
 
 // takes an integer and converts it to an array in binary format. i.e: 13 -> [8, 4, 1]
-// Needed to work with multi-select fields in tasks form
+// needed to work with multi-select fields in tasks form
 export function convertToBitArray(number: number) {
   const bitArray = [];
   const binary = number.toString(2);

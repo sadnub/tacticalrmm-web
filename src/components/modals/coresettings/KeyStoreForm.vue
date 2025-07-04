@@ -49,11 +49,8 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-
 export default {
   name: "KeyStoreForm",
-  mixins: [mixins],
   props: { globalKey: Object },
   emits: ["hide", "ok", "cancel"],
   data() {

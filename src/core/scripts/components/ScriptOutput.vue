@@ -41,7 +41,7 @@
 // composition imports
 import { useDialogPluginComponent } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import ScriptOutputCopyClip from "src/components/scripts/ScriptOutputCopyClip.vue";
+import ScriptOutputCopyClip from "./ScriptOutputCopyClip.vue";
 import type { CheckResult } from "src/core/checks/types";
 
 defineEmits(useDialogPluginComponent.emits);

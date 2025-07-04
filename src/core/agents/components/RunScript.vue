@@ -32,10 +32,19 @@
             filterable
           >
             <template #after>
-              <q-btn size="sm" round dense flat icon="info" @click="openScriptURL">
-                <q-tooltip v-if="syntax" class="bg-white text-primary text-body1">{{
-                  syntax
-                }}</q-tooltip>
+              <q-btn
+                size="sm"
+                round
+                dense
+                flat
+                icon="info"
+                @click="openScriptURL(selectedScript?.link)"
+              >
+                <q-tooltip
+                  v-if="selectedScript && selectedScript.syntax"
+                  class="bg-white text-primary text-body1"
+                  >{{ selectedScript.syntax }}</q-tooltip
+                >
               </q-btn>
             </template>
           </tactical-dropdown>
@@ -119,11 +128,11 @@
           <q-checkbox
             v-if="!hosted"
             v-model="state.run_on_server"
-            :disable="!server_scripts_enabled"
+            :disable="!serverScriptsEnabled"
             label="Run On Server"
-            @update:model-value="ret = null"
+            @update:model-value="ret = ''"
           >
-            <q-tooltip v-if="!server_scripts_enabled"
+            <q-tooltip v-if="!serverScriptsEnabled"
               >Enable server side scripts globally to activate this feature.</q-tooltip
             >
             <q-tooltip v-else
@@ -145,17 +154,17 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup label="Cancel" />
-          <q-btn :loading="loading" :disabled="loading" label="Run" color="primary" type="submit" />
+          <q-btn :loading="agentStore.isLoading" label="Run" color="primary" type="submit" />
         </q-card-actions>
         <q-card-section
-          v-if="ret !== null"
+          v-if="ret"
           class="q-pl-md q-pr-md q-pt-none q-ma-none scroll"
           style="max-height: 50vh"
         >
-          <script-output-copy-clip v-if="!state.run_on_server" label="Output" :data="ret" />
+          <script-output-copy-clip v-if="!state.run_on_server" label="Output" :data="String(ret)" />
           <q-separator />
           <pre v-if="!state.run_on_server">{{ ret }}</pre>
-          <q-card-section v-if="state.run_on_server" class="scroll">
+          <q-card-section v-if="typeof ret === 'object'" class="scroll">
             <div>
               Run Time:
               <code>{{ ret.execution_time }} seconds</code>
@@ -183,26 +192,29 @@
 
 <script setup lang="ts">
 // composition imports
-import { computed, ref, watch } from "vue";
-import { useStore } from "vuex";
+import { computed, reactive, ref, watch } from "vue";
 import { useDialogPluginComponent, openURL } from "quasar";
-import { useScriptDropdown } from "src/composables/scripts";
-import { useCustomFieldDropdown } from "src/composables/core";
-import { runScript } from "src/api/agents";
-import { notifySuccess } from "src/utils/notify";
+import { useScriptDropdown } from "src/core/scripts/composables";
+import { useCustomFieldDropdown } from "src/core/settings/composables";
+import { useAgentStore } from "src/core/agents/api";
+import { useDashboardStore } from "src/stores/dashboard";
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 
 //ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-import ScriptOutputCopyClip from "src/components/scripts/ScriptOutputCopyClip.vue";
+import ScriptOutputCopyClip from "src/core/scripts/components/ScriptOutputCopyClip.vue";
 
 // types
 import type { Agent } from "src/types/agents";
+import type { RunScriptRequest } from "../types";
+import type { ScriptResult } from "src/core/scripts/types";
+import { isScriptResult } from "src/core/scripts/types";
 
 // store
-const store = useStore();
-const hosted = computed(() => store.state.hosted);
-const server_scripts_enabled = computed(() => store.state.server_scripts_enabled);
+const dashboardStore = useDashboardStore();
+const agentStore = useAgentStore();
+
+const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
+const serverScriptsEnabled = computed(() => dashboardStore.dashboardSettings.serverScriptsEnabled);
 
 // static data
 const outputOptions = [
@@ -226,56 +238,62 @@ const props = defineProps<{
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // setup dropdowns
-const {
-  script,
-  filterByPlatformOptions,
-  defaultTimeout,
-  defaultArgs,
-  defaultEnvVars,
-  syntax,
-  link,
-} = useScriptDropdown({
-  script: props.script,
-  plat: props.agent.plat,
-  onMount: true,
-});
-const { customFieldOptions } = useCustomFieldDropdown({ onMount: true });
+const { filterByPlatformOptions, getScriptById } = useScriptDropdown(props.agent.plat);
+const { customFieldOptions } = useCustomFieldDropdown();
 
 // main run script functionaity
-const state = ref({
+const state = reactive<RunScriptRequest>({
   output: "wait",
   emails: [],
   emailMode: "default",
   custom_field: null,
   save_all_output: false,
-  script,
-  args: defaultArgs,
-  env_vars: defaultEnvVars,
-  timeout: defaultTimeout,
+  script: props.script || null,
+  args: [],
+  env_vars: [],
+  timeout: 30,
   run_as_user: false,
   run_on_server: false,
 });
 
-const ret = ref(null);
-const loading = ref(false);
+const ret = ref<ScriptResult | string>("");
 const maximized = ref(false);
 
-async function sendScript() {
-  ret.value = null;
-  loading.value = true;
+const selectedScript = computed(() => {
+  if (state.script) return getScriptById(state.script);
+  else return undefined;
+});
 
-  ret.value = await runScript(props.agent.agent_id, state.value);
-  loading.value = false;
-  if (state.value.output === "forget") {
+watch(selectedScript, (newValue) => {
+  if (newValue) {
+    state.timeout = newValue?.default_timeout;
+    state.args = newValue.args;
+    state.env_vars = newValue.env_vars;
+  }
+});
+
+async function sendScript() {
+  try {
+    const response = await agentStore.runScript(props.agent.agent_id, state);
+    if (response === undefined) return;
+
+    if (isScriptResult(response)) {
+      ret.value = response;
+    } else {
+      ret.value = response;
+    }
+  } catch {
+    //
+  }
+
+  if (state.output === "forget") {
     onDialogHide();
-    if (ret.value) notifySuccess(ret.value);
   }
 }
-
-function openScriptURL() {
-  link.value ? openURL(link.value) : null;
+function openScriptURL(link?: string) {
+  if (link) openURL(link);
 }
 
 // watchers
-watch([() => state.value.output, () => state.value.emailMode], () => (state.value.emails = []));
+watch([() => state.output, () => state.emailMode], () => (state.emails = []));
 </script>

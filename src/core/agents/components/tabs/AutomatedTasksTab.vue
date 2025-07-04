@@ -315,11 +315,11 @@ import { useDashboardStore } from "src/stores/dashboard";
 import { notifyError } from "src/utils/notify";
 
 // ui imports
-import AutomatedTaskForm from "src/components/tasks/AutomatedTaskForm.vue";
+import AutomatedTaskForm from "src/core/tasks/components/AutomatedTaskForm.vue";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 
 // type imports
-import type { AutomatedTask } from "src/core/tasks/types";
+import type { AutomatedTaskUI } from "src/core/tasks/types";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
@@ -401,12 +401,12 @@ const pagination = ref({
 
 const search = ref("");
 
-function editTask(task: AutomatedTask, data: Partial<AutomatedTask>) {
+function editTask(task: AutomatedTaskUI, data: Partial<AutomatedTaskUI>) {
   if (task.policy) return;
-  taskStore.updateTask(task.id, data);
+  taskStore.updateTaskPartial(task.id, data);
 }
 
-function deleteTask(task: AutomatedTask) {
+function deleteTask(task: AutomatedTaskUI) {
   if (task.policy) return;
 
   $q.dialog({
@@ -419,7 +419,7 @@ function deleteTask(task: AutomatedTask) {
   });
 }
 
-function runWinTask(task: AutomatedTask) {
+function runWinTask(task: AutomatedTaskUI) {
   if (!task.enabled) {
     notifyError("Task cannot be run when it's disabled. Enable it first.");
     return;
@@ -445,7 +445,7 @@ function showAddTask() {
   });
 }
 
-function showEditTask(task: AutomatedTask) {
+function showEditTask(task: AutomatedTaskUI) {
   if (task.policy) return;
 
   $q.dialog({
@@ -458,7 +458,7 @@ function showEditTask(task: AutomatedTask) {
   });
 }
 
-function showScriptOutput(script: AutomatedTask) {
+function showScriptOutput(script: AutomatedTaskUI) {
   $q.dialog({
     component: ScriptOutput,
     componentProps: {

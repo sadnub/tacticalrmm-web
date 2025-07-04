@@ -12,13 +12,10 @@
 <script setup lang="ts">
 import { copyOutput } from "src/utils/helpers";
 
-const props = defineProps({
-  label: String,
-  data: {
-    type: String,
-    required: true,
-  },
-});
+const props = defineProps<{
+  data: string;
+  label: string;
+}>();
 
 const copyText = () => {
   copyOutput(props.data);

@@ -693,14 +693,11 @@
 import { computed, ref, reactive, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 import { useQuasar, useDialogPluginComponent, type QStepper } from "quasar";
-import { useScriptDropdown } from "src/composables/scripts";
-import { useURLActionDropdown } from "src/composables/core";
+import { useScriptDropdown } from "src/core/scripts/composables";
+import { useURLActionDropdown } from "src/core/settings/composables";
 import { notifyError, notifySuccess } from "src/utils/notify";
 import { addAlertTemplate, saveAlertTemplate } from "src/api/alerts";
 import { isValidEmail } from "src/utils/validation";
-
-// components
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // types
 import type { AlertTemplate, AlertSeverity } from "src/types/alerts";
@@ -725,27 +722,10 @@ const $q = useQuasar();
 const step = ref(1);
 
 // setup script dropdowns
-const {
-  script: failureAction,
-  defaultArgs: failureArgs,
-  defaultEnvVars: failureEnvVars,
-  defaultTimeout: failureTimeout,
-  serverScriptOptions,
-  scriptOptions,
-} = useScriptDropdown({ script: props.alertTemplate?.action, onMount: true });
-
-const {
-  script: resolvedAction,
-  defaultArgs: resolvedArgs,
-  defaultEnvVars: resolvedEnvVars,
-  defaultTimeout: resolvedTimeout,
-} = useScriptDropdown({
-  script: props.alertTemplate?.resolved_action,
-  onMount: true,
-});
+const { serverScriptOptions, scriptOptions } = useScriptDropdown();
 
 // setup custom field dropdown
-const { restActionOptions } = useURLActionDropdown({ onMount: true });
+const { restActionOptions } = useURLActionDropdown();
 
 // alert template form logic
 const template: AlertTemplate = props.alertTemplate

@@ -18,23 +18,6 @@ export type TaskType =
   | "onboarding"
   | "scheduled";
 
-export interface ScriptTaskAction {
-  type: "script";
-  script: number;
-  name: string;
-  timeout: number;
-  script_args: string[];
-  env_vars: string[];
-}
-
-export interface CommandTaskAction {
-  type: "cmd";
-  command: string;
-  timeout: number;
-}
-
-export type TaskAction = ScriptTaskAction | CommandTaskAction;
-
 export interface TaskResult {
   id: number;
   agent: string;
@@ -50,10 +33,21 @@ export interface TaskResult {
   run_status: TaskRunStatus;
 }
 
+export interface TaskAction {
+  name: string;
+  type: "cmd" | "script";
+  script_args?: string[];
+  env_vars: string[];
+  timeout: number;
+  script?: number | null;
+  command?: string;
+  shell: string;
+}
+
 export interface AutomatedTask {
   id: number;
-  agent: string | null;
-  policy: number | null;
+  agent?: string | null;
+  policy?: number | null;
   custom_field: number | null;
   actions: TaskAction[];
   assigned_check: number | null;
@@ -66,15 +60,15 @@ export interface AutomatedTask {
   text_alert: boolean;
   dashboard_alert: boolean;
   task_type: TaskType;
-  win_task_name: string;
-  run_time_date: string | null;
+  win_task_name?: string;
+  run_time_date: string;
   expire_date: string | null;
-  daily_interval: number | null;
-  run_time_bit_weekdays: number | null;
-  weekly_interval: number | null;
-  monthly_days_of_month: number | null;
-  monthly_months_of_year: number | null;
-  monthly_weeks_of_month: number | null;
+  daily_interval: number;
+  run_time_bit_weekdays: number;
+  weekly_interval: number;
+  monthly_days_of_month: number;
+  monthly_months_of_year: number;
+  monthly_weeks_of_month: number;
   task_repetition_duration: string | null;
   task_repetition_interval: string | null;
   stop_task_at_duration_end: boolean;
@@ -82,6 +76,43 @@ export interface AutomatedTask {
   remove_if_not_scheduled: boolean;
   run_asap_after_missed: boolean;
   task_instance_policy: number;
-  task_supported_platforms: AgentPlat;
+  task_supported_platforms: AgentPlat[];
+  task_result?: Partial<TaskResult>;
+}
+
+export interface AutomatedTaskUI {
+  id: number;
+  agent?: string | null;
+  policy?: number | null;
+  custom_field: number | null;
+  actions: TaskAction[];
+  assigned_check: number | null;
+  name: string;
+  collector_all_output: boolean;
+  enabled: boolean;
+  continue_on_error: boolean;
+  alert_severity: AlertSeverity;
+  email_alert: boolean;
+  text_alert: boolean;
+  dashboard_alert: boolean;
+  task_type: TaskType;
+  monthly_type?: "days" | "weeks" | undefined;
+  win_task_name?: string;
+  run_time_date: string;
+  expire_date: string | null;
+  daily_interval: number | null;
+  run_time_bit_weekdays: number[];
+  weekly_interval: number | null;
+  monthly_days_of_month: number[];
+  monthly_months_of_year: number[];
+  monthly_weeks_of_month: number[];
+  task_repetition_duration: string | null;
+  task_repetition_interval: string | null;
+  stop_task_at_duration_end: boolean;
+  random_task_delay: string | null;
+  remove_if_not_scheduled: boolean;
+  run_asap_after_missed: boolean;
+  task_instance_policy: number;
+  task_supported_platforms: AgentPlat[];
   task_result?: Partial<TaskResult>;
 }

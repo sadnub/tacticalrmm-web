@@ -76,11 +76,9 @@
 
 <script>
 import KeyStoreForm from "src/components/modals/coresettings/KeyStoreForm.vue";
-import mixins from "src/mixins/mixins";
 
 export default {
   name: "KeyStoreTable",
-  mixins: [mixins],
   data() {
     return {
       keystore: [],

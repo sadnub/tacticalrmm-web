@@ -1,3 +1,4 @@
+// @ts-nocheck /* eslint-disable */
 <template>
   <q-menu anchor="top end" self="top start">
     <q-list>
@@ -12,9 +13,7 @@
           integration.type === 'dialog'
             ? $q.dialog({
                 component: integration.component,
-                componentProps: integration.props
-                  ? integration.props(id, type)
-                  : undefined,
+                componentProps: integration.props ? integration.props(id, type) : undefined,
               })
             : undefined
         "

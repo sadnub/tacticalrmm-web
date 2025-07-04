@@ -4,34 +4,28 @@ import trmmLogo from "src/assets/trmm_256.png";
 import { useScriptStore } from "./api";
 import type { Script } from "./types";
 import type { AgentPlat } from "src/core/agents/types";
+import { type SelectableOption, type HeaderOption, isHeaderOption } from "../dashboard/types";
 
-export interface ScriptOption extends Script {
-  label: string;
-  value: number;
-  img_right?: string;
-}
+export interface ScriptSelectableOption extends SelectableOption, Script {}
+export type ScriptOption = HeaderOption | ScriptSelectableOption;
 
-export type ScriptHeader = { category: string; header: true };
-export type FormattedOption = ScriptOption | ScriptHeader;
-
-export function isScriptOption(item: FormattedOption): item is ScriptOption {
-  return !("header" in item);
-}
+const baseUrl = "https://github.com/amidaware/community-scripts/blob/main/scripts/";
 
 export function useScriptDropdown(plat?: AgentPlat) {
   const scriptStore = useScriptStore();
 
   onMounted(scriptStore.getScripts);
 
-  const allFormattedOptions = computed(() => formatScriptOptions(scriptStore.scripts));
+  const scriptOptions = computed(() => formatScriptOptions(scriptStore.scripts));
 
   const filterByPlatformOptions = computed(() => {
+    console.log(scriptOptions.value);
     if (!plat) {
-      return allFormattedOptions.value;
+      return scriptOptions.value;
     }
 
-    const filtered = allFormattedOptions.value.filter((item) => {
-      if (!isScriptOption(item)) return true;
+    const filtered = scriptOptions.value.filter((item) => {
+      if (isHeaderOption(item)) return true;
 
       return (
         !item.supported_platforms ||
@@ -44,8 +38,8 @@ export function useScriptDropdown(plat?: AgentPlat) {
   });
 
   const serverScriptOptions = computed(() => {
-    const filtered = allFormattedOptions.value.filter((item) => {
-      if (!isScriptOption(item)) return true;
+    const filtered = scriptOptions.value.filter((item) => {
+      if (isHeaderOption(item)) return true;
 
       return (
         !item.supported_platforms ||
@@ -58,34 +52,44 @@ export function useScriptDropdown(plat?: AgentPlat) {
 
   const favoriteScriptOptions = computed(() => {
     const filtered = scriptStore.scripts.filter((item) => item.favorite);
-    return filtered.map((script) => ({
-      label: script.name,
-      value: script.id,
-      ...script,
-    }));
+    return filtered.map(
+      (script) =>
+        ({
+          label: script.name,
+          value: script.id,
+          ...script,
+        }) as ScriptSelectableOption,
+    );
   });
 
+  function getScriptById(id: number) {
+    return scriptOptions.value.find(
+      (script) => !isHeaderOption(script) && script.id === id,
+    ) as ScriptSelectableOption;
+  }
+
   return {
-    scriptOptions: allFormattedOptions,
+    scriptOptions,
     filterByPlatformOptions,
     serverScriptOptions,
     favoriteScriptOptions,
     isLoading: computed(() => scriptStore.isLoading),
+    getScriptById,
   };
 }
 
-function removeEmptyCategories(options: FormattedOption[]): FormattedOption[] {
+function removeEmptyCategories(options: ScriptOption[]): ScriptOption[] {
   return options.filter((item, index, arr) => {
-    if (isScriptOption(item)) {
+    if (!isHeaderOption(item)) {
       return true;
     }
 
     const nextItem = arr[index + 1];
-    return nextItem && isScriptOption(nextItem);
+    return nextItem && !isHeaderOption(nextItem);
   });
 }
 
-export function formatScriptOptions(data: Script[]): FormattedOption[] {
+export function formatScriptOptions(data: Script[]): ScriptOption[] {
   const categoryMap = new Map<string, Script[]>();
 
   data.forEach((script) => {
@@ -103,7 +107,7 @@ export function formatScriptOptions(data: Script[]): FormattedOption[] {
   });
 
   return sortedCategories.flatMap((cat) => {
-    const header: ScriptHeader = { category: cat, header: true };
+    const header: HeaderOption = { category: cat, type: "header" };
 
     const scripts = categoryMap
       .get(cat)!
@@ -111,12 +115,23 @@ export function formatScriptOptions(data: Script[]): FormattedOption[] {
       .map(
         (script): ScriptOption => ({
           ...script,
+          type: "option",
           label: script.name,
-          value: script.id,
+          value: script.id || 0,
           img_right: script.script_type === "builtin" ? trmmLogo : "",
+          link: script.script_type === "builtin" ? `${baseUrl}${script.filename}` : undefined,
         }),
       );
 
     return [header, ...scripts];
   });
 }
+
+export const shellOptions = [
+  { label: "Powershell", value: "powershell" },
+  { label: "Batch", value: "cmd" },
+  { label: "Python", value: "python" },
+  { label: "Shell", value: "shell" },
+  { label: "Nushell", value: "nushell" },
+  { label: "Deno", value: "deno" },
+];

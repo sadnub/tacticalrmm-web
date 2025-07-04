@@ -658,14 +658,12 @@
 
 <script>
 import { openURL } from "quasar";
-import mixins from "src/mixins/mixins";
 import ResetPatchPolicy from "src/components/modals/coresettings/ResetPatchPolicy.vue";
 import CustomFields from "src/components/modals/coresettings/CustomFields.vue";
 import KeyStoreTable from "src/components/modals/coresettings/KeyStoreTable.vue";
 import URLActionsTable from "src/components/modals/coresettings/URLActionsTable.vue";
 import APIKeysTable from "src/core/settings/components/APIKeysTable.vue";
 import SSOProvidersTable from "src/ee/sso/components/SSOProvidersTable.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 export default {
   name: "EditCoreSettings",
@@ -675,9 +673,7 @@ export default {
     URLActionsTable,
     APIKeysTable,
     SSOProvidersTable,
-    TacticalDropdown,
   },
-  mixins: [mixins],
   emits: ["close"],
   data() {
     return {

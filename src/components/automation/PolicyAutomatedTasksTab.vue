@@ -179,13 +179,11 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-import AutomatedTaskForm from "src/components/tasks/AutomatedTaskForm.vue";
+import AutomatedTaskForm from "src/core/tasks/components/AutomatedTaskForm.vue";
 import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
 
 export default {
   name: "PolicyAutomatedTasksTab",
-  mixins: [mixins],
   props: {
     selectedPolicy: !Number,
   },

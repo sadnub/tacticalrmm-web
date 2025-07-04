@@ -35,11 +35,8 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-
 export default {
   name: "AlertTemplateAdd",
-  mixins: [mixins],
   props: {
     object: !Object,
     type: {

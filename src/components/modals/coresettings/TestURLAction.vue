@@ -80,13 +80,10 @@
 // composition imports
 import { ref, reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAgentDropdown } from "src/composables/agents";
-import { useSiteDropdown, useClientDropdown } from "src/composables/clients";
+import { useAgentDropdown } from "src/core/agents/composables";
+import { useSiteDropdown, useClientDropdown } from "src/core/clients/composables";
 import { runTestURLAction } from "src/api/core";
 import type { URLAction } from "src/types/core/urlactions";
-
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // define emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -98,9 +95,9 @@ const props = defineProps<{ urlAction: URLAction }>();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // setup dropdowns
-const { agent, agentOptions } = useAgentDropdown({ onMount: true });
-const { client, clientOptions } = useClientDropdown(true);
-const { site, siteOptions } = useSiteDropdown(true);
+const { agent, agentOptions } = useAgentDropdown();
+const { client, clientOptions } = useClientDropdown();
+const { site, siteOptions } = useSiteDropdown();
 
 const runAgainst = ref<"agent" | "site" | "client" | "none">("none");
 

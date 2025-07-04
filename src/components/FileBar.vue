@@ -231,22 +231,21 @@
 <script>
 import { computed } from "vue";
 import { useDashboardStore } from "src/stores/dashboard";
-import mixins from "src/mixins/mixins";
 import DialogWrapper from "src/components/ui/DialogWrapper.vue";
 import DebugLog from "../core/logs/components/DebugLog.vue";
 import PendingActions from "../core/logs/components/PendingActions.vue";
 import ClientsManager from "src/core/clients/components/ClientsManager.vue";
 import ClientsForm from "src/core/clients/components//ClientsForm.vue";
 import SitesForm from "src/core/clients/components//SitesForm.vue";
-import UpdateAgents from "src/components/modals/agents/UpdateAgents.vue";
-import ScriptManager from "src/components/scripts/ScriptManager.vue";
+import UpdateAgents from "src/core/agents/components/UpdateAgents.vue";
+import ScriptManager from "src/core/scripts/components/ScriptManager.vue";
 import EditCoreSettings from "src/components/modals/coresettings/EditCoreSettings.vue";
 import AlertsManager from "src/components/AlertsManager.vue";
 import AutomationManager from "src/components/automation/AutomationManager.vue";
 import AdminManager from "src/core/accounts/components/AdminManager.vue";
 import InstallAgent from "src/core/agents/components/InstallAgent.vue";
 import AuditManager from "src/core/logs/components/AuditManager.vue";
-import BulkAction from "src/components/modals/agents/BulkAction.vue";
+import BulkAction from "src/core/agents/components/BulkAction.vue";
 import DeploymentTable from "src/core/clients/components/DeploymentTable.vue";
 import ServerMaintenance from "src/components/modals/core/ServerMaintenance.vue";
 import CodeSign from "src/components/modals/coresettings/CodeSign.vue";
@@ -264,7 +263,6 @@ export default {
     ServerMaintenance,
     CodeSign,
   },
-  mixins: [mixins],
   setup() {
     const dashboardStore = useDashboardStore();
 

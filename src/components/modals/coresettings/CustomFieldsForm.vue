@@ -152,11 +152,8 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-
 export default {
   name: "CustomFieldsForm",
-  mixins: [mixins],
   props: { field: Object, model: String },
   emits: ["hide", "ok", "cancel"],
   data() {

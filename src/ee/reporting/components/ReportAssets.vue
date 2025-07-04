@@ -104,8 +104,8 @@ For details, see: https://license.tacticalrmm.com/ee
 
 <script lang="ts" setup>
 // composition imports
-import { ref } from "vue";
-import { useFileBrowser } from "src/composables/filebrowser";
+import { ref, useTemplateRef } from "vue";
+import { useFileBrowser } from "src/core/dashboard/composables";
 import {
   fetchReportAssets,
   renameReportAsset,
@@ -124,7 +124,7 @@ import type {
   LazyLoadCallbackParams,
   FileSystemNodeTable,
   QTreeFileNode,
-} from "src/types/filebrowser";
+} from "src/core/dashboard/types";
 import type { UploadAssetsResponse } from "../types/reporting";
 
 // emits
@@ -141,7 +141,7 @@ const { createFileNode, createFolderNode, getFile } = useFileBrowser();
 
 // data
 const nodes = ref([createFolderNode("Assets", "/", "storage", "primary")] as QTreeFileNode[]);
-const fileBrowser = ref<InstanceType<typeof FileBrowser> | null>(null);
+const fileBrowser = useTemplateRef<typeof FileBrowser>("fileBrowser");
 const isLoading = ref(false);
 
 async function loadAssets(args: LazyLoadCallbackParams) {

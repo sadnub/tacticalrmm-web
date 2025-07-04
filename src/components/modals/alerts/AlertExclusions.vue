@@ -61,14 +61,8 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 export default {
   name: "AlertExclusions",
-  components: {
-    TacticalDropdown,
-  },
-  mixins: [mixins],
   props: { template: !Object },
   emits: ["hide", "ok"],
   data() {

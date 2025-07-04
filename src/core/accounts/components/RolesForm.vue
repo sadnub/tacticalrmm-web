@@ -278,9 +278,6 @@ import { until } from "@vueuse/shared";
 // type imports
 import type { Role } from "../types";
 
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-
 const props = defineProps<{
   role?: Role;
 }>();

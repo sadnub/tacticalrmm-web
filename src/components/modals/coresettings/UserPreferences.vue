@@ -206,12 +206,9 @@
 
 <script>
 import { openURL } from "quasar";
-import { loadingBarColors } from "src/mixins/data";
-import mixins from "src/mixins/mixins";
 
 export default {
   name: "UserPreferences",
-  mixins: [mixins],
   emits: ["hide", "ok", "cancel"],
   data() {
     return {

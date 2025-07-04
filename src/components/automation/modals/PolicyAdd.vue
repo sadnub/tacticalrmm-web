@@ -66,13 +66,8 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-
 export default {
   name: "PolicyAdd",
-  components: { TacticalDropdown },
-  mixins: [mixins],
   props: {
     object: !Object,
     type: {

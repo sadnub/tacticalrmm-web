@@ -237,13 +237,13 @@ import { useWinUpdateStore } from "../api";
 
 // ui imports
 import PendingActions from "src/core/logs/components/PendingActions.vue";
-import AgentRecovery from "src/components/modals/agents/AgentRecovery.vue";
+import AgentRecovery from "./AgentRecovery.vue";
 import PolicyAdd from "src/components/automation/modals/PolicyAdd.vue";
-import RebootLater from "src/components/modals/agents/RebootLater.vue";
-import EditAgent from "src/components/modals/agents/EditAgent.vue";
-import SendCommand from "src/components/modals/agents/SendCommand.vue";
-import RunScript from "src/components/modals/agents/RunScript.vue";
-import IntegrationsContextMenu from "src/components/ui/IntegrationsContextMenu.vue";
+import RebootLater from "./RebootLater.vue";
+import EditAgent from "./EditAgent.vue";
+import SendCommand from "./SendCommand.vue";
+import RunScript from "./RunScript.vue";
+import IntegrationsContextMenu from "src/core/dashboard/ui/IntegrationsContextMenu.vue";
 
 import DOMPurify from "dompurify";
 import type { Agent } from "../types";

@@ -92,11 +92,7 @@ import { isDefined } from "@vueuse/core";
 // type imports
 import type { QTableColumn, QTreeLazyLoadParams, QTree, QTable } from "quasar";
 
-import type {
-  LazyLoadCallbackParams,
-  FileSystemNodeTable,
-  QTreeFileNode,
-} from "../types/filebrowser";
+import type { LazyLoadCallbackParams, FileSystemNodeTable, QTreeFileNode } from "../types";
 
 // emits
 const emit = defineEmits<{
@@ -201,7 +197,7 @@ function parseNodeChildrenIntoTable(node: QTreeFileNode): FileSystemNodeTable[] 
   if (node.children && node.children.length > 0) {
     return node.children.map((childNode) => ({
       id: childNode.id,
-      name: childNode.label as string,
+      name: childNode.label || "",
       path: childNode.path,
       type: childNode.type,
       size: childNode.size,

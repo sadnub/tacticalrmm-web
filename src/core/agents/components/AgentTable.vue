@@ -474,7 +474,7 @@ import { date } from "quasar";
 import { capitalize, getTimeLapse } from "src/utils/format";
 
 // ui imports
-import EditAgent from "src/components/modals/agents/EditAgent.vue";
+import EditAgent from "./EditAgent.vue";
 import PendingActions from "src/core/logs/components/PendingActions.vue";
 import AgentActionMenu from "./AgentActionMenu.vue";
 

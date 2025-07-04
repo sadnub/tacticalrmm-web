@@ -2,16 +2,19 @@ import { onMounted, computed } from "vue";
 import { useClientStore } from "./api";
 
 import type { Client } from "./types";
-import { isCategoryOption } from "../dashboard/types";
+import { type SelectableOption, type Option, type HeaderOption } from "../dashboard/types";
 
 export function useClientDropdown() {
   const clientStore = useClientStore();
 
   const clientOptions = computed(() => {
-    return clientStore.clients.map((client) => ({
-      label: client.name,
-      value: client.id,
-    }));
+    return clientStore.clients.map(
+      (client) =>
+        ({
+          label: client.name,
+          value: client.id,
+        }) as Option,
+    );
   });
 
   onMounted(clientStore.getClients);
@@ -22,10 +25,15 @@ export function useClientDropdown() {
   };
 }
 
+export interface SiteSelectableOption extends SelectableOption {
+  clientId: number;
+}
+export type SiteOption = HeaderOption | SiteSelectableOption;
+
 export function useSiteDropdown() {
   const clientStore = useClientStore();
 
-  const siteOptions = computed(() => {
+  const siteOptions = computed<SiteOption[]>(() => {
     return _formatSiteOptions(clientStore.clients);
   });
 
@@ -37,42 +45,22 @@ export function useSiteDropdown() {
   };
 }
 
-export type SiteOption = {
-  clientId: number;
-  label: string;
-  value: number | string;
-  cat: string;
-  img_right?: string;
-};
-
-export type SiteOptionWithCategory =
-  | {
-      clientId: number;
-      label: string;
-      value: number | string;
-      cat: string;
-      img_right?: string;
-    }
-  | {
-      category: string;
-    };
-
-export function isSiteOption(option: SiteOptionWithCategory): option is SiteOption {
-  return !isCategoryOption(option);
-}
-
 function _formatSiteOptions(data: Client[]) {
-  const options = [] as SiteOptionWithCategory[];
+  const options = [] as SiteOption[];
 
   data.forEach((client) => {
-    options.push({ category: client.name });
+    options.push({ type: "header", category: client.name });
     options.push(
-      ...client.sites.map((site) => ({
-        label: site.name,
-        value: site.id,
-        cat: client.name,
-        clientId: client.id,
-      })),
+      ...client.sites.map(
+        (site) =>
+          ({
+            type: "option",
+            label: site.name,
+            value: site.id,
+            category: client.name,
+            clientId: client.id,
+          }) as SiteSelectableOption,
+      ),
     );
   });
 

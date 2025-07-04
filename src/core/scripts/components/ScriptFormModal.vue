@@ -11,16 +11,6 @@
     <q-card class="q-dialog-plugin">
       <q-bar>
         <span class="q-pr-sm">{{ title }}</span>
-        <q-btn
-          v-if="!script && openAIEnabled"
-          size="xs"
-          :disable="loading"
-          dense
-          label="Generate Script"
-          color="primary"
-          no-caps
-          @click="generateScriptOpenAI"
-        />
         <q-space />
         <q-btn dense flat icon="close" @click="closeEditor" />
       </q-bar>
@@ -162,7 +152,7 @@
       </div>
       <q-card-actions>
         <tactical-dropdown
-          v-model="agent"
+          v-model="testAgent"
           style="width: 550px"
           dense
           :loading="agentLoading"
@@ -179,7 +169,7 @@
               dense
               flat
               label="Test Script"
-              :disable="!agent || !script.script_body || !script.default_timeout"
+              :disable="!testAgent || !script.script_body || !script.default_timeout"
               @click="openTestScriptModal('agent')"
             />
             <q-btn
@@ -189,7 +179,7 @@
               dense
               flat
               label="Test on Tactical's Server"
-              :disable="!script.script_body || !script.default_timeout || !server_scripts_enabled"
+              :disable="!script.script_body || !script.default_timeout || !serverScriptsEnabled"
               @click="openTestScriptModal('server')"
             >
               <q-tooltip
@@ -212,7 +202,7 @@
         <q-btn dense flat label="Cancel" @click="closeEditor" />
         <q-btn
           v-if="!readonly"
-          :loading="loading"
+          :loading="scriptStore.isLoading"
           dense
           flat
           label="Save"
@@ -226,28 +216,30 @@
 
 <script setup lang="ts">
 // composable imports
-import { ref, reactive, watch, computed, onMounted } from "vue";
-import { useStore } from "vuex";
+import { ref, reactive, watch, computed } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { saveScript, editScript, downloadScript } from "src/api/scripts";
-import { useAgentDropdown, agentPlatformOptions } from "src/composables/agents";
-import { generateScript } from "src/api/core";
-import { notifyError, notifySuccess } from "src/utils/notify";
-
+import { useAgentDropdown, agentPlatformOptions } from "src/core/agents/composables";
+import { notifyError } from "src/utils/notify";
+import { useScriptStore } from "../api";
+import { useDashboardStore } from "src/stores/dashboard";
+import { shellOptions } from "../composables";
+import { envVarsLabel } from "src/constants/constants";
+import { until } from "@vueuse/core";
 // ui imports
-import TestScriptModal from "src/components/scripts/TestScriptModal.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import TestScriptModal from "./TestScriptModal.vue";
 import * as monaco from "monaco-editor";
-
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import jsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 
+// type imports
+import type { Script } from "../types";
+
 // https://github.com/microsoft/monaco-editor/issues/4045#issuecomment-1723787448
 self.MonacoEnvironment = {
-  getWorker: function (workerId, label) {
+  getWorker: function (_, label) {
     switch (label) {
       case "json":
         return new jsonWorker();
@@ -268,26 +260,13 @@ self.MonacoEnvironment = {
   },
 };
 
-// types
-import type { Script } from "src/types/scripts";
-
-// static data
-import { shellOptions } from "src/composables/scripts";
-import { envVarsLabel } from "src/constants/constants";
-
 // props
-const props = withDefaults(
-  defineProps<{
-    script?: Script;
-    categories?: string[];
-    readonly: boolean;
-    clone?: boolean;
-  }>(),
-  {
-    clone: false,
-    readonly: false,
-  },
-);
+const props = defineProps<{
+  script?: Script;
+  categories?: string[];
+  readonly: boolean;
+  clone?: boolean;
+}>();
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -296,19 +275,20 @@ defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// setup store
-const store = useStore();
-const openAIEnabled = computed(() => store.state.openAIIntegrationEnabled);
+// setup stores
+const dashboardStore = useDashboardStore();
+const scriptStore = useScriptStore();
 
 // setup agent dropdown
-const { agent, agentOptions, getAgentOptions } = useAgentDropdown();
-const hosted = computed(() => store.state.hosted);
-const server_scripts_enabled = computed(() => store.state.server_scripts_enabled);
+const { agentOptions, isLoading: agentLoading } = useAgentDropdown();
+
+const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
+const serverScriptsEnabled = computed(() => dashboardStore.dashboardSettings.serverScriptsEnabled);
 
 // script form logic
-const script: Script = props.script
-  ? reactive(Object.assign({}, { ...props.script, script_body: "" }))
-  : reactive({
+const script = props.script
+  ? reactive<Script>(Object.assign({}, { ...props.script, script_body: "" }))
+  : reactive<Script>({
       name: "",
       shell: "powershell",
       default_timeout: 90,
@@ -316,11 +296,16 @@ const script: Script = props.script
       script_body: "",
       run_as_user: false,
       env_vars: [],
+      description: "",
+      syntax: "",
+      favorite: false,
+      category: "",
+      supported_platforms: [],
     });
 
+const testAgent = ref<string | null>(null);
+
 if (props.clone) script.name = `(Copy) ${script.name}`;
-const loading = ref(false);
-const agentLoading = ref(false);
 
 const missingShebang = computed(() => {
   if (script.shell === "shell" || script.shell === "python") {
@@ -362,25 +347,18 @@ const lang = computed(() => {
 });
 
 async function submit() {
-  loading.value = true;
-  let result = "";
-  try {
-    // edit existing script
-    if (props.script && !props.clone) {
-      result = await editScript(script);
-
-      // add or save cloned script
-    } else {
-      result = await saveScript(script);
-    }
-
-    onDialogOK();
-    notifySuccess(result);
-  } catch (e) {
-    console.error(e);
+  // edit existing script
+  if (props.script && !props.clone && props.script.id) {
+    scriptStore.updateScript(props.script.id, script);
+  } else {
+    scriptStore.addScript(script);
   }
 
-  loading.value = false;
+  await until(() => scriptStore.isLoading).toBe(false);
+
+  if (scriptStore.isError) return;
+
+  onDialogOK();
 }
 
 function openTestScriptModal(ctx: string) {
@@ -395,7 +373,7 @@ function openTestScriptModal(ctx: string) {
     component: TestScriptModal,
     componentProps: {
       script: { ...script },
-      agent: agent.value,
+      agent: testAgent.value,
       ctx: ctx,
     },
   });
@@ -421,10 +399,10 @@ function loadEditor() {
   });
 
   // get code if editing or cloning script
-  if (props.script)
-    downloadScript(script.id, { with_snippets: props.readonly }).then((r) => {
-      script.script_body = r.code;
-      editor.setValue(r.code);
+  if (props.script && script.id) {
+    void scriptStore.getScriptContents(script.id, props.readonly).then((r: string) => {
+      script.script_body = r;
+      editor.setValue(r);
 
       // need to add this in the download function otherwise the above will trigger an edit
       watch(
@@ -434,7 +412,7 @@ function loadEditor() {
         },
       );
     });
-  else {
+  } else {
     watch(
       () => script.script_body,
       () => {
@@ -455,23 +433,6 @@ function unloadEditor() {
   onDialogHide();
 }
 
-function generateScriptOpenAI() {
-  $q.dialog({
-    title: "Ask ChatGPT what you need!",
-    prompt: {
-      model: `${lang.value} code that `,
-      type: "text",
-    },
-    cancel: true,
-    persistent: true,
-  }).onOk(async (data) => {
-    const completion = await generateScript({
-      prompt: data,
-    });
-    script.script_body = completion;
-  });
-}
-
 // add are you sure prompt to unsaved script
 const edited = ref(false);
 
@@ -481,16 +442,9 @@ function closeEditor() {
       title: "You have unsaved changes. Are you sure you want to close?",
       cancel: true,
       ok: true,
-    }).onOk(async () => {
+    }).onOk(() => {
       unloadEditor();
     });
   else unloadEditor();
 }
-
-// component life cycle hooks
-onMounted(async () => {
-  agentLoading.value = true;
-  await getAgentOptions();
-  agentLoading.value = false;
-});
 </script>

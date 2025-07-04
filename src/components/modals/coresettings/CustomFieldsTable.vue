@@ -80,11 +80,9 @@
 
 <script>
 import CustomFieldsForm from "src/components/modals/coresettings/CustomFieldsForm.vue";
-import mixins from "src/mixins/mixins";
 
 export default {
   name: "CustomFieldsTable",
-  mixins: [mixins],
   props: {
     data: !Array,
   },

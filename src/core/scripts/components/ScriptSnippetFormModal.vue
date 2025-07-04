@@ -9,16 +9,6 @@
     <q-card class="q-dialog-plugin">
       <q-bar>
         <span class="q-pr-sm">{{ title }}</span>
-        <q-btn
-          v-if="!snippet && openAIEnabled"
-          :disable="loading"
-          dense
-          size="xs"
-          label="Generate Script"
-          color="primary"
-          no-caps
-          @click="generateScriptOpenAI"
-        />
         <q-space />
         <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -26,7 +16,7 @@
       </q-bar>
       <div class="row">
         <q-input
-          v-model="snippet.name"
+          v-model="localSnippet.name"
           :rules="[(val: string) => !!val || '*Required']"
           class="q-pa-sm col-4"
           label="Name"
@@ -34,7 +24,7 @@
           dense
         />
         <q-select
-          v-model="snippet.shell"
+          v-model="localSnippet.shell"
           :options="shellOptions"
           class="q-pa-sm col-2"
           label="Shell Type"
@@ -44,14 +34,27 @@
           emit-value
           map-options
         />
-        <q-input v-model="snippet.desc" class="q-pa-sm col-6" filled dense label="Description" />
+        <q-input
+          v-model="localSnippet.desc"
+          class="q-pa-sm col-6"
+          filled
+          dense
+          label="Description"
+        />
       </div>
 
       <div ref="snippetEditor" :style="{ height: `${$q.screen.height - 132}px` }"></div>
 
       <q-card-actions align="right">
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn :loading="loading" dense flat label="Save" color="primary" @click="submit" />
+        <q-btn
+          :loading="snippetStore.isLoading"
+          dense
+          flat
+          label="Save"
+          color="primary"
+          @click="submit"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -60,25 +63,27 @@
 <script setup lang="ts">
 // composable imports
 import { ref, watch, reactive, computed } from "vue";
-import { useStore } from "vuex";
 import { useQuasar } from "quasar";
-import { generateScript } from "src/api/core";
+import { useScriptSnippetStore } from "../api";
 import { useDialogPluginComponent } from "quasar";
-import { saveScriptSnippet, editScriptSnippet } from "src/api/scripts";
-import { notifySuccess } from "src/utils/notify";
+import { shellOptions } from "../composables";
 
 // ui imports
 import * as monaco from "monaco-editor";
+
+// type imports
+import type { ScriptSnippet } from "../types";
 
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import jsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import { until } from "@vueuse/shared";
 
 // https://github.com/microsoft/monaco-editor/issues/4045#issuecomment-1723787448
 self.MonacoEnvironment = {
-  getWorker: function (workerId, label) {
+  getWorker: function (_, label) {
     switch (label) {
       case "json":
         return new jsonWorker();
@@ -99,12 +104,6 @@ self.MonacoEnvironment = {
   },
 };
 
-// types
-import type { ScriptSnippet } from "src/types/scripts";
-
-// static data
-import { shellOptions } from "src/composables/scripts";
-
 // props
 const props = defineProps<{ snippet?: ScriptSnippet }>();
 
@@ -117,27 +116,25 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 // setup quasar
 const $q = useQuasar();
 
-// setup store
-const store = useStore();
-const openAIEnabled = computed(() => store.state.openAIIntegrationEnabled);
+// setup stores
+const snippetStore = useScriptSnippetStore();
 
 // snippet form logic
-const snippet: ScriptSnippet = props.snippet
-  ? reactive(Object.assign({}, props.snippet))
-  : reactive({ name: "", code: "", shell: "powershell" });
-const loading = ref(false);
+const localSnippet = props.snippet
+  ? reactive<ScriptSnippet>(Object.assign({}, props.snippet))
+  : reactive<ScriptSnippet>({ name: "", code: "", desc: "", shell: "powershell" });
 
 const title = computed(() => {
   if (props.snippet) {
-    return `Editing ${snippet.name}`;
+    return `Editing ${localSnippet.name}`;
   } else {
-    return "Adding New Script Snippet";
+    return "Adding New Script snippet";
   }
 });
 
-// convert highlighter language to match what ace expects
+// convert highlighter language to match what monaco expects
 const lang = computed(() => {
-  switch (snippet.shell) {
+  switch (localSnippet.shell) {
     case "cmd":
       return "bat";
     case "powershell":
@@ -155,29 +152,23 @@ const lang = computed(() => {
 });
 
 async function submit() {
-  loading.value = true;
-  try {
-    const result = props.snippet
-      ? await editScriptSnippet(snippet)
-      : await saveScriptSnippet(snippet);
-    onDialogOK();
-    notifySuccess(result);
-  } catch (e) {
-    console.error(e);
-  }
+  if (props.snippet) snippetStore.updateScriptSnippet(localSnippet);
+  else snippetStore.addScriptSnippet(localSnippet);
 
-  loading.value = false;
+  await until(() => snippetStore.isLoading).toBe(false);
+
+  if (snippetStore.isError) return;
+  onDialogOK();
 }
 
 const snippetEditor = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor;
 
 function loadEditor() {
-  const model = monaco.editor.createModel(snippet.code, lang.value);
+  const model = monaco.editor.createModel(localSnippet.code, lang.value);
 
   const theme = $q.dark.isActive ? "vs-dark" : "vs-light";
 
-   
   editor = monaco.editor.create(snippetEditor.value!, {
     automaticLayout: true,
     model: model,
@@ -185,7 +176,7 @@ function loadEditor() {
   });
 
   editor.onDidChangeModelContent(() => {
-    snippet.code = editor.getValue();
+    localSnippet.code = editor.getValue();
   });
 
   // watch for changes in language
@@ -198,22 +189,5 @@ function unloadEditor() {
   editor.getModel()?.dispose();
   editor.dispose();
   onDialogHide();
-}
-
-function generateScriptOpenAI() {
-  $q.dialog({
-    title: "Ask ChatGPT what you need!",
-    prompt: {
-      model: `${lang.value} code that `,
-      type: "text",
-    },
-    cancel: true,
-    persistent: true,
-  }).onOk(async (data) => {
-    const completion = await generateScript({
-      prompt: data,
-    });
-    snippet.code = completion;
-  });
 }
 </script>

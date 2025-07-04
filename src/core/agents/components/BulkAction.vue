@@ -25,7 +25,7 @@
           <tactical-dropdown
             v-if="state.target === 'client'"
             v-model="state.client"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: number) => !!val || '*Required']"
             :options="clientOptions"
             label="Select Client"
             filled
@@ -35,7 +35,7 @@
           <tactical-dropdown
             v-else-if="state.target === 'site'"
             v-model="state.site"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: number) => !!val || '*Required']"
             :options="siteOptions"
             label="Select Site"
             filled
@@ -45,7 +45,7 @@
           <tactical-dropdown
             v-else-if="state.target === 'agents'"
             v-model="state.agents"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: string[]) => !!val || '*Required']"
             :options="agentOptions"
             label="Select Agents"
             filled
@@ -82,18 +82,27 @@
         <q-card-section v-if="mode === 'script'" class="q-pt-none">
           <tactical-dropdown
             v-model="state.script"
-            :rules="[(val) => !!val || '*Required']"
-            :options="filterByPlatformOptions"
+            :rules="[(val: string) => !!val || '*Required']"
+            :options="scriptOptions"
             label="Select Script"
             filled
             map-options
             filterable
           >
             <template #after>
-              <q-btn size="sm" round dense flat icon="info" @click="openScriptURL">
-                <q-tooltip v-if="syntax" class="bg-white text-primary text-body1">{{
-                  syntax
-                }}</q-tooltip>
+              <q-btn
+                size="sm"
+                round
+                dense
+                flat
+                icon="info"
+                @click="openScriptURL(selectedScript?.link)"
+              >
+                <q-tooltip
+                  v-if="selectedScript && selectedScript.syntax"
+                  class="bg-white text-primary text-body1"
+                  >{{ selectedScript.syntax }}</q-tooltip
+                >
               </q-btn>
             </template>
           </tactical-dropdown>
@@ -178,7 +187,7 @@
         <q-card-section v-if="mode === 'script' && collector">
           <tactical-dropdown
             v-model="state.custom_field"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: number) => !!val || '*Required']"
             filled
             :options="customFieldOptions"
             label="Select custom field"
@@ -224,28 +233,28 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup label="Cancel" />
-          <q-btn label="Run" color="primary" type="submit" :disable="loading" :loading="loading" />
+          <q-btn label="Run" color="primary" type="submit" :loading="agentStore.isLoading" />
         </q-card-actions>
       </q-form>
     </q-card>
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref, reactive, computed, watch, onMounted, defineComponent } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useDialogPluginComponent, openURL } from "quasar";
-import { useScriptDropdown } from "src/composables/scripts";
-import { useAgentDropdown } from "src/composables/agents";
-import { useClientDropdown, useSiteDropdown } from "src/composables/clients";
-import { useCustomFieldDropdown } from "src/composables/core";
-import { runBulkAction } from "src/api/agents";
-import { notifySuccess } from "src/utils/notify";
-import { cmdPlaceholder } from "src/composables/agents";
+import { useScriptDropdown } from "src/core/scripts/composables";
+import { useAgentDropdown } from "src/core/agents/composables";
+import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
+import { useCustomFieldDropdown } from "src/core/settings/composables";
+import { useAgentStore } from "../api";
+import { cmdPlaceholder } from "src/core/agents/composables";
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
+import { until } from "@vueuse/shared";
 
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+// type imports
+import type { BulkActionMode, RunBulkActionRequest } from "../types";
 
 // static data
 const monTypeOptions = [
@@ -273,184 +282,140 @@ const patchModeOptions = [
   { label: "Install", value: "install" },
 ];
 
-export default defineComponent({
-  name: "BulkAction",
-  components: { TacticalDropdown },
-  props: {
-    mode: !String,
+const props = defineProps<{
+  mode: BulkActionMode;
+}>();
+
+defineEmits(useDialogPluginComponent.emits);
+
+const shellOptions = computed(() => {
+  if (state.osType === "windows") {
+    return [
+      { label: "CMD", value: "cmd" },
+      { label: "Powershell", value: "powershell" },
+    ];
+  } else {
+    return [
+      { label: "Bash", value: "/bin/bash" },
+      { label: "Custom", value: "custom" },
+    ];
+  }
+});
+
+const filteredOsTypeOptions = computed(() => {
+  if (props.mode === "command") return osTypeOptions.filter((i) => i.value !== "all");
+  else if (props.mode === "patch") return osTypeOptions.filter((i) => i.value === "windows");
+  return osTypeOptions;
+});
+
+// quasar dialog setup
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+
+// setup stores
+const agentStore = useAgentStore();
+
+function openScriptURL(link?: string) {
+  if (link) openURL(link);
+}
+
+// bulk action logic
+const state = reactive<RunBulkActionRequest>({
+  mode: props.mode,
+  target: "client",
+  monType: "all",
+  osType: "windows",
+  cmd: "",
+  shell: "cmd",
+  custom_shell: null,
+  custom_field: null,
+  collector_all_output: false,
+  save_to_agent_note: false,
+  patchMode: "scan",
+  offlineAgents: false,
+  client: null,
+  site: null,
+  agents: [],
+  script: null,
+  timeout: 30,
+  args: [],
+  env_vars: [],
+  run_as_user: false,
+});
+
+// dropdown setup
+const { getScriptById } = useScriptDropdown();
+
+const scriptOptions = computed(() => {
+  const { filterByPlatformOptions } = useScriptDropdown(state.osType);
+  return filterByPlatformOptions.value;
+});
+
+const { agentOptions } = useAgentDropdown();
+const { siteOptions } = useSiteDropdown();
+const { clientOptions } = useClientDropdown();
+const { customFieldOptions } = useCustomFieldDropdown();
+
+const selectedScript = computed(() => {
+  if (state.script) return getScriptById(state.script);
+  else return undefined;
+});
+
+watch(selectedScript, (newValue) => {
+  if (newValue) {
+    state.timeout = newValue?.default_timeout;
+    state.args = newValue.args;
+    state.env_vars = newValue.env_vars;
+  }
+});
+
+const collector = ref(false);
+
+watch(
+  () => state.target,
+  () => {
+    state.client = null;
+    state.site = null;
+    state.agents = [];
   },
-  emits: [...useDialogPluginComponent.emits],
-  setup(props) {
-    const shellOptions = computed(() => {
-      if (state.osType === "windows") {
-        return [
-          { label: "CMD", value: "cmd" },
-          { label: "Powershell", value: "powershell" },
-        ];
-      } else {
-        return [
-          { label: "Bash", value: "/bin/bash" },
-          { label: "Custom", value: "custom" },
-        ];
-      }
-    });
+);
 
-    const filteredOsTypeOptions = computed(() => {
-      if (props.mode === "command") return osTypeOptions.filter((i) => i.value !== "all");
-      else if (props.mode === "patch") return osTypeOptions.filter((i) => i.value === "windows");
-      return osTypeOptions;
-    });
+watch(
+  () => state.osType,
+  (newValue) => {
+    state.custom_shell = null;
+    state.run_as_user = false;
 
-    // quasar dialog setup
-    const { dialogRef, onDialogHide } = useDialogPluginComponent();
-
-    // dropdown setup
-    const {
-      script,
-      plat,
-      filterByPlatformOptions,
-      defaultTimeout,
-      defaultArgs,
-      defaultEnvVars,
-      syntax,
-      link,
-      getScriptOptions,
-    } = useScriptDropdown();
-    const { agents, agentOptions, getAgentOptions } = useAgentDropdown();
-    const { site, siteOptions, getSiteOptions } = useSiteDropdown();
-    const { client, clientOptions, getClientOptions } = useClientDropdown();
-    const { customFieldOptions } = useCustomFieldDropdown({ onMount: true });
-
-    function openScriptURL() {
-      link.value ? openURL(link.value) : null;
+    if (newValue === "windows") {
+      state.shell = "cmd";
+    } else {
+      state.shell = "/bin/bash";
     }
-
-    // bulk action logic
-    const state = reactive({
-      mode: props.mode,
-      target: "client",
-      monType: "all",
-      osType: "windows",
-      cmd: "",
-      shell: "cmd",
-      custom_shell: null,
-      custom_field: null,
-      collector_all_output: false,
-      save_to_agent_note: false,
-      patchMode: "scan",
-      offlineAgents: false,
-      client,
-      site,
-      agents,
-      script,
-      timeout: defaultTimeout,
-      args: defaultArgs,
-      env_vars: defaultEnvVars,
-      run_as_user: false,
-    });
-    const loading = ref(false);
-    const collector = ref(false);
-
-    watch(
-      () => state.target,
-      () => {
-        client.value = null;
-        site.value = null;
-        agents.value = [];
-      },
-    );
-
-    plat.value = state.osType;
-
-    watch(
-      () => state.osType,
-      (newValue) => {
-        state.custom_shell = null;
-        state.run_as_user = false;
-
-        if (newValue === "windows") {
-          state.shell = "cmd";
-        } else {
-          state.shell = "/bin/bash";
-        }
-
-        // set plat to filter script options
-        if (newValue === "all") plat.value = undefined;
-        else plat.value = newValue;
-      },
-    );
-
-    async function submit() {
-      loading.value = true;
-
-      try {
-        const data = await runBulkAction(state);
-        notifySuccess(data);
-        onDialogHide();
-      } catch (e) {}
-
-      loading.value = false;
-    }
-
-    const supportsRunAsUser = () => {
-      const modes = ["script", "command"];
-      return state.osType === "windows" && modes.includes(state.mode);
-    };
-
-    // set modal title and caption
-    const modalTitle = computed(() => {
-      return props.mode === "command"
-        ? "Run Bulk Command"
-        : props.mode === "script"
-          ? "Run Bulk Script"
-          : props.mode === "patch"
-            ? "Bulk Patch Management"
-            : "";
-    });
-
-    // component lifecycle hooks
-    onMounted(() => {
-      getAgentOptions();
-      getSiteOptions();
-      getClientOptions();
-      if (props.mode === "script") getScriptOptions();
-    });
-
-    return {
-      // reactive data
-      state,
-      agentOptions,
-      clientOptions,
-      collector,
-      customFieldOptions,
-      siteOptions,
-      filterByPlatformOptions,
-      loading,
-      shellOptions,
-      filteredOsTypeOptions,
-
-      // non-reactive data
-      monTypeOptions,
-      osTypeOptions,
-      targetOptions,
-      patchModeOptions,
-      runAsUserToolTip,
-      envVarsLabel,
-      syntax,
-
-      //computed
-      modalTitle,
-
-      //methods
-      submit,
-      cmdPlaceholder,
-      supportsRunAsUser,
-      openScriptURL,
-
-      // quasar dialog plugin
-      dialogRef,
-      onDialogHide,
-    };
   },
+);
+
+async function submit() {
+  agentStore.runBulkAction(state);
+
+  await until(() => agentStore.isLoading).toBe(false);
+
+  if (agentStore.isError) return;
+
+  onDialogOK();
+}
+
+const supportsRunAsUser = () => {
+  const modes = ["script", "command"];
+  return state.osType === "windows" && modes.includes(state.mode);
+};
+
+// set modal title and caption
+const modalTitle = computed(() => {
+  return props.mode === "command"
+    ? "Run Bulk Command"
+    : props.mode === "script"
+      ? "Run Bulk Script"
+      : props.mode === "patch"
+        ? "Bulk Patch Management"
+        : "";
 });
 </script>

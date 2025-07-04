@@ -64,15 +64,12 @@ For details, see: https://license.tacticalrmm.com/ee
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeMount } from "vue";
+import { ref, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { notifyError } from "src/utils/notify";
 import { capitalize } from "src/utils/format";
-import { useAgentDropdown } from "src/composables/agents";
-import { useClientDropdown, useSiteDropdown } from "src/composables/clients";
-
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import { useAgentDropdown } from "src/core/agents/composables";
+import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -86,9 +83,9 @@ const props = defineProps<{
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup dropdown options
-const { agentOptions, getAgentOptions } = useAgentDropdown();
-const { clientOptions, getClientOptions } = useClientDropdown();
-const { siteOptions, getSiteOptions } = useSiteDropdown();
+const { agentOptions } = useAgentDropdown();
+const { clientOptions } = useClientDropdown();
+const { siteOptions } = useSiteDropdown();
 
 // logic
 const dependencies = reactive<{ [x: string]: string | number | null }>({});
@@ -109,18 +106,4 @@ function submit() {
   if (validate()) onDialogOK(dependencies);
   else notifyError("All fields must have a value");
 }
-
-onBeforeMount(() => {
-  if (props.dependsOn.includes("client")) {
-    void getClientOptions();
-  }
-
-  if (props.dependsOn.includes("site")) {
-    void getSiteOptions();
-  }
-
-  if (props.dependsOn.includes("agent")) {
-    void getAgentOptions();
-  }
-});
 </script>

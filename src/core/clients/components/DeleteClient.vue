@@ -49,12 +49,12 @@
 import { computed, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useClientStore, useSiteStore } from "../api";
-import { isSiteOption, useSiteDropdown } from "../composables";
-
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-import type { Client, Site } from "../types";
+import { useSiteDropdown } from "../composables";
+import { isHeaderOption } from "src/core/dashboard/types";
 import { until } from "@vueuse/shared";
+
+// type imports
+import type { Client, Site } from "../types";
 
 const props = defineProps<{
   type: "client" | "site";
@@ -78,11 +78,13 @@ const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 const filteredSiteOptions = computed(() => {
   if (props.type === "client") {
     return siteOptions.value.filter((site) =>
-      isSiteOption(site) ? site.clientId !== props.object.id : site.category !== props.object.name,
+      !isHeaderOption(site)
+        ? site.clientId !== props.object.id
+        : site.category !== props.object.name,
     );
   } else {
     return siteOptions.value.filter((site) =>
-      isSiteOption(site) ? site.value !== props.object.id : true,
+      !isHeaderOption(site) ? site.value !== props.object.id : true,
     );
   }
 });

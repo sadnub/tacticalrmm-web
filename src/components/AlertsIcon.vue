@@ -57,13 +57,11 @@
 
 <script>
 import { mapState } from "vuex";
-import mixins from "src/mixins/mixins";
 import AlertsOverview from "src/components/modals/alerts/AlertsOverview.vue";
 import { getTimeLapse } from "src/utils/format";
 
 export default {
   name: "AlertsIcon",
-  mixins: [mixins],
   setup() {
     return {
       getTimeLapse,

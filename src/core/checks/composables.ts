@@ -1,8 +1,51 @@
 import { computed, onMounted } from "vue";
 
 import { useAgentStore } from "../agents/api";
+import { usePolicyStore } from "../automation/api";
+import type { Option } from "../dashboard/types";
 
 // dropdown options
+export function useAgentCheckDropdown(agent_id: string) {
+  const agentStore = useAgentStore();
+
+  const agentCheckOptions = computed(() => {
+    return agentStore.agentChecks.map(
+      (check) =>
+        ({
+          label: check.readable_desc,
+          value: check.id,
+        }) as Option,
+    );
+  });
+
+  onMounted(agentStore.getAgentChecks(agent_id));
+
+  return {
+    agentCheckOptions,
+  };
+}
+
+export function usePolicyCheckDropdown(policyId: number) {
+  const policyStore = usePolicyStore();
+
+  const policyCheckOptions = computed(() => {
+    return policyStore.policyChecks.map(
+      (check) =>
+        ({
+          label: check.readable_desc,
+          value: check.id,
+        }) as Option,
+    );
+  });
+
+  onMounted(policyStore.getPolicyChecks(policyId));
+
+  return {
+    policyCheckOptions,
+    isLoading: computed(() => policyStore.isLoading),
+  };
+}
+
 export const failOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export const severityOptions = [
@@ -39,23 +82,6 @@ export const defaultDiskOptions = [
   "Y:",
   "Z:",
 ];
-
-export function useAgentCheckDropdown(agent_id: string) {
-  const agentStore = useAgentStore();
-
-  const agentCheckOptions = computed(() => {
-    return agentStore.agentChecks.map((check) => ({
-      label: check.readable_desc,
-      value: check.id,
-    }));
-  });
-
-  onMounted(agentStore.getAgent(agent_id));
-
-  return {
-    agentCheckOptions,
-  };
-}
 
 export const defaultServiceOptions = [
   {

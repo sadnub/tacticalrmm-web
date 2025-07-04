@@ -37,7 +37,7 @@
           dense
           flat
           icon="refresh"
-          @click="dashboardStore.refreshDashboard({ force: true })"
+          @click="dashboardStore.refreshDashboard()"
         />
         <q-btn v-else dense flat icon="dashboard" @click="$router.push({ name: 'Dashboard' })">
           <q-tooltip>Back to Dashboard</q-tooltip>

@@ -7,9 +7,7 @@ function formatCsvCell(value: any): string {
   }
   let stringValue = String(value);
 
-  // If the value contains a comma, a double quote, or a newline, wrap it in double quotes.
   if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
-    // Escape any existing double quotes by doubling them up.
     stringValue = stringValue.replace(/"/g, '""');
     stringValue = `"${stringValue}"`;
   }
@@ -17,7 +15,6 @@ function formatCsvCell(value: any): string {
 }
 
 export function exportToCsv(columns: QTableColumn[], rows: readonly any[], exportFileName: string) {
-  // Create CSV content
   const header = columns.map((col) => formatCsvCell(col.label)).join(",");
   const body = rows
     .map((row) =>

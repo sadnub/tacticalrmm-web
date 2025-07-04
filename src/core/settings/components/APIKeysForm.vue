@@ -68,11 +68,10 @@ import { useDialogPluginComponent } from "quasar";
 import { useAPIKeyStore } from "../api";
 import { useUserDropdown } from "src/core/accounts/composables";
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
+import { until } from "@vueuse/shared";
 
 // ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 import type { APIKey } from "../types";
-import { until } from "@vueuse/shared";
 
 const props = defineProps<{
   apiKey: APIKey;

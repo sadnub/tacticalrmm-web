@@ -1,35 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { InjectionKey } from "vue";
 import type { QTableColumn } from "quasar";
 import type { Client, Site } from "src/core/clients/types";
 
-export type Option =
-  | { label: string; value: number | string; cat: string; img_right?: string }
-  | { category: string };
-
-export function isLabeledOption(option: Option): option is {
+interface BaseOption {
+  category: string;
+}
+export interface SelectableOption extends BaseOption {
+  type: "option";
   label: string;
   value: number | string;
-  cat: string;
   img_right?: string;
-} {
-  return (
-    typeof option === "object" &&
-    option !== null &&
-    "label" in option &&
-    typeof (option as any).label === "string" &&
-    "value" in option &&
-    (typeof (option as any).value === "number" || typeof (option as any).value === "string")
-  );
 }
 
-export function isCategoryOption(option: Option): option is { category: string } {
-  return (
-    typeof option === "object" &&
-    option !== null &&
-    "category" in option &&
-    typeof (option as any).category === "string"
-  );
+export interface HeaderOption extends BaseOption {
+  type: "header";
+}
+
+export type Option = SelectableOption | HeaderOption;
+
+export function isSelectableOption(option: Option): option is SelectableOption {
+  return option.type === "option";
+}
+
+export function isHeaderOption(option: Option): option is HeaderOption {
+  return option.type === "header";
 }
 
 export interface ClientTreeNode {
@@ -52,3 +46,30 @@ export interface TacticalColumn extends QTableColumn {
 // for tactical table export csv injected method
 export type TableExportFunction = () => void;
 export const tableExportKey: InjectionKey<TableExportFunction> = Symbol("tableExport");
+
+// file browser types
+import { type QTreeNode } from "quasar";
+
+export interface LazyLoadCallbackParams {
+  path: string;
+  isDone(nodes: QTreeFileNode[]): void;
+  isFail(): void;
+}
+
+export interface FileSystemNodeTable {
+  id: string;
+  name: string;
+  path: string;
+  type: "folder" | "file";
+  asset_id?: string;
+  size?: string | undefined;
+}
+
+export interface QTreeFileNode extends QTreeNode<unknown> {
+  id: string;
+  path: string;
+  type: "folder" | "file";
+  size?: string;
+  asset_id?: string | undefined;
+  children?: QTreeFileNode[];
+}

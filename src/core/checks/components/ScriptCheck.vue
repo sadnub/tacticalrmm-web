@@ -141,7 +141,9 @@ import { reactive, watch, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useCheckStore } from "../api";
 import { failOptions } from "../composables";
-import { useScriptDropdown, isScriptOption } from "src/core/scripts/composables";
+import type { ScriptSelectableOption } from "src/core/scripts/composables";
+import { useScriptDropdown } from "src/core/scripts/composables";
+import { isHeaderOption } from "src/core/dashboard/types";
 import { validateRetcode } from "src/utils/validation";
 import { envVarsLabel } from "src/constants/constants";
 import { until } from "@vueuse/core";
@@ -150,9 +152,6 @@ import { until } from "@vueuse/core";
 import type { Check } from "../types";
 import type { Policy } from "src/core/automation/types";
 import type { Agent, AgentPlat } from "src/core/agents/types";
-
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 const props = defineProps<{
   check: Check;
@@ -191,7 +190,9 @@ const localCheck = props.check
 watch(
   () => localCheck.script,
   (newValue) => {
-    const scriptOptionsOnly = filterByPlatformOptions.value.filter(isScriptOption);
+    const scriptOptionsOnly = filterByPlatformOptions.value.filter(
+      (script) => !isHeaderOption(script),
+    ) as ScriptSelectableOption[];
     const script = scriptOptionsOnly.find((script) => newValue === script.value);
 
     if (script) {
@@ -215,7 +216,9 @@ async function submit() {
 
 onMounted(() => {
   if (props.check) {
-    const scriptOptionsOnly = filterByPlatformOptions.value.filter(isScriptOption);
+    const scriptOptionsOnly = filterByPlatformOptions.value.filter(
+      (script) => !isHeaderOption(script),
+    ) as ScriptSelectableOption[];
     const script = scriptOptionsOnly.find((script) => props.check.script === script.value);
 
     if (script) {

@@ -4,11 +4,9 @@
       <q-bar>
         Add Script
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-form id="scriptUploadForm" @submit="submitForm">
+      <q-form @submit="submit">
         <q-card-section>
           <q-input
             v-model="script.name"
@@ -105,90 +103,84 @@
           />
         </q-card-section>
 
-        <q-card-actions>
-          <q-space />
+        <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn :loading="loading" dense flat label="Add" color="primary" type="submit" />
+          <q-btn
+            :loading="scriptStore.isLoading"
+            dense
+            flat
+            label="Add"
+            color="primary"
+            type="submit"
+          />
         </q-card-actions>
       </q-form>
     </q-card>
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { saveScript } from "src/api/scripts";
-import { agentPlatformOptions } from "src/composables/agents";
-import { notifySuccess } from "src/utils/notify";
+import { useScriptStore } from "../api";
+import { agentPlatformOptions } from "src/core/agents/composables";
+import { shellOptions } from "../composables";
 
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+// import types
+import type { Script } from "../types";
+import { until } from "@vueuse/shared";
 
-// static data
-import { shellOptions } from "src/composables/scripts";
-export default {
-  name: "ScriptModal",
-  components: { TacticalDropdown },
-  props: {
-    categories: !Array,
-  },
-  emits: [...useDialogPluginComponent.emits],
-  setup() {
-    // setup quasar plugins
-    const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+defineEmits(useDialogPluginComponent.emits);
 
-    // script upload logic
-    const script = ref({});
-    const file = ref(null);
-    const loading = ref(false);
+defineProps<{
+  categories: string[];
+}>();
 
-    watch(file, (newValue) => {
-      if (newValue) {
-        // base64 encode the script and delete file
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          script.value.script_body = reader.result;
-        };
+// setup quasar plugins
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-        reader.readAsText(file.value);
-      } else {
-        script.value.script_body = "";
-      }
-    });
+// setup stores
+const scriptStore = useScriptStore();
 
-    async function submitForm() {
-      loading.value = true;
-      let result = "";
-      try {
-        result = await saveScript(script.value);
-        onDialogOK();
-        notifySuccess(result);
-      } catch (e) {
-        console.error(e);
-      }
+// script upload logic
+const script = reactive<Script>({
+  name: "",
+  shell: "powershell",
+  default_timeout: 90,
+  args: [],
+  script_body: "",
+  run_as_user: false,
+  env_vars: [],
+  description: "",
+  syntax: "",
+  favorite: false,
+  category: "",
+  supported_platforms: [],
+});
 
-      loading.value = false;
-    }
+const file = ref<File | null>(null);
 
-    return {
-      // reactive data
-      script,
-      file,
-      loading,
-
-      // non-reactive data
-      shellOptions,
-      agentPlatformOptions,
-
-      // methods
-      submitForm,
-
-      // quasar dialog
-      dialogRef,
-      onDialogHide,
+watch(file, (newValue) => {
+  if (newValue) {
+    // save script contents to local script body
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      script.script_body = reader.result as string;
     };
-  },
-};
+
+    if (file.value) reader.readAsText(file.value);
+  } else {
+    script.script_body = "";
+  }
+});
+
+async function submit() {
+  scriptStore.addScript(script);
+
+  await until(() => scriptStore.isLoading).toBe(false);
+
+  if (scriptStore.isError) return;
+  onDialogOK();
+}
 </script>

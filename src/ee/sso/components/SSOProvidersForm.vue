@@ -104,10 +104,7 @@ import { ref, reactive } from "vue";
 import { useDialogPluginComponent, extend } from "quasar";
 import { editSSOProvider, addSSOProvider } from "src/ee/sso/api/sso";
 import { notifySuccess } from "src/utils/notify";
-import { useRoleDropdown } from "src/composables/accounts";
-
-// components
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import { useRoleDropdown } from "src/core/accounts/composables";
 
 // types
 import type { SSOProvider } from "src/ee/sso/types/sso";
@@ -122,12 +119,12 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 const loading = ref(false);
 
-const { roleOptions } = useRoleDropdown({ onMount: true });
+const { roleOptions } = useRoleDropdown();
 
 const hideSecret = ref(true);
-const localProvider: SSOProvider = props.provider
-  ? reactive(extend({}, props.provider))
-  : reactive({
+const localProvider = props.provider
+  ? reactive<SSOProvider>(extend({}, props.provider))
+  : reactive<SSOProvider>({
       id: 0,
       name: "",
       client_id: "",

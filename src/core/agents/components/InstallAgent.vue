@@ -120,13 +120,16 @@
 import { computed, reactive, watch } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import axios from "axios";
-import { isSiteOption, useSiteDropdown } from "src/core/clients/composables";
+import { useSiteDropdown } from "src/core/clients/composables";
 import { getBaseUrl } from "src/boot/axios";
 import { GOARCH_AMD64, GOARCH_i386, GOARCH_ARM64, GOARCH_ARM32 } from "src/constants/constants";
 
 // ui import
 import AgentDownload from "./AgentDownload.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+import { isHeaderOption } from "src/core/dashboard/types";
+
+// type imports
+import type { SiteSelectableOption } from "src/core/clients/composables";
 
 const agentOSOptions = [
   { label: "Windows", value: "windows" },
@@ -200,19 +203,19 @@ watch(
 
 const client = computed(() => {
   if (siteOptions.value && agentInstallRequest.site) {
-    const foundSite = siteOptions.value
-      .filter(isSiteOption)
-      .find((s) => s.value === agentInstallRequest.site);
-    if (foundSite) return { id: foundSite.clientId, name: foundSite.cat };
+    const foundSite = siteOptions.value.find(
+      (s) => !isHeaderOption(s) && s.value === agentInstallRequest.site,
+    ) as SiteSelectableOption;
+    if (foundSite) return { id: foundSite.clientId, name: foundSite.category };
   }
   return null;
 });
 
 const selectedSite = computed(() => {
   if (siteOptions.value && agentInstallRequest.site) {
-    const foundSite = siteOptions.value
-      .filter(isSiteOption)
-      .find((s) => s.value === agentInstallRequest.site);
+    const foundSite = siteOptions.value.find(
+      (s) => !isHeaderOption(s) && s.value === agentInstallRequest.site,
+    ) as SiteSelectableOption;
     if (foundSite) return { id: foundSite.value, name: foundSite.label };
   }
   return null;

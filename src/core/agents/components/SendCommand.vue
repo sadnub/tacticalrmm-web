@@ -88,7 +88,7 @@
           <q-btn v-close-popup flat dense push label="Cancel" />
           <q-btn :loading="loading" flat dense push label="Send" color="primary" type="submit" />
         </q-card-actions>
-        <q-card-section v-if="ret !== null"
+        <q-card-section v-if="ret"
           ><script-output-copy-clip label="Output" :data="ret" /> <q-separator
         /></q-card-section>
         <q-card-section
@@ -103,69 +103,49 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { sendAgentCommand } from "src/api/agents";
-import { cmdPlaceholder } from "src/composables/agents";
+import { useAgentStore } from "../api";
+import { cmdPlaceholder } from "src/core/agents/composables";
 import { runAsUserToolTip } from "src/constants/constants";
 
-import ScriptOutputCopyClip from "src/components/scripts/ScriptOutputCopyClip.vue";
+import ScriptOutputCopyClip from "src/core/scripts/components/ScriptOutputCopyClip.vue";
 
-export default {
-  name: "SendCommand",
-  components: {
-    ScriptOutputCopyClip,
-  },
-  props: {
-    agent: !Object,
-  },
-  emits: [...useDialogPluginComponent.emits],
-  setup(props) {
-    // setup quasar dialog plugin
-    const { dialogRef, onDialogHide } = useDialogPluginComponent();
+// import typese
+import type { Agent, AgentCommandRequest } from "../types";
 
-    // run command logic
-    const state = ref({
-      shell: props.agent.plat === "windows" ? "cmd" : "/bin/bash",
-      cmd: null,
-      timeout: 30,
-      custom_shell: null,
-      run_as_user: false,
-    });
+const props = defineProps<{
+  agent: Agent;
+}>();
 
-    const loading = ref(false);
-    const ret = ref(null);
+defineEmits(useDialogPluginComponent.emits);
 
-    async function submit() {
-      loading.value = true;
-      ret.value = null;
-      try {
-        ret.value = await sendAgentCommand(props.agent.agent_id, state.value);
-      } catch (e) {
-        console.error(e);
-      }
-      loading.value = false;
-    }
+// setup quasar dialog plugin
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
-    return {
-      // reactive data
-      state,
-      loading,
-      ret,
+// setup stores
+const agentStore = useAgentStore();
 
-      // non reactivete data
-      runAsUserToolTip,
+// run command logic
+const state = ref<AgentCommandRequest>({
+  shell: props.agent.plat === "windows" ? "cmd" : "/bin/bash",
+  cmd: "",
+  timeout: 30,
+  custom_shell: null,
+  run_as_user: false,
+});
 
-      // methods
-      submit,
-      cmdPlaceholder,
+const loading = ref(false);
+const ret = ref<string | undefined>(undefined);
 
-      // quasar dialog
-      dialogRef,
-      onDialogHide,
-    };
-  },
-};
+async function submit() {
+  ret.value = undefined;
+  try {
+    ret.value = await agentStore.sendAgentCommand(props.agent.agent_id, state.value);
+  } catch {
+    //
+  }
+}
 </script>

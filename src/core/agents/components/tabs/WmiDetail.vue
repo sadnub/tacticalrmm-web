@@ -31,7 +31,8 @@ import { notifySuccess } from "src/utils/notify";
 import { useDashboardStore } from "src/stores/dashboard";
 
 defineProps<{
-  info: never[] | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  info: any[] | undefined;
 }>();
 
 // setup stores

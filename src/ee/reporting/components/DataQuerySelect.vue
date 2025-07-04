@@ -38,9 +38,6 @@ import { useDialogPluginComponent } from "quasar";
 import { useSharedReportDataQueries } from "../api/reporting";
 import { notifyError } from "src/utils/notify";
 
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
-
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
 

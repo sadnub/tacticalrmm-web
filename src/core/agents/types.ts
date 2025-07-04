@@ -83,19 +83,33 @@ export interface AgentProcess {
 }
 
 export interface WMIDetail {
-  os: never[];
-  cpu: never[];
-  mem: never[];
-  usb: never[];
-  bios: never[];
-  disk: never[];
-  comp_sys: never[];
-  base_board: never[];
-  comp_sys_prod: never[];
-  network_config: never[];
-  desktop_monitor: never[];
-  graphics: never[];
-  network_adapter: never[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  os: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cpu: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mem: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  usb: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bios: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  disk: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  comp_sys: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  base_board: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  comp_sys_prod: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  network_config: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  desktop_monitor: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  graphics: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  network_adapter: any[];
+  serialnumber?: string | undefined;
 }
 
 export interface MeshUrls {
@@ -201,4 +215,60 @@ export interface AgentSoftware {
   id: number;
   agent: string;
   software: Software[];
+}
+
+export type AgentRecoveryMode = "tacagent" | "mesh";
+
+export type BulkActionMode = "script" | "command" | "patch";
+
+export type CommandShellType = "cmd" | "powershell" | "/bin/bash" | "custom";
+export interface RunBulkActionRequest {
+  mode: BulkActionMode;
+  target: "client" | "site" | "agents" | "all";
+  monType: AgentMonitoringType | "all";
+  osType: AgentPlat;
+  cmd: string;
+  shell: CommandShellType;
+  custom_shell?: string | null;
+  custom_field?: number | null;
+  collector_all_output: boolean;
+  save_to_agent_note: boolean;
+  patchMode: "scan" | "install";
+  offlineAgents: boolean;
+  client?: number | null;
+  site?: number | null;
+  agents: string[];
+  script?: number | null;
+  timeout: number;
+  args: string[];
+  env_vars: string[];
+  run_as_user: boolean;
+}
+
+export interface RunScriptRequest {
+  output: "wait" | "forget" | "email" | "collector" | "note";
+  emails: string[];
+  emailMode: string;
+  custom_field: number | null;
+  save_all_output: boolean;
+  script: number | null;
+  args: string[];
+  env_vars: string[];
+  timeout: number;
+  run_as_user: boolean;
+  run_on_server: boolean;
+}
+
+export interface AgentVersionsResponse {
+  versions: string[];
+  version: string | null;
+  agents: Agent[];
+}
+
+export interface AgentCommandRequest {
+  cmd: string;
+  timeout: number;
+  shell: CommandShellType;
+  custom_shell: string | null;
+  run_as_user: boolean;
 }

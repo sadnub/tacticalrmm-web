@@ -231,7 +231,7 @@ import SitesForm from "src/core/clients/components/SitesForm.vue";
 import DeleteClient from "src/core/clients/components/DeleteClient.vue";
 import InstallAgent from "src/core/agents/components/InstallAgent.vue";
 import AlertTemplateAdd from "src/components/modals/alerts/AlertTemplateAdd.vue";
-import IntegrationsContextMenu from "src/components/ui/IntegrationsContextMenu.vue";
+import IntegrationsContextMenu from "src/core/dashboard/ui/IntegrationsContextMenu.vue";
 
 //types
 import { notifySuccess, notifyWarning } from "src/utils/notify";

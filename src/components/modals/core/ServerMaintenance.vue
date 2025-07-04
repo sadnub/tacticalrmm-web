@@ -46,11 +46,9 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
 
 export default {
   name: "ServerMaintenance",
-  mixins: [mixins],
   data() {
     return {
       action: null,

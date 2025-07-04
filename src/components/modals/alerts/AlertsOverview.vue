@@ -180,14 +180,12 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import { computed } from "vue";
 import { useStore } from "vuex";
 
 export default {
   name: "AlertsOverview",
-  mixins: [mixins],
   emits: ["hide"],
   setup() {
     // setup vuex store

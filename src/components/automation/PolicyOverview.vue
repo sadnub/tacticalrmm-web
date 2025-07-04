@@ -63,7 +63,6 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
 import PolicyChecksTab from "src/components/automation/PolicyChecksTab.vue";
 import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTasksTab.vue";
 
@@ -73,7 +72,6 @@ export default {
     PolicyAutomatedTasksTab,
     PolicyChecksTab,
   },
-  mixins: [mixins],
   emits: ["hide", "ok", "cancel"],
   data() {
     return {

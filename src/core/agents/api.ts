@@ -11,17 +11,21 @@ import type {
   AgentSoftware,
   Software,
   WindowsUpdate,
-  AgentPlat,
-  AgentMonitoringType,
   AgentEventLog,
   AgentProcess,
   AgentService,
   AgentServiceStartType,
   WebVNCUrl,
   MeshUrls,
+  AgentRecoveryMode,
+  RunBulkActionRequest,
+  RunScriptRequest,
+  AgentVersionsResponse,
+  AgentCommandRequest,
 } from "./types";
 import type { Check } from "../checks/types";
 import type { AutomatedTask } from "../tasks/types";
+import type { ScriptResult } from "../scripts/types";
 
 export const useAgentStore = defineStore(
   "agents",
@@ -324,51 +328,35 @@ export const useAgentStore = defineStore(
         });
     }
 
-    interface AgentCommandRequest {
-      cmd: string;
-      timeout: number;
-    }
-
-    function sendAgentCommand(agent_id: string, payload: AgentCommandRequest) {
+    async function sendAgentCommand(agent_id: string, payload: AgentCommandRequest) {
       isLoading.value = true;
       isError.value = false;
-      axios
-        .post(`/agents/${agent_id}/cmd/`, payload)
-        .then(() => notifySuccess("Command sent successfully."))
+
+      try {
+        const { data } = await axios.post<string>(`/agents/${agent_id}/cmd/`, payload);
+        return data;
+      } catch {
+        isError.value = true;
+      } finally {
+        isLoading.value = false;
+      }
+    }
+
+    function runScript(
+      agent_id: string,
+      payload: RunScriptRequest,
+    ): Promise<ScriptResult | string | void> {
+      isLoading.value = true;
+      isError.value = false;
+      return axios
+        .post<ScriptResult | string>(`/agents/${agent_id}/runscript/`, payload)
+        .then(({ data }) => {
+          return data;
+        })
         .catch(() => {
           isError.value = true;
         })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    interface RunScriptRequest {
-      output: "wait" | "forget" | "email" | "collector" | "note";
-      emails: string[];
-      emailMode: string;
-      custom_field: number | null;
-      save_all_output: boolean;
-      script: number;
-      args: string[];
-      env_vars: string[];
-      timeout: number;
-      run_as_user: boolean;
-      run_on_server: boolean;
-    }
-
-    function runScript(agent_id: string, payload: RunScriptRequest) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .post(`/agents/${agent_id}/runscript/`, payload)
-        .then(() => notifySuccess("Script execution started."))
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+        .finally(() => (isLoading.value = false));
     }
 
     function agentRebootNow(agent_id: string) {
@@ -413,13 +401,11 @@ export const useAgentStore = defineStore(
         });
     }
 
-    type AgentRecoveryMode = "tacagent" | "mesh";
-
-    function sendAgentRecovery(agent_id: string, payload: { mode: AgentRecoveryMode }) {
+    function sendAgentRecovery(agent_id: string, mode: AgentRecoveryMode) {
       isLoading.value = true;
       isError.value = false;
       axios
-        .post(`/agents/${agent_id}/recover/`, payload)
+        .post(`/agents/${agent_id}/recover/`, { mode })
         .then(() => notifySuccess("Recovery action sent."))
         .catch(() => {
           isError.value = true;
@@ -510,30 +496,6 @@ export const useAgentStore = defineStore(
         .finally(() => (isLoading.value = false));
     }
 
-    type BulkActionMode = "script" | "command" | "patch";
-
-    interface RunBulkActionRequest {
-      mode: BulkActionMode;
-      target: "client" | "site" | "agent" | "all";
-      monType: AgentMonitoringType | "all";
-      osType: AgentPlat;
-      cmd: string;
-      shell: "cmd" | "powershell" | "/bin/bash" | "custom";
-      custom_shell: string;
-      custom_field: number;
-      collector_all_output: boolean;
-      save_to_agent_note: boolean;
-      patchMode: "scan" | "install";
-      offlineAgents: boolean;
-      client: number;
-      site: number;
-      agents: string[];
-      script: number;
-      timeout: number;
-      args: string[];
-      env_vars: string[];
-      run_as_user: boolean;
-    }
     function runBulkAction(payload: RunBulkActionRequest) {
       isLoading.value = true;
       isError.value = false;
@@ -687,6 +649,9 @@ export const useAgentStore = defineStore(
       svcname: string,
       action: "start" | "stop" | "restart",
     ) {
+      isLoading.value = true;
+      isError.value = false;
+
       axios
         .put(`/services/${agent_id}/${svcname}/`, { sv_action: action })
         .then(() => {
@@ -701,6 +666,8 @@ export const useAgentStore = defineStore(
       svcname: string,
       startType: AgentServiceStartType,
     ) {
+      isLoading.value = true;
+      isError.value = false;
       axios
         .post(`/services/${agent_id}/${svcname}/`, { start_type: startType })
         .then(() => {
@@ -708,6 +675,39 @@ export const useAgentStore = defineStore(
         })
         .catch(() => (isError.value = true))
         .finally(() => (isLoading.value = false));
+    }
+
+    function getAgentVersions() {
+      isLoading.value = true;
+      isError.value = false;
+      return axios
+        .get<AgentVersionsResponse>("/agents/versions/")
+        .then(({ data }) => {
+          return data;
+        })
+        .catch(() => {
+          isError.value = true;
+        })
+        .finally(() => {
+          isLoading.value = false;
+        });
+    }
+
+    function updateAgentVersions(agentIds: string[]) {
+      isLoading.value = true;
+      isError.value = false;
+
+      axios
+        .post("/agents/update/", { agent_ids: agentIds })
+        .then(() => {
+          notifySuccess("Agents will now be updated");
+        })
+        .catch(() => {
+          isError.value = true;
+        })
+        .finally(() => {
+          isLoading.value = false;
+        });
     }
 
     return {
@@ -770,6 +770,8 @@ export const useAgentStore = defineStore(
       getAgentServiceDetails,
       updateAgentService,
       sendAgentServiceAction,
+      getAgentVersions,
+      updateAgentVersions,
     };
   },
   {

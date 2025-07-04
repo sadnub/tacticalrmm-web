@@ -182,8 +182,7 @@ export const useDashboardStore = defineStore(
       location.reload();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function refreshDashboard(_args?: { force: boolean }) {
+    function refreshDashboard() {
       clientStore.getClients({ force: true });
       agentStore.getAgents({ force: true });
     }
@@ -211,6 +210,29 @@ export const useDashboardStore = defineStore(
         .catch(() => {});
     }
 
+    function setShowCommunityScripts(show: boolean) {
+      axios
+        .patch("/accounts/users/ui/", { show_community_scripts: show })
+        .then(() => {
+          dashboardSettings.showCommunityScripts = show;
+        })
+        .catch(() => {});
+    }
+
+    function setClientTreeSplitter(value: number) {
+      axios
+        .patch("/accounts/users/ui/", { client_tree_splitter: value })
+        .then(() => {})
+        .catch(() => {});
+    }
+
+    watch(
+      () => dashboardSettings.clientTreeSplitter,
+      (newValue) => {
+        setClientTreeSplitter(newValue);
+      },
+    );
+
     onMounted(getDashInfo);
 
     return {
@@ -224,6 +246,8 @@ export const useDashboardStore = defineStore(
       reloadNeeded,
       checkRmmVersion,
       refreshDashboard,
+      setShowCommunityScripts,
+      setClientTreeSplitter,
 
       tableHeight,
       tabHeight,

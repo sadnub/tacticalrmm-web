@@ -11,7 +11,14 @@
       }"
     >
       <q-bar>
-        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getScripts" />Script Manager
+        <q-btn
+          class="q-mr-sm"
+          dense
+          flat
+          push
+          icon="refresh"
+          @click="scriptStore.getScripts({ force: true })"
+        />Script Manager
         <q-space />
         <q-btn v-close-popup dense flat icon="close">
           <q-tooltip class="bg-white text-primary">Close</q-tooltip>
@@ -63,7 +70,7 @@
           class="q-ml-sm"
           :label="showCommunityScripts ? 'Hide Community Scripts' : 'Show Community Scripts'"
           :icon="showCommunityScripts ? 'visibility_off' : 'visibility'"
-          @click="setShowCommunityScripts(!showCommunityScripts)"
+          @click="dashboardStore.setShowCommunityScripts(!showCommunityScripts)"
         />
 
         <q-btn
@@ -269,7 +276,7 @@
         :style="{ 'max-height': `${$q.screen.height - 182}px` }"
         :rows="visibleScripts"
         :columns="columns"
-        :loading="loading"
+        :loading="scriptStore.isLoading"
         :pagination="{ rowsPerPage: 0, sortBy: 'favorite', descending: true }"
         :filter="search"
         row-key="id"
@@ -378,109 +385,104 @@
                 </q-item>
               </q-list>
             </q-menu>
-            <!-- favorite -->
-            <q-td key="favorite" :props="props">
-              <q-icon v-if="props.row.favorite" color="yellow-8" name="star" size="sm" />
-            </q-td>
-            <!-- shell icon -->
-            <q-td key="shell" :props="props">
-              <q-icon
-                v-if="props.row.shell === 'powershell'"
-                name="mdi-powershell"
-                color="primary"
-                size="sm"
-              >
-                <q-tooltip> Powershell </q-tooltip>
-              </q-icon>
-              <q-icon
-                v-else-if="props.row.shell === 'python'"
-                name="mdi-language-python"
-                color="primary"
-                size="sm"
-              >
-                <q-tooltip> Python </q-tooltip>
-              </q-icon>
-              <q-icon
-                v-else-if="props.row.shell === 'cmd'"
-                name="mdi-microsoft-windows"
-                color="primary"
-                size="sm"
-              >
-                <q-tooltip> Batch </q-tooltip>
-              </q-icon>
-              <q-icon
-                v-else-if="props.row.shell === 'shell'"
-                size="sm"
-                name="mdi-bash"
-                color="primary"
-              >
-                <q-tooltip> Shell </q-tooltip>
-              </q-icon>
-              <q-icon
-                v-else-if="props.row.shell === 'nushell'"
-                size="sm"
-                name="mdi-code-greater-than"
-                color="primary"
-              >
-                <q-tooltip> Nushell </q-tooltip>
-              </q-icon>
-              <q-icon
-                v-else-if="props.row.shell === 'deno'"
-                size="sm"
-                name="mdi-language-typescript"
-                color="primary"
-              >
-                <q-tooltip> Deno </q-tooltip>
-              </q-icon>
-            </q-td>
-            <!-- supported platforms -->
-            <q-td key="supported_platforms" :props="props">
-              <q-badge
-                v-if="!props.row.supported_platforms || props.row.supported_platforms.length === 0"
-                >All</q-badge
-              >
-              <q-badge
-                v-for="plat in props.row.supported_platforms"
-                v-else
-                :key="plat"
-                color="primary"
-                class="q-pr-xs"
-                >{{ capitalize(plat) }}</q-badge
-              >
-            </q-td>
-            <!-- name -->
-            <q-td key="name" :props="props" :style="{ color: props.row.hidden ? 'grey' : '' }">
-              <!-- is community script icon -->
-              <img
-                v-if="props.row.script_type === 'builtin'"
-                :src="trmmLogo"
-                style="height: 20px; max-width: 20px"
-              />
-              {{ truncateText(props.row.name, 50) }}
-              <q-tooltip v-if="props.row.name.length >= 50" style="font-size: 12px">
-                {{ props.row.name }}
-              </q-tooltip>
-              <q-tooltip :delay="600">ID: {{ props.row.id }}</q-tooltip>
-            </q-td>
-            <!-- args -->
-            <q-td key="args" :props="props">
-              <span v-if="props.row.args.length > 0">
-                {{ truncateText(props.row.args.toString(), 30) }}
-                <q-tooltip v-if="props.row.args.toString().length >= 30" style="font-size: 12px">
-                  {{ props.row.args }}
-                </q-tooltip>
-              </span>
-            </q-td>
 
-            <q-td key="category" :props="props">{{ props.row.category }}</q-td>
-            <q-td key="desc" :props="props">
-              {{ truncateText(props.row.description, 30) }}
-              <q-tooltip v-if="props.row.description.length >= 30" style="font-size: 12px">{{
-                props.row.description
-              }}</q-tooltip>
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">
+              <!-- favorite -->
+              <template v-if="col.name === 'favorite'">
+                <q-icon v-if="props.row.favorite" color="yellow-8" name="star" size="sm" />
+              </template>
+
+              <!-- shell icon -->
+              <template v-else-if="col.name === 'shell'">
+                <q-icon
+                  v-if="props.row.shell === 'powershell'"
+                  name="mdi-powershell"
+                  color="primary"
+                  size="sm"
+                >
+                  <q-tooltip> Powershell </q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="props.row.shell === 'python'"
+                  name="mdi-language-python"
+                  color="primary"
+                  size="sm"
+                >
+                  <q-tooltip> Python </q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="props.row.shell === 'cmd'"
+                  name="mdi-microsoft-windows"
+                  color="primary"
+                  size="sm"
+                >
+                  <q-tooltip> Batch </q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="props.row.shell === 'shell'"
+                  size="sm"
+                  name="mdi-bash"
+                  color="primary"
+                >
+                  <q-tooltip> Shell </q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="props.row.shell === 'nushell'"
+                  size="sm"
+                  name="mdi-code-greater-than"
+                  color="primary"
+                >
+                  <q-tooltip> Nushell </q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="props.row.shell === 'deno'"
+                  size="sm"
+                  name="mdi-language-typescript"
+                  color="primary"
+                >
+                  <q-tooltip> Deno </q-tooltip>
+                </q-icon>
+              </template>
+
+              <!-- supported platforms -->
+              <template v-else-if="col.name === 'supported_platforms'">
+                <q-badge v-if="!col.value || col.value.length === 0">All</q-badge>
+                <q-badge
+                  v-for="plat in col.value"
+                  v-else
+                  :key="plat"
+                  color="primary"
+                  class="q-pr-xs"
+                  >{{ capitalize(plat) }}</q-badge
+                >
+              </template>
+
+              <!-- name -->
+              <template v-else-if="col.name === 'name'">
+                <!-- is community script icon -->
+                <img
+                  v-if="props.row.script_type === 'builtin'"
+                  :src="trmmLogo"
+                  style="height: 20px; max-width: 20px"
+                />
+
+                <truncate-text :text="col.value" />
+              </template>
+
+              <!-- args -->
+              <template v-else-if="col.name === 'args'">
+                <truncate-text :text="col.value.join(', ')" />
+              </template>
+
+              <!-- description -->
+              <template v-else-if="col.name === 'desc'">
+                <truncate-text :text="col.value" />
+              </template>
+
+              <template v-else>
+                {{ col.value }}
+              </template>
             </q-td>
-            <q-td key="default_timeout" :props="props">{{ props.row.default_timeout }}</q-td>
-            <q-td></q-td>
           </q-tr>
         </template>
       </tactical-table>
@@ -488,26 +490,29 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
 import { ref, computed, onMounted } from "vue";
-import { useStore } from "vuex";
-import { useQuasar, useDialogPluginComponent, exportFile } from "quasar";
+import type { QTreeNode } from "quasar";
+import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useStorage } from "@vueuse/core";
-import { fetchScripts, editScript, downloadScript, removeScript } from "src/api/scripts";
-import { capitalize, truncateText } from "src/utils/format";
-import { notifySuccess } from "src/utils/notify";
+import { useScriptStore } from "../api";
+import { useDashboardStore } from "src/stores/dashboard";
+import { capitalize } from "src/utils/format";
 
 // ui imports
-import ScriptUploadModal from "src/components/scripts/ScriptUploadModal.vue";
-import ScriptFormModal from "src/components/scripts/ScriptFormModal.vue";
-import ScriptSnippets from "src/components/scripts/ScriptSnippets.vue";
-import TacticalTable from "src/core/dashboard/ui/TacticalTable.vue";
+import ScriptUploadModal from "./ScriptUploadModal.vue";
+import ScriptFormModal from "./ScriptFormModal.vue";
+import ScriptSnippets from "./ScriptSnippets.vue";
 
 import trmmLogo from "src/assets/trmm_256.png";
 
+// type imports
+import type { TacticalColumn } from "src/core/dashboard/types";
+import type { Script } from "../types";
+
 // static data
-const columns = [
+const columns: TacticalColumn[] = [
   {
     name: "favorite",
     label: "Favorites",
@@ -535,6 +540,7 @@ const columns = [
     field: "name",
     align: "left",
     sortable: true,
+    style: (row) => (row.hidden ? "color: grey" : ""),
   },
   {
     name: "args",
@@ -566,304 +572,169 @@ const columns = [
   },
 ];
 
-export default {
-  name: "ScriptManager",
-  components: {
-    TacticalTable,
-  },
-  emits: [...useDialogPluginComponent.emits],
-  setup() {
-    // setup vuex store
-    const store = useStore();
-    const showCommunityScripts = computed(() => store.state.showCommunityScripts);
+defineEmits(useDialogPluginComponent.emits);
 
-    // setup quasar plugins
-    const { dialogRef, onDialogHide } = useDialogPluginComponent();
-    const $q = useQuasar();
+// setup quasar plugins
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
+const $q = useQuasar();
 
-    // script manager logic
-    const scripts = ref([]);
-    const showHiddenScripts = ref(false);
+// setup stores
+const scriptStore = useScriptStore();
+const dashboardStore = useDashboardStore();
 
-    async function getScripts() {
-      loading.value = true;
-      try {
-        scripts.value = await fetchScripts({ showHiddenScripts: true });
-      } catch (e) {
-        console.error(e);
-      }
-      loading.value = false;
-    }
+const showCommunityScripts = computed(() => dashboardStore.dashboardSettings.showCommunityScripts);
 
-    async function favoriteScript(script) {
-      loading.value = true;
-      const notifyText = !script.favorite
-        ? "Script was favorited!"
-        : "Script was removed as a favorite!";
-      try {
-        await editScript({
-          id: script.id,
-          favorite: !script.favorite,
-        });
-        await getScripts();
-        notifySuccess(notifyText);
-      } catch (e) {}
+// script manager logic
+const showHiddenScripts = ref(false);
 
-      loading.value = false;
-    }
-
-    async function hideScript(script) {
-      loading.value = true;
-      const notifyText = !script.hidden ? "Script was hidden!" : "Script was unhidden!";
-      try {
-        await editScript({
-          id: script.id,
-          hidden: !script.hidden,
-        });
-        await getScripts();
-        notifySuccess(notifyText);
-      } catch (e) {}
-
-      loading.value = false;
-    }
-
-    function deleteScript(script) {
-      $q.dialog({
-        title: `Delete script: ${script.name}?`,
-        cancel: true,
-        ok: { label: "Delete", color: "negative" },
-      }).onOk(async () => {
-        loading.value = true;
-        try {
-          const data = await removeScript(script.id);
-          notifySuccess(data);
-          getScripts();
-        } catch (e) {}
-
-        loading.value = false;
-      });
-    }
-
-    async function exportScript(script) {
-      loading.value = true;
-
-      try {
-        const { code, filename } = await downloadScript(script.id);
-        exportFile(filename, new Blob([code]), {
-          mimeType: "text/plain;charset=utf-8",
-        });
-      } catch (e) {
-        console.error(e);
-      }
-      loading.value = false;
-    }
-
-    // table and tree view setup
-    const storageKey = "scriptmanager_";
-    const search = ref("");
-    const tableView = useStorage(`${storageKey}tableView`, true);
-    const expanded = useStorage(`${storageKey}expanded`, []);
-    const loading = ref(false);
-
-    const visibleScripts = computed(() => {
-      if (showHiddenScripts.value) {
-        return showCommunityScripts.value
-          ? scripts.value
-          : scripts.value.filter((i) => i.script_type !== "builtin");
-      } else {
-        return showCommunityScripts.value
-          ? scripts.value.filter((i) => !i.hidden)
-          : scripts.value.filter((i) => i.script_type !== "builtin" && !i.hidden);
-      }
+function favoriteScript(script: Script) {
+  if (script.id)
+    scriptStore.updateScript(script.id, {
+      favorite: !script.favorite,
     });
+}
 
-    const categories = computed(() => {
-      const list = [];
-      visibleScripts.value.forEach((script) => {
-        if (!!script.category && !list.includes(script.category)) {
-          list.push(script.category);
-        }
-      });
-      return list;
+function hideScript(script: Script) {
+  if (script.id)
+    scriptStore.updateScript(script.id, {
+      hidden: !script.hidden,
     });
+}
 
-    const tree = computed(() => {
-      if (tableView.value || visibleScripts.value.length === 0) {
-        return [];
-      } else {
-        const nodes = [];
+function deleteScript(script: Script) {
+  $q.dialog({
+    title: `Delete script: ${script.name}?`,
+    cancel: true,
+    ok: { label: "Delete", color: "negative" },
+  }).onOk(() => {
+    if (script.id) scriptStore.removeScript(script.id);
+  });
+}
 
-        // copy scripts and categories to new array
-        const scriptsTemp = Object.assign([], visibleScripts.value);
-        const categoriesTemp = Object.assign([], categories.value);
+function exportScript(script: Script) {
+  if (script.id) scriptStore.downloadScript(script.id);
+}
 
-        // add Unassigned category
-        categoriesTemp.push("Unassigned");
+// table and tree view setup
+const storageKey = "scriptmanager_";
+const search = ref("");
+const tableView = useStorage(`${storageKey}tableView`, true);
+const expanded = useStorage(`${storageKey}expanded`, []);
 
-        const sortedCategories = categoriesTemp.sort();
+const visibleScripts = computed(() => {
+  if (showHiddenScripts.value) {
+    return showCommunityScripts.value
+      ? scriptStore.scripts
+      : scriptStore.scripts.filter((i) => i.script_type !== "builtin");
+  } else {
+    return showCommunityScripts.value
+      ? scriptStore.scripts.filter((i) => !i.hidden)
+      : scriptStore.scripts.filter((i) => i.script_type !== "builtin" && !i.hidden);
+  }
+});
 
-        // sort by name property
-        const sortedScripts = scriptsTemp.sort(function (a, b) {
-          const nameA = a.name.toUpperCase();
-          const nameB = b.name.toUpperCase();
+const categories = computed(() => {
+  const list = [] as string[];
+  visibleScripts.value.forEach((script) => {
+    if (!!script.category && !list.includes(script.category)) {
+      list.push(script.category);
+    }
+  });
+  return list;
+});
 
-          if (nameA < nameB) {
-            return -1;
-          }
-          if (nameA > nameB) {
-            return 1;
-          }
-          // names must be equal
-          return 0;
-        });
+const tree = computed<QTreeNode[]>(() => {
+  if (tableView.value || visibleScripts.value.length === 0) {
+    return [];
+  }
 
-        sortedCategories.forEach((category) => {
-          const temp = {
-            icon: "folder",
-            iconColor: "yellow-9",
-            label: category,
-            selectable: false,
-            id: category,
-            children: [],
-          };
-
-          for (let x = 0; x < sortedScripts.length; x++) {
-            if (sortedScripts[x].category === category) {
-              temp.children.push({
-                label: sortedScripts[x].name,
-                header: "script",
-                ...sortedScripts[x],
-              });
-            } else if (category === "Unassigned" && !sortedScripts[x].category) {
-              temp.children.push({
-                label: sortedScripts[x].name,
-                header: "script",
-                ...sortedScripts[x],
-              });
-            }
-          }
-
-          nodes.push(temp);
-        });
-
-        return nodes;
-      }
+  const scriptsTemp = [...visibleScripts.value];
+  const allCategories = new Set(scriptsTemp.map((s) => s.category).filter(Boolean));
+  allCategories.add("Unassigned");
+  const sortedCategories = Array.from(allCategories).sort();
+  const sortedScripts = scriptsTemp.sort((a, b) => a.name.localeCompare(b.name));
+  const nodes = sortedCategories.map((category): QTreeNode => {
+    const scriptsInCategory = sortedScripts.filter((script) => {
+      return category === "Unassigned" ? !script.category : script.category === category;
     });
-
-    // dialog open functions
-    function viewCodeModal(script) {
-      $q.dialog({
-        component: ScriptFormModal,
-        componentProps: {
-          script: script,
-          readonly: true,
-        },
-      });
-    }
-
-    function newScriptModal() {
-      $q.dialog({
-        component: ScriptFormModal,
-        componentProps: {
-          categories: categories.value,
-          readonly: false,
-        },
-      }).onOk(() => {
-        getScripts();
-      });
-    }
-
-    function editScriptModal(script) {
-      $q.dialog({
-        component: ScriptFormModal,
-        componentProps: {
-          script: script,
-          categories: categories.value,
-          readonly: false,
-        },
-      }).onOk(() => {
-        getScripts();
-      });
-    }
-
-    function cloneScriptModal(script) {
-      $q.dialog({
-        component: ScriptFormModal,
-        componentProps: {
-          script: script,
-          categories: categories.value,
-          readonly: false,
-          clone: true,
-        },
-      }).onOk(() => {
-        getScripts();
-      });
-    }
-
-    function uploadScriptModal() {
-      $q.dialog({
-        component: ScriptUploadModal,
-        componentProps: {
-          categories: categories.value,
-        },
-      }).onOk(() => {
-        getScripts();
-      });
-    }
-
-    function ScriptSnippetModal() {
-      $q.dialog({
-        component: ScriptSnippets,
-      });
-    }
-
-    // component life cycle hooks
-    onMounted(getScripts);
 
     return {
-      // reactive data
-      search,
-      tableView,
-      expanded,
-      loading,
-      showCommunityScripts,
-      showHiddenScripts,
-      trmmLogo,
-
-      // computed
-      visibleScripts,
-
-      // non-reactive data
-      columns,
-      storageKey,
-
-      // api methods
-      getScripts,
-      deleteScript,
-      favoriteScript,
-      hideScript,
-      exportScript,
-
-      // dialog methods
-      viewCodeModal,
-      newScriptModal,
-      editScriptModal,
-      cloneScriptModal,
-      uploadScriptModal,
-      ScriptSnippetModal,
-
-      // table and tree view methods
-      tree,
-      setShowCommunityScripts: (show) => store.dispatch("setShowCommunityScripts", show),
-
-      // helper methods
-      truncateText,
-      capitalize,
-
-      // quasar dialog plugin
-      dialogRef,
-      onDialogHide,
+      id: category,
+      label: category,
+      icon: "folder",
+      iconColor: "yellow-9",
+      selectable: false,
+      children: scriptsInCategory.map((script) => ({
+        label: script.name,
+        icon: "script",
+        selectable: true,
+        header: "script",
+        ...script,
+      })),
     };
-  },
-};
+  });
+
+  return nodes.filter((node) => node.children && node.children.length > 0);
+});
+
+// dialog open functions
+function viewCodeModal(script: Script) {
+  $q.dialog({
+    component: ScriptFormModal,
+    componentProps: {
+      script: script,
+      readonly: true,
+    },
+  });
+}
+
+function newScriptModal() {
+  $q.dialog({
+    component: ScriptFormModal,
+    componentProps: {
+      categories: categories.value,
+      readonly: false,
+    },
+  });
+}
+
+function editScriptModal(script: Script) {
+  $q.dialog({
+    component: ScriptFormModal,
+    componentProps: {
+      script: script,
+      categories: categories.value,
+      readonly: false,
+    },
+  });
+}
+
+function cloneScriptModal(script: Script) {
+  $q.dialog({
+    component: ScriptFormModal,
+    componentProps: {
+      script: script,
+      categories: categories.value,
+      readonly: false,
+      clone: true,
+    },
+  });
+}
+
+function uploadScriptModal() {
+  $q.dialog({
+    component: ScriptUploadModal,
+    componentProps: {
+      categories: categories.value,
+    },
+  });
+}
+
+function ScriptSnippetModal() {
+  $q.dialog({
+    component: ScriptSnippets,
+  });
+}
+
+onMounted(scriptStore.getScripts);
 </script>

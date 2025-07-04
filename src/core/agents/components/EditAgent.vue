@@ -325,16 +325,13 @@
 <script>
 import { mapState } from "vuex";
 import { useDialogPluginComponent } from "quasar";
-import mixins from "src/mixins/mixins";
-import PatchPolicyForm from "src/components/modals/agents/PatchPolicyForm.vue";
+import PatchPolicyForm from "./PatchPolicyForm.vue";
 import CustomField from "src/components/ui/CustomField.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 import { capitalize } from "src/utils/format";
 
 export default {
   name: "EditAgent",
-  components: { PatchPolicyForm, CustomField, TacticalDropdown },
-  mixins: [mixins],
+  components: { PatchPolicyForm, CustomField },
   props: {
     agent_id: !String,
   },

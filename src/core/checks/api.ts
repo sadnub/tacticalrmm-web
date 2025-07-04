@@ -9,11 +9,11 @@ export const useCheckStore = defineStore("checks", () => {
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getChecks(params = {}) {
+  function getChecks() {
     isLoading.value = true;
     isError.value = false;
     axios
-      .get<Check[]>(`/checks/`, { params })
+      .get<Check[]>(`/checks/`)
       .then(({ data }) => {
         checks.value = data;
       })

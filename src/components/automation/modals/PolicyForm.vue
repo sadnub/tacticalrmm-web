@@ -54,11 +54,8 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
-
 export default {
   name: "PolicyForm",
-  mixins: [mixins],
   props: { policy: Object, copyPolicy: Object },
   emits: ["hide", "ok", "cancel"],
   data() {

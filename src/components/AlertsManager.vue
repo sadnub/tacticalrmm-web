@@ -187,14 +187,12 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
 import AlertTemplateForm from "src/components/modals/alerts/AlertTemplateForm.vue";
 import AlertExclusions from "src/components/modals/alerts/AlertExclusions.vue";
 import AlertTemplateRelated from "src/components/modals/alerts/AlertTemplateRelated.vue";
 
 export default {
   name: "AlertsManager",
-  mixins: [mixins],
   emits: ["hide", "ok", "cancel"],
   data() {
     return {

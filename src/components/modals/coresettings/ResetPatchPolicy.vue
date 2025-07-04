@@ -63,12 +63,9 @@
 // composition imports
 import { ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useClientDropdown, useSiteDropdown } from "src/composables/clients";
+import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
 import { sendPatchPolicyReset } from "src/api/automation";
 import { notifySuccess } from "src/utils/notify";
-
-//ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 // static data
 const targetOptions = [
@@ -79,17 +76,14 @@ const targetOptions = [
 
 export default {
   name: "ResetPatchPolicy",
-  components: {
-    TacticalDropdown,
-  },
   emits: [...useDialogPluginComponent.emits],
   setup() {
     // setup quasar dialog plugin
     const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
     // setup dropdowns
-    const { client, clientOptions } = useClientDropdown(true);
-    const { site, siteOptions } = useSiteDropdown(true);
+    const { client, clientOptions } = useClientDropdown();
+    const { site, siteOptions } = useSiteDropdown();
 
     // reset patch policy logic
     const state = ref({

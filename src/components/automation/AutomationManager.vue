@@ -267,12 +267,11 @@
 </template>
 
 <script>
-import mixins from "src/mixins/mixins";
 import DialogWrapper from "src/components/ui/DialogWrapper.vue";
 import PolicyForm from "src/components/automation/modals/PolicyForm.vue";
 import PolicyOverview from "src/components/automation/PolicyOverview.vue";
 import RelationsView from "src/components/automation/modals/RelationsView.vue";
-import PatchPolicyForm from "src/components/modals/agents/PatchPolicyForm.vue";
+import PatchPolicyForm from "src/core/agents/components/PatchPolicyForm.vue";
 import AlertTemplateAdd from "src/components/modals/alerts/AlertTemplateAdd.vue";
 import PolicyExclusions from "src/components/automation/modals/PolicyExclusions.vue";
 import PolicyChecksTab from "src/components/automation/PolicyChecksTab.vue";
@@ -281,7 +280,6 @@ import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTa
 export default {
   name: "AutomationManager",
   components: { PolicyChecksTab, PolicyAutomatedTasksTab },
-  mixins: [mixins],
   emits: ["hide", "ok", "cancel"],
   data() {
     return {

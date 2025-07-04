@@ -17,7 +17,7 @@
           <q-form ref="taskGeneralForm" @submit.prevent>
             <q-card-section>
               <q-input
-                v-model="state.name"
+                v-model="localTask.name"
                 :rules="[(val) => !!val || '*Required']"
                 filled
                 dense
@@ -28,7 +28,7 @@
             <q-card-section v-show="!isAgentTask">
               Supported Platforms
               <q-option-group
-                v-model="state.task_supported_platforms"
+                v-model="localTask.task_supported_platforms"
                 :options="plat_options"
                 type="checkbox"
                 inline
@@ -41,20 +41,20 @@
                 label="Collector Task"
                 class="q-pb-sm"
                 @update:model-value="
-                  state.custom_field = null;
-                  state.collector_all_output = false;
+                  localTask.custom_field = null;
+                  localTask.collector_all_output = false;
                 "
               />
               <tactical-dropdown
                 v-if="collector"
-                v-model="state.custom_field"
-                :rules="[(val) => !!val || '*Required']"
+                v-model="localTask.custom_field"
+                :rules="[(val: number) => !!val || '*Required']"
                 :options="customFieldOptions"
                 label="Custom Field to update"
                 filled
                 map-options
                 :hint="
-                  state.collector_all_output
+                  localTask.collector_all_output
                     ? 'All script output will be saved to custom field selected'
                     : 'The last line of script output will be saved to custom field selected'
                 "
@@ -62,7 +62,7 @@
               />
               <q-checkbox
                 v-if="collector"
-                v-model="state.collector_all_output"
+                v-model="localTask.collector_all_output"
                 dense
                 label="Save all output"
                 class="q-py-sm"
@@ -70,12 +70,12 @@
             </q-card-section>
             <q-card-section>
               <tactical-dropdown
-                v-model="state.alert_severity"
+                v-model="localTask.alert_severity"
                 :options="severityOptions"
                 label="Alert Severity"
                 filled
                 map-options
-                :rules="[(val) => !!val || '*Required']"
+                :rules="[(val: string) => !!val || '*Required']"
               />
             </q-card-section>
           </q-form>
@@ -87,7 +87,7 @@
               <div class="row q-pa-sm q-gutter-x-xs items-center">
                 <div class="text-subtitle2 col-12">Action Type:</div>
                 <q-option-group
-                  v-model="actionType"
+                  v-model="action.type"
                   class="col-12"
                   inline
                   :options="[
@@ -97,8 +97,8 @@
                 />
 
                 <tactical-dropdown
-                  v-if="actionType === 'script'"
-                  v-model="script"
+                  v-if="action.type === 'script'"
+                  v-model="action.script"
                   class="col-3"
                   label="Select script"
                   :options="scriptOptions"
@@ -108,8 +108,8 @@
                 />
 
                 <q-select
-                  v-if="actionType === 'script'"
-                  v-model="defaultArgs"
+                  v-if="action.type === 'script'"
+                  v-model="action.script_args"
                   class="col-3"
                   dense
                   label="Script Arguments (press Enter after typing each argument)"
@@ -123,8 +123,8 @@
                 />
 
                 <q-select
-                  v-if="actionType === 'script'"
-                  v-model="defaultEnvVars"
+                  v-if="action.type === 'script'"
+                  v-model="action.env_vars"
                   class="col-3"
                   dense
                   :label="envVarsLabel"
@@ -138,8 +138,8 @@
                 />
 
                 <q-input
-                  v-if="actionType === 'script'"
-                  v-model.number="defaultTimeout"
+                  v-if="action.type === 'script'"
+                  v-model.number="action.timeout"
                   class="col-2"
                   filled
                   dense
@@ -148,16 +148,16 @@
                 />
 
                 <q-input
-                  v-if="actionType === 'cmd'"
-                  v-model="command"
+                  v-if="action.type === 'cmd'"
+                  v-model="action.command"
                   label="Command"
                   dense
                   filled
                   class="col-5"
                 />
                 <q-input
-                  v-if="actionType === 'cmd'"
-                  v-model.number="defaultTimeout"
+                  v-if="action.type === 'cmd'"
+                  v-model.number="action.timeout"
                   class="col-2"
                   filled
                   dense
@@ -165,8 +165,8 @@
                   label="Timeout (seconds)"
                 />
                 <q-option-group
-                  v-if="actionType === 'cmd'"
-                  v-model="shell"
+                  v-if="action.type === 'cmd'"
+                  v-model="action.shell"
                   class="col-4 q-pl-sm"
                   inline
                   :options="[
@@ -188,7 +188,7 @@
                 />
               </div>
             </q-form>
-            <div v-if="shell === 'custom'" class="col-5">
+            <div v-if="action.shell === 'custom'" class="col-5">
               <q-input
                 v-model="custom_shell"
                 filled
@@ -200,7 +200,7 @@
             <div class="text-subtitle2 q-pa-sm">
               Actions:
               <q-checkbox
-                v-model="state.continue_on_error"
+                v-model="localTask.continue_on_error"
                 class="float-right"
                 label="Continue on Errors"
                 dense
@@ -210,7 +210,7 @@
             </div>
             <div class="q-pt-sm" style="height: 150px">
               <draggable
-                v-model="state.actions"
+                v-model="localTask.actions"
                 class="q-list"
                 handle=".handle"
                 ghost-class="ghost"
@@ -265,31 +265,31 @@
             <q-form ref="taskDetailForm" @submit.prevent>
               <q-card-section>
                 <q-option-group
-                  v-model="state.task_type"
+                  v-model="localTask.task_type"
                   label="Task run type"
                   :options="taskTypeOptions"
                   dense
                   inline
-                  @update:model-value="$refs.taskDetailForm.resetValidation()"
+                  @update:model-value="taskDetailForm?.resetValidation()"
                 />
               </q-card-section>
 
               <!-- task start/expire time fields -->
               <q-card-section
-                v-if="['runonce', 'daily', 'weekly', 'monthly'].includes(state.task_type)"
+                v-if="['runonce', 'daily', 'weekly', 'monthly'].includes(localTask.task_type)"
                 class="row"
               >
                 <!-- start time input -->
                 <q-input
-                  v-model="state.run_time_date"
+                  v-model="localTask.run_time_date"
                   class="col-6 q-pa-sm"
                   type="datetime-local"
                   dense
-                  :label="isPosix && state.task_type !== 'runonce' ? 'Run at' : 'Start time'"
+                  :label="isPosix && localTask.task_type !== 'runonce' ? 'Run at' : 'Start time'"
                   stack-label
                   filled
                   :hint="
-                    isPosix && state.task_type !== 'runonce'
+                    isPosix && localTask.task_type !== 'runonce'
                       ? 'Agent timezone will be used. On Linux and macOS, the selected date is ignored—only the hour and minute are used.'
                       : 'Agent timezone will be used'
                   "
@@ -299,7 +299,7 @@
                 <!-- expires on input -->
                 <q-input
                   v-if="!isPosix"
-                  v-model="state.expire_date"
+                  v-model="localTask.expire_date"
                   class="col-6 q-pa-sm"
                   type="datetime-local"
                   dense
@@ -311,22 +311,22 @@
               </q-card-section>
 
               <q-card-section
-                v-if="state.task_type === 'onboarding' || state.task_type === 'runonce'"
+                v-if="localTask.task_type === 'onboarding' || localTask.task_type === 'runonce'"
                 class="row"
               >
-                <span v-if="state.task_type === 'onboarding'"
+                <span v-if="localTask.task_type === 'onboarding'"
                   >This task will run as soon as it's created on the agent.</span
                 >
-                <span v-else-if="state.task_type === 'runonce'"
+                <span v-else-if="localTask.task_type === 'runonce'"
                   >Start Time must be in the future for run once tasks.</span
                 >
               </q-card-section>
 
               <!-- daily options -->
-              <q-card-section v-if="!isPosix && state.task_type === 'daily'" class="row">
+              <q-card-section v-if="!isPosix && localTask.task_type === 'daily'" class="row">
                 <!-- daily interval -->
                 <q-input
-                  v-model.number="state.daily_interval"
+                  v-model.number="localTask.daily_interval"
                   :rules="[
                     (val) => !!val || '*Required',
                     (val) =>
@@ -347,11 +347,11 @@
               </q-card-section>
 
               <!-- weekly options -->
-              <q-card-section v-if="state.task_type === 'weekly'" class="row">
+              <q-card-section v-if="localTask.task_type === 'weekly'" class="row">
                 <!-- weekly interval -->
                 <q-input
                   v-if="!isPosix"
-                  v-model="state.weekly_interval"
+                  v-model="localTask.weekly_interval"
                   :rules="[
                     (val) => !!val || '*Required',
                     (val) =>
@@ -374,8 +374,8 @@
                   <!-- day of week input -->
                   Run on Days:
                   <q-option-group
-                    v-model="state.run_time_bit_weekdays"
-                    :rules="[(val) => val.length > 0 || '*Required']"
+                    v-model="localTask.run_time_bit_weekdays"
+                    :rules="[(val: number[]) => val.length > 0 || '*Required']"
                     inline
                     dense
                     :options="dayOfWeekOptions"
@@ -385,7 +385,7 @@
               </q-card-section>
 
               <!-- monthly options -->
-              <q-card-section v-if="state.task_type === 'monthly'" class="row">
+              <q-card-section v-if="localTask.task_type === 'monthly'" class="row">
                 <!-- type of monthly schedule -->
                 <q-option-group
                   v-model="monthlyType"
@@ -399,7 +399,7 @@
 
                 <!-- month select input -->
                 <q-select
-                  v-model="state.monthly_months_of_year"
+                  v-model="localTask.monthly_months_of_year"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
@@ -429,7 +429,7 @@
                   <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
-                        <q-item-label v-html="opt.label" />
+                        <q-item-label>opt.label</q-item-label>
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
@@ -448,7 +448,7 @@
                 <!-- days of month select input -->
                 <q-select
                   v-if="monthlyType === 'days'"
-                  v-model="state.monthly_days_of_month"
+                  v-model="localTask.monthly_days_of_month"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
@@ -478,7 +478,7 @@
                   <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
-                        <q-item-label v-html="opt.label" />
+                        <q-item-label>{{ opt.label }}</q-item-label>
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
@@ -499,7 +499,7 @@
                 <!-- week of month select input -->
                 <q-select
                   v-if="monthlyType === 'weeks'"
-                  v-model="state.monthly_weeks_of_month"
+                  v-model="localTask.monthly_weeks_of_month"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
@@ -514,7 +514,7 @@
                   <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
-                        <q-item-label v-html="opt.label" />
+                        <q-item-label>{{ opt.label }}</q-item-label>
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
@@ -530,7 +530,7 @@
                 <!-- day of week select input -->
                 <q-select
                   v-if="monthlyType === 'weeks'"
-                  v-model="state.run_time_bit_weekdays"
+                  v-model="localTask.run_time_bit_weekdays"
                   :rules="[(val) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
@@ -560,7 +560,7 @@
                   <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
-                        <q-item-label v-html="opt.label" />
+                        <q-item-label>{{ opt.value }}</q-item-label>
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
@@ -579,16 +579,16 @@
 
               <q-card-section
                 v-if="
-                  state.task_type !== 'checkfailure' &&
-                  state.task_type !== 'manual' &&
-                  state.task_type !== 'onboarding'
+                  localTask.task_type !== 'checkfailure' &&
+                  localTask.task_type !== 'manual' &&
+                  localTask.task_type !== 'onboarding'
                 "
                 class="row"
               >
                 <div v-if="!isPosix" class="col-12 text-h6">Advanced Settings (Windows only)</div>
                 <q-input
                   v-if="!isPosix"
-                  v-model="state.task_repetition_interval"
+                  v-model="localTask.task_repetition_interval"
                   class="col-6 q-pa-sm"
                   dense
                   label="Repeat task every"
@@ -605,8 +605,8 @@
 
                 <q-input
                   v-if="!isPosix"
-                  v-model="state.task_repetition_duration"
-                  :disable="!state.task_repetition_interval"
+                  v-model="localTask.task_repetition_duration"
+                  :disable="!localTask.task_repetition_interval"
                   class="col-6 q-pa-sm"
                   dense
                   label="Task repeat duration"
@@ -617,18 +617,18 @@
                     (val) =>
                       validateTimePeriod(val) ||
                       'Valid values are 1-3 digits followed by (D|d|H|h|M|m|S|s)',
-                    (val) => (state.task_repetition_interval ? !!val : true), // field is required if repetition interval is set
+                    (val) => (localTask.task_repetition_interval ? !!val : true), // field is required if repetition interval is set
                     (val) =>
                       convertPeriodToSeconds(val) >=
-                        convertPeriodToSeconds(state.task_repetition_interval) ||
+                        convertPeriodToSeconds(String(localTask.task_repetition_interval)) ||
                       'Repetition duration must be greater than repetition interval',
                   ]"
                 />
 
                 <q-checkbox
                   v-if="!isPosix"
-                  v-model="state.stop_task_at_duration_end"
-                  :disable="!state.task_repetition_interval"
+                  v-model="localTask.stop_task_at_duration_end"
+                  :disable="!localTask.task_repetition_interval"
                   class="col-6 q-pa-sm"
                   dense
                   label="Stop all tasks at the end of duration"
@@ -637,7 +637,7 @@
 
                 <q-input
                   v-if="!isPosix"
-                  v-model="state.random_task_delay"
+                  v-model="localTask.random_task_delay"
                   class="col-6 q-pa-sm"
                   dense
                   label="Random task delay"
@@ -654,8 +654,8 @@
                 <div class="col-6"></div>
                 <q-checkbox
                   v-if="!isPosix"
-                  v-model="state.remove_if_not_scheduled"
-                  :disable="!state.expire_date"
+                  v-model="localTask.remove_if_not_scheduled"
+                  :disable="!localTask.expire_date"
                   class="col-6 q-pa-sm"
                   dense
                   label="Delete task if not scheduled for 30 days"
@@ -665,8 +665,8 @@
                 <div class="col-6"></div>
                 <q-checkbox
                   v-if="!isPosix"
-                  v-model="state.run_asap_after_missed"
-                  :disable="state.task_type === 'runonce'"
+                  v-model="localTask.run_asap_after_missed"
+                  :disable="localTask.task_type === 'runonce'"
                   class="col-6 q-pa-sm"
                   dense
                   label="Run task ASAP after a scheduled start is missed"
@@ -676,7 +676,7 @@
 
                 <tactical-dropdown
                   v-if="!isPosix"
-                  v-model="state.task_instance_policy"
+                  v-model="localTask.task_instance_policy"
                   class="col-6 q-pa-sm"
                   label="Task instance policy"
                   :options="taskInstancePolicyOptions"
@@ -686,11 +686,11 @@
               </q-card-section>
 
               <!-- check failure options -->
-              <q-card-section v-else-if="state.task_type === 'checkfailure'" class="row">
+              <q-card-section v-else-if="localTask.task_type === 'checkfailure'" class="row">
                 <tactical-dropdown
-                  v-model="state.assigned_check"
+                  v-model="localTask.assigned_check"
                   class="col-6 q-pa-sm"
-                  :rules="[(val) => !!val || '*Required']"
+                  :rules="[(val: number) => !!val || '*Required']"
                   filled
                   :options="checkOptions"
                   label="Select Check"
@@ -704,56 +704,47 @@
       </q-stepper>
       <q-card-actions align="right">
         <q-btn v-close-popup flat label="Cancel" />
-        <q-btn
-          v-if="step > 1"
-          label="Back"
-          color="primary"
-          flat
-          @click="$refs.stepper.previous()"
-        />
+        <q-btn v-if="step > 1" label="Back" color="primary" flat @click="stepper?.previous()" />
         <q-btn
           v-if="step < 3"
           color="primary"
           label="Next"
           flat
-          @click="validateStep(step === 1 ? $refs.taskGeneralForm : undefined, $refs.stepper)"
+          @click="step === 1 && validateStep(taskGeneralForm as QForm, stepper as QStepper)"
         />
         <q-btn
           v-else
           :label="task ? 'Edit Task' : 'Add Task'"
           color="primary"
-          :loading="loading"
+          :loading="taskStore.isLoading"
           flat
           dense
           push
-          @click="validateStep($refs.taskDetailForm, $refs.stepper)"
+          @click="validateStep(taskDetailForm as QForm, stepper as QStepper)"
         />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
 // composition imports
-import { computed, ref, watch, onMounted, defineComponent } from "vue";
-import { useDialogPluginComponent } from "quasar";
+import { computed, ref, watch, reactive, useTemplateRef } from "vue";
+import { QForm, QStepper, useDialogPluginComponent } from "quasar";
 import draggable from "vuedraggable";
-import { saveTask, updateTask } from "src/api/tasks";
-import { useScriptDropdown } from "src/composables/scripts";
-import { useCheckDropdown } from "src/composables/checks";
-import { useCustomFieldDropdown } from "src/composables/core";
-import { notifySuccess, notifyError } from "src/utils/notify";
+import { useTaskStore } from "../api";
+import { useScriptDropdown } from "src/core/scripts/composables";
+import { useAgentCheckDropdown, usePolicyCheckDropdown } from "src/core/checks/composables";
+import { useCustomFieldDropdown } from "src/core/settings/composables";
+import { notifyError } from "src/utils/notify";
 import { validateTimePeriod } from "src/utils/validation";
 import { envVarsLabel } from "src/constants/constants";
-import {
-  convertPeriodToSeconds,
-  convertToBitArray,
-  convertFromBitArray,
-  formatDateInputField,
-} from "src/utils/format";
+import { convertPeriodToSeconds, formatDateInputField } from "src/utils/format";
 
-// ui imports
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
+// type imports
+import type { AgentPlat } from "src/core/agents/types";
+import type { AutomatedTaskUI, TaskAction } from "../types";
+import { until } from "@vueuse/shared";
 
 // static data
 const severityOptions = [
@@ -829,373 +820,266 @@ const plat_options = [
   { label: "macOS", value: "darwin" },
 ];
 
-export default defineComponent({
-  name: "AddAutomatedTask",
-  components: { TacticalDropdown, draggable },
-  props: {
-    parent: Object, // parent policy or agent for task
-    task: Object, // only for editing
-    plat: String,
-  },
-  emits: [...useDialogPluginComponent.emits],
-  setup(props) {
-    // setup quasar dialog
-    const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+const props = defineProps<{
+  parent: { policy: number } | { agent: string };
+  task?: AutomatedTaskUI;
+  plat: string;
+}>();
 
-    // setup dropdowns
-    const { script, scriptName, scriptOptions, defaultTimeout, defaultArgs, defaultEnvVars } =
-      useScriptDropdown({
-        onMount: true,
-      });
+defineEmits(useDialogPluginComponent.emits);
 
-    // set defaultTimeout to 30
-    defaultTimeout.value = 30;
+// setup quasar dialog
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-    const { checkOptions, getCheckOptions } = useCheckDropdown(props.parent);
-    const { customFieldOptions } = useCustomFieldDropdown({ onMount: true });
+// setup dropdowns
+const { scriptOptions, getScriptById } = useScriptDropdown();
 
-    const isAgentTask = computed(() => {
-      return !!props.plat;
-    });
+const checkOptions = computed(() => {
+  if ("policy" in props.parent) {
+    const { policyCheckOptions } = usePolicyCheckDropdown(props.parent.policy);
+    return policyCheckOptions.value;
+  } else if ("agent" in props.parent) {
+    const { agentCheckOptions } = useAgentCheckDropdown(props.parent.agent);
+    return agentCheckOptions.value;
+  }
 
-    // add task logic
-    const task = props.task
-      ? ref(Object.assign({}, props.task))
-      : ref({
-          ...props.parent,
-          actions: [],
-          assigned_check: null,
-          custom_field: null,
-          name: null,
-          expire_date: null,
-          run_time_date: formatDateInputField(Date.now()),
-          run_time_bit_weekdays: [],
-          weekly_interval: 1,
-          daily_interval: 1,
-          monthly_months_of_year: [],
-          monthly_days_of_month: [],
-          monthly_weeks_of_month: [],
-          task_instance_policy: 0,
-          task_repetition_interval: null,
-          task_repetition_duration: null,
-          stop_task_at_duration_end: false,
-          random_task_delay: null,
-          remove_if_not_scheduled: false,
-          run_asap_after_missed: true,
-          task_type: "daily",
-          alert_severity: "info",
-          collector_all_output: false,
-          continue_on_error: true,
-          task_supported_platforms: [],
-        });
-
-    const isPosix = computed(() => {
-      return (
-        (!!props.plat && props.plat !== "windows") ||
-        task.value.task_supported_platforms?.includes("linux") ||
-        task.value.task_supported_platforms?.includes("darwin")
-      );
-    });
-
-    const task_supported_platforms = computed(() => {
-      // if editing, keep value from api
-      if (props.task) {
-        return props.task.task_supported_platforms;
-      }
-      // default for new tasks (policy tasks only)
-      if (!props.plat || !isPosix.value) {
-        return ["windows"];
-      } else if (props.plat === "linux") {
-        return ["linux"];
-      } else if (props.plat === "darwin") {
-        return ["darwin"];
-      }
-      return [];
-    });
-
-    // set the default, have to do it this way to avoid circular dependency issue
-    task.value.task_supported_platforms = task_supported_platforms.value;
-
-    const actionType = ref("script");
-    const command = ref("");
-    const shell = ref("cmd");
-    const custom_shell = ref("");
-    const monthlyType = ref("days");
-    const collector = ref(false);
-    const loading = ref(false);
-
-    // before-options check boxes that will select all options
-
-    // if all months is selected or cleared it will either clear the monthly_months_of_year array or add all options to it.
-    const allMonthsCheckbox = ref(false);
-    function toggleMonths() {
-      task.value.monthly_months_of_year = allMonthsCheckbox.value
-        ? monthOptions.map((month) => month.value)
-        : [];
-    }
-
-    const allMonthDaysCheckbox = ref(false);
-    function toggleMonthDays() {
-      task.value.monthly_days_of_month = allMonthDaysCheckbox.value
-        ? dayOfMonthOptions.map((day) => day.value)
-        : [];
-    }
-
-    const allWeekDaysCheckbox = ref(false);
-    function toggleWeekDays() {
-      task.value.run_time_bit_weekdays = allWeekDaysCheckbox.value
-        ? dayOfWeekOptions.map((day) => day.value)
-        : [];
-    }
-
-    // function for adding script and commands to be run from task
-    function addAction() {
-      if (actionType.value === "script" && (!script.value || !defaultTimeout.value)) {
-        notifyError("Script and timeout must be set");
-        return;
-      } else if (actionType.value === "cmd" && (!command.value || !defaultTimeout.value)) {
-        notifyError("A command and timeout must be set");
-        return;
-      }
-
-      if (actionType.value === "script") {
-        task.value.actions.push({
-          type: "script",
-          name: scriptName.value,
-          script: script.value,
-          timeout: defaultTimeout.value,
-          script_args: defaultArgs.value,
-          env_vars: defaultEnvVars.value,
-        });
-      } else if (actionType.value === "cmd") {
-        let tempShell = shell.value;
-        if (shell.value === "custom" && !!custom_shell.value) {
-          tempShell = custom_shell.value;
-        } else {
-          tempShell = shell.value;
-        }
-        task.value.actions.push({
-          type: "cmd",
-          command: command.value,
-          shell: tempShell,
-          timeout: defaultTimeout.value,
-        });
-      }
-
-      // clear fields after add
-      script.value = null;
-      defaultArgs.value = [];
-      defaultEnvVars.value = [];
-      defaultTimeout.value = 30;
-      command.value = "";
-    }
-
-    function removeAction(index) {
-      task.value.actions.splice(index, 1);
-    }
-
-    // runs whenever task data is saved
-    function processTaskDataforDB(taskData) {
-      // copy data
-      const data = Object.assign({}, taskData);
-
-      // converts fields from arrays to integers
-      data.run_time_bit_weekdays =
-        taskData.run_time_bit_weekdays.length > 0
-          ? convertFromBitArray(taskData.run_time_bit_weekdays)
-          : null;
-
-      data.monthly_months_of_year =
-        taskData.monthly_months_of_year.length > 0
-          ? convertFromBitArray(taskData.monthly_months_of_year)
-          : null;
-
-      data.monthly_days_of_month =
-        taskData.monthly_days_of_month.length > 0
-          ? convertFromBitArray(taskData.monthly_days_of_month)
-          : null;
-
-      data.monthly_weeks_of_month =
-        taskData.monthly_weeks_of_month.length > 0
-          ? convertFromBitArray(taskData.monthly_weeks_of_month)
-          : null;
-
-      // Add Z back to run_time_date and expires_date
-      data.run_time_date += "Z";
-
-      if (taskData.expire_date) data.expire_date += "Z";
-
-      // change task type if monthly day of week is set
-      if (task.value.task_type === "monthly" && monthlyType.value === "weeks") {
-        data.task_type = "monthlydow";
-      }
-
-      return data;
-    }
-
-    // runs when editing a task to convert values to be compatible with quasar
-    function processTaskDatafromDB() {
-      // converts fields from integers to arrays
-      task.value.run_time_bit_weekdays = task.value.run_time_bit_weekdays
-        ? convertToBitArray(task.value.run_time_bit_weekdays)
-        : [];
-      task.value.monthly_months_of_year = task.value.monthly_months_of_year
-        ? convertToBitArray(task.value.monthly_months_of_year)
-        : [];
-      task.value.monthly_days_of_month = task.value.monthly_days_of_month
-        ? convertToBitArray(task.value.monthly_days_of_month)
-        : [];
-      task.value.monthly_weeks_of_month = task.value.monthly_weeks_of_month
-        ? convertToBitArray(task.value.monthly_weeks_of_month)
-        : [];
-
-      // remove milliseconds and Z to work with native date input
-      task.value.run_time_date = formatDateInputField(task.value.run_time_date, true);
-
-      if (task.value.expire_date)
-        task.value.expire_date = formatDateInputField(task.value.expire_date, true);
-
-      // set task type if monthlydow is being used
-      if (task.value.task_type === "monthlydow") {
-        task.value.task_type = "monthly";
-        monthlyType.value = "weeks";
-      }
-    }
-
-    async function submit() {
-      loading.value = true;
-      try {
-        const result = props.task
-          ? await updateTask(task.value.id, processTaskDataforDB(task.value))
-          : await saveTask(processTaskDataforDB(task.value));
-        notifySuccess(result);
-        onDialogOK();
-      } catch (e) {
-        console.error(e);
-      }
-      loading.value = false;
-    }
-
-    // format task data to match what quasar expects if editing
-    if (props.task) processTaskDatafromDB();
-
-    watch(
-      () => task.value.task_type,
-      () => {
-        task.value.assigned_check = null;
-        task.value.run_time_bit_weekdays = [];
-        task.value.remove_if_not_scheduled = false;
-        task.value.task_repetition_interval = null;
-        task.value.task_repetition_duration = null;
-        task.value.stop_task_at_duration_end = false;
-        task.value.random_task_delay = null;
-        task.value.weekly_interval = 1;
-        task.value.daily_interval = 1;
-        task.value.monthly_months_of_year = [];
-        task.value.monthly_days_of_month = [];
-        task.value.monthly_weeks_of_month = [];
-        task.value.task_instance_policy = 0;
-        task.value.expire_date = null;
-      },
-    );
-
-    // check the collector box when editing task and custom field is set
-    if (props.task && props.task.custom_field) collector.value = true;
-
-    // stepper logic
-    const step = ref(1);
-    const isValidStep1 = ref(true);
-    const isValidStep2 = ref(true);
-    const isValidStep3 = ref(true);
-
-    function validateStep(form, stepper) {
-      if (step.value === 1 && task.value.task_supported_platforms.length === 0) {
-        notifyError("There must be at least one supported platform");
-        return;
-      }
-
-      if (step.value === 2) {
-        if (task.value.actions.length > 0) {
-          isValidStep2.value = true;
-          stepper.next();
-          return;
-        } else {
-          notifyError("There must be at least one action");
-        }
-
-        // steps 1 or 3
-      } else {
-        form.validate().then((result) => {
-          if (step.value === 1) {
-            isValidStep1.value = result;
-            if (result) stepper.next();
-          } else if (step.value === 3) {
-            isValidStep3.value = result;
-            if (result) submit();
-          }
-        });
-      }
-    }
-
-    onMounted(() => {
-      getCheckOptions(props.parent);
-    });
-
-    return {
-      // reactive data
-      state: task,
-      script,
-      defaultTimeout,
-      defaultArgs,
-      defaultEnvVars,
-      actionType,
-      command,
-      shell,
-      custom_shell,
-      allMonthsCheckbox,
-      allMonthDaysCheckbox,
-      allWeekDaysCheckbox,
-      collector,
-      monthlyType,
-      loading,
-      step,
-      isValidStep1,
-      isValidStep2,
-      isValidStep3,
-      scriptOptions,
-      checkOptions,
-      customFieldOptions,
-      isPosix,
-      isAgentTask,
-
-      // non-reactive data
-      validateTimePeriod,
-      convertPeriodToSeconds,
-      severityOptions,
-      dayOfWeekOptions,
-      dayOfMonthOptions,
-      weekOptions,
-      monthOptions,
-      taskTypeOptions,
-      taskInstancePolicyOptions,
-      envVarsLabel,
-      plat_options,
-
-      // methods
-      submit,
-      validateStep,
-      addAction,
-      removeAction,
-      toggleMonths,
-      toggleMonthDays,
-      toggleWeekDays,
-
-      // quasar dialog
-      dialogRef,
-      onDialogHide,
-    };
-  },
+  return [];
 });
+
+// setup stores
+const taskStore = useTaskStore();
+
+const { customFieldOptions } = useCustomFieldDropdown();
+
+const isAgentTask = computed(() => {
+  return !!props.plat;
+});
+
+// add task logic
+const localTask = props.task
+  ? reactive<AutomatedTaskUI>(Object.assign({}, props.task))
+  : reactive<AutomatedTaskUI>({
+      ...props.parent,
+      id: 0,
+      enabled: true,
+      email_alert: false,
+      text_alert: false,
+      dashboard_alert: false,
+      actions: [],
+      assigned_check: null,
+      custom_field: null,
+      name: "",
+      expire_date: null,
+      run_time_date: formatDateInputField(Date.now()),
+      run_time_bit_weekdays: [],
+      weekly_interval: 1,
+      daily_interval: 1,
+      monthly_months_of_year: [],
+      monthly_days_of_month: [],
+      monthly_weeks_of_month: [],
+      task_instance_policy: 0,
+      task_repetition_interval: null,
+      task_repetition_duration: null,
+      stop_task_at_duration_end: false,
+      random_task_delay: null,
+      remove_if_not_scheduled: false,
+      run_asap_after_missed: true,
+      task_type: "daily",
+      alert_severity: "info",
+      collector_all_output: false,
+      continue_on_error: true,
+      task_supported_platforms: [] as AgentPlat[],
+    });
+
+const isPosix = computed(() => {
+  return (
+    (!!props.plat && props.plat !== "windows") ||
+    localTask.task_supported_platforms?.includes("linux") ||
+    localTask.task_supported_platforms?.includes("darwin")
+  );
+});
+
+const task_supported_platforms = computed<AgentPlat[]>(() => {
+  // if editing, keep value from api
+  if (props.task) {
+    return props.task.task_supported_platforms;
+  }
+  // default for new tasks (policy tasks only)
+  if (!props.plat || !isPosix.value) {
+    return ["windows"];
+  } else if (props.plat === "linux") {
+    return ["linux"];
+  } else if (props.plat === "darwin") {
+    return ["darwin"];
+  }
+  return [];
+});
+
+// set the default, have to do it this way to avoid circular dependency issue
+localTask.task_supported_platforms = task_supported_platforms.value;
+
+const custom_shell = ref("");
+const monthlyType = ref("days");
+const collector = ref(false);
+
+// before-options check boxes that will select all options
+
+// if all months is selected or cleared it will either clear the monthly_months_of_year array or add all options to it.
+const allMonthsCheckbox = ref(false);
+function toggleMonths() {
+  localTask.monthly_months_of_year = allMonthsCheckbox.value
+    ? monthOptions.map((month) => month.value)
+    : [];
+}
+
+const allMonthDaysCheckbox = ref(false);
+function toggleMonthDays() {
+  localTask.monthly_days_of_month = allMonthDaysCheckbox.value
+    ? dayOfMonthOptions.map((day) => day.value)
+    : [];
+}
+
+const allWeekDaysCheckbox = ref(false);
+function toggleWeekDays() {
+  localTask.run_time_bit_weekdays = allWeekDaysCheckbox.value
+    ? dayOfWeekOptions.map((day) => day.value)
+    : [];
+}
+
+const action = reactive<TaskAction>({
+  name: "",
+  type: "script",
+  script_args: [],
+  env_vars: [],
+  script: null,
+  command: "",
+  shell: "cmd",
+  timeout: 90,
+});
+
+watch(
+  () => action.script,
+  (newValue) => {
+    // populate script default into action
+    if (newValue) {
+      const script = getScriptById(newValue);
+
+      if (script) {
+        action.name = script.name;
+        action.script_args = script.args;
+        action.env_vars = script.env_vars;
+        action.timeout = script.default_timeout;
+      }
+    }
+  },
+);
+
+// function for adding script and commands to be run from task
+function addAction() {
+  if (action.type === "script" && (!action.script || !action.timeout)) {
+    notifyError("Script and timeout must be set");
+    return;
+  } else if (action.type === "cmd" && (!action.command || !action.timeout)) {
+    notifyError("A command and timeout must be set");
+    return;
+  }
+
+  if (action.type === "script") {
+    localTask.actions.push(action);
+  } else if (action.type === "cmd") {
+    if (action.shell === "custom" && custom_shell.value) {
+      action.shell = custom_shell.value;
+    }
+
+    localTask.actions.push(action);
+
+    // reset action
+    action.name = "";
+    action.type = "script";
+    action.script_args = [];
+    action.env_vars = [];
+    action.script = null;
+    action.command = "";
+    action.shell = "cmd";
+    action.timeout = 90;
+  }
+}
+
+function removeAction(index: number) {
+  localTask.actions.splice(index, 1);
+}
+
+async function submit() {
+  taskStore.updateTask(localTask.id, localTask);
+  taskStore.addTask(localTask);
+
+  await until(() => taskStore.isLoading).toBe(false);
+
+  if (taskStore.isError) return;
+  onDialogOK();
+}
+
+watch(
+  () => localTask.task_type,
+  () => {
+    localTask.assigned_check = null;
+    localTask.run_time_bit_weekdays = [];
+    localTask.remove_if_not_scheduled = false;
+    localTask.task_repetition_interval = null;
+    localTask.task_repetition_duration = null;
+    localTask.stop_task_at_duration_end = false;
+    localTask.random_task_delay = null;
+    localTask.weekly_interval = 1;
+    localTask.daily_interval = 1;
+    localTask.monthly_months_of_year = [];
+    localTask.monthly_days_of_month = [];
+    localTask.monthly_weeks_of_month = [];
+    localTask.task_instance_policy = 0;
+    localTask.expire_date = null;
+  },
+);
+
+// check the collector box when editing task and custom field is set
+if (props.task && props.task.custom_field) collector.value = true;
+
+// stepper logic
+const stepper = useTemplateRef<QStepper>("stepper");
+const taskGeneralForm = useTemplateRef<QForm>("taskGeneralForm");
+const taskDetailForm = useTemplateRef<QForm>("taskDetailForm");
+
+const step = ref(1);
+const isValidStep1 = ref(true);
+const isValidStep2 = ref(true);
+const isValidStep3 = ref(true);
+
+function validateStep(form: QForm, stepper: QStepper) {
+  if (step.value === 1 && localTask.task_supported_platforms.length === 0) {
+    notifyError("There must be at least one supported platform");
+    return;
+  }
+
+  if (step.value === 2) {
+    if (localTask.actions.length > 0) {
+      isValidStep2.value = true;
+      stepper.next();
+      return;
+    } else {
+      notifyError("There must be at least one action");
+    }
+
+    // steps 1 or 3
+  } else {
+    void form.validate().then((result: boolean) => {
+      if (step.value === 1) {
+        isValidStep1.value = result;
+        if (result) stepper.next();
+      } else if (step.value === 3) {
+        isValidStep3.value = result;
+        if (result) void submit();
+      }
+    });
+  }
+}
 </script>
 
 <style scoped>
