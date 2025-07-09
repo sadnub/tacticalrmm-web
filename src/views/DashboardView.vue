@@ -130,7 +130,7 @@
                               dense
                               clickable
                               @click="
-                                urlActionStore.runURLAction(
+                                runURLAction(
                                   action.id,
                                   props.node.children ? 'client' : 'site',
                                   props.node.id,
@@ -218,7 +218,7 @@ import { useQuasar, QTree } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useClientStore } from "src/core/clients/api";
 import { useSiteStore } from "src/core/clients/api";
-import { useURLActionStore } from "src/core/settings/api";
+import { useURLActionStore, runURLAction } from "src/core/settings/api";
 import axios from "axios";
 
 // import ui

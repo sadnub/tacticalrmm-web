@@ -20,9 +20,7 @@
           @click="scriptStore.getScripts({ force: true })"
         />Script Manager
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <div class="row q-pt-xs q-pl-xs">
         <q-btn-dropdown icon="add" label="New" no-caps dense flat>

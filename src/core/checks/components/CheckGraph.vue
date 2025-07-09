@@ -5,9 +5,7 @@
         <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getCheckHistory" />
         {{ check.readable_desc + " history" }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <div class="row">
         <span v-if="!showChart" class="q-pa-md">No Data</span>

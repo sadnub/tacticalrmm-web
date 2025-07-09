@@ -4,9 +4,7 @@
       <q-bar>
         {{ modalTitle }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-form @submit.prevent="submit">
         <q-card-section>
@@ -83,7 +81,7 @@
           <tactical-dropdown
             v-model="state.script"
             :rules="[(val: string) => !!val || '*Required']"
-            :options="scriptOptions"
+            :options="filterByPlatformOptions"
             label="Select Script"
             filled
             map-options
@@ -242,7 +240,7 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, reactive, computed, watch } from "vue";
+import { ref, reactive, computed, watch, toRef } from "vue";
 import { useDialogPluginComponent, openURL } from "quasar";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
@@ -255,6 +253,7 @@ import { until } from "@vueuse/shared";
 
 // type imports
 import type { BulkActionMode, RunBulkActionRequest } from "../types";
+import type { Script } from "src/core/scripts/types";
 
 // static data
 const monTypeOptions = [
@@ -343,30 +342,38 @@ const state = reactive<RunBulkActionRequest>({
 });
 
 // dropdown setup
-const { getScriptById } = useScriptDropdown();
+const platform = toRef(state, "osType");
 
-const scriptOptions = computed(() => {
-  const { filterByPlatformOptions } = useScriptDropdown(state.osType);
-  return filterByPlatformOptions.value;
-});
+const { filterByPlatformOptions, getScriptById } = useScriptDropdown(platform);
 
 const { agentOptions } = useAgentDropdown();
 const { siteOptions } = useSiteDropdown();
 const { clientOptions } = useClientDropdown();
 const { customFieldOptions } = useCustomFieldDropdown();
 
-const selectedScript = computed(() => {
-  if (state.script) return getScriptById(state.script);
-  else return undefined;
-});
+const selectedScript = ref<Script | null>(null);
 
-watch(selectedScript, (newValue) => {
-  if (newValue) {
-    state.timeout = newValue?.default_timeout;
-    state.args = newValue.args;
-    state.env_vars = newValue.env_vars;
-  }
-});
+watch(
+  () => state.script,
+  (newValue) => {
+    if (newValue) {
+      const script = getScriptById(newValue);
+
+      selectedScript.value = script;
+
+      if (script) {
+        state.timeout = script.default_timeout;
+        state.args = script.args;
+        state.env_vars = script.env_vars;
+      }
+    } else {
+      selectedScript.value = null;
+      state.timeout = 30;
+      state.args = [];
+      state.env_vars = [];
+    }
+  },
+);
 
 const collector = ref(false);
 

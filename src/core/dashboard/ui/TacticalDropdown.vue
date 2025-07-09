@@ -1,9 +1,9 @@
 <template>
   <q-select
+    v-model="value"
     dense
     options-dense
-    :options="filtered ? filteredOptions : options"
-    :model-value="value"
+    :options="displayedOptions"
     :map-options="mapOptions"
     :emit-value="mapOptions"
     :multiple="multiple"
@@ -26,38 +26,35 @@
 
     <template #option="scope">
       <!-- option category -->
-      <q-item-label
-        v-if="isHeaderOption(scope.opt)"
-        :key="`header-${scope.opt.category}`"
-        header
-        class="q-pa-sm"
-      >
-        {{ scope.opt.category }}
-      </q-item-label>
-
-      <!-- normal object option -->
       <q-item
-        v-else-if="isSelectableOption(scope.opt)"
-        :key="`option-${scope.opt.value}`"
+        :key="scope.opt.value"
         v-bind="scope.itemProps"
-        class="q-pl-lg"
+        dense
+        :clickable="scope.opt.type === 'option'"
+        :class="{ 'q-pl-lg': scope.opt.type === 'option' }"
       >
-        <q-item-section>
-          <q-item-label>{{ scope.opt.label }}</q-item-label>
+        <q-item-section v-if="isHeaderOption(scope.opt)">
+          <q-item-label class="text-subtitle1 text-grey-8">
+            {{ scope.opt.label }}
+          </q-item-label>
         </q-item-section>
-        <q-item-section v-if="filtered || scope.opt.img_right" side>
-          {{ filtered ? scope.opt.category : "" }}
-          <img
-            v-if="scope.opt.img_right"
-            :src="scope.opt.img_right"
-            style="height: 20px; max-width: 20px"
-          />
-        </q-item-section>
-      </q-item>
 
-      <!-- string option-->
-      <q-item v-else :key="scope.opt" v-bind="scope.itemProps" class="q-pl-lg">
-        <q-item-section>
+        <!-- normal object option -->
+        <template v-else-if="isSelectableOption(scope.opt) || typeof scope.opt === 'object'">
+          <q-item-section>
+            <q-item-label>{{ scope.opt.label }}</q-item-label>
+          </q-item-section>
+          <q-item-section v-if="scope.opt.img_right" side>
+            <img
+              v-if="scope.opt.img_right"
+              :src="scope.opt.img_right"
+              style="height: 20px; max-width: 20px"
+            />
+          </q-item-section>
+        </template>
+
+        <!-- string option-->
+        <q-item-section v-else>
           <q-item-label>{{ scope.opt }}</q-item-label>
         </q-item-section>
       </q-item>
@@ -70,27 +67,29 @@ import { ref, computed } from "vue";
 
 // type imports
 import { type Option, isHeaderOption, isSelectableOption } from "src/core/dashboard/types";
+import { type QSelect } from "quasar";
 
 const props = defineProps<{
-  options: (Option | string)[];
+  options?: (Option | string)[];
   mapOptions?: boolean;
   multiple?: boolean;
   filterable?: boolean;
 }>();
 
-const value = defineModel<number | string | null>({ required: true });
+const value = defineModel<number | string | string[] | null>({ required: true });
 const filtered = ref(false);
-const filteredOptions = ref<(Option | string)[]>(props.options);
+const focused = ref(false);
+const displayedOptions = ref<(Option | string)[] | undefined>(props.options);
 
 function filterFn(val: string, update: (callback: () => void) => void) {
   update(() => {
     if (val === "") {
-      filteredOptions.value = props.options;
+      displayedOptions.value = props.options;
       return;
     }
 
     const needle = val.toLowerCase();
-    filteredOptions.value = props.options.filter((option) => {
+    const tempOptions = props.options?.filter((option) => {
       if (typeof option === "string") {
         return props.mapOptions ? false : option.toLowerCase().indexOf(needle) > -1;
       }
@@ -104,12 +103,23 @@ function filterFn(val: string, update: (callback: () => void) => void) {
       }
       return false;
     });
+
+    displayedOptions.value = tempOptions?.filter((option, index, arr) => {
+      if (typeof option === "string" || isSelectableOption(option)) {
+        return true;
+      }
+
+      // check the next item in the array.
+      const nextItem = arr[index + 1];
+
+      const isOrphan = !nextItem || (typeof nextItem !== "string" && !isSelectableOption(nextItem));
+
+      return !isOrphan;
+    });
   });
 }
 
 const filterEvent = computed(() => {
   return props.filterable ? "filter" : null;
 });
-
-const focused = ref(false);
 </script>

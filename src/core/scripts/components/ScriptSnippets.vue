@@ -19,9 +19,7 @@
           @click="snippetStore.getScriptSnippets({ force: true })"
         />Script Snippets
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <tactical-table
         dense

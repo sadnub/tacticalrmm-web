@@ -12,6 +12,7 @@ export function useAgentCheckDropdown(agent_id: string) {
     return agentStore.agentChecks.map(
       (check) =>
         ({
+          type: "option",
           label: check.readable_desc,
           value: check.id,
         }) as Option,
@@ -32,6 +33,7 @@ export function usePolicyCheckDropdown(policyId: number) {
     return policyStore.policyChecks.map(
       (check) =>
         ({
+          type: "option",
           label: check.readable_desc,
           value: check.id,
         }) as Option,

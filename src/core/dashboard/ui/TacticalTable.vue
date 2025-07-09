@@ -39,7 +39,7 @@ export default defineComponent({
 </script>
 
 <script setup lang="ts">
-import { ref, computed, defineExpose, useTemplateRef, provide } from "vue";
+import { ref, computed, useTemplateRef, provide } from "vue";
 import { useStorage } from "@vueuse/core";
 import type { QTable, QTableProps } from "quasar";
 import { exportToCsv } from "src/utils/csv";

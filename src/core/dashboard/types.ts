@@ -3,13 +3,13 @@ import type { QTableColumn } from "quasar";
 import type { Client, Site } from "src/core/clients/types";
 
 interface BaseOption {
-  category: string;
+  label: string;
+  value: number | string;
 }
 export interface SelectableOption extends BaseOption {
   type: "option";
-  label: string;
-  value: number | string;
   img_right?: string;
+  category: string;
 }
 
 export interface HeaderOption extends BaseOption {

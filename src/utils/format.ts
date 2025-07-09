@@ -1,40 +1,18 @@
 import { date } from "quasar";
 import { validateTimePeriod } from "src/utils/validation";
 import type { CustomField, CustomFieldValue, CustomFieldValueField } from "src/core/settings/types";
+import type { Option } from "src/core/dashboard/types";
+import { isHeaderOption } from "src/core/dashboard/types";
 
-// dropdown options formatting
-export interface SelectOptionCategory {
-  category: string;
-}
-
-export interface OptionWithoutCategory {
-  label: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [x: string]: any;
-}
-
-export type Option = SelectOptionCategory | OptionWithoutCategory | string;
-
-export function removeExtraOptionCategories(array: Option[]) {
-  const tmp: Option[] = [];
-  for (let i = 0; i < array.length; i++) {
-    const currentOption = array[i];
-    const nextOption = array[i + 1];
-
-    const isCurrentCategory = typeof currentOption === "object" && "category" in currentOption;
-    const isNextCategory = typeof nextOption === "object" && "category" in nextOption;
-
-    if (i === array.length - 1) {
-      if (!isCurrentCategory && currentOption) {
-        tmp.push(currentOption);
-      }
-    } else if (!(isCurrentCategory && isNextCategory) && currentOption) {
-      tmp.push(currentOption);
+export function removeEmptyCategories(options: Option[]): Option[] {
+  return options.filter((item, index, arr) => {
+    if (!isHeaderOption(item)) {
+      return true;
     }
-  }
-  return tmp;
+
+    const nextItem = arr[index + 1];
+    return nextItem && !isHeaderOption(nextItem);
+  });
 }
 
 // format data for ui custom field inputs

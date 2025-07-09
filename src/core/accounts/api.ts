@@ -2,6 +2,7 @@ import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import axios from "axios";
 import { notifySuccess } from "src/utils/notify";
+import { useDashboardStore } from "src/stores/dashboard";
 import type { User, UserSession, Role } from "./types";
 
 export const useUserStore = defineStore(
@@ -14,6 +15,8 @@ export const useUserStore = defineStore(
     const isError = ref(false);
 
     const userCount = computed(() => users.value.length);
+
+    const dashStore = useDashboardStore();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function getUsers(_args?: { force: boolean }) {
@@ -69,18 +72,18 @@ export const useUserStore = defineStore(
         });
     }
 
-    function updateUserPreferences(userId: number, payload: Partial<User>) {
+    function updateUserPreferences(payload: Partial<User>) {
       isLoading.value = true;
       isError.value = false;
       axios
         .put<User>(`/accounts/users/ui/`, payload)
-        .then(({ data: updatedUser }) => {
-          const index = users.value.findIndex((user) => user.id === userId);
+        .then(({ data }) => {
+          const index = users.value.findIndex((user) => user.id === data.id);
           if (index !== -1) {
-            users.value[index] = updatedUser;
+            users.value[index] = data;
           }
-
-          // TODO: Update dashboard store values here
+          void dashStore.getDashInfo({ force: true });
+          dashStore.refreshDashboard();
           notifySuccess("User was modified successfully");
         })
         .catch(() => {

@@ -4,11 +4,9 @@
       <q-bar>
         {{ !!site ? `Editing ${site.name}` : "Adding Site" }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-form @submit="submit">
+      <q-form @submit.prevent="submit">
         <q-card-section>
           <tactical-dropdown
             v-model="state.client"
@@ -30,8 +28,10 @@
           />
         </q-card-section>
 
-        <div v-if="fieldStore.customFields.length > 0" class="q-pl-sm text-h6">Custom Fields</div>
-        <q-card-section v-for="field in fieldStore.customFields" :key="field.id">
+        <div v-if="fieldStore.siteCustomFields.length > 0" class="q-pl-sm text-h6">
+          Custom Fields
+        </div>
+        <q-card-section v-for="field in fieldStore.siteCustomFields" :key="field.id">
           <CustomField v-model="siteCustomFieldValues[field.name]" :field="field" />
         </q-card-section>
 

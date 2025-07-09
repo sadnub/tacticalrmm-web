@@ -4,11 +4,9 @@
       <q-bar>
         {{ !!client ? `Editing ${client.name}` : "Adding Client" }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-form @submit="submit">
+      <q-form @submit.prevent="submit">
         <q-card-section>
           <q-input
             v-model="state.name"

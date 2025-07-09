@@ -10,9 +10,7 @@
       <q-bar>
         <span class="q-pr-sm">{{ title }}</span>
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <div class="row">
         <q-input

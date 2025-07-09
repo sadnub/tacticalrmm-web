@@ -11,6 +11,7 @@ export function useClientDropdown() {
     return clientStore.clients.map(
       (client) =>
         ({
+          type: "option",
           label: client.name,
           value: client.id,
         }) as Option,
@@ -49,7 +50,7 @@ function _formatSiteOptions(data: Client[]) {
   const options = [] as SiteOption[];
 
   data.forEach((client) => {
-    options.push({ type: "header", category: client.name });
+    options.push({ type: "header", label: client.name, value: `header_${client.name}` });
     options.push(
       ...client.sites.map(
         (site) =>

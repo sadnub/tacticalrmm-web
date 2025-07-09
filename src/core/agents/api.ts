@@ -22,6 +22,7 @@ import type {
   RunScriptRequest,
   AgentVersionsResponse,
   AgentCommandRequest,
+  UpdateAgentRequest,
 } from "./types";
 import type { Check } from "../checks/types";
 import type { AutomatedTask } from "../tasks/types";
@@ -93,7 +94,7 @@ export const useAgentStore = defineStore(
         });
     }
 
-    function updateAgent(agentId: string, payload: Partial<Agent>) {
+    function updateAgent(agentId: string, payload: Partial<UpdateAgentRequest>) {
       isLoading.value = true;
       isError.value = false;
       axios
@@ -710,6 +711,23 @@ export const useAgentStore = defineStore(
         });
     }
 
+    function bulkAgentRecovery() {
+      isLoading.value = true;
+      isError.value = false;
+
+      // TODO: should use a post instead of get
+      axios
+        .get("/agents/bulkrecovery/")
+        .then(() => {
+          notifySuccess("Agents will now be recovered");
+        })
+        .catch(() => {
+          isError.value = true;
+        })
+        .finally(() => {
+          isLoading.value = false;
+        });
+    }
     return {
       agents,
       selectedAgent,
@@ -772,6 +790,7 @@ export const useAgentStore = defineStore(
       sendAgentServiceAction,
       getAgentVersions,
       updateAgentVersions,
+      bulkAgentRecovery,
     };
   },
   {

@@ -1,4 +1,6 @@
-import { computed, onMounted } from "vue";
+import type { MaybeRef } from "vue";
+import { computed, onMounted, unref } from "vue";
+import { removeEmptyCategories } from "src/utils/format";
 import trmmLogo from "src/assets/trmm_256.png";
 
 import { useScriptStore } from "./api";
@@ -11,16 +13,14 @@ export type ScriptOption = HeaderOption | ScriptSelectableOption;
 
 const baseUrl = "https://github.com/amidaware/community-scripts/blob/main/scripts/";
 
-export function useScriptDropdown(plat?: AgentPlat) {
+export function useScriptDropdown(plat?: MaybeRef<AgentPlat | "all">) {
   const scriptStore = useScriptStore();
-
-  onMounted(scriptStore.getScripts);
 
   const scriptOptions = computed(() => formatScriptOptions(scriptStore.scripts));
 
   const filterByPlatformOptions = computed(() => {
-    console.log(scriptOptions.value);
-    if (!plat) {
+    const currentPlat = unref(plat);
+    if (!currentPlat || currentPlat === "all") {
       return scriptOptions.value;
     }
 
@@ -30,7 +30,7 @@ export function useScriptDropdown(plat?: AgentPlat) {
       return (
         !item.supported_platforms ||
         item.supported_platforms.length === 0 ||
-        item.supported_platforms.includes(plat)
+        item.supported_platforms.includes(currentPlat)
       );
     });
 
@@ -68,6 +68,8 @@ export function useScriptDropdown(plat?: AgentPlat) {
     ) as ScriptSelectableOption;
   }
 
+  onMounted(scriptStore.getScripts);
+
   return {
     scriptOptions,
     filterByPlatformOptions,
@@ -76,17 +78,6 @@ export function useScriptDropdown(plat?: AgentPlat) {
     isLoading: computed(() => scriptStore.isLoading),
     getScriptById,
   };
-}
-
-function removeEmptyCategories(options: ScriptOption[]): ScriptOption[] {
-  return options.filter((item, index, arr) => {
-    if (!isHeaderOption(item)) {
-      return true;
-    }
-
-    const nextItem = arr[index + 1];
-    return nextItem && !isHeaderOption(nextItem);
-  });
 }
 
 export function formatScriptOptions(data: Script[]): ScriptOption[] {
@@ -107,7 +98,7 @@ export function formatScriptOptions(data: Script[]): ScriptOption[] {
   });
 
   return sortedCategories.flatMap((cat) => {
-    const header: HeaderOption = { category: cat, type: "header" };
+    const header: HeaderOption = { label: cat, type: "header", value: `header_${cat}` };
 
     const scripts = categoryMap
       .get(cat)!

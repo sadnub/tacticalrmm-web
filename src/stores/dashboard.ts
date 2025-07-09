@@ -46,6 +46,7 @@ export interface DashboardSettings {
   darkMode: boolean;
   loadingBarColor: string;
   dateFormat: string;
+  timezoneOptions: string[];
 }
 
 export const useDashboardStore = defineStore(
@@ -90,6 +91,7 @@ export const useDashboardStore = defineStore(
       loadingBarColor: "",
       darkMode: false,
       dateFormat: "MMM-DD-YYYY - HH:mm",
+      timezoneOptions: [],
     });
 
     const tabHeight = ref(300);
@@ -159,6 +161,7 @@ export const useDashboardStore = defineStore(
       dashboardSettings.dashInfoColor = data.dash_info_color;
       dashboardSettings.loadingBarColor = data.loading_bar_color;
       dashboardSettings.darkMode = data.dark_mode;
+      dashboardSettings.timezoneOptions = data.timezone_options;
 
       if (data.date_format) dashboardSettings.dateFormat = data.date_format;
     }
@@ -229,7 +232,7 @@ export const useDashboardStore = defineStore(
     watch(
       () => dashboardSettings.clientTreeSplitter,
       (newValue) => {
-        setClientTreeSplitter(newValue);
+        setClientTreeSplitter(Math.floor(newValue));
       },
     );
 

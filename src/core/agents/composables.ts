@@ -46,7 +46,10 @@ export function _formatAgentOptions(data: Agent[]): Option[] {
 
   return Array.from(categoryMap.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .flatMap(([category, agents]) => [{ type: "header", category }, ...agents]);
+    .flatMap(([category, agents]) => [
+      { type: "header", label: category, value: `header_${category}` },
+      ...agents,
+    ]);
 }
 
 export function useAgentDiskDropdown(agent_id: string) {

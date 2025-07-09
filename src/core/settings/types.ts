@@ -51,7 +51,7 @@ export type CustomFieldType = "text" | "number" | "single" | "multiple" | "check
 
 export interface CustomField {
   id: number;
-  order: number;
+  order?: number;
   model: CustomFieldModel;
   type: CustomFieldType;
   options: string[];
@@ -62,7 +62,7 @@ export interface CustomField {
   default_values_multiple: string[];
   hide_in_ui: boolean;
   hide_in_summary: boolean;
-  default_value: string | boolean | string[];
+  default_value?: string | boolean | string[];
 }
 
 export type CustomFieldValueField = string | boolean | number | string[];
@@ -103,7 +103,7 @@ export interface TestRunURLActionRequest {
   rest_headers: string;
   rest_method: RESTMethodType;
   run_instance_type: string;
-  run_instance_id: number | null;
+  run_instance_id: string | number | null;
 }
 
 export interface APIKey {
@@ -113,4 +113,15 @@ export interface APIKey {
   user: number;
   expiration: string;
   created_time?: string;
+}
+
+export interface GlobalKey {
+  id: number;
+  name: string;
+  value: string;
+}
+
+export interface ServerMaintenanceRequest {
+  action: number | null;
+  prune_tables: string[];
 }

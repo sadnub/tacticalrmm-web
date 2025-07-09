@@ -469,9 +469,10 @@ import { useRoute } from "vue-router";
 import { type QTableColumn, useQuasar } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAgentStore } from "../api";
-import { useURLActionStore } from "src/core/settings/api";
+import { runURLAction } from "src/core/settings/api";
 import { date } from "quasar";
 import { capitalize, getTimeLapse } from "src/utils/format";
+import { until } from "@vueuse/core";
 
 // ui imports
 import EditAgent from "./EditAgent.vue";
@@ -487,7 +488,6 @@ const $q = useQuasar();
 // setup stores
 const dashboardStore = useDashboardStore();
 const agentStore = useAgentStore();
-const actionStore = useURLActionStore();
 
 const tab = computed(() => dashboardStore.dashboardSettings.defaultAgentTblTab);
 const tableHeight = computed(() => dashboardStore.tableHeight);
@@ -784,12 +784,13 @@ function filterTable(
   });
 }
 
-function rowDoubleClicked(agentId: string, agentPlatform: string) {
+async function rowDoubleClicked(agentId: string, agentPlatform: string) {
   agentStore.selectedAgentId = agentId;
   agentStore.getAgent(agentId);
   switch (agentDblClickAction.value) {
     case "editagent":
-      showEditAgent(agentId);
+      await until(() => agentStore.isLoading).toBe(false, { timeout: 5000 });
+      if (agentStore.selectedAgent) showEditAgent(agentStore.selectedAgent);
       break;
     case "takecontrol":
       agentStore.runTakeControl(agentId);
@@ -798,7 +799,7 @@ function rowDoubleClicked(agentId: string, agentPlatform: string) {
       agentStore.runRemoteBackground(agentId, agentPlatform);
       break;
     case "urlaction":
-      if (agentUrlAction.value) actionStore.runURLAction(agentUrlAction.value, "agent", agentId);
+      if (agentUrlAction.value) await runURLAction(agentUrlAction.value, "agent", agentId);
       break;
   }
 }
@@ -842,17 +843,17 @@ function overdueAlert(
 
 function rowSelectedClass(agent_id: string) {
   if (agent_id === agentStore.selectedAgentId) {
-    return $q.dark.isActive ? "highlight-dark" : "highlight";
+    return $q.dark.isActive ? "highlight-dark cursor-pointer" : "highlight cursor-pointer";
   } else {
-    return "";
+    return "cursor-pointer";
   }
 }
 
-function showEditAgent(agent_id: string) {
+function showEditAgent(agent: Agent) {
   $q.dialog({
     component: EditAgent,
     componentProps: {
-      agent_id: agent_id,
+      agent: agent,
     },
   });
 }

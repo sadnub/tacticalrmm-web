@@ -4,9 +4,7 @@
       <q-bar>
         {{ task ? `Editing Automated Task: ${task.name}` : "Adding Automated Task" }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-card-section v-if="scriptOptions.length === 0">
         <p>You need to upload a script first</p>

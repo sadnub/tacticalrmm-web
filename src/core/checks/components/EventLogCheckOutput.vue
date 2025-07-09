@@ -4,9 +4,7 @@
       <q-bar>
         {{ evtLogData.readable_desc }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <div v-if="evtLogData.check_result?.extra_details">
         <tactical-table

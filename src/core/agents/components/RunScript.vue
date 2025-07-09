@@ -16,9 +16,7 @@
         <q-btn dense flat icon="crop_square" :disable="maximized" @click="maximized = true">
           <q-tooltip v-if="!maximized" class="bg-white text-primary">Maximize</q-tooltip>
         </q-btn>
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-form @submit.prevent="sendScript">
         <q-card-section>
@@ -206,7 +204,7 @@ import ScriptOutputCopyClip from "src/core/scripts/components/ScriptOutputCopyCl
 // types
 import type { Agent } from "src/types/agents";
 import type { RunScriptRequest } from "../types";
-import type { ScriptResult } from "src/core/scripts/types";
+import type { Script, ScriptResult } from "src/core/scripts/types";
 import { isScriptResult } from "src/core/scripts/types";
 
 // store
@@ -259,18 +257,30 @@ const state = reactive<RunScriptRequest>({
 const ret = ref<ScriptResult | string>("");
 const maximized = ref(false);
 
-const selectedScript = computed(() => {
-  if (state.script) return getScriptById(state.script);
-  else return undefined;
-});
+const selectedScript = ref<Script | null>(null);
 
-watch(selectedScript, (newValue) => {
-  if (newValue) {
-    state.timeout = newValue?.default_timeout;
-    state.args = newValue.args;
-    state.env_vars = newValue.env_vars;
-  }
-});
+watch(
+  () => state.script,
+  (newValue) => {
+    if (newValue) {
+      const script = getScriptById(newValue);
+
+      selectedScript.value = script;
+
+      if (script) {
+        state.timeout = script.default_timeout;
+        state.args = script.args;
+        state.env_vars = script.env_vars;
+      }
+    } else {
+      selectedScript.value = null;
+      state.timeout = 30;
+      state.args = [];
+      state.env_vars = [];
+    }
+  },
+  { immediate: true },
+);
 
 async function sendScript() {
   try {

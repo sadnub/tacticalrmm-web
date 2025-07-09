@@ -1,3 +1,7 @@
+import type { AlertTemplate } from "../alerts/types";
+import type { Policy, WinPatchPolicy } from "../automation/types";
+import type { CustomFieldValue } from "../settings/types";
+
 export type AgentPlat = "windows" | "linux" | "darwin";
 export type AgentMonitoringType = "server" | "workstation";
 export type GoArch = "amd64" | "386" | "arm64" | "arm";
@@ -41,13 +45,13 @@ export interface Agent {
   time_zone?: string;
   maintenance_mode: boolean;
   block_policy_inheritance: boolean;
-  alert_template?: number;
+  alert_template?: AlertTemplate;
   site_name: string;
   site: number;
   client: number;
   policy?: number;
   patch_policy: number;
-  custom_fields: AgentCustomField[];
+  custom_fields: AgentCustomFieldValue[];
   cpu_model: string[];
   status: "online" | "overdue" | "offline";
   make_model: string;
@@ -64,6 +68,9 @@ export interface Agent {
   pending_actions_count: number;
   physical_disks: string;
   graphics: string;
+  winupdatepolicy: WinPatchPolicy[];
+  effective_patch_policy: WinPatchPolicy;
+  applied_policies: Record<string, Policy>;
 }
 
 export interface AgentEventLog {
@@ -172,13 +179,8 @@ export interface AgentNote {
   entry_time: string;
 }
 
-export interface AgentCustomField {
-  id: number;
-  agent: string;
-  field: number;
-  string_value: string | null;
-  bool_value: boolean;
-  multiple_value: string[];
+export interface AgentCustomFieldValue extends CustomFieldValue {
+  agent?: number;
 }
 
 export type AgentHistoryType = "task_run" | "script_run" | "cmd_run";
@@ -271,4 +273,21 @@ export interface AgentCommandRequest {
   shell: CommandShellType;
   custom_shell: string | null;
   run_as_user: boolean;
+}
+
+export interface UpdateAgentRequest {
+  id: number;
+  hostname: string;
+  site: number;
+  monitoring_type: string;
+  description?: string | undefined;
+  time_zone?: string | null | undefined;
+  check_interval: number;
+  offline_time: number;
+  overdue_time: number;
+  overdue_email_alert: boolean;
+  overdue_text_alert: boolean;
+  overdue_dashboard_alert: boolean;
+  custom_fields?: AgentCustomFieldValue[] | undefined;
+  maintenance_mode?: boolean;
 }

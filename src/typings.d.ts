@@ -16,10 +16,8 @@ export interface Window {
 }
 
 export interface Integrations {
-  fileBarIntegrations: string[];
-  clientMenuIntegrations: string[];
-  siteMenuIntegrations: string[];
-  agentMenuIntegrations: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
 
 declare module "@vue/runtime-core" {

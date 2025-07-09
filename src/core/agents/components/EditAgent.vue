@@ -1,6 +1,11 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="min-width: 800px">
+      <q-bar>
+        Edit {{ agent.hostname }}
+        <q-space />
+        <q-btn v-close-popup dense flat icon="close" />
+      </q-bar>
       <q-splitter v-model="splitterModel">
         <template #before>
           <q-tabs v-model="tab" dense vertical class="text-primary">
@@ -11,12 +16,7 @@
           </q-tabs>
         </template>
         <template #after>
-          <q-form @submit.prevent="editAgent">
-            <q-card-section class="row items-center">
-              <div class="text-h6">Edit {{ agent.hostname }}</div>
-              <q-space />
-              <q-btn v-close-popup icon="close" flat round dense />
-            </q-card-section>
+          <q-form @submit.prevent="submit">
             <div class="scroll" style="height: 65vh; max-height: 65vh">
               <q-tab-panels
                 v-model="tab"
@@ -30,7 +30,7 @@
                     <div class="col-2">Site:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
-                      v-model="agent.site"
+                      v-model="localAgent.site"
                       class="col-8"
                       :options="siteOptions"
                       filled
@@ -42,36 +42,36 @@
                     <div class="col-2">Type:</div>
                     <div class="col-2"></div>
                     <q-select
-                      v-model="agent.monitoring_type"
+                      v-model="localAgent.monitoring_type"
                       dense
                       options-dense
                       filled
-                      :options="monTypes"
+                      :options="['server', 'workstation']"
                       class="col-8"
                     />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-2">Description:</div>
                     <div class="col-2"></div>
-                    <q-input v-model="agent.description" filled dense class="col-8" />
+                    <q-input v-model="localAgent.description" filled dense class="col-8" />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-2">Timezone:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
-                      v-model="timezone"
+                      v-model="localAgent.time_zone"
                       filterable
                       filled
                       dense
                       options-dense
-                      :options="allTimezones"
+                      :options="dashboardStore.dashboardSettings.timezoneOptions"
                       class="col-8"
                     />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-10">Run checks every:</div>
                     <q-input
-                      v-model.number="agent.check_interval"
+                      v-model.number="localAgent.check_interval"
                       dense
                       type="number"
                       filled
@@ -90,13 +90,13 @@
                         class="q-pr-sm"
                         name="fas fa-signal"
                         size="1.2em"
-                        :color="dash_warning_color"
+                        :color="dashboardStore.dashboardSettings.dashWarningColor"
                       />
                       Mark an agent as
                       <span class="text-weight-bold">offline</span> if it has not checked in after:
                     </div>
                     <q-input
-                      v-model.number="agent.offline_time"
+                      v-model.number="localAgent.offline_time"
                       dense
                       type="number"
                       filled
@@ -115,13 +115,13 @@
                         class="q-pr-sm"
                         name="fas fa-signal"
                         size="1.2em"
-                        :color="dash_negative_color"
+                        :color="dashboardStore.dashboardSettings.dashNegativeColor"
                       />
                       Mark an agent as
                       <span class="text-weight-bold">overdue</span> if it has not checked in after:
                     </div>
                     <q-input
-                      v-model.number="agent.overdue_time"
+                      v-model.number="localAgent.overdue_time"
                       dense
                       type="number"
                       filled
@@ -136,12 +136,15 @@
                   </q-card-section>
                   <q-card-section class="row">
                     <q-checkbox
-                      v-model="agent.overdue_email_alert"
+                      v-model="localAgent.overdue_email_alert"
                       label="Get overdue email alerts"
                     />
-                    <q-checkbox v-model="agent.overdue_text_alert" label="Get overdue sms alerts" />
                     <q-checkbox
-                      v-model="agent.overdue_dashboard_alert"
+                      v-model="localAgent.overdue_text_alert"
+                      label="Get overdue sms alerts"
+                    />
+                    <q-checkbox
+                      v-model="localAgent.overdue_dashboard_alert"
                       label="Get overdue dashboard alerts"
                     />
                   </q-card-section>
@@ -149,12 +152,13 @@
 
                 <!-- custom fields -->
                 <q-tab-panel name="customfields">
-                  <div v-if="customFields.length === 0" class="text-subtitle">
+                  <div v-if="fieldStore.agentCustomFields.length === 0" class="text-subtitle">
                     No agent custom fields found. Go to **Settings > Global Settings > Custom
                     Settings**
                   </div>
-                  <q-card-section v-for="field in customFields" :key="field.id">
-                    <CustomField v-model="custom_fields[field.name]" :field="field" />
+
+                  <q-card-section v-for="field in fieldStore.agentCustomFields" :key="field.id">
+                    <CustomField v-model="agentCustomFieldValues[field.name]" :field="field" />
                   </q-card-section>
                 </q-tab-panel>
 
@@ -322,190 +326,107 @@
   </q-dialog>
 </template>
 
-<script>
-import { mapState } from "vuex";
+<script lang="ts" setup>
+import { computed, onMounted, reactive, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import PatchPolicyForm from "./PatchPolicyForm.vue";
-import CustomField from "src/components/ui/CustomField.vue";
+import { until } from "@vueuse/shared";
+import { useAgentStore } from "../api";
+import { useCustomFieldStore } from "src/core/settings/api";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useSiteDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
+import { formatCustomFields } from "src/utils/format";
 
-export default {
-  name: "EditAgent",
-  components: { PatchPolicyForm, CustomField },
-  props: {
-    agent_id: !String,
-  },
-  emits: [...useDialogPluginComponent.emits],
-  setup() {
-    // quasar dialog setup
-    const { dialogRef, onDialogHide } = useDialogPluginComponent();
+// ui imports
+import PatchPolicyForm from "src/core/automation/components/PatchPolicyForm.vue";
+import CustomField from "src/components/ui/CustomField.vue";
 
-    return {
-      // methods
-      capitalize,
+// type imports
+import type { Agent, UpdateAgentRequest } from "../types";
+import type { CustomFieldValueField } from "src/core/settings/types";
 
-      // dialog
-      dialogRef,
-      onDialogHide,
-    };
-  },
-  data() {
-    return {
-      customFields: [],
-      custom_fields: {},
-      agent: {},
-      monTypes: ["server", "workstation"],
-      client_options: [],
-      splitterModel: 25,
-      tab: "general",
-      timezone: null,
-      tz_inherited: true,
-      original_tz: null,
-      allTimezones: [],
-      siteOptions: [],
-    };
-  },
-  methods: {
-    getAgentInfo() {
-      this.$axios.get(`/agents/${this.agent_id}/`).then((r) => {
-        this.agent = r.data;
-        this.allTimezones = Object.freeze(r.data.all_timezones);
+const props = defineProps<{
+  agent: Agent;
+}>();
 
-        // r.data.time_zone is the actual db column from the agent
-        // r.data.timezone is a computed property based on the db time_zone field
-        // which whill return null if the time_zone field is not set
-        // and is therefore inheriting from the default global setting
-        if (r.data.time_zone === null) {
-          this.timezone = r.data.timezone;
-          this.original_tz = r.data.timezone;
-        } else {
-          this.tz_inherited = false;
-          this.timezone = r.data.time_zone;
-          this.original_tz = r.data.time_zone;
-        }
+defineEmits(useDialogPluginComponent.emits);
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-        for (const field of this.customFields) {
-          const value = r.data.custom_fields.find((value) => value.field === field.id);
+// setup stores
+const agentStore = useAgentStore();
+const fieldStore = useCustomFieldStore();
+const dashboardStore = useDashboardStore();
 
-          if (field.type === "multiple") {
-            if (value) this.custom_fields[field.name] = value.value;
-            else this.custom_fields[field.name] = [];
-          } else if (field.type === "checkbox") {
-            if (value) this.custom_fields[field.name] = value.value;
-            else this.custom_fields[field.name] = false;
-          } else {
-            if (value) this.custom_fields[field.name] = value.value;
-            else this.custom_fields[field.name] = "";
-          }
-        }
-      });
-    },
-    getSiteOptions() {
-      this.$axios.get("/clients/").then((r) => {
-        r.data.forEach((client) => {
-          this.siteOptions.push({ category: client.name });
-          client.sites.forEach((site) =>
-            this.siteOptions.push({
-              label: site.name,
-              value: site.id,
-              cat: client.name,
-            }),
-          );
-        });
-      });
-    },
-    editAgent() {
-      // TODO we need to fix the serializer to not send this stuff
-      const toRemove = [
-        "created_by",
-        "created_time",
-        "modified_by",
-        "modified_time",
-        "all_timezones",
-        "timezone",
-        "wmi_detail",
-        "services",
-        "status",
-        "cpu_model",
-        "local_ips",
-        "make_model",
-        "physical_disks",
-        "graphics",
-        "checks",
-        "patches_last_installed",
-        "last_seen",
-        "applied_policies",
-        "effective_patch_policy",
-        "version",
-        "operating_system",
-        "plat",
-        "goarch",
-        "hostname",
-        "public_ip",
-        "total_ram",
-        "disks",
-        "boot_time",
-        "logged_in_username",
-        "last_logged_in_user",
-        "needs_reboot",
-        "choco_installed",
-        "policy",
-        "mesh_node_id",
-        "block_policy_inheritance",
-        "maintenance_mode",
-        "alert_template",
-        "client",
-        "site_name",
-      ];
-      for (const elem of toRemove) {
-        delete this.agent[elem];
+const splitterModel = ref(25);
+const tab = ref("general");
+
+const { siteOptions } = useSiteDropdown();
+
+const localAgent = reactive<UpdateAgentRequest>({
+  id: props.agent.id,
+  hostname: props.agent.hostname,
+  site: props.agent.site,
+  monitoring_type: props.agent.monitoring_type,
+  description: props.agent.description,
+  time_zone: props.agent.time_zone,
+  check_interval: props.agent.check_interval,
+  offline_time: props.agent.offline_time,
+  overdue_time: props.agent.overdue_time,
+  overdue_email_alert: props.agent.overdue_email_alert,
+  overdue_text_alert: props.agent.overdue_text_alert,
+  overdue_dashboard_alert: props.agent.overdue_dashboard_alert,
+});
+
+const agentCustomFieldValues = computed(() => {
+  const mapped_custom_fields = {} as Record<string, unknown>;
+  if (props.agent && props.agent.custom_fields) {
+    for (const field of fieldStore.agentCustomFields) {
+      const value = props.agent.custom_fields.find((value) => value.field === field.id);
+
+      if (field.type === "multiple") {
+        if (value) mapped_custom_fields[field.name] = value.value;
+        else mapped_custom_fields[field.name] = [];
+      } else if (field.type === "checkbox") {
+        if (value) mapped_custom_fields[field.name] = value.value;
+        else mapped_custom_fields[field.name] = false;
+      } else {
+        if (value) mapped_custom_fields[field.name] = value.value;
+        else mapped_custom_fields[field.name] = "";
       }
+    }
+  }
+  return mapped_custom_fields as Record<string, CustomFieldValueField>;
+});
 
-      // only send the timezone data if it has changed
-      // this way django will keep the db column as null and inherit from the global setting
-      // until we explicity change the agent's timezone
-      if (this.timezone !== this.original_tz) {
-        this.agent.time_zone = this.timezone;
-      }
+async function submit() {
+  localAgent.custom_fields = formatCustomFields(
+    fieldStore.agentCustomFields,
+    agentCustomFieldValues.value,
+  );
+  agentStore.updateAgent(props.agent.agent_id, localAgent);
 
-      this.$axios
-        .put(`/agents/${this.agent_id}/`, {
-          ...this.agent,
-          custom_fields: this.formatCustomFields(this.customFields, this.custom_fields),
-        })
-        .then(() => {
-          this.$refs.dialogRef.hide();
-          this.$emit("ok");
-          this.notifySuccess("Agent was edited!");
-        });
-    },
-    weekDaystoString(array) {
-      if (array.length === 0) return "not set";
+  await until(() => agentStore.isLoading).toBe(false);
+  if (agentStore.isError) return;
 
-      let result = "";
-      for (const day in array) {
-        if (day === 1) result += "Mon, ";
-        else if (day === 2) result += "Tue, ";
-        else if (day === 3) result += "Wed, ";
-        else if (day === 4) result += "Thur, ";
-        else if (day === 5) result += "Fri, ";
-        else if (day === 6) result += "Sat, ";
-        else if (day === 0) result += "Sun, ";
-      }
+  onDialogOK();
+}
 
-      return result.trimEnd(",");
-    },
-  },
-  computed: {
-    ...mapState(["dash_warning_color", "dash_negative_color"]),
-  },
-  mounted() {
-    // Get custom fields
-    this.getCustomFields("agent").then((r) => {
-      this.customFields = r.data.filter((field) => !field.hide_in_ui);
-    });
-    this.getAgentInfo();
-    this.getSiteOptions();
-  },
-};
+function weekDaystoString(array: number[]) {
+  if (array.length === 0) return "not set";
+
+  const result = [] as string[];
+  for (const day of array) {
+    if (day === 1) result.push("Mon");
+    else if (day === 2) result.push("Tue");
+    else if (day === 3) result.push("Wed");
+    else if (day === 4) result.push("Thu");
+    else if (day === 5) result.push("Fri");
+    else if (day === 6) result.push("Sat");
+    else if (day === 0) result.push("Sun");
+  }
+
+  return result.join(", ");
+}
+
+onMounted(() => console.log(props.agent));
 </script>

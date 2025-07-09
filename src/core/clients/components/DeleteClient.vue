@@ -4,9 +4,7 @@
       <q-bar>
         Delete {{ object.name }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-form @submit="submit">
         <q-card-section v-if="filteredSiteOptions.length === 0">
@@ -78,9 +76,7 @@ const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 const filteredSiteOptions = computed(() => {
   if (props.type === "client") {
     return siteOptions.value.filter((site) =>
-      !isHeaderOption(site)
-        ? site.clientId !== props.object.id
-        : site.category !== props.object.name,
+      !isHeaderOption(site) ? site.clientId !== props.object.id : site.label !== props.object.name,
     );
   } else {
     return siteOptions.value.filter((site) =>

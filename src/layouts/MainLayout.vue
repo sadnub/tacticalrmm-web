@@ -191,7 +191,7 @@ import { checkWebTermPerms, openWebTerminal } from "src/api/core";
 
 // ui imports
 import AlertsIcon from "src/components/AlertsIcon.vue";
-import UserPreferences from "src/components/modals/coresettings/UserPreferences.vue";
+import UserPreferences from "src/core/accounts/components/UserPreferences.vue";
 import ResetPass from "src/core/accounts/components/ResetPass.vue";
 
 const $q = useQuasar();

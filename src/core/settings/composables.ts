@@ -25,7 +25,7 @@ export function _formatCustomFieldOptions(data: CustomField[]): Option[] {
   const options: Option[] = [];
 
   categories.forEach((cat) => {
-    options.push({ type: "header", category: cat });
+    options.push({ type: "header", label: cat, value: `header_${cat}` });
 
     const matchingFields = data
       .filter((custom_field) => custom_field.model === cat.toLowerCase())

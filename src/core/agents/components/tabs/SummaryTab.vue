@@ -174,7 +174,7 @@
             <q-item-section thumbnail>
               <q-icon name="fas fa-user" size="xs" />
             </q-item-section>
-            <q-item-section>{{ field.name }}: {{ field.value }}</q-item-section>
+            <q-item-section>{{ field.name }}: {{ field.value.value }}</q-item-section>
           </q-item>
         </q-list>
       </div>

@@ -4,9 +4,7 @@
       <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="search" />
       <q-space />Audit Manager
       <q-space />
-      <q-btn v-close-popup dense flat icon="close">
-        <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-      </q-btn>
+      <q-btn v-close-popup dense flat icon="close" />
     </q-bar>
     <tactical-table
       v-model:pagination="requestData.pagination"

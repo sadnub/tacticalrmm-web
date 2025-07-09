@@ -4,9 +4,7 @@
       <q-bar>
         Install Software
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-card-section>
         <tactical-table

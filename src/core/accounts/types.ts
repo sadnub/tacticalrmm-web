@@ -16,8 +16,8 @@ export interface User {
   block_dashboard_login?: boolean;
   dark_mode?: boolean;
   show_community_scripts?: boolean;
-  agent_dblclick_action?: AgentDblClickAction;
-  url_action?: number;
+  dblclick_action?: AgentDblClickAction;
+  url_action?: number | null;
   default_agent_tbl_tab?: AgentTableTab;
   agents_per_page?: number;
   client_tree_sort?: ClientTreeSort;
@@ -31,7 +31,7 @@ export interface User {
   date_format?: string | null;
   is_installer_user?: boolean;
   last_login_ip?: string;
-  role?: number;
+  role?: number | null;
 }
 
 export interface UserSession {
