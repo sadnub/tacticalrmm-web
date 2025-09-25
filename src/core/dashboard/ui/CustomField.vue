@@ -57,7 +57,8 @@ const props = defineProps<{
   field: CustomField;
 }>();
 
-const value = defineModel<string | number | FileList | null | undefined>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const value = defineModel<any>();
 
 const validationRules = computed(() => {
   const rules = [];

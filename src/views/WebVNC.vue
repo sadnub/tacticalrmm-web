@@ -1,8 +1,8 @@
 <template>
   <div class="q-video" :style="{ height: `${$q.screen.height - 26}px` }">
     <iframe
-      v-show="vnc"
-      :src="vnc"
+      v-if="!!webVNCUrl.vnc"
+      :src="webVNCUrl.vnc"
       allow="clipboard-read; clipboard-write"
       allowfullscreen
       frameborder="0"
@@ -15,28 +15,40 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
 
-import { useAgentStore } from "src/core/agents/api";
+import { agentStore } from "src/stores/api";
+
+// type imports
+import type { WebVNCUrl } from "src/core/agents/types";
 
 const $q = useQuasar();
 
 const { params } = useRoute();
-const vnc = ref("");
 
 // setup stores
-const agentStore = useAgentStore();
+const { getAgentWebVNCUrl } = agentStore;
 
-onMounted(() => {
+const webVNCUrl = ref<WebVNCUrl>({
+  hostname: "",
+  client: "",
+  site: "",
+  vnc: "",
+});
+
+onMounted(async () => {
   if (
     params.agent_id &&
     typeof params.agent_id === "string" &&
     params.port &&
     typeof params.port === "string"
   ) {
-    agentStore.getAgentWebVNCUrl(params.agent_id, parseInt(params.port));
+    const result = await getAgentWebVNCUrl(params.agent_id, parseInt(params.port));
+    if (result) {
+      webVNCUrl.value = result;
 
-    useMeta({
-      title: `${agentStore.webVNCUrl.hostname} - ${agentStore.webVNCUrl.client} - ${agentStore.webVNCUrl.site} | VNC`,
-    });
+      useMeta({
+        title: `${webVNCUrl.value.hostname} - ${webVNCUrl.value.client} - ${webVNCUrl.value.site} | VNC`,
+      });
+    }
   }
 });
 </script>

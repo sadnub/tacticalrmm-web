@@ -59,8 +59,7 @@
 <script lang="ts" setup>
 import { computed, reactive, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAgentStore } from "../api";
-import { until } from "@vueuse/shared";
+import { agentStore } from "src/stores/api";
 
 // type imports
 import type { Agent } from "../types";
@@ -68,9 +67,6 @@ import type { Agent } from "../types";
 // setup quasar plugins
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const agentStore = useAgentStore();
 
 const state = reactive({
   versions: [] as string[],
@@ -98,13 +94,12 @@ function selectAllAction() {
 }
 
 async function sendAgentUpdate() {
-  agentStore.updateAgentVersions(state.group);
-
-  await until(() => agentStore.isLoading).toBe(false);
-
-  if (agentStore.isError) return;
-
-  onDialogOK();
+  try {
+    await agentStore.updateAgentVersions(state.group);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 onMounted(async () => {

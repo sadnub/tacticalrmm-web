@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? `Edit Service Check` : "Add Service Check" }}
@@ -27,11 +27,11 @@
               <q-select
                 v-if="localCheck.svc_policy_mode === 'default' && !check"
                 v-model="localCheck.svc_name"
-                :rules="[(val) => !!val || '*Required']"
+                :rules="[(val: string) => !!val || '*Required']"
                 dense
                 options-dense
                 filled
-                :options="serviceOptions"
+                :options="defaultServiceOptions"
                 label="Service"
                 map-options
                 emit-value
@@ -56,18 +56,19 @@
             </div>
             <!-- agent check -->
             <!-- disable selection if editing -->
-            <q-select
+            <tactical-dropdown
               v-if="isAgent(parent)"
               v-model="localCheck.svc_name"
-              :rules="[(val) => !!val || '*Required']"
+              :rules="[(val: string) => !!val || '*Required']"
               dense
               options-dense
               filled
-              :options="serviceOptions"
+              :options="agentServiceOptions"
               label="Service"
               map-options
               emit-value
               :disable="!!check"
+              filterable
             />
           </q-card-section>
           <q-card-section>
@@ -121,14 +122,7 @@
         </div>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="checkStore.isLoading"
-            dense
-            flat
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -137,46 +131,40 @@
 
 <script lang="ts" setup>
 // composition imports
-import { computed, reactive, watch } from "vue";
+import { reactive, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useCheckStore } from "../api";
+import { checkStore } from "src/stores/api";
 import { failOptions, defaultServiceOptions, severityOptions } from "../composables";
-import { until } from "@vueuse/core";
 import { useAgentServiceDropdown } from "src/core/agents/composables";
 
 // type imports
 import { isAgent, isPolicy, type Check } from "../types";
-import type { Policy } from "src/core/automation/types";
-import type { Agent, AgentPlat } from "src/core/agents/types";
+import type { AgentPlat } from "src/core/agents/types";
 
 const props = defineProps<{
-  check: Check;
-  parent: Agent | Policy;
+  check?: Check;
+  parent: { agent: string } | { policy: number };
   plat?: AgentPlat;
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
 
-// setup stores
-const checkStore = useCheckStore();
-
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-const serviceOptions = computed(() => {
-  if (isAgent(props.parent)) {
-    const { agentServiceOptions } = useAgentServiceDropdown(props.parent.agent_id);
-    return agentServiceOptions.value;
-  } else {
-    return defaultServiceOptions;
-  }
-});
+// setup stores
+const { isLoading } = checkStore;
+
+const { agentServiceOptions } = useAgentServiceDropdown(
+  isAgent(props.parent) ? props.parent.agent : null,
+);
 
 // check logic
 const localCheck = props.check
   ? reactive<Check>(Object.assign({}, props.check))
   : reactive<Check>({
       ...props.parent,
+      id: 0,
       check_type: "winsvc",
       svc_name: null,
       svc_display_name: null,
@@ -192,7 +180,7 @@ const localCheck = props.check
 watch(
   () => localCheck.svc_name,
   () => {
-    const service = serviceOptions.value.find((i) => i.value === localCheck.svc_name);
+    const service = agentServiceOptions.value.find((i) => i.value === localCheck.svc_name);
 
     if (service) localCheck.svc_display_name = service.label;
   },
@@ -207,13 +195,13 @@ watch(
 );
 
 async function submit() {
-  if (props.check) checkStore.updateCheck(localCheck.id, localCheck);
-  else checkStore.addCheck(localCheck);
+  try {
+    if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
+    else await checkStore.addCheck(localCheck);
 
-  // stops the dialog from closing when there is an error
-  await until(() => checkStore.isLoading).toBe(false);
-  if (checkStore.isError) return;
-
-  onDialogOK();
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 </script>

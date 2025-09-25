@@ -197,7 +197,7 @@
 
 <script>
 import { mapState } from "vuex";
-import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
+import PolicyStatus from "./PolicyStatus.vue";
 import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
 import PingCheck from "src/core/checks/components/PingCheck.vue";
 import CpuLoadCheck from "src/core/checks/components/CpuLoadCheck.vue";

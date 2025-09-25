@@ -1,12 +1,12 @@
 <template>
-  <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
     <tactical-table
-      :rows="agentStore.agentHistory"
+      :rows="agentHistory"
       :columns="columns"
       :pagination="{ sortBy: 'time', descending: true, rowsPerPage: 0 }"
       :style="{ 'max-height': `${tabHeight}px` }"
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       :rows-per-page-options="[0]"
       :filter="filter"
       virtual-scroll
@@ -21,9 +21,7 @@
           flat
           push
           icon="refresh"
-          @click="
-            agentStore.selectedAgentId && agentStore.getAgentHistory(agentStore.selectedAgentId)
-          "
+          @click="selectedAgentId && agentStore.getAgentHistory(selectedAgentId)"
         />
         <q-space />
         <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
@@ -61,12 +59,12 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar, Notify } from "quasar";
 import { formatTableColumnText, truncateText } from "src/utils/format";
-import { useAgentStore } from "../../api";
+import { agentStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
-import PreDialog from "src/components/ui/PreDialog.vue";
+import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 
 // type imports
 import type { TacticalColumn } from "src/core/dashboard/types";
@@ -126,20 +124,18 @@ const columns: TacticalColumn[] = [
 
 const $q = useQuasar();
 
-const agentStore = useAgentStore();
+// setup stores
+const { selectedAgentId, agentHistory, isLoading } = agentStore;
 const tabHeight = computed(() => dashboardStore.tabHeight);
 
 // setup main history functionality
 const filter = ref("");
 
-watch(
-  () => agentStore.selectedAgentId,
-  (newValue) => {
-    if (newValue) {
-      agentStore.getAgentHistory(newValue);
-    }
-  },
-);
+watch(selectedAgentId, (newValue) => {
+  if (newValue) {
+    agentStore.getAgentHistory(newValue);
+  }
+});
 
 // quasar dialogs
 function showScriptOutput(output: string) {
@@ -171,6 +167,6 @@ function showCommandOutput(title: string, output: string) {
 
 // vue component hooks
 onMounted(() => {
-  if (agentStore.selectedAgentId) agentStore.getAgentHistory(agentStore.selectedAgentId);
+  if (selectedAgentId.value) agentStore.getAgentHistory(selectedAgentId.value);
 });
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? `Edit Disk Check` : "Add Disk Check" }}
@@ -69,14 +69,7 @@
         </div>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="checkStore.isLoading"
-            dense
-            flat
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -85,37 +78,30 @@
 
 <script lang="ts" setup>
 // composition imports
-import { computed, reactive } from "vue";
+import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useCheckStore } from "../api";
+import { checkStore } from "src/stores/api";
 import { isValidThreshold } from "src/utils/validation";
 import { useAgentDiskDropdown } from "src/core/agents/composables";
 import { failOptions, defaultDiskOptions } from "../composables";
 
 // import types
 import { isAgent, type Check } from "../types";
-import type { Agent } from "src/core/agents/types";
-import type { Policy } from "src/core/automation/types";
-import { until } from "@vueuse/core";
 
 const props = defineProps<{
   check?: Check;
-  parent: Agent | Policy;
+  parent: { agent: string } | { policy: number };
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const checkStore = useCheckStore();
+const { isLoading } = checkStore;
+const { agentDiskOptions } = useAgentDiskDropdown(
+  isAgent(props.parent) ? props.parent.agent : null,
+);
 
-const diskOptions = computed(() => {
-  if (isAgent(props.parent)) {
-    const { agentDiskOptions } = useAgentDiskDropdown(props.parent.agent_id);
-    return agentDiskOptions.value;
-  } else {
-    return defaultDiskOptions;
-  }
-});
+const diskOptions = isAgent(props.parent) ? agentDiskOptions : defaultDiskOptions;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -124,6 +110,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const localCheck = props.check
   ? reactive<Check>(Object.assign({}, props.check))
   : reactive<Check>({
+      id: 0,
       ...props.parent,
       disk: null,
       check_type: "diskspace",
@@ -137,14 +124,14 @@ async function submit() {
   if (localCheck.warning_threshold && localCheck.error_threshold) {
     if (!isValidThreshold(localCheck.warning_threshold, localCheck.error_threshold, true)) return;
 
-    if (props.check) checkStore.updateCheck(localCheck.id, localCheck);
-    else checkStore.addCheck(localCheck);
+    try {
+      if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
+      else await checkStore.addCheck(localCheck);
 
-    // stops the dialog from closing when there is an error
-    await until(() => checkStore.isLoading).toBe(false);
-    if (checkStore.isError) return;
-
-    onDialogOK();
+      onDialogOK();
+    } catch {
+      //
+    }
   }
 }
 </script>

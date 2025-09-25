@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 35vw">
       <q-bar>
         Add an Agent
@@ -21,12 +21,7 @@
           />
         </q-card-section>
         <q-card-section>
-          <q-option-group
-            v-model="agentInstallRequest.agentOS"
-            :options="agentOSOptions"
-            inline
-            dense
-          />
+          <q-option-group v-model="agentInstallRequest.plat" :options="platOptions" inline dense />
         </q-card-section>
         <q-card-section>
           <q-option-group v-model="agentInstallRequest.agenttype" :options="agentTypeOptions" />
@@ -42,7 +37,7 @@
             stack-label
           />
         </q-card-section>
-        <q-card-section v-show="agentInstallRequest.agentOS === 'windows'">
+        <q-card-section v-show="agentInstallRequest.plat === 'windows'">
           <div class="q-gutter-sm">
             <q-checkbox v-model="agentInstallRequest.rdp" dense label="Enable RDP" />
             <q-checkbox v-model="agentInstallRequest.ping" dense label="Enable Ping">
@@ -61,45 +56,45 @@
           <div class="q-gutter-sm">
             <q-radio
               v-show="
-                agentInstallRequest.agentOS === 'windows' || agentInstallRequest.agentOS === 'linux'
+                agentInstallRequest.plat === 'windows' || agentInstallRequest.plat === 'linux'
               "
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_AMD64"
               label="64 bit"
             />
             <q-radio
-              v-show="agentInstallRequest.agentOS === 'darwin'"
+              v-show="agentInstallRequest.plat === 'darwin'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_AMD64"
               label="Intel 64 bit"
             />
             <q-radio
-              v-show="agentInstallRequest.agentOS !== 'darwin'"
+              v-show="agentInstallRequest.plat !== 'darwin'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_i386"
               label="32 bit"
             />
             <q-radio
-              v-show="agentInstallRequest.agentOS === 'linux'"
+              v-show="agentInstallRequest.plat === 'linux'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_ARM64"
               label="ARM 64 bit"
             />
             <q-radio
-              v-show="agentInstallRequest.agentOS === 'darwin'"
+              v-show="agentInstallRequest.plat === 'darwin'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_ARM64"
               label="Apple Silicon (M-Series)"
             />
             <q-radio
-              v-show="agentInstallRequest.agentOS === 'linux'"
+              v-show="agentInstallRequest.plat === 'linux'"
               v-model="agentInstallRequest.goarch"
               :val="GOARCH_ARM32"
               label="ARM 32 bit"
             />
           </div>
         </q-card-section>
-        <q-card-section v-show="agentInstallRequest.agentOS === 'windows'">
+        <q-card-section v-show="agentInstallRequest.plat === 'windows'">
           Installation Method
           <q-option-group
             v-model="agentInstallRequest.installMethod"
@@ -131,7 +126,7 @@ import { isHeaderOption } from "src/core/dashboard/types";
 // type imports
 import type { SiteSelectableOption } from "src/core/clients/composables";
 
-const agentOSOptions = [
+const platOptions = [
   { label: "Windows", value: "windows" },
   { label: "Linux", value: "linux" },
   { label: "MacOS", value: "darwin" },
@@ -163,7 +158,7 @@ const agentInstallRequest = reactive({
   GOARCH_i386: GOARCH_i386,
   GOARCH_ARM64: GOARCH_ARM64,
   GOARCH_ARM32: GOARCH_ARM32,
-  client: null,
+  client: null as number | null,
   site: props.site || null,
   agenttype: "server",
   expires: 24,
@@ -174,12 +169,12 @@ const agentInstallRequest = reactive({
   info: {},
   installMethod: "exe",
   goarch: GOARCH_AMD64,
-  agentOS: "windows",
+  plat: "windows",
   api: getBaseUrl(),
 });
 
 watch(
-  () => agentInstallRequest.agentOS,
+  () => agentInstallRequest.plat,
   (newValue) => {
     if (newValue === "windows") {
       agentInstallRequest.goarch = GOARCH_AMD64;
@@ -206,9 +201,15 @@ const client = computed(() => {
     const foundSite = siteOptions.value.find(
       (s) => !isHeaderOption(s) && s.value === agentInstallRequest.site,
     ) as SiteSelectableOption;
-    if (foundSite) return { id: foundSite.clientId, name: foundSite.category };
+    if (foundSite) {
+      return { id: foundSite.clientId, name: foundSite.category };
+    }
   }
   return null;
+});
+
+watch(client, (newValue) => {
+  agentInstallRequest.client = newValue?.id || null;
 });
 
 const selectedSite = computed(() => {
@@ -248,7 +249,7 @@ function submit() {
                 expires: agentInstallRequest.expires,
                 data: r.data,
                 goarch: agentInstallRequest.goarch,
-                plat: agentInstallRequest.agentOS,
+                plat: agentInstallRequest.plat,
               },
             },
           });

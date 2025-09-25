@@ -203,41 +203,43 @@
 import { computed } from "vue";
 import { useQuasar } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAgentStore } from "src/core/agents/api";
-import { useCoreStore } from "src/core/settings/api";
-import DialogWrapper from "src/components/ui/DialogWrapper.vue";
-import DebugLog from "../core/logs/components/DebugLog.vue";
-import PendingActions from "../core/logs/components/PendingActions.vue";
+import { agentStore } from "src/stores/api";
+import { coreStore } from "src/stores/api";
+import { notifyWarning } from "src/utils/notify";
+
+// ui imports
+import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
+import DebugLog from "src/core/logs/components/DebugLog.vue";
+import PendingActions from "src/core/logs/components/PendingActions.vue";
 import ClientsManager from "src/core/clients/components/ClientsManager.vue";
 import ClientsForm from "src/core/clients/components//ClientsForm.vue";
 import SitesForm from "src/core/clients/components//SitesForm.vue";
 import UpdateAgents from "src/core/agents/components/UpdateAgents.vue";
 import ScriptManager from "src/core/scripts/components/ScriptManager.vue";
 import EditCoreSettings from "src/core/settings/components/EditCoreSettings.vue";
-import AlertsManager from "src/components/AlertsManager.vue";
-import AutomationManager from "src/components/automation/AutomationManager.vue";
+import AlertsManager from "src/core/alerts/components/AlertsManager.vue";
+import AutomationManager from "src/core/automation/components/AutomationManager.vue";
 import AdminManager from "src/core/accounts/components/AdminManager.vue";
 import InstallAgent from "src/core/agents/components/InstallAgent.vue";
 import AuditManager from "src/core/logs/components/AuditManager.vue";
 import BulkAction from "src/core/agents/components/BulkAction.vue";
 import DeploymentTable from "src/core/clients/components/DeploymentTable.vue";
-import ServerMaintenance from "src/components/modals/core/ServerMaintenance.vue";
-import CodeSign from "src/components/modals/coresettings/CodeSign.vue";
+import ServerMaintenance from "src/core/settings/components/ServerMaintenance.vue";
+import CodeSign from "src/core/settings/components/CodeSign.vue";
 import PermissionsManager from "src/core/accounts/components/PermissionsManager.vue";
 
-import { notifyWarning } from "src/utils/notify";
+// type imports
 import type { BulkActionMode } from "src/core/agents/types";
 
 const $q = useQuasar();
 
 // setup stores
-const agentStore = useAgentStore();
+const { bulkAgentRecovery } = agentStore;
 const dashboardStore = useDashboardStore();
-const coreStore = useCoreStore();
 const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
 
 function clearCache() {
-  coreStore.clearCache();
+  void coreStore.clearCache();
 }
 
 function bulkRecoverAgents() {
@@ -245,7 +247,7 @@ function bulkRecoverAgents() {
     title: "Bulk Recover All Agents?",
     message: "This will restart the Tactical and Mesh Agent services on all agents",
     cancel: true,
-  }).onOk(agentStore.bulkAgentRecovery);
+  }).onOk(() => void bulkAgentRecovery());
 }
 
 function openHelp(mode: string) {

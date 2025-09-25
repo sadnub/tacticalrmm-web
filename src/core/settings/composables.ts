@@ -1,18 +1,17 @@
 import { computed, onMounted } from "vue";
-import { useCustomFieldStore, useURLActionStore } from "./api";
+import { customFieldStore } from "src/stores/api";
+import { useURLActionStore } from "./api";
 import type { CustomField, URLActionType } from "./types";
 import { type SelectableOption, type Option } from "../dashboard/types";
 
 export function useCustomFieldDropdown() {
-  const fieldStore = useCustomFieldStore();
-
-  const isLoading = computed(() => fieldStore.isLoading);
+  const { customFields, isLoading } = customFieldStore;
 
   const customFieldOptions = computed(() => {
-    return _formatCustomFieldOptions(fieldStore.customFields);
+    return _formatCustomFieldOptions(customFields.value);
   });
 
-  onMounted(fieldStore.getCustomFields);
+  onMounted(customFieldStore.getCustomFields);
 
   return {
     customFieldOptions,
@@ -59,6 +58,7 @@ export function useURLActionDropdown() {
     return actionStore.urlActions.map(
       (action) =>
         ({
+          type: "option",
           label: action.name,
           value: action.id,
           action_type: action.action_type,

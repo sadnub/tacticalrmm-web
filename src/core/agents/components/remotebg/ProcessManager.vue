@@ -2,16 +2,16 @@
   <tactical-table
     dense
     :style="{ 'max-height': `${$q.screen.height - 36}px` }"
-    :rows="agentStore.agentProcesses"
+    :rows="agentProcesses"
     :columns="columns"
-    :pagination="{ rowsPerPage: 0, sortBy: 'cpu_percent', descending: true }"
+    :pagination="{ rowsPerPage: 0, sortBy: 'cpu_percent', descending: false }"
     :filter="filter"
     row-key="id"
     binary-state-sort
     :rows-per-page-options="[0]"
-    :loading="agentStore.isLoading"
     column-select
     storage-key="process-manager"
+    :loading="isLoading"
   >
     <template #top>
       <div class="q-gutter-md flex flex-center items-center">
@@ -98,7 +98,9 @@
           </q-list>
         </q-menu>
 
-        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps"> </q-td>
+        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+          {{ col.value }}
+        </q-td>
       </q-tr>
     </template>
   </tactical-table>
@@ -107,7 +109,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useIntervalFn } from "@vueuse/core";
-import { useAgentStore } from "../../api";
+import { agentStore } from "src/stores/api";
 import { bytes2Human } from "src/utils/format";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
@@ -133,6 +135,7 @@ const columns: TacticalColumn[] = [
     field: "membytes",
     align: "left",
     sortable: true,
+    format: (val: number) => bytes2Human(val),
   },
   {
     name: "username",
@@ -155,30 +158,26 @@ const props = defineProps<{
 }>();
 
 // setup stores
-const agentStore = useAgentStore();
+const { selectedAgent, agentProcesses, isLoading } = agentStore;
 
 // polling setup
 const pollInterval = ref(2);
 const pollIntervalMilli = computed(() => pollInterval.value * 1000);
 
-const { isActive, pause, resume } = useIntervalFn(
-  () => {
-    agentStore.getAgentProcesses(props.agentId);
-  },
-  pollIntervalMilli,
-  { immediate: true },
-);
+const { isActive, pause, resume } = useIntervalFn(() => {
+  agentStore.getAgentProcesses(props.agentId);
+}, pollIntervalMilli);
 
 // process manager logic
 const filter = ref("");
-const total_ram = computed(() => agentStore.selectedAgent?.total_ram);
+const total_ram = computed(() => selectedAgent.value?.total_ram);
 
 const totalCpuUsage = computed(() => {
-  if (!Array.isArray(agentStore.agentProcesses) || agentStore.agentProcesses.length === 0) {
+  if (!Array.isArray(agentProcesses.value) || agentProcesses.value.length === 0) {
     return "0.00";
   }
 
-  const total = agentStore.agentProcesses.reduce((acc, proc) => {
+  const total = agentProcesses.value.reduce((acc, proc) => {
     const cpuPercent = parseFloat(proc.cpu_percent);
 
     if (isNaN(cpuPercent)) {
@@ -192,11 +191,11 @@ const totalCpuUsage = computed(() => {
 });
 
 const totalRamUsage = computed(() => {
-  if (!agentStore.agentProcesses || agentStore.agentProcesses.length === 0) {
+  if (!agentProcesses.value || agentProcesses.value.length === 0) {
     return 0;
   }
 
-  return agentStore.agentProcesses.reduce((acc, proc) => {
+  return agentProcesses.value.reduce((acc, proc) => {
     const memory = Number(proc.membytes) || 0;
     return acc + memory;
   }, 0);
@@ -204,5 +203,7 @@ const totalRamUsage = computed(() => {
 
 onMounted(() => {
   agentStore.getAgent(props.agentId);
+  agentStore.getAgentProcesses(props.agentId);
+  resume();
 });
 </script>

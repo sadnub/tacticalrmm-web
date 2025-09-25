@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 75vw; max-height: 75vh" class="q-dialog-plugin">
       <q-bar>
         {{ localRole ? "Editing Role" : "Adding Role" }}
@@ -252,14 +252,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="roleStore.isLoading"
-            dense
-            flat
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -270,10 +263,9 @@
 // composition imports
 import { computed, reactive, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useRoleStore } from "../api";
+import { roleStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
-import { until } from "@vueuse/shared";
 
 // type imports
 import type { Role } from "../types";
@@ -285,7 +277,7 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const roleStore = useRoleStore();
+const { isLoading } = roleStore;
 const dashboardStore = useDashboardStore();
 
 // quasar setup
@@ -388,14 +380,13 @@ const localRole = props.role
     });
 
 async function onSubmit() {
-  if (props.role && props.role.id) roleStore.updateRole(props.role.id, localRole);
-  else roleStore.addRole(localRole);
-
-  // stops the dialog from closing when there is an error
-  await until(() => roleStore.isLoading).toBe(false);
-  if (roleStore.isError) return;
-
-  onDialogOK();
+  try {
+    if (props.role && props.role.id) await roleStore.updateRole(props.role.id, localRole);
+    else await roleStore.addRole(localRole);
+    onDialogOK();
+  } catch {
+    // do nothing
+  }
 }
 
 watch(

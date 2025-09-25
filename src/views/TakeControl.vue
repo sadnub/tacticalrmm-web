@@ -3,7 +3,7 @@
     <q-bar>
       <span class="text-caption">
         TRMM Agent Status:
-        <q-badge :color="statusColor" :label="agentStore.meshCentralURLs.status || ''" />
+        <q-badge :color="statusColor" :label="meshCentralURLs.status || ''" />
       </span>
       <q-space />
       <q-btn
@@ -25,8 +25,8 @@
     </q-bar>
     <div class="q-video" :style="{ height: `${$q.screen.height - 26}px` }">
       <iframe
-        v-if="agentStore.meshCentralURLs.control"
-        :src="agentStore.meshCentralURLs.control"
+        v-if="meshCentralURLs.control"
+        :src="meshCentralURLs.control"
         allow="clipboard-read; clipboard-write"
         allowfullscreen
         frameborder="0"
@@ -37,20 +37,21 @@
 
 <script lang="ts" setup>
 // composition imports
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useMeta, useQuasar } from "quasar";
-import { sendAgentServiceAction } from "src/api/services";
-import { notifySuccess } from "src/utils/notify";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAgentStore } from "src/core/agents/api";
+import { agentStore } from "src/stores/api";
+
+// type imports
+import type { MeshUrls } from "src/core/agents/types";
 
 // quasar setup
 const $q = useQuasar();
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
+const { getAgentMeshCentralUrls, sendAgentRecoverMesh } = agentStore;
 
 const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
 const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
@@ -59,9 +60,15 @@ const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWar
 // vue router
 const { params } = useRoute();
 
+const meshCentralURLs = ref<MeshUrls>({
+  hostname: "",
+  client: "",
+  site: "",
+});
+
 // take control setup
 const statusColor = computed(() => {
-  switch (agentStore.meshCentralURLs.status) {
+  switch (meshCentralURLs.value.status) {
     case "online":
       return dashPositiveColor.value;
     case "offline":
@@ -71,40 +78,35 @@ const statusColor = computed(() => {
   }
 });
 
-function repairMeshCentral() {
+async function repairMeshCentral() {
   if (params.agent_id && typeof params.agent_id === "string") {
-    agentStore.meshCentralURLs.control = "";
+    meshCentralURLs.value.control = "";
     $q.loading.show({ message: "Attempting to repair Mesh Agent" });
-    agentStore.sendAgentRecoverMesh(params.agent_id);
+    const result = await sendAgentRecoverMesh(params.agent_id);
+    if (result) meshCentralURLs.value = result;
     $q.loading.hide();
   }
 }
 
-async function restartMeshService() {
+function restartMeshService() {
   $q.loading.show({ message: "Restarting Mesh Agent" });
-  const data = {
-    sv_action: "restart",
-  };
 
-  try {
-    await sendAgentServiceAction(params.agent_id, "mesh agent", data);
-    setTimeout(() => {
-      notifySuccess("Mesh agent service was restarted");
-    }, 500);
-  } catch (e) {
-    console.error(e);
-  }
+  if (params.agent_id && typeof params.agent_id === "string")
+    void agentStore.sendAgentServiceAction(params.agent_id, "mesh agent", "restart");
 
   $q.loading.hide();
 }
 
 // vue lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
   if (params.agent_id && typeof params.agent_id === "string") {
-    agentStore.getAgentMeshCentralUrls(params.agent_id);
-    useMeta({
-      title: `${agentStore.meshCentralURLs.hostname} - ${agentStore.meshCentralURLs.client} - ${agentStore.meshCentralURLs.site} | Take Control`,
-    });
+    const result = await getAgentMeshCentralUrls(params.agent_id);
+    if (result) {
+      meshCentralURLs.value = result;
+      useMeta({
+        title: `${meshCentralURLs.value.hostname} - ${meshCentralURLs.value.client} - ${meshCentralURLs.value.site} | Take Control`,
+      });
+    }
   }
 });
 </script>

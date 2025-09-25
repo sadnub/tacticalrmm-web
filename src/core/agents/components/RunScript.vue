@@ -1,7 +1,7 @@
 <template>
   <q-dialog
     ref="dialogRef"
-    persistent
+    no-backdrop-dismiss
     :maximized="maximized"
     @hide="onDialogHide"
     @keydown.esc="onDialogHide"
@@ -152,7 +152,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup label="Cancel" />
-          <q-btn :loading="agentStore.isLoading" label="Run" color="primary" type="submit" />
+          <q-btn :loading="isLoading" label="Run" color="primary" type="submit" />
         </q-card-actions>
         <q-card-section
           v-if="ret"
@@ -194,7 +194,7 @@ import { computed, reactive, ref, watch } from "vue";
 import { useDialogPluginComponent, openURL } from "quasar";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
-import { useAgentStore } from "src/core/agents/api";
+import { agentStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 
@@ -202,15 +202,14 @@ import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 import ScriptOutputCopyClip from "src/core/scripts/components/ScriptOutputCopyClip.vue";
 
 // types
-import type { Agent } from "src/types/agents";
+import type { Agent } from "src/core/agents/types";
 import type { RunScriptRequest } from "../types";
 import type { Script, ScriptResult } from "src/core/scripts/types";
 import { isScriptResult } from "src/core/scripts/types";
 
 // store
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
-
+const { isLoading } = agentStore;
 const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
 const serverScriptsEnabled = computed(() => dashboardStore.dashboardSettings.serverScriptsEnabled);
 

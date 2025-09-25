@@ -63,29 +63,12 @@
           filled
           clearable
         />
-        <q-radio
+        <q-option-group
           v-model="requestData.logLevelFilter"
-          :color="dashInfoColor"
-          val="info"
+          :options="logLevelOptions"
           label="Info"
-        />
-        <q-radio
-          v-model="requestData.logLevelFilter"
-          :color="dashNegativeColor"
-          val="critical"
-          label="Critical"
-        />
-        <q-radio
-          v-model="requestData.logLevelFilter"
-          :color="dashNegativeColor"
-          val="error"
-          label="Error"
-        />
-        <q-radio
-          v-model="requestData.logLevelFilter"
-          :color="dashWarningColor"
-          val="warning"
-          label="Warning"
+          type="checkbox"
+          inline
         />
         <q-space />
         <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
@@ -110,7 +93,7 @@
 
 <script lang="ts" setup>
 // composition api
-import { ref, reactive, watch, computed, onMounted } from "vue";
+import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
 import { useDebugLogStore } from "../api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAgentDropdown } from "src/core/agents/composables";
@@ -127,6 +110,13 @@ const logTypeOptions = [
   { label: "Windows Updates", value: "windows_updates" },
   { label: "System Issues", value: "system_issues" },
   { label: "Scripting", value: "scripting" },
+];
+
+const logLevelOptions = [
+  { label: "Info", value: "info" },
+  { label: "Warning", value: "warning" },
+  { label: "Error", value: "error" },
+  { label: "Critical", value: "critical" },
 ];
 
 const columns: TacticalColumn[] = [
@@ -170,7 +160,7 @@ const columns: TacticalColumn[] = [
 ];
 
 const props = defineProps<{
-  agent: string;
+  agent?: string;
   modal: boolean;
 }>();
 
@@ -179,8 +169,6 @@ const dashboardStore = useDashboardStore();
 const debugLogStore = useDebugLogStore();
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
-const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
 const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
 
 // setup dropdowns
@@ -188,7 +176,7 @@ const { agentOptions } = useAgentDropdown();
 
 const requestData = reactive<GetDebugLogRequest>({
   agentFilter: props.agent ? props.agent : null,
-  logLevelFilter: "info",
+  logLevelFilter: ["critical", "error"],
   logTypeFilter: null,
 });
 
@@ -212,5 +200,9 @@ watch(requestData, () => debugLogStore.getDebugLog(requestData), { deep: true })
 // vue component hooks
 onMounted(() => {
   debugLogStore.getDebugLog(requestData);
+});
+
+onUnmounted(() => {
+  debugLogStore.$reset();
 });
 </script>

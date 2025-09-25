@@ -1,0 +1,847 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "My API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/accounts/users/": {
+      "get": {
+        "summary": "Endpoint for /accounts/users/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Array"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Endpoint for /accounts/users/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/__type"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{userId}/users/": {
+      "put": {
+        "summary": "Endpoint for /accounts/{userId}/users/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/__type"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Endpoint for /accounts/{userId}/users/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {}
+      }
+    },
+    "/accounts/users/ui/": {
+      "put": {
+        "summary": "Endpoint for /accounts/users/ui/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/__type"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/resetpw/": {
+      "put": {
+        "summary": "Endpoint for /accounts/resetpw/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/__object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/users/reset/": {
+      "put": {
+        "summary": "Endpoint for /accounts/users/reset/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/__object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/reset2fa/": {
+      "put": {
+        "summary": "Endpoint for /accounts/reset2fa/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {}
+      }
+    },
+    "/accounts/users/reset_totp/": {
+      "put": {
+        "summary": "Endpoint for /accounts/users/reset_totp/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/users/{userId}/sessions/": {
+      "get": {
+        "summary": "Endpoint for /accounts/users/{userId}/sessions/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Array"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Endpoint for /accounts/users/{userId}/sessions/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {}
+      }
+    },
+    "/accounts/sessions/{sessionId}/": {
+      "delete": {
+        "summary": "Endpoint for /accounts/sessions/{sessionId}/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {}
+      }
+    },
+    "/accounts/roles/": {
+      "get": {
+        "summary": "Endpoint for /accounts/roles/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Array"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Endpoint for /accounts/roles/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/__type"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/roles/{role.id}/": {
+      "put": {
+        "summary": "Endpoint for /accounts/roles/{role.id}/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Role"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/roles/{id}/": {
+      "delete": {
+        "summary": "Endpoint for /accounts/roles/{id}/",
+        "tags": [
+          "accounts"
+        ],
+        "responses": {}
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Array": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "last_login": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "is_active": {
+              "type": "boolean"
+            },
+            "block_dashboard_login": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "dark_mode": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "show_community_scripts": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "dblclick_action": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "url_action": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "default_agent_tbl_tab": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "agents_per_page": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "client_tree_sort": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "client_tree_splitter": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "loading_bar_color": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "dash_info_color": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "dash_positive_color": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "dash_negative_color": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "dash_warning_color": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "clear_search_when_switching": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "date_format": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "is_installer_user": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "last_login_ip": {
+              "type": "object",
+              "description": "Unknown type"
+            },
+            "role": {
+              "type": "object",
+              "description": "Unknown type"
+            }
+          },
+          "required": [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "is_active"
+          ]
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "last_login": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "block_dashboard_login": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "dark_mode": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "show_community_scripts": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "dblclick_action": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "url_action": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "default_agent_tbl_tab": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "agents_per_page": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "client_tree_sort": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "client_tree_splitter": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "loading_bar_color": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "dash_info_color": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "dash_positive_color": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "dash_negative_color": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "dash_warning_color": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "clear_search_when_switching": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "date_format": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "is_installer_user": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "last_login_ip": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "role": {
+            "type": "object",
+            "description": "Unknown type"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "first_name",
+          "last_name",
+          "email",
+          "is_active"
+        ]
+      },
+      "__type": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "__object": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ]
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "object",
+            "description": "Unknown type"
+          },
+          "name": {
+            "type": "string"
+          },
+          "is_superuser": {
+            "type": "boolean"
+          },
+          "can_list_agents": {
+            "type": "boolean"
+          },
+          "can_use_mesh": {
+            "type": "boolean"
+          },
+          "can_uninstall_agents": {
+            "type": "boolean"
+          },
+          "can_update_agents": {
+            "type": "boolean"
+          },
+          "can_edit_agent": {
+            "type": "boolean"
+          },
+          "can_manage_procs": {
+            "type": "boolean"
+          },
+          "can_view_eventlogs": {
+            "type": "boolean"
+          },
+          "can_send_cmd": {
+            "type": "boolean"
+          },
+          "can_reboot_agents": {
+            "type": "boolean"
+          },
+          "can_install_agents": {
+            "type": "boolean"
+          },
+          "can_run_scripts": {
+            "type": "boolean"
+          },
+          "can_run_bulk": {
+            "type": "boolean"
+          },
+          "can_recover_agents": {
+            "type": "boolean"
+          },
+          "can_list_agent_history": {
+            "type": "boolean"
+          },
+          "can_send_wol": {
+            "type": "boolean"
+          },
+          "can_list_notes": {
+            "type": "boolean"
+          },
+          "can_manage_notes": {
+            "type": "boolean"
+          },
+          "can_view_core_settings": {
+            "type": "boolean"
+          },
+          "can_edit_core_settings": {
+            "type": "boolean"
+          },
+          "can_do_server_maint": {
+            "type": "boolean"
+          },
+          "can_code_sign": {
+            "type": "boolean"
+          },
+          "can_run_urlactions": {
+            "type": "boolean"
+          },
+          "can_view_customfields": {
+            "type": "boolean"
+          },
+          "can_manage_customfields": {
+            "type": "boolean"
+          },
+          "can_run_server_scripts": {
+            "type": "boolean"
+          },
+          "can_use_webterm": {
+            "type": "boolean"
+          },
+          "can_view_global_keystore": {
+            "type": "boolean"
+          },
+          "can_edit_global_keystore": {
+            "type": "boolean"
+          },
+          "can_list_checks": {
+            "type": "boolean"
+          },
+          "can_manage_checks": {
+            "type": "boolean"
+          },
+          "can_run_checks": {
+            "type": "boolean"
+          },
+          "can_list_clients": {
+            "type": "boolean"
+          },
+          "can_manage_clients": {
+            "type": "boolean"
+          },
+          "can_list_sites": {
+            "type": "boolean"
+          },
+          "can_manage_sites": {
+            "type": "boolean"
+          },
+          "can_list_deployments": {
+            "type": "boolean"
+          },
+          "can_manage_deployments": {
+            "type": "boolean"
+          },
+          "can_view_clients": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "can_view_sites": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "can_list_automation_policies": {
+            "type": "boolean"
+          },
+          "can_manage_automation_policies": {
+            "type": "boolean"
+          },
+          "can_list_autotasks": {
+            "type": "boolean"
+          },
+          "can_manage_autotasks": {
+            "type": "boolean"
+          },
+          "can_run_autotasks": {
+            "type": "boolean"
+          },
+          "can_view_auditlogs": {
+            "type": "boolean"
+          },
+          "can_list_pendingactions": {
+            "type": "boolean"
+          },
+          "can_manage_pendingactions": {
+            "type": "boolean"
+          },
+          "can_view_debuglogs": {
+            "type": "boolean"
+          },
+          "can_list_scripts": {
+            "type": "boolean"
+          },
+          "can_manage_scripts": {
+            "type": "boolean"
+          },
+          "can_list_alerts": {
+            "type": "boolean"
+          },
+          "can_manage_alerts": {
+            "type": "boolean"
+          },
+          "can_list_alerttemplates": {
+            "type": "boolean"
+          },
+          "can_manage_alerttemplates": {
+            "type": "boolean"
+          },
+          "can_manage_winsvcs": {
+            "type": "boolean"
+          },
+          "can_list_software": {
+            "type": "boolean"
+          },
+          "can_manage_software": {
+            "type": "boolean"
+          },
+          "can_manage_winupdates": {
+            "type": "boolean"
+          },
+          "can_list_accounts": {
+            "type": "boolean"
+          },
+          "can_manage_accounts": {
+            "type": "boolean"
+          },
+          "can_list_roles": {
+            "type": "boolean"
+          },
+          "can_manage_roles": {
+            "type": "boolean"
+          },
+          "can_list_api_keys": {
+            "type": "boolean"
+          },
+          "can_manage_api_keys": {
+            "type": "boolean"
+          },
+          "can_view_reports": {
+            "type": "boolean"
+          },
+          "can_manage_reports": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "is_superuser",
+          "can_list_agents",
+          "can_use_mesh",
+          "can_uninstall_agents",
+          "can_update_agents",
+          "can_edit_agent",
+          "can_manage_procs",
+          "can_view_eventlogs",
+          "can_send_cmd",
+          "can_reboot_agents",
+          "can_install_agents",
+          "can_run_scripts",
+          "can_run_bulk",
+          "can_recover_agents",
+          "can_list_agent_history",
+          "can_send_wol",
+          "can_list_notes",
+          "can_manage_notes",
+          "can_view_core_settings",
+          "can_edit_core_settings",
+          "can_do_server_maint",
+          "can_code_sign",
+          "can_run_urlactions",
+          "can_view_customfields",
+          "can_manage_customfields",
+          "can_run_server_scripts",
+          "can_use_webterm",
+          "can_view_global_keystore",
+          "can_edit_global_keystore",
+          "can_list_checks",
+          "can_manage_checks",
+          "can_run_checks",
+          "can_list_clients",
+          "can_manage_clients",
+          "can_list_sites",
+          "can_manage_sites",
+          "can_list_deployments",
+          "can_manage_deployments",
+          "can_view_clients",
+          "can_view_sites",
+          "can_list_automation_policies",
+          "can_manage_automation_policies",
+          "can_list_autotasks",
+          "can_manage_autotasks",
+          "can_run_autotasks",
+          "can_view_auditlogs",
+          "can_list_pendingactions",
+          "can_manage_pendingactions",
+          "can_view_debuglogs",
+          "can_list_scripts",
+          "can_manage_scripts",
+          "can_list_alerts",
+          "can_manage_alerts",
+          "can_list_alerttemplates",
+          "can_manage_alerttemplates",
+          "can_manage_winsvcs",
+          "can_list_software",
+          "can_manage_software",
+          "can_manage_winupdates",
+          "can_list_accounts",
+          "can_manage_accounts",
+          "can_list_roles",
+          "can_manage_roles",
+          "can_list_api_keys",
+          "can_manage_api_keys",
+          "can_view_reports",
+          "can_manage_reports"
+        ]
+      }
+    }
+  }
+}

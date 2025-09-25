@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ field ? "Edit Custom Field" : "Add Custom Field" }}
@@ -18,7 +18,7 @@
             filled
             dense
             :disable="!!field"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: string) => !!val || '*Required']"
           />
         </q-card-section>
         <!-- name -->
@@ -28,7 +28,7 @@
             label="Name"
             filled
             dense
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: string) => !!val || '*Required']"
           />
         </q-card-section>
         <!-- type select -->
@@ -42,7 +42,7 @@
             filled
             dense
             :disable="!!field"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: string) => !!val || '*Required']"
             @update:model-value="clear"
           />
         </q-card-section>
@@ -142,13 +142,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup flat label="Cancel" />
-          <q-btn
-            flat
-            label="Submit"
-            color="primary"
-            :loading="customFieldStore.isLoading"
-            type="submit"
-          />
+          <q-btn flat label="Submit" color="primary" :loading="isLoading" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -157,12 +151,11 @@
 
 <script lang="ts" setup>
 import { reactive, computed } from "vue";
-import { useCustomFieldStore } from "../api";
+import { customFieldStore } from "src/stores/api";
 import { useDialogPluginComponent } from "quasar";
 
 // type imports
 import type { CustomField, CustomFieldModel } from "../types";
-import { until } from "@vueuse/shared";
 
 const modelOptions = [
   { label: "Client", value: "client" },
@@ -186,7 +179,7 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const customFieldStore = useCustomFieldStore();
+const { isLoading } = customFieldStore;
 
 const localField = props.field
   ? reactive<CustomField>(Object.assign({}, props.field))
@@ -213,13 +206,13 @@ const defaultValueRules = computed(() => {
 });
 
 async function submit() {
-  if (props.field) customFieldStore.updateCustomField(localField.id, localField);
-  else customFieldStore.addCustomField(localField);
-
-  await until(() => customFieldStore.isLoading).toBe(false);
-  if (customFieldStore.isError) return;
-
-  onDialogOK();
+  try {
+    if (props.field) await customFieldStore.updateCustomField(localField.id, localField);
+    else await customFieldStore.addCustomField(localField);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 function clear() {

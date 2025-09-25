@@ -1,6 +1,6 @@
 <template>
-  <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
-  <div v-else-if="agentPlatform !== 'windows'" class="q-pa-sm">
+  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentPlatform !== 'windows'" class="q-pa-sm">
     Only supported for Windows agents at this time
   </div>
   <div v-else>
@@ -27,9 +27,7 @@
           push
           icon="refresh"
           class="q-mr-sm"
-          @click="
-            agentStore.selectedAgentId && updateStore.getAgentUpdates(agentStore.selectedAgentId)
-          "
+          @click="selectedAgentId && updateStore.getAgentUpdates(selectedAgentId)"
         />
         <q-btn
           label="Run Update Scan"
@@ -38,9 +36,7 @@
           push
           no-caps
           class="q-mr-sm"
-          @click="
-            agentStore.selectedAgentId && updateStore.runAgentUpdateScan(agentStore.selectedAgentId)
-          "
+          @click="selectedAgentId && updateStore.runAgentUpdateScan(selectedAgentId)"
         />
         <q-btn
           label="Install Approved Updates"
@@ -49,10 +45,7 @@
           push
           no-caps
           class="q-mr-sm"
-          @click="
-            agentStore.selectedAgentId &&
-            updateStore.runAgentUpdateInstall(agentStore.selectedAgentId)
-          "
+          @click="selectedAgentId && updateStore.runAgentUpdateInstall(selectedAgentId)"
         />
         <q-space />
 
@@ -181,7 +174,7 @@ import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useWinUpdateStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAgentStore } from "../../api";
+import { agentStore } from "src/stores/api";
 
 // ui imports
 import WinUpdateDialog from "./WinUpdateDialog.vue";
@@ -239,10 +232,10 @@ const columns: TacticalColumn[] = [
 // setup stores
 const updateStore = useWinUpdateStore();
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
+
+const { selectedAgentPlatform, selectedAgentId } = agentStore;
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
-const agentPlatform = computed(() => agentStore.selectedAgentPlatform);
 const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
 const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
 const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
@@ -277,17 +270,14 @@ function showUpdateDetails(update: WindowsUpdate) {
   });
 }
 
-watch(
-  () => agentStore.selectedAgentId,
-  (newValue) => {
-    if (newValue) {
-      updateStore.getAgentUpdates(newValue);
-    }
-  },
-);
+watch(selectedAgentId, (newValue) => {
+  if (newValue) {
+    updateStore.getAgentUpdates(newValue);
+  }
+});
 
 // vue lifecycle hooks
 onMounted(() => {
-  if (agentStore.selectedAgentId) updateStore.getAgentUpdates(agentStore.selectedAgentId);
+  if (selectedAgentId.value) updateStore.getAgentUpdates(selectedAgentId.value);
 });
 </script>

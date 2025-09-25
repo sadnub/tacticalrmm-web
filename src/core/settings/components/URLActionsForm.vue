@@ -1,7 +1,7 @@
 <template>
   <q-dialog
     ref="dialogRef"
-    persistent
+    no-backdrop-dismiss
     @hide="onDialogHide"
     @show="loadEditor"
     @before-hide="cleanupEditors"
@@ -102,7 +102,7 @@ import { useURLActionStore } from "../api";
 import TestURLAction from "./TestURLAction.vue";
 
 // type imports
-import type { URLAction, URLActionType } from "src/types/core/urlactions";
+import type { URLAction, URLActionType } from "src/core/settings/types";
 
 import * as monaco from "monaco-editor";
 import { until } from "@vueuse/shared";

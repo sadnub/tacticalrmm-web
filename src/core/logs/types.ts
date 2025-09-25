@@ -83,8 +83,8 @@ export interface DebugLog {
 }
 
 export interface GetDebugLogRequest {
-  agentFilter: string | null;
-  logLevelFilter: DebugLogLevel;
+  agentFilter: string | null | undefined;
+  logLevelFilter: DebugLogLevel[];
   logTypeFilter: DebugLogType | null;
 }
 

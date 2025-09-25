@@ -1,13 +1,13 @@
 <template>
-  <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
-  <div v-else-if="agentPlatform !== 'windows'" class="q-pa-sm">
+  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentPlatform !== 'windows'" class="q-pa-sm">
     Only supported for Windows agents at this time
   </div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
       dense
-      :rows="agentStore.agentSoftware"
+      :rows="agentSoftware"
       :columns="columns"
       :filter="filter"
       :style="{ 'max-height': `${tabHeight}px` }"
@@ -15,7 +15,7 @@
       row-key="id"
       virtual-scroll
       :rows-per-page-options="[0]"
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       column-select
       storage-key="agent-software-tab"
     >
@@ -30,10 +30,7 @@
           flat
           push
           icon="refresh"
-          @click="
-            agentStore.selectedAgentId &&
-            agentStore.refreshAgentSoftware(agentStore.selectedAgentId)
-          "
+          @click="selectedAgentId && agentSoftwareStore.refreshAgentSoftware(selectedAgentId)"
         />
         <q-btn
           icon="add"
@@ -62,7 +59,7 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useAgentStore } from "../../api";
+import { agentSoftwareStore, agentStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
@@ -117,10 +114,10 @@ const columns: TacticalColumn[] = [
 const $q = useQuasar();
 
 // setup stores
-const agentStore = useAgentStore();
+const { selectedAgentPlatform, selectedAgentId } = agentStore;
+const { agentSoftware, isLoading } = agentSoftwareStore;
 const dashboardStore = useDashboardStore();
 const tabHeight = computed(() => dashboardStore.tabHeight);
-const agentPlatform = computed(() => agentStore.selectedAgentPlatform);
 
 // software tab logic
 const filter = ref("");
@@ -134,21 +131,18 @@ function showInstallSoftwareModal() {
   $q.dialog({
     component: InstallSoftware,
     componentProps: {
-      agent_id: agentStore.selectedAgentId,
+      agentId: selectedAgentId.value,
     },
   });
 }
 
-watch(
-  () => agentStore.selectedAgentId,
-  (newValue) => {
-    if (newValue) {
-      agentStore.getAgentSoftware(newValue);
-    }
-  },
-);
+watch(selectedAgentId, (newValue) => {
+  if (newValue) {
+    agentSoftwareStore.getAgentSoftware(newValue);
+  }
+});
 
 onMounted(() => {
-  if (agentStore.selectedAgentId) agentStore.getAgentSoftware(agentStore.selectedAgentId);
+  if (selectedAgentId.value) agentSoftwareStore.getAgentSoftware(selectedAgentId.value);
 });
 </script>

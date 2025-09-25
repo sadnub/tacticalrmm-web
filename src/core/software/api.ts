@@ -10,7 +10,7 @@ export interface ChocoSoftware {
 export const useChocosStore = defineStore(
   "chocos",
   () => {
-    const chocos = ref<ChocoSoftware[]>([]);
+    const chocos = ref<readonly ChocoSoftware[]>([]);
     const isLoading = ref(false);
     const isError = ref(false);
 
@@ -19,7 +19,7 @@ export const useChocosStore = defineStore(
       isError.value = false;
       try {
         const { data } = await axios.get<ChocoSoftware[]>(`/software/chocos/`);
-        chocos.value = data;
+        chocos.value = Object.freeze(data);
       } catch {
         isError.value = true;
       } finally {

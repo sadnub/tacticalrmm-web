@@ -187,10 +187,10 @@ import { storeToRefs } from "pinia";
 import { notifyError } from "src/utils/notify";
 
 // webtermn
-import { checkWebTermPerms, openWebTerminal } from "src/api/core";
+import { checkWebTermPerms, openWebTerminal } from "src/core/settings/api";
 
 // ui imports
-import AlertsIcon from "src/components/AlertsIcon.vue";
+import AlertsIcon from "src/core/alerts/components/AlertsIcon.vue";
 import UserPreferences from "src/core/accounts/components/UserPreferences.vue";
 import ResetPass from "src/core/accounts/components/ResetPass.vue";
 

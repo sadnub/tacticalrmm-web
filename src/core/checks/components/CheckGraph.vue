@@ -36,7 +36,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { useCheckStore } from "../api";
+import { checkStore } from "src/stores/api";
 
 // ui imports
 import ApexChart from "vue3-apexcharts";
@@ -52,9 +52,6 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
-
-// setup stores
-const checkStore = useCheckStore();
 
 let history = [] as CheckHistory[];
 const timeFilter = ref(1);

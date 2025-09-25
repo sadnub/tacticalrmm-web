@@ -107,12 +107,20 @@ export const useAuditLogStore = defineStore("auditLogs", () => {
       });
   }
 
+  function $reset() {
+    auditLog.value = [];
+    rowsNumber.value = 0;
+    isLoading.value = false;
+    isError.value = false;
+  }
+
   return {
     auditLog,
     rowsNumber,
     isLoading,
     isError,
     getAuditLog,
+    $reset,
   };
 });
 
@@ -138,10 +146,17 @@ export const useDebugLogStore = defineStore("debugLogs", () => {
       });
   }
 
+  function $reset() {
+    debugLog.value = [];
+    isLoading.value = false;
+    isError.value = false;
+  }
+
   return {
     debugLog,
     isLoading,
     isError,
     getDebugLog,
+    $reset,
   };
 });

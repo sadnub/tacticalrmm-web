@@ -207,11 +207,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { openURL, useDialogPluginComponent } from "quasar";
-import { useUserStore } from "../api";
+import { userStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useURLActionDropdown } from "src/core/settings/composables";
-import { until } from "@vueuse/shared";
-import { User } from "../types";
+
+// type imports
+import type { User } from "../types";
 
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -239,7 +240,6 @@ const loadingBarColors = [
 ];
 
 // setup stores
-const userStore = useUserStore();
 const dashboardStore = useDashboardStore();
 
 // dropdowns
@@ -281,11 +281,12 @@ const defaultAgentTblTabOptions = [
 ];
 
 async function editUserPrefs() {
-  userStore.updateUserPreferences(state);
-  await until(() => userStore.isLoading).toBe(false);
-
-  if (userStore.isError) return;
-  onDialogOK();
+  try {
+    await userStore.updateUserPreferences(state);
+    onDialogOK();
+  } catch {
+    // do nothing
+  }
 }
 
 onMounted(dashboardStore.getDashInfo);

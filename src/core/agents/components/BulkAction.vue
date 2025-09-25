@@ -231,7 +231,7 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup label="Cancel" />
-          <q-btn label="Run" color="primary" type="submit" :loading="agentStore.isLoading" />
+          <q-btn label="Run" color="primary" type="submit" :loading="isLoading" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -246,10 +246,9 @@ import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
-import { useAgentStore } from "../api";
+import { agentStore } from "src/stores/api";
 import { cmdPlaceholder } from "src/core/agents/composables";
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
-import { until } from "@vueuse/shared";
 
 // type imports
 import type { BulkActionMode, RunBulkActionRequest } from "../types";
@@ -311,7 +310,7 @@ const filteredOsTypeOptions = computed(() => {
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const agentStore = useAgentStore();
+const { isLoading } = agentStore;
 
 function openScriptURL(link?: string) {
   if (link) openURL(link);
@@ -401,13 +400,12 @@ watch(
 );
 
 async function submit() {
-  agentStore.runBulkAction(state);
-
-  await until(() => agentStore.isLoading).toBe(false);
-
-  if (agentStore.isError) return;
-
-  onDialogOK();
+  try {
+    await agentStore.runBulkAction(state);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 const supportsRunAsUser = () => {

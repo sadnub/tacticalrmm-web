@@ -119,7 +119,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { useQuasar } from "quasar";
-import { useCustomFieldStore } from "../api";
+import { customFieldStore } from "src/stores/api";
 import { capitalize } from "src/utils/format";
 
 // ui imports
@@ -176,7 +176,7 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const customFieldStore = useCustomFieldStore();
+const { clientCustomFields, siteCustomFields, agentCustomFields } = customFieldStore;
 
 const pagination = ref({
   rowsPerPage: 0,
@@ -189,9 +189,9 @@ const $q = useQuasar();
 const tab = ref("client");
 
 const customFields = computed(() => {
-  if (tab.value === "client") return customFieldStore.clientCustomFields;
-  else if (tab.value === "site") return customFieldStore.siteCustomFields;
-  else if (tab.value === "agent") return customFieldStore.agentCustomFields;
+  if (tab.value === "client") return clientCustomFields.value;
+  else if (tab.value === "site") return siteCustomFields.value;
+  else if (tab.value === "agent") return agentCustomFields.value;
   else return [];
 });
 
@@ -218,6 +218,6 @@ function deleteCustomField(field: CustomField) {
     title: `Delete custom field ${field.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(() => customFieldStore.removeCustomField(field.id));
+  }).onOk(() => void customFieldStore.removeCustomField(field.id));
 }
 </script>

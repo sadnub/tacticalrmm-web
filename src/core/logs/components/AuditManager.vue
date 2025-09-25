@@ -121,7 +121,7 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, reactive, watch, onMounted } from "vue";
+import { ref, computed, reactive, watch, onMounted, onUnmounted } from "vue";
 import { useQuasar } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
@@ -216,6 +216,7 @@ const agentActionOptions = [
   { value: "execute_script", label: "Execute Script" },
   { value: "remote_session", label: "Remote Session" },
   { value: "url_action", label: "URL Action" },
+  { value: "task_run", label: "Task Run Results" },
 ];
 
 const systemActionOptions = [
@@ -298,7 +299,7 @@ const requestData = reactive<GetAuditLogRequest>({
   timeFilter: 7,
   pagination: {
     rowsPerPage: 25,
-    rowsNumber: auditLogStore.rowsNumber,
+    rowsNumber: 1,
     sortBy: "entry_time",
     descending: true,
     page: 1,
@@ -317,6 +318,13 @@ function search() {
 
   loading.value = false;
 }
+
+watch(
+  () => auditLogStore.rowsNumber,
+  (newValue) => {
+    requestData.pagination.rowsNumber = newValue;
+  },
+);
 
 function onRequest(data: { pagination: Pagination }) {
   if (data) {
@@ -378,5 +386,9 @@ onMounted(() => {
   if (props.agent) {
     search();
   }
+});
+
+onUnmounted(() => {
+  auditLogStore.$reset();
 });
 </script>

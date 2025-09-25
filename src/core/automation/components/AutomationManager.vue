@@ -267,15 +267,15 @@
 </template>
 
 <script>
-import DialogWrapper from "src/components/ui/DialogWrapper.vue";
-import PolicyForm from "src/components/automation/modals/PolicyForm.vue";
-import PolicyOverview from "src/components/automation/PolicyOverview.vue";
-import RelationsView from "src/components/automation/modals/RelationsView.vue";
-import PatchPolicyForm from "src/core/automation/components/PatchPolicyForm.vue";
-import AlertTemplateAdd from "src/components/modals/alerts/AlertTemplateAdd.vue";
-import PolicyExclusions from "src/components/automation/modals/PolicyExclusions.vue";
-import PolicyChecksTab from "src/components/automation/PolicyChecksTab.vue";
-import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTasksTab.vue";
+import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
+import PolicyForm from "./PolicyForm.vue";
+import PolicyOverview from "./PolicyOverview.vue";
+import RelationsView from "./RelationsView.vue";
+import PatchPolicyForm from "./PatchPolicyForm.vue";
+import AlertTemplateAdd from "src/core/alerts/components/AlertTemplateAdd.vue";
+import PolicyExclusions from "./PolicyExclusions.vue";
+import PolicyChecksTab from "./PolicyChecksTab.vue";
+import PolicyAutomatedTasksTab from "./PolicyAutomatedTasksTab.vue";
 
 export default {
   name: "AutomationManager",

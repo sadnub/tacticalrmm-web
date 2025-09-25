@@ -63,8 +63,8 @@
 </template>
 
 <script>
-import PolicyChecksTab from "src/components/automation/PolicyChecksTab.vue";
-import PolicyAutomatedTasksTab from "src/components/automation/PolicyAutomatedTasksTab.vue";
+import PolicyChecksTab from "./PolicyChecksTab.vue";
+import PolicyAutomatedTasksTab from "./PolicyAutomatedTasksTab.vue";
 
 export default {
   name: "PolicyOverview",

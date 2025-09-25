@@ -2,8 +2,9 @@
   <q-page>
     <FileBar />
     <q-splitter
-      v-model="dashboardStore.dashboardSettings.clientTreeSplitter"
+      :model-value="dashboardStore.dashboardSettings.clientTreeSplitter"
       :style="{ height: `${$q.screen.height - 50 - 40}px` }"
+      @update:model-value="(val: number) => dashboardStore.setClientTreeSplitter(Math.floor(val))"
     >
       <template #before>
         <div v-if="!clientTree" class="q-pa-sm q-gutter-sm text-center" style="height: 30vh">
@@ -222,15 +223,15 @@ import { useURLActionStore, runURLAction } from "src/core/settings/api";
 import axios from "axios";
 
 // import ui
-import FileBar from "src/components/FileBar.vue";
+import FileBar from "src/core/dashboard/components/FileBar.vue";
 import AgentTable from "src/core/agents/components/AgentTable.vue";
 import SubTableTabs from "src/core/dashboard/components/SubTableTabs.vue";
-import PolicyAdd from "src/components/automation/modals/PolicyAdd.vue";
+import PolicyAdd from "src/core/automation/components/PolicyAdd.vue";
 import ClientsForm from "src/core/clients/components/ClientsForm.vue";
 import SitesForm from "src/core/clients/components/SitesForm.vue";
 import DeleteClient from "src/core/clients/components/DeleteClient.vue";
 import InstallAgent from "src/core/agents/components/InstallAgent.vue";
-import AlertTemplateAdd from "src/components/modals/alerts/AlertTemplateAdd.vue";
+import AlertTemplateAdd from "src/core/alerts/components/AlertTemplateAdd.vue";
 import IntegrationsContextMenu from "src/core/dashboard/ui/IntegrationsContextMenu.vue";
 
 //types

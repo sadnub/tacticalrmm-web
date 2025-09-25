@@ -1,13 +1,13 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 60vw">
       <q-inner-loading
-        :showing="!coreStore.coreSettings"
+        :showing="!coreSettings"
         label="Loading Settings..."
         label-class="text-teal"
         label-style="font-size: 1.1em"
       />
-      <q-splitter v-if="coreStore.coreSettings" v-model="splitterModel">
+      <q-splitter v-if="coreSettings" v-model="splitterModel">
         <template #before>
           <q-tabs v-model="tab" dense vertical class="text-primary">
             <q-tab name="general" label="General" />
@@ -43,7 +43,7 @@
                   <q-separator />
                   <q-card-section class="row">
                     <q-checkbox
-                      v-model="coreStore.coreSettings.agent_auto_update"
+                      v-model="coreSettings.agent_auto_update"
                       label="Enable agent automatic self update"
                     >
                       <q-tooltip> Runs at 35mins past every hour </q-tooltip>
@@ -51,7 +51,7 @@
                   </q-card-section>
                   <q-card-section v-if="!hosted" class="row">
                     <q-checkbox
-                      v-model="coreStore.coreSettings.enable_server_scripts"
+                      v-model="coreSettings.enable_server_scripts"
                       label="Enable server side scripts"
                     >
                       <q-tooltip
@@ -75,7 +75,7 @@
                   </q-card-section>
                   <q-card-section v-if="!hosted" class="row">
                     <q-checkbox
-                      v-model="coreStore.coreSettings.enable_server_webterminal"
+                      v-model="coreSettings.enable_server_webterminal"
                       label="Enable web terminal"
                     >
                       <q-tooltip>Enable the web terminal</q-tooltip>
@@ -98,7 +98,7 @@
                     <div class="col-4">Default agent timezone:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
-                      v-model="coreStore.coreSettings.default_time_zone"
+                      v-model="coreSettings.default_time_zone"
                       filterable
                       filled
                       dense
@@ -110,12 +110,7 @@
                   <q-card-section class="row">
                     <div class="col-4">Default date format:</div>
                     <div class="col-2"></div>
-                    <q-input
-                      v-model="coreStore.coreSettings.date_format"
-                      filled
-                      dense
-                      class="col-6"
-                    >
+                    <q-input v-model="coreSettings.date_format" filled dense class="col-6">
                       <template #after>
                         <q-btn
                           round
@@ -136,7 +131,7 @@
                     <div class="col-4">Default server policy:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
-                      v-model="coreStore.coreSettings.server_policy"
+                      v-model="coreSettings.server_policy"
                       clearable
                       map-options
                       filled
@@ -151,7 +146,7 @@
                     <div class="col-4">Default workstation policy:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
-                      v-model="coreStore.coreSettings.workstation_policy"
+                      v-model="coreSettings.workstation_policy"
                       clearable
                       map-options
                       filled
@@ -166,7 +161,7 @@
                     <div class="col-4">Default alert template:</div>
                     <div class="col-2"></div>
                     <q-select
-                      v-model="coreStore.coreSettings.alert_template"
+                      v-model="coreSettings.alert_template"
                       clearable
                       map-options
                       emit-value
@@ -181,13 +176,13 @@
                     <div class="col-4 flex items-center">Receive notifications on:</div>
                     <div class="col-2"></div>
                     <q-checkbox
-                      v-model="coreStore.coreSettings.notify_on_info_alerts"
+                      v-model="coreSettings.notify_on_info_alerts"
                       dense
                       class="col-3"
                       label="Informational Alerts"
                     />
                     <q-checkbox
-                      v-model="coreStore.coreSettings.notify_on_warning_alerts"
+                      v-model="coreSettings.notify_on_warning_alerts"
                       dense
                       class="col-3"
                       label="Warning Alerts"
@@ -197,7 +192,7 @@
                     <div class="col-4">Agent Debug Level:</div>
                     <div class="col-2"></div>
                     <q-select
-                      v-model="coreStore.coreSettings.agent_debug_level"
+                      v-model="coreSettings.agent_debug_level"
                       emit-value
                       map-options
                       filled
@@ -213,12 +208,12 @@
                     </div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model.number="coreStore.coreSettings.clear_faults_days"
+                      v-model.number="coreSettings.clear_faults_days"
                       hint="Setting this value to 0 disables this feature"
                       filled
                       dense
                       class="col-6"
-                      :rules="[(val) => val >= 0 || 'Minimum is 0']"
+                      :rules="[(val: number) => val >= 0 || 'Minimum is 0']"
                     />
                   </q-card-section>
                   <q-card-section class="row">
@@ -248,12 +243,9 @@
                     <div class="col-3">Recipients</div>
                     <div class="col-4"></div>
                     <div class="col-5">
-                      <q-list
-                        v-if="coreStore.coreSettings.email_alert_recipients.length !== 0"
-                        dense
-                      >
+                      <q-list v-if="coreSettings.email_alert_recipients.length !== 0" dense>
                         <q-item
-                          v-for="emailAddress in coreStore.coreSettings.email_alert_recipients"
+                          v-for="emailAddress in coreSettings.email_alert_recipients"
                           :key="emailAddress"
                           v-ripple
                           clickable
@@ -281,18 +273,18 @@
                     <div class="col-2">From email:</div>
                     <div class="col-4"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.smtp_from_email"
+                      v-model="coreSettings.smtp_from_email"
                       filled
                       dense
                       class="col-6 q-pa-none"
-                      :rules="[(val) => isValidEmail(val) || 'Invalid email']"
+                      :rules="[(val: string) => isValidEmail(val) || 'Invalid email']"
                     />
                   </q-card-section>
                   <q-card-section class="row">
                     <div class="col-2">From name:</div>
                     <div class="col-4"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.smtp_from_name"
+                      v-model="coreSettings.smtp_from_name"
                       filled
                       dense
                       class="col-6 q-pa-none"
@@ -302,7 +294,7 @@
                     <div class="col-2">Host:</div>
                     <div class="col-4"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.smtp_host"
+                      v-model="coreSettings.smtp_host"
                       filled
                       dense
                       class="col-6 q-pa-none"
@@ -312,36 +304,36 @@
                     <div class="col-2">Port:</div>
                     <div class="col-4"></div>
                     <q-input
-                      v-model.number="coreStore.coreSettings.smtp_port"
+                      v-model.number="coreSettings.smtp_port"
                       dense
                       type="number"
                       filled
                       class="q-pa-none"
-                      :rules="[(val) => (val > 0 && val <= 65535) || 'Invalid Port']"
+                      :rules="[(val: number) => (val > 0 && val <= 65535) || 'Invalid Port']"
                     />
                   </q-card-section>
                   <q-card-section class="row">
                     <q-checkbox
-                      v-model="coreStore.coreSettings.smtp_requires_auth"
+                      v-model="coreSettings.smtp_requires_auth"
                       label="My Server Requires Authentication"
                       class="q-pa-none"
                     />
                   </q-card-section>
-                  <q-card-section v-show="coreStore.coreSettings.smtp_requires_auth" class="row">
+                  <q-card-section v-show="coreSettings.smtp_requires_auth" class="row">
                     <div class="col-2">Username:</div>
                     <div class="col-4"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.smtp_host_user"
+                      v-model="coreSettings.smtp_host_user"
                       filled
                       dense
                       class="col-6 q-pa-none"
                     />
                   </q-card-section>
-                  <q-card-section v-show="coreStore.coreSettings.smtp_requires_auth" class="row">
+                  <q-card-section v-show="coreSettings.smtp_requires_auth" class="row">
                     <div class="col-2">Password:</div>
                     <div class="col-4"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.smtp_host_password"
+                      v-model="coreSettings.smtp_host_password"
                       filled
                       dense
                       class="col-6 q-pa-none"
@@ -378,9 +370,9 @@
                     <div class="col-3">Recipients</div>
                     <div class="col-4"></div>
                     <div class="col-5">
-                      <q-list v-if="coreStore.coreSettings.sms_alert_recipients.length !== 0" dense>
+                      <q-list v-if="coreSettings.sms_alert_recipients.length !== 0" dense>
                         <q-item
-                          v-for="num in coreStore.coreSettings.sms_alert_recipients"
+                          v-for="num in coreSettings.sms_alert_recipients"
                           :key="num"
                           v-ripple
                           clickable
@@ -408,7 +400,7 @@
                     <div class="col-3">Twilio Number:</div>
                     <div class="col-3"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.twilio_number"
+                      v-model="coreSettings.twilio_number"
                       filled
                       dense
                       class="col-6 q-pa-none"
@@ -419,7 +411,7 @@
                     <div class="col-3">Twilio Account SID:</div>
                     <div class="col-3"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.twilio_account_sid"
+                      v-model="coreSettings.twilio_account_sid"
                       filled
                       dense
                       class="col-6 q-pa-none"
@@ -429,7 +421,7 @@
                     <div class="col-3">Twilio Auth Token:</div>
                     <div class="col-3"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.twilio_auth_token"
+                      v-model="coreSettings.twilio_auth_token"
                       filled
                       dense
                       class="col-6 q-pa-none"
@@ -444,12 +436,12 @@
                     <div class="col-4">Username:</div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.mesh_username"
+                      v-model="coreSettings.mesh_username"
                       dense
                       filled
                       class="col-6"
                       :rules="[
-                        (val) =>
+                        (val: string) =>
                           (val == val.toLowerCase() && val != val.toUpperCase()) ||
                           'Username must be all lowercase',
                       ]"
@@ -458,32 +450,17 @@
                   <q-card-section v-if="!hosted" class="row">
                     <div class="col-4">Mesh Site:</div>
                     <div class="col-2"></div>
-                    <q-input
-                      v-model="coreStore.coreSettings.mesh_site"
-                      dense
-                      filled
-                      class="col-6"
-                    />
+                    <q-input v-model="coreSettings.mesh_site" dense filled class="col-6" />
                   </q-card-section>
                   <q-card-section v-if="!hosted" class="row">
                     <div class="col-4">Mesh Token:</div>
                     <div class="col-2"></div>
-                    <q-input
-                      v-model="coreStore.coreSettings.mesh_token"
-                      dense
-                      filled
-                      class="col-6"
-                    />
+                    <q-input v-model="coreSettings.mesh_token" dense filled class="col-6" />
                   </q-card-section>
                   <q-card-section v-if="!hosted" class="row">
                     <div class="col-4">Mesh Device Group Name:</div>
                     <div class="col-2"></div>
-                    <q-input
-                      v-model="coreStore.coreSettings.mesh_device_group"
-                      dense
-                      filled
-                      class="col-6"
-                    />
+                    <q-input v-model="coreSettings.mesh_device_group" dense filled class="col-6" />
                   </q-card-section>
                   <q-card-section v-if="!hosted" class="row">
                     <div class="col-4 flex items-center">
@@ -504,7 +481,7 @@
                     <div class="col-2"></div>
                     <q-checkbox
                       dense
-                      :model-value="coreStore.coreSettings.sync_mesh_with_trmm"
+                      :model-value="coreSettings.sync_mesh_with_trmm"
                       class="col-6"
                       @update:model-value="confirmSyncChange"
                     />
@@ -528,12 +505,7 @@
 
                     <div class="col-2"></div>
 
-                    <q-input
-                      v-model="coreStore.coreSettings.mesh_company_name"
-                      dense
-                      filled
-                      class="col-6"
-                    >
+                    <q-input v-model="coreSettings.mesh_company_name" dense filled class="col-6">
                     </q-input>
                   </q-card-section>
                 </q-tab-panel>
@@ -564,7 +536,7 @@
                     <div class="col-4">Check History (days):</div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.check_history_prune_days"
+                      v-model="coreSettings.check_history_prune_days"
                       dense
                       filled
                       class="col-6"
@@ -575,7 +547,7 @@
                     <div class="col-4">Resolved Alerts (days):</div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.resolved_alerts_prune_days"
+                      v-model="coreSettings.resolved_alerts_prune_days"
                       dense
                       filled
                       class="col-6"
@@ -586,7 +558,7 @@
                     <div class="col-4">Agent History (days):</div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.agent_history_prune_days"
+                      v-model="coreSettings.agent_history_prune_days"
                       dense
                       filled
                       class="col-6"
@@ -597,7 +569,7 @@
                     <div class="col-4">Debug Logs (days):</div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.debug_log_prune_days"
+                      v-model="coreSettings.debug_log_prune_days"
                       dense
                       filled
                       class="col-6"
@@ -608,7 +580,7 @@
                     <div class="col-4">Audit Logs (days):</div>
                     <div class="col-2"></div>
                     <q-input
-                      v-model="coreStore.coreSettings.audit_log_prune_days"
+                      v-model="coreSettings.audit_log_prune_days"
                       dense
                       filled
                       class="col-6"
@@ -666,9 +638,8 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted } from "vue";
 import { openURL, useDialogPluginComponent, useQuasar } from "quasar";
-import { until } from "@vueuse/shared";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useCoreStore } from "../api";
+import { coreStore } from "src/stores/api";
 import { usePolicyDropdown } from "src/core/automation/composables";
 import { useAlertTemplateDropdown } from "src/core/alerts/composables";
 import { isValidEmail } from "src/utils/validation";
@@ -688,7 +659,7 @@ const $q = useQuasar();
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const coreStore = useCoreStore();
+const { coreSettings } = coreStore;
 
 // setup dropdowns
 const { policyOptions } = usePolicyDropdown();
@@ -733,7 +704,7 @@ function confirmSyncChange(newValue: boolean) {
     ok: { label: "Yes", color: "primary" },
     cancel: { label: "No", color: "negative" },
   }).onOk(() => {
-    if (coreStore.coreSettings) coreStore.coreSettings.sync_mesh_with_trmm = newValue;
+    if (coreSettings.value) coreSettings.value.sync_mesh_with_trmm = newValue;
   });
 }
 function showResetPatchPolicy() {
@@ -752,9 +723,9 @@ function toggleAddEmail() {
     },
     cancel: true,
     ok: { label: "Add", color: "primary" },
-    persistent: false,
+    noBackdropDismiss: true,
   }).onOk((data) => {
-    coreStore.coreSettings?.email_alert_recipients.push(data);
+    coreSettings.value?.email_alert_recipients.push(data);
   });
 }
 
@@ -769,32 +740,31 @@ function toggleAddSMSNumber() {
     html: true,
     cancel: true,
     ok: { label: "Add", color: "primary" },
-    persistent: false,
+    noBackdropDismiss: true,
   }).onOk((data) => {
-    coreStore.coreSettings?.sms_alert_recipients.push(data);
+    coreSettings.value?.sms_alert_recipients.push(data);
   });
 }
 
 function removeEmail(email: string) {
-  const removed = coreStore.coreSettings?.email_alert_recipients.filter((k) => k !== email);
-  if (coreStore.coreSettings && removed) coreStore.coreSettings.email_alert_recipients = removed;
+  const removed = coreSettings.value?.email_alert_recipients.filter((k) => k !== email);
+  if (coreSettings.value && removed) coreSettings.value.email_alert_recipients = removed;
 }
 
 function removeSMSNumber(num: string) {
-  const removed = coreStore.coreSettings?.sms_alert_recipients.filter((k) => k !== num);
-  if (coreStore.coreSettings && removed) coreStore.coreSettings.sms_alert_recipients = removed;
+  const removed = coreSettings.value?.sms_alert_recipients.filter((k) => k !== num);
+  if (coreSettings.value && removed) coreSettings.value.sms_alert_recipients = removed;
 }
 
 async function submit() {
-  if (coreStore.coreSettings) {
-    coreStore.updateCoreSettings(coreStore.coreSettings, emailTest.value, smsTest.value);
+  if (coreSettings.value) {
+    try {
+      await coreStore.updateCoreSettings(coreSettings.value, emailTest.value, smsTest.value);
+      onDialogOK();
+    } catch {
+      //
+    }
   }
-
-  await until(() => coreStore.isLoading).toBe(false);
-
-  if (coreStore.isError) return;
-
-  onDialogOK();
 }
 
 onMounted(coreStore.getCoreSettings);

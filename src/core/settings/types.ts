@@ -65,7 +65,7 @@ export interface CustomField {
   default_value?: string | boolean | string[];
 }
 
-export type CustomFieldValueField = string | boolean | number | string[];
+export type CustomFieldValueField = string | boolean | number | string[] | undefined | null;
 
 export interface CustomFieldValue {
   id?: number;

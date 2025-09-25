@@ -1,16 +1,16 @@
 <template>
-  <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
       dense
       :style="{ 'max-height': `${tabHeight}px` }"
-      :rows="agentStore.agentTasks"
+      :rows="tasks"
       :columns="columns"
       row-key="id"
       binary-state-sort
       virtual-scroll
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       :rows-per-page-options="[0]"
       no-data-label="No tasks"
       column-select
@@ -23,9 +23,7 @@
           flat
           push
           icon="refresh"
-          @click="
-            agentStore.selectedAgentId && agentStore.getAgentTasks(agentStore.selectedAgentId)
-          "
+          @click="selectedAgentId && getAgentTasks(selectedAgentId, { force: true })"
         />
         <q-btn icon="add" label="Add Task" no-caps dense flat push @click="showAddTask" />
 
@@ -146,7 +144,7 @@
             </template>
 
             <!-- text alert -->
-            <template v-else-if="col.name === 'smslaert'">
+            <template v-else-if="col.name === 'smsalert'">
               <q-checkbox
                 v-if="props.row.alert_template && props.row.alert_template.always_text !== null"
                 v-model="props.row.alert_template.always_text"
@@ -227,11 +225,9 @@
 
             <!-- is collector task -->
             <template v-else-if="col.name === 'collector'">
-              <q-td>
-                <q-icon v-if="!!props.row.custom_field" style="font-size: 1.3rem" name="check">
-                  <q-tooltip>The task updates a custom field on the agent</q-tooltip>
-                </q-icon>
-              </q-td>
+              <q-icon v-if="!!props.row.custom_field" style="font-size: 1.3rem" name="check">
+                <q-tooltip>The task updates a custom field on the agent</q-tooltip>
+              </q-icon>
             </template>
 
             <!-- status icon -->
@@ -309,8 +305,8 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useTaskStore } from "src/core/tasks/api";
-import { useAgentStore } from "../../api";
+import { taskStore } from "src/stores/api";
+import { agentStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { notifyError } from "src/utils/notify";
 
@@ -355,7 +351,7 @@ const columns: TacticalColumn[] = [
   {
     name: "datetime",
     label: "Last Run Time",
-    field: "last_run",
+    field: (row) => row.task_result.last_run,
     align: "left",
     sortable: true,
     format: (val: string) => (val ? dashboardStore.formatDate(val) : "Has not run yet"),
@@ -368,9 +364,9 @@ const columns: TacticalColumn[] = [
     sortable: true,
   },
   {
-    name: "assignedcheck",
+    name: "check_name",
     label: "Assigned Check",
-    field: "assigned_check",
+    field: "check_name",
     align: "left",
     sortable: true,
   },
@@ -378,11 +374,10 @@ const columns: TacticalColumn[] = [
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
-const taskStore = useTaskStore();
+const { selectedAgentPlatform, selectedAgentId } = agentStore;
+const { tasks, getAgentTasks, isLoading, updateTaskPartial, removeTask, runTask } = taskStore;
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
-const agentPlatform = computed(() => agentStore.selectedAgentPlatform);
 
 const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
 const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
@@ -401,9 +396,10 @@ const pagination = ref({
 
 const search = ref("");
 
-function editTask(task: AutomatedTaskUI, data: Partial<AutomatedTaskUI>) {
+async function editTask(task: AutomatedTaskUI, data: Partial<AutomatedTaskUI>) {
   if (task.policy) return;
-  taskStore.updateTaskPartial(task.id, data);
+
+  if (task.id) await updateTaskPartial(task.id, data);
 }
 
 function deleteTask(task: AutomatedTaskUI) {
@@ -413,9 +409,10 @@ function deleteTask(task: AutomatedTaskUI) {
     title: "Are you sure?",
     message: `Delete ${task.name} task`,
     cancel: true,
-    persistent: true,
+    color: "primary",
+    noBackdropDismiss: true,
   }).onOk(() => {
-    taskStore.removeTask(task.id);
+    if (task.id) void removeTask(task.id);
   });
 }
 
@@ -429,9 +426,10 @@ function runWinTask(task: AutomatedTaskUI) {
     title: "Are you sure?",
     message: `Run ${task.name} task`,
     cancel: true,
-    persistent: true,
+    color: "primary",
+    noBackdropDismiss: true,
   }).onOk(() => {
-    taskStore.runTask(task.id, agentStore.selectedAgentId!);
+    if (task.id && selectedAgentId.value) runTask(task.id, selectedAgentId.value);
   });
 }
 
@@ -439,8 +437,8 @@ function showAddTask() {
   $q.dialog({
     component: AutomatedTaskForm,
     componentProps: {
-      parent: { agent: agentStore.selectedAgentId },
-      plat: agentPlatform.value,
+      parent: { agent: selectedAgentId.value },
+      plat: selectedAgentPlatform.value,
     },
   });
 }
@@ -452,8 +450,8 @@ function showEditTask(task: AutomatedTaskUI) {
     component: AutomatedTaskForm,
     componentProps: {
       task: task,
-      parent: { agent: agentStore.selectedAgentId },
-      plat: agentPlatform.value,
+      parent: { agent: selectedAgentId.value },
+      plat: selectedAgentPlatform.value,
     },
   });
 }
@@ -467,16 +465,13 @@ function showScriptOutput(script: AutomatedTaskUI) {
   });
 }
 
-watch(
-  () => agentStore.selectedAgentId,
-  (newValue) => {
-    if (newValue) {
-      agentStore.getAgentTasks(newValue);
-    }
-  },
-);
+watch(selectedAgentId, (newValue) => {
+  if (newValue) {
+    getAgentTasks(newValue);
+  }
+});
 
 onMounted(() => {
-  if (agentStore.selectedAgentId) agentStore.getAgentTasks(agentStore.selectedAgentId);
+  if (selectedAgentId.value) getAgentTasks(selectedAgentId.value);
 });
 </script>

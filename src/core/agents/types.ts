@@ -130,13 +130,13 @@ export interface MeshUrls {
 }
 
 export interface WebVNCUrl {
-  vnc?: string;
+  vnc?: string | undefined;
   hostname: string;
   client: string;
   site: string;
 }
 
-export type AgentServiceStartType = "automatic" | "manual" | "disabled" | "autodelay";
+export type AgentServiceStartType = "automatic" | "manual" | "disabled" | "autodelay" | "auto";
 
 export interface AgentService {
   display_name: string;

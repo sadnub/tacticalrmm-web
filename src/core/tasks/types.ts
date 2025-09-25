@@ -81,7 +81,7 @@ export interface AutomatedTask {
 }
 
 export interface AutomatedTaskUI {
-  id: number;
+  id?: number;
   agent?: string | null;
   policy?: number | null;
   custom_field: number | null;

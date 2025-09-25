@@ -891,7 +891,7 @@ function toggleAddEmail() {
     },
     cancel: true,
     ok: { label: "Add", color: "primary" },
-    persistent: false,
+    noBackdropDismiss: true,
   }).onOk((data) => {
     template.email_recipients.push(data);
   });
@@ -908,7 +908,7 @@ function toggleAddSMSNumber() {
     html: true,
     cancel: true,
     ok: { label: "Add", color: "primary" },
-    persistent: false,
+    noBackdropDismiss: true,
   }).onOk((data: string) => {
     template.text_recipients.push(data);
   });

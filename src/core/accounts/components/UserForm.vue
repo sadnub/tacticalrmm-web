@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 30vw" class="q-dialog-plugin">
       <q-bar>
         {{ user ? "Edit User" : "Add User" }}
@@ -110,10 +110,9 @@
 import { ref, reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAuthStore } from "src/stores/auth";
-import { useUserStore } from "../api";
+import { userStore } from "src/stores/api";
 import { useRoleDropdown } from "../composables";
 import { isValidEmail } from "src/utils/validation";
-import { until } from "@vueuse/shared";
 
 // types
 import type { User } from "../types";
@@ -128,7 +127,6 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
 const auth = useAuthStore();
-const userStore = useUserStore();
 
 const loggedInUser = computed(() => auth.username);
 
@@ -150,22 +148,22 @@ const localUser = reactive<User>({
 const isLoggedInUser = computed(() => props.user && localUser.username === loggedInUser.value);
 
 async function onSubmit() {
-  if (props.user) {
-    // dont allow updating is_active if username is same as logged in user
-    if (isLoggedInUser.value) {
-      localUser.is_active = true;
-      localUser.block_dashboard_login = false;
+  try {
+    if (props.user) {
+      // dont allow updating is_active if username is same as logged in user
+      if (isLoggedInUser.value) {
+        localUser.is_active = true;
+        localUser.block_dashboard_login = false;
+      }
+
+      await userStore.updateUser(localUser.id, localUser);
+    } else {
+      await userStore.addUser(localUser);
     }
-
-    userStore.updateUser(localUser.id, localUser);
-  } else {
-    userStore.addUser(localUser);
+  } catch {
+    // do nothing
+  } finally {
+    onDialogOK();
   }
-
-  // stops the dialog from closing when there is an error
-  await until(() => userStore.isLoading).toBe(false);
-  if (userStore.isError) return;
-
-  onDialogOK();
 }
 </script>

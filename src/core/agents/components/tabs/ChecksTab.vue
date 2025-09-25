@@ -1,15 +1,15 @@
 <template>
-  <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
       dense
       :style="{ 'max-height': `${tabHeight}px` }"
-      :rows="agentStore.agentChecks"
+      :rows="checks"
       :columns="columns"
       row-key="id"
       binary-state-sort
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       :rows-per-page-options="[0]"
       virtual-scroll
       no-data-label="No checks"
@@ -28,12 +28,12 @@
           flat
           push
           icon="refresh"
-          @click="agentStore.getAgentChecks(agentStore.selectedAgentId)"
+          @click="checkStore.getAgentChecks(selectedAgentId, { force: true })"
         />
         <q-btn-dropdown icon="add" label="New" no-caps dense flat class="q-mr-md">
           <q-list dense style="min-width: 200px">
             <q-item
-              v-if="agentStore.selectedAgentPlatform === 'windows'"
+              v-if="selectedAgentPlatform === 'windows'"
               v-close-popup
               clickable
               @click="showCheckModal('diskspace')"
@@ -50,7 +50,7 @@
               <q-item-section>Ping Check</q-item-section>
             </q-item>
             <q-item
-              v-if="agentStore.selectedAgentPlatform === 'windows'"
+              v-if="selectedAgentPlatform === 'windows'"
               v-close-popup
               clickable
               @click="showCheckModal('cpuload')"
@@ -61,7 +61,7 @@
               <q-item-section>CPU Load Check</q-item-section>
             </q-item>
             <q-item
-              v-if="agentStore.selectedAgentPlatform === 'windows'"
+              v-if="selectedAgentPlatform === 'windows'"
               v-close-popup
               clickable
               @click="showCheckModal('memory')"
@@ -72,7 +72,7 @@
               <q-item-section>Memory Check</q-item-section>
             </q-item>
             <q-item
-              v-if="agentStore.selectedAgentPlatform === 'windows'"
+              v-if="selectedAgentPlatform === 'windows'"
               v-close-popup
               clickable
               @click="showCheckModal('winsvc')"
@@ -89,7 +89,7 @@
               <q-item-section>Script Check</q-item-section>
             </q-item>
             <q-item
-              v-if="agentStore.selectedAgentPlatform === 'windows'"
+              v-if="selectedAgentPlatform === 'windows'"
               v-close-popup
               clickable
               @click="showCheckModal('eventlog')"
@@ -109,7 +109,7 @@
           no-caps
           icon="play_arrow"
           class="q-mr-md"
-          @click="agentStore.runAgentChecks(agentStore.selectedAgentId)"
+          @click="checkStore.runAgentChecks(selectedAgentId)"
         />
         <q-btn
           label="Reset All Checks Status"
@@ -202,7 +202,14 @@
                 <q-item-section>Delete</q-item-section>
               </q-item>
               <q-separator></q-separator>
-              <q-item v-close-popup clickable @click="resetCheckStatus(props.row)">
+              <q-item
+                v-close-popup
+                clickable
+                :disable="
+                  !props.row.check_result?.last_run || props.row.check_result?.status === 'passing'
+                "
+                @click="resetCheckStatus(props.row)"
+              >
                 <q-item-section side>
                   <q-icon name="info" />
                 </q-item-section>
@@ -400,23 +407,23 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useAgentStore } from "../../api";
-import { useCheckStore } from "src/core/checks/api";
+import { agentStore } from "src/stores/api";
+import { checkStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { notifyWarning } from "src/utils/notify";
 
 // ui imports
 import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
-import MemCheck from "src/core/checks/components//MemCheck.vue";
-import CpuLoadCheck from "src/core/checks/components//CpuLoadCheck.vue";
-import PingCheck from "src/core/checks/components//PingCheck.vue";
-import WinSvcCheck from "src/core/checks/components//WinSvcCheck.vue";
-import EventLogCheck from "src/core/checks/components//EventLogCheck.vue";
-import ScriptCheck from "src/core/checks/components//ScriptCheck.vue";
+import MemCheck from "src/core/checks/components/MemCheck.vue";
+import CpuLoadCheck from "src/core/checks/components/CpuLoadCheck.vue";
+import PingCheck from "src/core/checks/components/PingCheck.vue";
+import WinSvcCheck from "src/core/checks/components/WinSvcCheck.vue";
+import EventLogCheck from "src/core/checks/components/EventLogCheck.vue";
+import ScriptCheck from "src/core/checks/components/ScriptCheck.vue";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
-import EventLogCheckOutput from "src/core/checks/components//EventLogCheckOutput.vue";
+import EventLogCheckOutput from "src/core/checks/components/EventLogCheckOutput.vue";
 import CheckGraph from "src/core/checks/components/CheckGraph.vue";
-import PreDialog from "src/components/ui/PreDialog.vue";
+import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 
 // type imports
 import type { Check, CheckResult, CheckType } from "src/core/checks/types";
@@ -456,7 +463,7 @@ const columns: TacticalColumn[] = [
   {
     name: "assignedtasks",
     label: "Assigned Tasks",
-    field: "assigned_task",
+    field: "assignedtasks",
     align: "left",
     sortable: true,
     format: (val: AutomatedTask[]) => {
@@ -470,8 +477,8 @@ const columns: TacticalColumn[] = [
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
-const checkStore = useCheckStore();
+const { selectedAgentId, selectedAgentPlatform } = agentStore;
+const { checks, isLoading } = checkStore;
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
 
@@ -540,7 +547,7 @@ function getAlertSeverity(check: Check) {
 function editCheck(check: Check, data: Partial<Check>) {
   if (check.policy) return;
 
-  checkStore.updateCheck(check.id, data);
+  void checkStore.updateCheck(check.id, data);
 }
 
 function deleteCheck(check: Check) {
@@ -549,9 +556,9 @@ function deleteCheck(check: Check) {
     message: `Delete ${check.readable_desc}`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-    persistent: true,
+    noBackdropDismiss: true,
   }).onOk(() => {
-    checkStore.removeCheck(check.id);
+    void checkStore.removeCheck(check.id);
   });
 }
 
@@ -563,7 +570,7 @@ function resetCheckStatus(check: Check) {
     notifyWarning("Check is already passing");
   }
 
-  if (check.check_result?.id) checkStore.resetCheck(check.check_result?.id);
+  if (check.check_result?.id) void checkStore.resetCheck(check.check_result?.id);
 }
 
 function resetAllChecks() {
@@ -572,9 +579,9 @@ function resetAllChecks() {
     message: "Reset all checks status",
     cancel: true,
     ok: { label: "Reset", color: "negative" },
-    persistent: true,
+    noBackdropDismiss: true,
   }).onOk(() => {
-    if (agentStore.selectedAgentId) agentStore.resetAllAgentChecks(agentStore.selectedAgentId);
+    if (selectedAgentId.value) void checkStore.resetAllAgentChecks(selectedAgentId.value);
   });
 }
 
@@ -634,20 +641,17 @@ function showCheckModal(type: CheckType, check?: Check) {
     component: component,
     componentProps: {
       check: check,
-      parent: !check ? { agent: agentStore.selectedAgentId } : undefined,
-      plat: type === "script" ? agentStore.selectedAgentPlatform : undefined,
+      parent: { agent: selectedAgentId.value },
+      plat: type === "script" ? selectedAgentPlatform.value : undefined,
     },
   });
 }
 
-watch(
-  () => agentStore.selectedAgentId,
-  (newValue) => {
-    if (newValue) agentStore.getAgentChecks(newValue);
-  },
-);
+watch(selectedAgentId, (newValue) => {
+  if (newValue) checkStore.getAgentChecks(newValue);
+});
 
 onMounted(() => {
-  if (agentStore.selectedAgentId) agentStore.getAgentChecks(agentStore.selectedAgentId);
+  if (selectedAgentId.value) checkStore.getAgentChecks(selectedAgentId.value);
 });
 </script>

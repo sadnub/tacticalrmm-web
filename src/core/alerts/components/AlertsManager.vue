@@ -185,9 +185,9 @@
 </template>
 
 <script>
-import AlertTemplateForm from "src/components/modals/alerts/AlertTemplateForm.vue";
-import AlertExclusions from "src/components/modals/alerts/AlertExclusions.vue";
-import AlertTemplateRelated from "src/components/modals/alerts/AlertTemplateRelated.vue";
+import AlertTemplateForm from "src/core/alerts/components/AlertTemplateForm.vue";
+import AlertExclusions from "src/core/alerts/components/AlertExclusions.vue";
+import AlertTemplateRelated from "src/core/alerts/components/AlertTemplateRelated.vue";
 
 export default {
   name: "AlertsManager",

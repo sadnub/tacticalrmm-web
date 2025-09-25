@@ -1,15 +1,15 @@
 <template>
-  <div v-if="!agentStore.selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
       grid
       :style="{ 'max-height': `${tabHeight}px` }"
-      :rows="agentStore.agentNotes"
+      :rows="agentNotes"
       :columns="columns"
       row-key="id"
       :rows-per-page-options="[0]"
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       hide-bottom
       virtual-scroll
       no-data-label="No notes"
@@ -21,7 +21,7 @@
           flat
           push
           icon="refresh"
-          @click="agentStore.getAgentNotes(agentStore.selectedAgentId)"
+          @click="agentNoteStore.getAgentNotes(selectedAgentId)"
         />
         <q-btn icon="add" label="Add Note" no-caps dense flat push @click="addNote" />
         <q-space />
@@ -78,7 +78,7 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useAgentStore } from "../../api";
+import { agentNoteStore, agentStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // type imports
@@ -105,7 +105,8 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const agentStore = useAgentStore();
+const { selectedAgentId, isLoading } = agentStore;
+const { agentNotes } = agentNoteStore;
 const dashboardStore = useDashboardStore();
 const tabHeight = computed(() => dashboardStore.tabHeight);
 
@@ -127,13 +128,14 @@ function addNote() {
       type: "textarea",
       isValid: (val) => !!val,
     },
-    style: "width: 90vw; max-width: 90vw",
+    color: "primary",
+    style: "min-width: 50vw",
     ok: { label: "Add" },
     cancel: true,
   }).onOk((data: string) => {
-    if (agentStore.selectedAgentId)
-      agentStore.addAgentNote({
-        agent_id: agentStore.selectedAgentId,
+    if (selectedAgentId.value)
+      void agentNoteStore.addAgentNote({
+        agentId: selectedAgentId.value,
         note: data,
       });
   });
@@ -147,11 +149,12 @@ function editNote(note: AgentNote) {
       type: "textarea",
       isValid: (val) => !!val,
     },
-    style: "width: 90vw; max-width: 90vw",
+    color: "primary",
+    style: "min-width: 50vw",
     ok: { label: "Save" },
     cancel: true,
   }).onOk((data) => {
-    agentStore.updateAgentNote(note.id, { note: data });
+    void agentNoteStore.updateAgentNote(note.id, { note: data });
   });
 }
 
@@ -160,22 +163,20 @@ function deleteNote(note: AgentNote) {
     title: "Delete note?",
     cancel: true,
     ok: { label: "Delete", color: "negative" },
+    color: "primary",
   }).onOk(() => {
-    agentStore.removeAgentNote(note.id);
+    void agentNoteStore.removeAgentNote(note.id);
   });
 }
 
-watch(
-  () => agentStore.selectedAgentId,
-  (newValue) => {
-    if (newValue) {
-      agentStore.getAgentNotes(newValue);
-    }
-  },
-);
+watch(selectedAgentId, (newValue) => {
+  if (newValue) {
+    agentNoteStore.getAgentNotes(newValue);
+  }
+});
 
 onMounted(() => {
-  if (agentStore.selectedAgentId) agentStore.getAgentNotes(agentStore.selectedAgentId);
+  if (selectedAgentId.value) agentNoteStore.getAgentNotes(selectedAgentId.value);
 });
 </script>
 

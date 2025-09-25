@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 40vw">
       <q-bar>
         {{ !!client ? `Editing ${client.name}` : "Adding Client" }}
@@ -13,23 +13,21 @@
             filled
             dense
             label="Name"
-            :rules="[(val) => (val && val.length > 0) || '*Required']"
+            :rules="[(val: string) => (val && val.length > 0) || '*Required']"
           />
         </q-card-section>
         <q-card-section v-if="!client">
           <q-input
             v-model="site.name"
-            :rules="[(val) => !!val || '*Required']"
+            :rules="[(val: string) => !!val || '*Required']"
             filled
             dense
             label="Default first site"
           />
         </q-card-section>
 
-        <div v-if="fieldStore.clientCustomFields.length > 0" class="q-pl-sm text-h6">
-          Custom Fields
-        </div>
-        <q-card-section v-for="field in fieldStore.clientCustomFields" :key="field.id">
+        <div v-if="clientCustomFields.length > 0" class="q-pl-sm text-h6">Custom Fields</div>
+        <q-card-section v-for="field in clientCustomFields" :key="field.id">
           <CustomField v-model="clientCustomFieldValues[field.name]" :field="field" />
         </q-card-section>
         <q-card-actions align="right">
@@ -54,11 +52,11 @@
 import { onMounted, reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useClientStore } from "../api";
-import { useCustomFieldStore } from "src/core/settings/api";
+import { customFieldStore } from "src/stores/api";
 import { formatCustomFields } from "src/utils/format";
 
 // ui imports
-import CustomField from "src/components/ui/CustomField.vue";
+import CustomField from "src/core/dashboard/ui/CustomField.vue";
 
 import { until } from "@vueuse/shared";
 
@@ -74,8 +72,7 @@ defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
 const clientStore = useClientStore();
-const fieldStore = useCustomFieldStore();
-
+const { clientCustomFields } = customFieldStore;
 // setup quasar dialog
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 
@@ -87,7 +84,7 @@ async function submit() {
   const data = {
     client: state,
     site: site,
-    custom_fields: formatCustomFields(fieldStore.clientCustomFields, clientCustomFieldValues.value),
+    custom_fields: formatCustomFields(clientCustomFields.value, clientCustomFieldValues.value),
   };
 
   if (props.client) clientStore.updateClient(props.client.id, data);
@@ -103,7 +100,7 @@ async function submit() {
 const clientCustomFieldValues = computed(() => {
   const mapped_custom_fields = {} as Record<string, unknown>;
   if (clientStore.client && clientStore.client.custom_fields) {
-    for (const field of fieldStore.clientCustomFields) {
+    for (const field of clientCustomFields.value) {
       const value = clientStore.client.custom_fields.find((value) => value.field === field.id);
 
       if (field.type === "multiple") {
@@ -122,7 +119,7 @@ const clientCustomFieldValues = computed(() => {
 });
 
 onMounted(() => {
-  fieldStore.getCustomFields();
+  customFieldStore.getCustomFields();
   if (props.client) clientStore.getClient(props.client.id);
 });
 </script>

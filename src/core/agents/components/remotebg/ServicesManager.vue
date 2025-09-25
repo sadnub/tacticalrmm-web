@@ -6,14 +6,14 @@
     v-else
     dense
     :style="{ 'max-height': `${$q.screen.height - 36}px` }"
-    :rows="services"
+    :rows="agentServices"
     :columns="columns"
     :pagination="{ rowsPerPage: 0, sortBy: 'display_name', descending: false }"
     :filter="filter"
     row-key="display_name"
     binary-state-sort
     :rows-per-page-options="[0]"
-    :loading="agentStore.isLoading"
+    :loading="isLoading"
     column-select
     storage-key="services-manager"
   >
@@ -33,18 +33,24 @@
           <q-list dense style="min-width: 200px">
             <q-item
               clickable
+              :disable="
+                bodyProps.row.start_type.toLowerCase() === 'disabled' ||
+                bodyProps.row.status === 'running'
+              "
               @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'start')"
             >
               <q-item-section>Start</q-item-section>
             </q-item>
             <q-item
               clickable
+              :disable="bodyProps.row.status !== 'running'"
               @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'stop')"
             >
               <q-item-section>Stop</q-item-section>
             </q-item>
             <q-item
               clickable
+              :disable="bodyProps.row.status !== 'running'"
               @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'restart')"
             >
               <q-item-section>Restart</q-item-section>
@@ -60,9 +66,10 @@
           </q-list>
         </q-menu>
 
-        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="props">
+        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
           <template v-if="col.name === 'display_name'">
             <q-icon name="fas fa-cogs" />
+            &nbsp;
             <truncate-text :text="col.value" />
           </template>
 
@@ -77,12 +84,12 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useAgentStore } from "../../api";
+import { agentStore } from "src/stores/api";
 
 // ui imports
-import ServiceDetail from "src/components/agents/remotebg/ServiceDetail.vue";
+import ServiceDetail from "src/core/agents/components/remotebg/ServiceDetail.vue";
 
 // type imports
 import type { AgentService } from "../../types";
@@ -150,10 +157,9 @@ const props = defineProps<{
 const $q = useQuasar();
 
 // setup stores
-const agentStore = useAgentStore();
+const { isLoading, agentServices } = agentStore;
 
 // services manager setup
-const services = computed(() => agentStore.selectedAgent?.services || []);
 const filter = ref("");
 
 function showServiceDetail(service: AgentService) {

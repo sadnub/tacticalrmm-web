@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="height: 70vh; min-width: 70vw" persistent>
+    <q-card class="q-dialog-plugin" style="height: 70vh; min-width: 70vw" no-backdrop-dismiss>
       <q-bar>
         <q-btn
           class="q-mr-sm"
@@ -115,7 +115,7 @@ import { useDashboardStore } from "src/stores/dashboard";
 import { getNextAgentUpdateTime } from "src/utils/format";
 
 // ui imports
-import PreDialog from "src/components/ui/PreDialog.vue";
+import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 
 // types
 import type { Agent } from "src/core/agents/types";

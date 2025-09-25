@@ -1,22 +1,18 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 65vw; min-width: 65vw">
       <q-bar>
         {{ task ? `Editing Automated Task: ${task.name}` : "Adding Automated Task" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-card-section v-if="scriptOptions.length === 0">
-        <p>You need to upload a script first</p>
-        <p>Settings -> Script Manager</p>
-      </q-card-section>
-      <q-stepper v-else ref="stepper" v-model="step" color="primary" animated>
+      <q-stepper ref="stepper" v-model="step" color="primary" animated>
         <q-step :name="1" title="Select Task" :done="step > 1" :error="!isValidStep1">
-          <q-form ref="taskGeneralForm" @submit.prevent>
+          <q-form ref="taskGeneralForm" @submit="validateStep(taskGeneralForm, stepper)">
             <q-card-section>
               <q-input
                 v-model="localTask.name"
-                :rules="[(val) => !!val || '*Required']"
+                :rules="[(val: string) => !!val || '*Required']"
                 filled
                 dense
                 label="Descriptive name of task"
@@ -99,7 +95,7 @@
                   v-model="action.script"
                   class="col-3"
                   label="Select script"
-                  :options="scriptOptions"
+                  :options="filterByPlatformOptions"
                   filled
                   map-options
                   filterable
@@ -167,12 +163,8 @@
                   v-model="action.shell"
                   class="col-4 q-pl-sm"
                   inline
-                  :options="[
-                    { label: 'CMD', value: 'cmd' },
-                    { label: 'Powershell', value: 'powershell' },
-                    { label: 'Bash', value: '/bin/bash' },
-                    { label: 'Custom', value: 'custom' },
-                  ]"
+                  :options="shellOptions"
+                  dense
                 />
                 <q-btn
                   class="col-1"
@@ -184,83 +176,103 @@
                   label="Add"
                   color="primary"
                 />
+                <q-input
+                  v-if="action.shell === 'custom'"
+                  v-model="custom_shell"
+                  class="col-5"
+                  filled
+                  label="Custom shell"
+                  stack-label
+                  dense
+                  placeholder="/usr/bin/python3"
+                />
+              </div>
+
+              <div class="text-subtitle2 q-pa-sm">
+                Actions:
+                <q-checkbox
+                  v-model="localTask.continue_on_error"
+                  class="float-right"
+                  label="Continue on Errors"
+                  dense
+                >
+                  <q-tooltip>Continue task if an action fails</q-tooltip>
+                </q-checkbox>
+              </div>
+              <div class="q-pt-sm" style="height: 150px">
+                <draggable
+                  v-model="localTask.actions"
+                  class="q-list"
+                  handle=".handle"
+                  ghost-class="ghost"
+                  item-key="index"
+                >
+                  <template #item="{ index, element }">
+                    <q-item>
+                      <q-item-section avatar>
+                        <q-icon class="handle" style="cursor: move" name="drag_handle" />
+                      </q-item-section>
+                      <q-item-section v-if="element.type === 'script'">
+                        <q-item-label>
+                          <q-icon size="sm" name="description" color="primary">
+                            <q-tooltip>Script</q-tooltip>
+                          </q-icon>
+                          &nbsp; {{ element.name }}
+                        </q-item-label>
+                        <q-item-label caption>
+                          <q-badge>Arguments:</q-badge> {{ element.script_args }}
+                          <q-badge>Env Vars:</q-badge> {{ element.env_vars }}
+                          <q-badge>Timeout:</q-badge> {{ element.timeout }}
+                        </q-item-label>
+                      </q-item-section>
+                      <q-item-section v-else>
+                        <q-item-label>
+                          <q-icon size="sm" name="terminal" color="primary">
+                            <q-tooltip>Command</q-tooltip>
+                          </q-icon>
+                          &nbsp;
+                          <q-icon
+                            v-if="['cmd', 'powershell', 'bash'].includes(element.shell)"
+                            size="sm"
+                            :name="
+                              element.shell === 'cmd'
+                                ? 'mdi-microsoft-windows'
+                                : element.shell === 'powershell'
+                                  ? 'mdi-powershell'
+                                  : element.shell === 'bash'
+                                    ? 'mdi-linux'
+                                    : ''
+                            "
+                            color="primary"
+                          />
+                          <template v-else>
+                            {{ element.shell }}
+                          </template>
+                          {{ element.command }}
+                        </q-item-label>
+                        <q-item-label caption>
+                          <q-badge>Timeout:</q-badge> {{ element.timeout }}
+                        </q-item-label>
+                      </q-item-section>
+                      <q-item-section side>
+                        <q-icon
+                          class="cursor-pointer"
+                          color="negative"
+                          name="close"
+                          @click="removeAction(index)"
+                        />
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </draggable>
               </div>
             </q-form>
-            <div v-if="action.shell === 'custom'" class="col-5">
-              <q-input
-                v-model="custom_shell"
-                filled
-                label="Custom shell"
-                stack-label
-                placeholder="/usr/bin/python3"
-              />
-            </div>
-            <div class="text-subtitle2 q-pa-sm">
-              Actions:
-              <q-checkbox
-                v-model="localTask.continue_on_error"
-                class="float-right"
-                label="Continue on Errors"
-                dense
-              >
-                <q-tooltip>Continue task if an action fails</q-tooltip>
-              </q-checkbox>
-            </div>
-            <div class="q-pt-sm" style="height: 150px">
-              <draggable
-                v-model="localTask.actions"
-                class="q-list"
-                handle=".handle"
-                ghost-class="ghost"
-                item-key="index"
-              >
-                <template #item="{ index, element }">
-                  <q-item>
-                    <q-item-section avatar>
-                      <q-icon class="handle" style="cursor: move" name="drag_handle" />
-                    </q-item-section>
-                    <q-item-section v-if="element.type === 'script'">
-                      <q-item-label>
-                        <q-icon size="sm" name="description" color="primary" />
-                        &nbsp; {{ element.name }}
-                      </q-item-label>
-                      <q-item-label caption> Arguments: {{ element.script_args }} </q-item-label>
-                      <q-item-label caption> Env Vars: {{ element.env_vars }} </q-item-label>
-                      <q-item-label caption> Timeout: {{ element.timeout }} </q-item-label>
-                    </q-item-section>
-                    <q-item-section v-else>
-                      <q-item-label>
-                        <q-icon size="sm" name="terminal" color="primary" />
-                        &nbsp;
-                        <q-icon
-                          size="sm"
-                          :name="
-                            element.shell === 'cmd' ? 'mdi-microsoft-windows' : 'mdi-powershell'
-                          "
-                          color="primary"
-                        />
-                        {{ element.command }}
-                      </q-item-label>
-                      <q-item-label caption> Timeout: {{ element.timeout }} </q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <q-icon
-                        class="cursor-pointer"
-                        color="negative"
-                        name="close"
-                        @click="removeAction(index)"
-                      />
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </draggable>
-            </div>
           </div>
         </q-step>
 
         <q-step :name="3" title="Choose Schedule" :error="!isValidStep3">
           <div class="scroll" style="height: 60vh; max-height: 60vh">
-            <q-form ref="taskDetailForm" @submit.prevent>
+            <q-form ref="taskDetailForm" @submit.prevent="validateStep(taskDetailForm, stepper)">
               <q-card-section>
                 <q-option-group
                   v-model="localTask.task_type"
@@ -291,7 +303,7 @@
                       ? 'Agent timezone will be used. On Linux and macOS, the selected date is ignored—only the hour and minute are used.'
                       : 'Agent timezone will be used'
                   "
-                  :rules="[(val) => !!val || '*Required']"
+                  :rules="[(val: string) => !!val || '*Required']"
                 />
 
                 <!-- expires on input -->
@@ -326,8 +338,8 @@
                 <q-input
                   v-model.number="localTask.daily_interval"
                   :rules="[
-                    (val) => !!val || '*Required',
-                    (val) =>
+                    (val: number) => !!val || '*Required',
+                    (val: number) =>
                       (val > 0 && val < 256) ||
                       'Daily interval must be greater than 0 and less than 3',
                   ]"
@@ -351,8 +363,8 @@
                   v-if="!isPosix"
                   v-model="localTask.weekly_interval"
                   :rules="[
-                    (val) => !!val || '*Required',
-                    (val) =>
+                    (val: number) => !!val || '*Required',
+                    (val: number) =>
                       (val > 0 && val < 53) ||
                       'Weekly interval must be greater than 0 and less than 3',
                   ]"
@@ -398,7 +410,7 @@
                 <!-- month select input -->
                 <q-select
                   v-model="localTask.monthly_months_of_year"
-                  :rules="[(val) => val.length > 0 || '*Required']"
+                  :rules="[(val: number[]) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
@@ -427,7 +439,7 @@
                   <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
-                        <q-item-label>opt.label</q-item-label>
+                        <q-item-label>{{ opt.label }}</q-item-label>
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
@@ -447,7 +459,7 @@
                 <q-select
                   v-if="monthlyType === 'days'"
                   v-model="localTask.monthly_days_of_month"
-                  :rules="[(val) => val.length > 0 || '*Required']"
+                  :rules="[(val: number[]) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
@@ -498,7 +510,7 @@
                 <q-select
                   v-if="monthlyType === 'weeks'"
                   v-model="localTask.monthly_weeks_of_month"
-                  :rules="[(val) => val.length > 0 || '*Required']"
+                  :rules="[(val: number[]) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
@@ -529,7 +541,7 @@
                 <q-select
                   v-if="monthlyType === 'weeks'"
                   v-model="localTask.run_time_bit_weekdays"
-                  :rules="[(val) => val.length > 0 || '*Required']"
+                  :rules="[(val: number[]) => val.length > 0 || '*Required']"
                   class="col-4 q-pa-sm"
                   filled
                   dense
@@ -558,7 +570,7 @@
                   <template #option="{ itemProps, opt, selected, toggleOption }">
                     <q-item v-bind="itemProps">
                       <q-item-section>
-                        <q-item-label>{{ opt.value }}</q-item-label>
+                        <q-item-label>{{ opt.label }}</q-item-label>
                       </q-item-section>
                       <q-item-section side>
                         <q-checkbox
@@ -594,7 +606,7 @@
                   placeholder="e.g. 30m (30 minutes) or 1h (1 hour)"
                   lazy-rules
                   :rules="[
-                    (val) =>
+                    (val: string) =>
                       !val ||
                       validateTimePeriod(val) ||
                       'Valid values are 1-3 digits followed by (D|d|H|h|M|m|S|s)',
@@ -612,11 +624,11 @@
                   placeholder="e.g. 6h (6 hours) or 1d (1 day)"
                   lazy-rules
                   :rules="[
-                    (val) =>
+                    (val: string) =>
                       validateTimePeriod(val) ||
                       'Valid values are 1-3 digits followed by (D|d|H|h|M|m|S|s)',
-                    (val) => (localTask.task_repetition_interval ? !!val : true), // field is required if repetition interval is set
-                    (val) =>
+                    (val: number) => (localTask.task_repetition_interval ? !!val : true), // field is required if repetition interval is set
+                    (val: number) =>
                       convertPeriodToSeconds(val) >=
                         convertPeriodToSeconds(String(localTask.task_repetition_interval)) ||
                       'Repetition duration must be greater than repetition interval',
@@ -643,7 +655,7 @@
                   placeholder="e.g. 2m (2 minutes) or 1h (1 hour)"
                   lazy-rules
                   :rules="[
-                    (val) =>
+                    (val: string) =>
                       !val ||
                       validateTimePeriod(val) ||
                       'Valid values are 1-3 digits followed by (D|d|H|h|M|m|S|s)',
@@ -708,17 +720,17 @@
           color="primary"
           label="Next"
           flat
-          @click="step === 1 && validateStep(taskGeneralForm as QForm, stepper as QStepper)"
+          @click="validateStep(step === 1 ? taskGeneralForm : null, stepper)"
         />
         <q-btn
           v-else
-          :label="task ? 'Edit Task' : 'Add Task'"
+          label="Save"
           color="primary"
-          :loading="taskStore.isLoading"
+          :loading="isLoading"
           flat
           dense
           push
-          @click="validateStep(taskDetailForm as QForm, stepper as QStepper)"
+          @click="validateStep(taskDetailForm, stepper)"
         />
       </q-card-actions>
     </q-card>
@@ -727,10 +739,10 @@
 
 <script lang="ts" setup>
 // composition imports
-import { computed, ref, watch, reactive, useTemplateRef } from "vue";
-import { QForm, QStepper, useDialogPluginComponent } from "quasar";
+import { computed, ref, watch, reactive, useTemplateRef, toRaw } from "vue";
+import { QForm, QStepper, useDialogPluginComponent, extend } from "quasar";
 import draggable from "vuedraggable";
-import { useTaskStore } from "../api";
+import { taskStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentCheckDropdown, usePolicyCheckDropdown } from "src/core/checks/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
@@ -742,7 +754,6 @@ import { convertPeriodToSeconds, formatDateInputField } from "src/utils/format";
 // type imports
 import type { AgentPlat } from "src/core/agents/types";
 import type { AutomatedTaskUI, TaskAction } from "../types";
-import { until } from "@vueuse/shared";
 
 // static data
 const severityOptions = [
@@ -818,10 +829,13 @@ const plat_options = [
   { label: "macOS", value: "darwin" },
 ];
 
+type PolicyParent = { policy: number };
+type AgentParent = { agent: string };
+
 const props = defineProps<{
-  parent: { policy: number } | { agent: string };
+  parent: AgentParent | PolicyParent;
   task?: AutomatedTaskUI;
-  plat: string;
+  plat: AgentPlat;
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
@@ -830,35 +844,44 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup dropdowns
-const { scriptOptions, getScriptById } = useScriptDropdown();
+const { filterByPlatformOptions, getScriptById } = useScriptDropdown(props.plat);
+
+function isAgentParent(parent: AgentParent | PolicyParent): parent is AgentParent {
+  return "agent" in parent;
+}
+
+function isPolicyParent(parent: AgentParent | PolicyParent): parent is PolicyParent {
+  return "policy" in parent;
+}
+
+const policyCheck = usePolicyCheckDropdown(
+  isPolicyParent(props.parent) ? props.parent.policy : null,
+);
+const agentCheck = useAgentCheckDropdown(isAgentParent(props.parent) ? props.parent.agent : null);
 
 const checkOptions = computed(() => {
-  if ("policy" in props.parent) {
-    const { policyCheckOptions } = usePolicyCheckDropdown(props.parent.policy);
-    return policyCheckOptions.value;
-  } else if ("agent" in props.parent) {
-    const { agentCheckOptions } = useAgentCheckDropdown(props.parent.agent);
-    return agentCheckOptions.value;
+  if (isPolicyParent(props.parent)) {
+    return policyCheck.policyCheckOptions.value;
+  } else if (isAgentParent(props.parent)) {
+    return agentCheck.agentCheckOptions.value;
   }
-
   return [];
 });
 
 // setup stores
-const taskStore = useTaskStore();
+const { addTask, updateTask, isLoading } = taskStore;
 
 const { customFieldOptions } = useCustomFieldDropdown();
 
 const isAgentTask = computed(() => {
-  return !!props.plat;
+  return isAgentParent(props.parent);
 });
 
 // add task logic
 const localTask = props.task
-  ? reactive<AutomatedTaskUI>(Object.assign({}, props.task))
+  ? reactive<AutomatedTaskUI>(extend(true, {}, props.task))
   : reactive<AutomatedTaskUI>({
       ...props.parent,
-      id: 0,
       enabled: true,
       email_alert: false,
       text_alert: false,
@@ -886,7 +909,7 @@ const localTask = props.task
       alert_severity: "info",
       collector_all_output: false,
       continue_on_error: true,
-      task_supported_platforms: [] as AgentPlat[],
+      task_supported_platforms: [],
     });
 
 const isPosix = computed(() => {
@@ -895,6 +918,21 @@ const isPosix = computed(() => {
     localTask.task_supported_platforms?.includes("linux") ||
     localTask.task_supported_platforms?.includes("darwin")
   );
+});
+
+const shellOptions = computed(() => {
+  if (isPosix.value) {
+    return [
+      { label: "PowerShell", value: "powershell" },
+      { label: "Custom", value: "custom" },
+      { label: "Bash", value: "bash" },
+    ];
+  } else {
+    return [
+      { label: "Command Prompt", value: "cmd" },
+      { label: "PowerShell", value: "powershell" },
+    ];
+  }
 });
 
 const task_supported_platforms = computed<AgentPlat[]>(() => {
@@ -982,25 +1020,22 @@ function addAction() {
     return;
   }
 
-  if (action.type === "script") {
-    localTask.actions.push(action);
-  } else if (action.type === "cmd") {
-    if (action.shell === "custom" && custom_shell.value) {
-      action.shell = custom_shell.value;
-    }
+  if (action.type === "cmd" && action.shell === "custom" && custom_shell.value)
+    action.shell = custom_shell.value;
 
-    localTask.actions.push(action);
+  // create a non-reactive copy and push it to the actions array
+  localTask.actions.push({ ...toRaw(action) });
 
-    // reset action
-    action.name = "";
-    action.type = "script";
-    action.script_args = [];
-    action.env_vars = [];
-    action.script = null;
-    action.command = "";
-    action.shell = "cmd";
-    action.timeout = 90;
-  }
+  // reset action
+  action.name = "";
+  action.type = "script";
+  action.script_args = [];
+  action.env_vars = [];
+  action.script = null;
+  action.command = "";
+  action.shell = "cmd";
+  action.timeout = 90;
+  custom_shell.value = "";
 }
 
 function removeAction(index: number) {
@@ -1008,12 +1043,16 @@ function removeAction(index: number) {
 }
 
 async function submit() {
-  taskStore.updateTask(localTask.id, localTask);
-  taskStore.addTask(localTask);
+  // send a non-reactive copy of the task since we don't want modifications to affect this component state
+  // mainly the date fields
+  try {
+    const apiTask = { ...toRaw(localTask) };
+    if (props.task && localTask.id) await updateTask(localTask.id, apiTask);
+    else await addTask(apiTask);
+  } catch {
+    return;
+  }
 
-  await until(() => taskStore.isLoading).toBe(false);
-
-  if (taskStore.isError) return;
   onDialogOK();
 }
 
@@ -1050,32 +1089,36 @@ const isValidStep1 = ref(true);
 const isValidStep2 = ref(true);
 const isValidStep3 = ref(true);
 
-function validateStep(form: QForm, stepper: QStepper) {
+async function validateStep(form: QForm | null, stepper: QStepper | null) {
   if (step.value === 1 && localTask.task_supported_platforms.length === 0) {
     notifyError("There must be at least one supported platform");
     return;
   }
 
-  if (step.value === 2) {
-    if (localTask.actions.length > 0) {
-      isValidStep2.value = true;
-      stepper.next();
-      return;
-    } else {
-      notifyError("There must be at least one action");
-    }
-
-    // steps 1 or 3
-  } else {
-    void form.validate().then((result: boolean) => {
-      if (step.value === 1) {
-        isValidStep1.value = result;
-        if (result) stepper.next();
-      } else if (step.value === 3) {
-        isValidStep3.value = result;
-        if (result) void submit();
+  if (stepper) {
+    // step 2
+    if (step.value === 2) {
+      if (localTask.actions.length > 0) {
+        isValidStep2.value = true;
+        stepper.next();
+        return;
+      } else {
+        notifyError("There must be at least one action");
       }
-    });
+
+      // steps 1 or 3
+    } else {
+      if (form) {
+        const result = await form.validate();
+        if (step.value === 1) {
+          isValidStep1.value = result;
+          if (result) stepper.next();
+        } else if (step.value === 3) {
+          isValidStep3.value = result;
+          if (result) await submit();
+        }
+      }
+    }
   }
 }
 </script>

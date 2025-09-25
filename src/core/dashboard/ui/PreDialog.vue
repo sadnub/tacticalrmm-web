@@ -17,7 +17,7 @@
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn label="OK" @click="onOKClick" />
+        <q-btn label="OK" @click="onDialogOK" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -36,10 +36,6 @@ defineProps<{
 defineEmits([...useDialogPluginComponent.emits]);
 
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-function onOKClick() {
-  onDialogOK();
-}
 </script>
 
 <style>

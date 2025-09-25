@@ -1,25 +1,26 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 40vw; max-width: 50vw">
       <q-bar>
         Install Software
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-card-section>
+      <q-card-section class="q-pa-none q-ma-none">
         <tactical-table
           v-model:pagination="pagination"
           dense
+          flat
           :rows="chocoStore.chocos"
           :columns="columns"
           :filter="filter"
+          :style="{ 'max-height': '50vh' }"
           binary-state-sort
-          hide-bottom
-          virtual-scroll
-          :rows-per-page-options="[0]"
+          :rows-per-page-options="[100, 200, 500, 1000]"
           row-key="name"
+          :loading="chocoStore.isLoading"
         >
-          <template #top-left>
+          <template #top-right>
             <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
               <template #prepend>
                 <q-icon name="search" />
@@ -28,18 +29,23 @@
 
             <tactical-table-export />
           </template>
-          <template #body="{ row }">
-            <q-tr :props="props">
+          <template #body="bodyProps">
+            <q-tr :props="bodyProps">
               <q-td auto-width>
-                <q-btn dense flat push icon="add" @click="installSoftware(row.name)" />
+                <q-btn dense flat push icon="add" @click="installSoftware(bodyProps.row.name)" />
               </q-td>
-              <q-td @click="showDescription(row.name)">
-                <span style="cursor: pointer; text-decoration: underline">{{ row.name }}</span>
+              <q-td @click="showDescription(bodyProps.row.name)">
+                <span style="cursor: pointer; text-decoration: underline">{{
+                  bodyProps.row.name
+                }}</span>
               </q-td>
             </q-tr>
           </template>
         </tactical-table>
       </q-card-section>
+      <q-card-actions align="right">
+        <q-btn label="Close" @click="onDialogHide" />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -48,8 +54,8 @@
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
 import { useChocosStore } from "src/core/software/api";
-import { useAgentStore } from "../api";
-import { until } from "@vueuse/shared";
+import { agentSoftwareStore } from "src/stores/api";
+
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
@@ -72,7 +78,6 @@ defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
 const chocoStore = useChocosStore();
-const agentStore = useAgentStore();
 
 // quasar setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -81,7 +86,7 @@ const $q = useQuasar();
 // install software logic
 const filter = ref("");
 const pagination = ref({
-  rowsPerPage: 0,
+  rowsPerPage: 100,
   sortBy: "name",
   descending: false,
 });
@@ -94,16 +99,15 @@ function installSoftware(name: string) {
   const data = { name: name };
   $q.dialog({
     title: `Install ${name}?`,
-    persistent: true,
     ok: { label: "Install" },
+    color: "primary",
     cancel: true,
+    noBackdropDismiss: true,
   }).onOk(() => {
-    agentStore.installAgentSoftware(props.agentId, data);
-
-    void until(() => agentStore.isLoading)
-      .toBe(false)
+    agentSoftwareStore
+      .installAgentSoftware(props.agentId, data)
       .then(() => {
-        if (!agentStore.isError) onDialogOK();
+        onDialogOK();
       })
       .catch(() => {});
   });

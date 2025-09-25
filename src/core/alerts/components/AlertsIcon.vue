@@ -57,7 +57,7 @@
 
 <script>
 import { mapState } from "vuex";
-import AlertsOverview from "src/components/modals/alerts/AlertsOverview.vue";
+import AlertsOverview from "src/core/alerts/components/AlertsOverview.vue";
 import { getTimeLapse } from "src/utils/format";
 
 export default {

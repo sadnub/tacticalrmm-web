@@ -132,7 +132,7 @@ import { computed } from "vue";
 import { useStore, mapState } from "vuex";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import EventLogCheckOutput from "src/core/checks/components/EventLogCheckOutput.vue";
-import PreDialog from "src/components/ui/PreDialog.vue";
+import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 
 export default {
   name: "PolicyStatus",

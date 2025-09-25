@@ -1,11 +1,7 @@
 <template>
   <q-list dense style="min-width: 200px">
     <!-- edit agent -->
-    <q-item
-      v-close-popup
-      clickable
-      @click="agentStore.selectedAgent && showEditAgent(agentStore.selectedAgent)"
-    >
+    <q-item v-close-popup clickable @click="selectedAgent && showEditAgent(selectedAgent)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-edit" />
       </q-item-section>
@@ -235,14 +231,14 @@
 // composition imports
 import { useQuasar } from "quasar";
 import { useURLActionStore, runURLAction } from "src/core/settings/api";
-import { useAgentStore } from "../api";
+import { agentStore, checkStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useWinUpdateStore } from "../api";
 
 // ui imports
 import PendingActions from "src/core/logs/components/PendingActions.vue";
 import AgentRecovery from "./AgentRecovery.vue";
-import PolicyAdd from "src/components/automation/modals/PolicyAdd.vue";
+import PolicyAdd from "src/core/automation/components/PolicyAdd.vue";
 import RebootLater from "./RebootLater.vue";
 import EditAgent from "./EditAgent.vue";
 import SendCommand from "./SendCommand.vue";
@@ -258,7 +254,7 @@ defineProps<{
 }>();
 
 // setup stores
-const agentStore = useAgentStore();
+const { selectedAgent } = agentStore;
 const actionStore = useURLActionStore();
 const updateStore = useWinUpdateStore();
 
@@ -309,7 +305,7 @@ function toggleMaintenance(agent: Agent) {
   const data = {
     maintenance_mode: !agent.maintenance_mode,
   };
-  agentStore.updateAgent(agent.agent_id, data);
+  void agentStore.updateAgent(agent.agent_id, data);
 }
 
 function runPatchStatusScan(agent: Agent) {
@@ -321,11 +317,11 @@ function installPatches(agent: Agent) {
 }
 
 function runChecks(agent: Agent) {
-  agentStore.runAgentChecks(agent.agent_id);
+  void checkStore.runAgentChecks(agent.agent_id);
 }
 
 function wakeUp(agent: Agent) {
-  agentStore.wakeUpWOL(agent.agent_id);
+  void agentStore.wakeUpWOL(agent.agent_id);
 }
 
 function showRebootLaterModal(agent: Agent) {
@@ -347,7 +343,7 @@ function launchWebVNC(agentId: string) {
     },
     cancel: true,
     ok: { label: "Launch", color: "primary" },
-    persistent: true,
+    noBackdropDismiss: true,
   }).onOk((port) => {
     agentStore.runWebVNC(agentId, port);
   });
@@ -358,9 +354,9 @@ function rebootNow(agent: Agent) {
     title: "Are you sure?",
     message: `Reboot ${agent.hostname} now`,
     cancel: true,
-    persistent: true,
+    noBackdropDismiss: true,
   }).onOk(() => {
-    agentStore.agentRebootNow(agent.agent_id);
+    void agentStore.agentRebootNow(agent.agent_id);
   });
 }
 
@@ -375,10 +371,10 @@ function shutdown(agent: Agent) {
     },
     cancel: true,
     ok: { label: "Shutdown", color: "negative" },
-    persistent: true,
+    noBackdropDismiss: true,
     html: true,
   }).onOk(() => {
-    agentStore.agentShutdown(agent.agent_id);
+    void agentStore.agentShutdown(agent.agent_id);
   });
 }
 
@@ -411,7 +407,7 @@ async function pingAgent(agent: Agent) {
                   If so, the agent will need to be manually uninstalled from the computer.`,
       cancel: { label: "No", color: "negative" },
       ok: { label: "Yes", color: "positive" },
-      persistent: true,
+      noBackdropDismiss: true,
     })
       .onOk(() => deleteAgent(agent))
       .onCancel(() => {
@@ -433,10 +429,10 @@ function deleteAgent(agent: Agent) {
     },
     cancel: true,
     ok: { label: "Uninstall", color: "negative" },
-    persistent: true,
+    noBackdropDismiss: true,
     html: true,
   }).onOk(() => {
-    agentStore.removeAgent(agent.agent_id);
+    void agentStore.removeAgent(agent.agent_id);
   });
 }
 </script>

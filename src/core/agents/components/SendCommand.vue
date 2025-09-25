@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide" @keydown.esc="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide" @keydown.esc="onDialogHide">
     <q-card class="q-dialog-plugin" :style="{ 'min-width': !ret ? '40vw' : '70vw' }">
       <q-bar>
         Send command on {{ agent.hostname }}
@@ -84,7 +84,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup flat dense push label="Cancel" />
-          <q-btn :loading="loading" flat dense push label="Send" color="primary" type="submit" />
+          <q-btn :loading="isLoading" flat dense push label="Send" color="primary" type="submit" />
         </q-card-actions>
         <q-card-section v-if="ret"
           ><script-output-copy-clip label="Output" :data="ret" /> <q-separator
@@ -105,7 +105,7 @@
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAgentStore } from "../api";
+import { agentStore } from "src/stores/api";
 import { cmdPlaceholder } from "src/core/agents/composables";
 import { runAsUserToolTip } from "src/constants/constants";
 
@@ -124,7 +124,7 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // setup stores
-const agentStore = useAgentStore();
+const { isLoading } = agentStore;
 
 // run command logic
 const state = ref<AgentCommandRequest>({
@@ -135,7 +135,6 @@ const state = ref<AgentCommandRequest>({
   run_as_user: false,
 });
 
-const loading = ref(false);
 const ret = ref<string | undefined>(undefined);
 
 async function submit() {

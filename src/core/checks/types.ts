@@ -1,6 +1,4 @@
 import type { AlertSeverity } from "../alerts/types";
-import type { Agent } from "src/core/agents/types";
-import type { Policy } from "src/core/automation/types";
 
 export type CheckType =
   | "diskspace"
@@ -82,12 +80,16 @@ export interface Check {
   check_result?: CheckResult;
 }
 
-export function isAgent(parent: Agent | Policy): parent is Agent {
-  return parent && "agent_id" in parent;
+export function isAgent(
+  parent: { agent: string } | { policy: number },
+): parent is { agent: string } {
+  return parent && "agent" in parent;
 }
 
-export function isPolicy(parent: Agent | Policy): parent is Policy {
-  return parent && "enforced" in parent;
+export function isPolicy(
+  parent: { agent: string } | { policy: number },
+): parent is { policy: number } {
+  return parent && "policy" in parent;
 }
 
 export interface CheckHistory {

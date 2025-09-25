@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? `Edit Memory Check` : "Add Memory Check" }}
@@ -57,14 +57,7 @@
         </div>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="checkStore.isLoading"
-            dense
-            flat
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -76,24 +69,21 @@
 import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { isValidThreshold } from "src/utils/validation";
-import { useCheckStore } from "../api";
+import { checkStore } from "src/stores/api";
 import { failOptions } from "../composables";
 
 // import types
 import type { Check } from "../types";
-import type { Policy } from "src/core/automation/types";
-import type { Agent } from "src/core/agents/types";
-import { until } from "@vueuse/core";
 
 const props = defineProps<{
-  check: Check;
-  parent: Agent | Policy;
+  check?: Check;
+  parent: { agent: string } | { policy: number };
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const checkStore = useCheckStore();
+const { isLoading } = checkStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -103,6 +93,7 @@ const localCheck = props.check
   ? reactive<Check>(Object.assign({}, props.check))
   : reactive<Check>({
       ...props.parent,
+      id: 0,
       check_type: "memory",
       warning_threshold: 70,
       error_threshold: 90,
@@ -114,14 +105,14 @@ async function submit() {
   if (localCheck.warning_threshold && localCheck.error_threshold) {
     if (!isValidThreshold(localCheck.warning_threshold, localCheck.error_threshold)) return;
 
-    if (props.check) checkStore.updateCheck(localCheck.id, localCheck);
-    else checkStore.addCheck(localCheck);
+    try {
+      if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
+      else await checkStore.addCheck(localCheck);
 
-    // stops the dialog from closing when there is an error
-    await until(() => checkStore.isLoading).toBe(false);
-    if (checkStore.isError) return;
-
-    onDialogOK();
+      onDialogOK();
+    } catch {
+      //
+    }
   }
 }
 </script>

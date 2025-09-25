@@ -1,6 +1,6 @@
-import { onMounted, computed } from "vue";
+import { onMounted, computed, ref } from "vue";
 
-import { useAgentStore } from "./api";
+import { agentStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import type { Option, SelectableOption } from "../dashboard/types";
 
@@ -8,12 +8,10 @@ import type { Agent } from "./types";
 
 // TODO: Apply remove extra categories when filtering or test to make sure it is working
 export function useAgentDropdown() {
-  const agentStore = useAgentStore();
-
-  const isLoading = computed(() => agentStore.isLoading);
+  const { agents, isLoading } = agentStore;
 
   const agentOptions = computed(() => {
-    return _formatAgentOptions(agentStore.agents);
+    return _formatAgentOptions(agents.value);
   });
 
   onMounted(agentStore.getAgents);
@@ -52,38 +50,42 @@ export function _formatAgentOptions(data: Agent[]): Option[] {
     ]);
 }
 
-export function useAgentDiskDropdown(agent_id: string) {
-  const agentStore = useAgentStore();
+export function useAgentDiskDropdown(agentId: string | null) {
+  if (!agentId) return { agentDiskOptions: ref<string[]>([]) };
+  const { selectedAgent } = agentStore;
+
+  console.log("Here?");
 
   const agentDiskOptions = computed(() => {
-    if (agentStore.selectedAgent?.disks)
-      return agentStore.selectedAgent.disks.map((disk) => disk.device);
+    if (selectedAgent.value?.disks) return selectedAgent.value.disks.map((disk) => disk.device);
     else return [];
   });
 
-  onMounted(agentStore.getAgent(agent_id));
+  onMounted(() => agentStore.getAgent(agentId));
 
   return {
     agentDiskOptions,
   };
 }
 
-export function useAgentServiceDropdown(agent_id: string) {
-  const agentStore = useAgentStore();
+export function useAgentServiceDropdown(agentId: string | null) {
+  if (!agentId) return { agentServiceOptions: ref<SelectableOption[]>([]) };
+
+  const { selectedAgent } = agentStore;
 
   const agentServiceOptions = computed(() => {
-    if (agentStore.selectedAgent?.services)
-      return agentStore.selectedAgent.services.map(
-        (service) =>
-          ({
-            label: service.display_name,
-            value: service.name,
-          }) as SelectableOption,
-      );
-    else return [];
+    if (selectedAgent.value?.services)
+      return selectedAgent.value.services
+        .map((service) => ({
+          type: "option",
+          label: service.display_name,
+          value: service.name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)) as SelectableOption[];
+    else return [] as SelectableOption[];
   });
 
-  onMounted(agentStore.getAgent(agent_id));
+  onMounted(() => agentStore.getAgent(agentId));
 
   return {
     agentServiceOptions,

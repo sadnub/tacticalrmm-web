@@ -1,17 +1,17 @@
 import { onMounted, computed } from "vue";
-import { useUserStore, useRoleStore } from "./api";
-
+import { userStore, roleStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
 
 export function useUserDropdown() {
-  const userStore = useUserStore();
+  const { users } = userStore;
 
   const isLoading = computed(() => userStore.isLoading);
 
   const userOptions = computed(() => {
-    return userStore.users.map(
+    return users.value.map(
       (user) =>
         ({
+          type: "option",
           label: user.username,
           value: user.id,
         }) as Option,
@@ -19,7 +19,7 @@ export function useUserDropdown() {
   });
 
   const userOptionsFlat = computed(() => {
-    return userStore.users.map((user) => user.username);
+    return users.value.map((user) => user.username);
   });
 
   onMounted(userStore.getUsers);
@@ -32,14 +32,13 @@ export function useUserDropdown() {
 }
 
 export function useRoleDropdown() {
-  const roleStore = useRoleStore();
-
-  const isLoading = computed(() => roleStore.isLoading);
+  const { isLoading, roles } = roleStore;
 
   const roleOptions = computed(() => {
-    return roleStore.roles.map(
+    return roles.value.map(
       (role) =>
         ({
+          type: "option",
           label: role.name,
           value: role.id,
         }) as Option,

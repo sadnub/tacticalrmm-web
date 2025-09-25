@@ -21,7 +21,15 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat push label="Cancel" />
-          <q-btn :loading="loading" dense flat push label="Recover" color="primary" type="submit" />
+          <q-btn
+            :loading="isLoading"
+            dense
+            flat
+            push
+            label="Recover"
+            color="primary"
+            type="submit"
+          />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -32,9 +40,8 @@
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAgentStore } from "../api";
+import { agentStore } from "src/stores/api";
 import type { Agent, AgentRecoveryMode } from "../types";
-import { until } from "@vueuse/shared";
 
 const props = defineProps<{
   agent: Agent;
@@ -46,19 +53,17 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const agentStore = useAgentStore();
+const { isLoading } = agentStore;
 
 // agent recovery logic
 const mode = ref<AgentRecoveryMode>("mesh");
 
-const loading = ref(false);
-
 async function sendRecovery() {
-  agentStore.sendAgentRecovery(props.agent.agent_id, mode.value);
-
-  await until(() => agentStore.isLoading).toBe(false);
-
-  if (agentStore.isError) return;
-  onDialogOK();
+  try {
+    await agentStore.sendAgentRecovery(props.agent.agent_id, mode.value);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 </script>

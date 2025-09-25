@@ -2,7 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import axios from "axios";
 import { openURL, Loading } from "quasar";
-import { useRouter } from "vue-router";
+import { router } from "src/router";
 import { notifySuccess } from "src/utils/notify";
 import type {
   CustomField,
@@ -15,19 +15,18 @@ import type {
   GlobalKey,
   ServerMaintenanceRequest,
 } from "./types";
+import { useCachedAction } from "../dashboard/composables";
 
-export const useCoreStore = defineStore("coreSettings", () => {
+export function useCoreStore() {
   const coreSettings = ref<CoreSettings>();
   const isLoading = ref(false);
   const isError = ref(false);
 
-  const router = useRouter();
-
-  function getCoreSettings(params = {}) {
+  function _getCoreSettings() {
     isLoading.value = true;
     isError.value = false;
     axios
-      .get<CoreSettings>("/core/settings/", { params })
+      .get<CoreSettings>("/core/settings/")
       .then(({ data }) => {
         coreSettings.value = data;
       })
@@ -39,97 +38,86 @@ export const useCoreStore = defineStore("coreSettings", () => {
       });
   }
 
-  function updateCoreSettings(settings: Partial<CoreSettings>, emailTest = false, smsTest = false) {
+  const getCoreSettings = useCachedAction(_getCoreSettings, {
+    key: "getCoreSettings",
+    duration: 1 * 30 * 1000,
+  });
+
+  async function updateCoreSettings(
+    settings: Partial<CoreSettings>,
+    emailTest = false,
+    smsTest = false,
+  ) {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .put<CoreSettings>("/core/settings/", settings)
-      .then(({ data }) => {
-        coreSettings.value = data;
-        notifySuccess("Core Settings updated successfully.");
 
-        if (emailTest) {
-          Loading.show({ message: "Sending test email..." });
+    try {
+      const { data } = await axios.put<CoreSettings>("/core/settings/", settings);
+      coreSettings.value = data;
+      notifySuccess("Core Settings updated successfully.");
 
-          testEmailSettings()
-            .then(() => {
-              notifySuccess("Test email sent successfully");
-            })
-            .catch(() => {})
-            .finally(() => {
-              Loading.hide();
-            });
-        } else if (smsTest) {
-          Loading.show({ message: "Sending test SMS..." });
-          testSmsSettings()
-            .then(() => {
-              notifySuccess("Test SMS sent successfully");
-            })
-            .catch(() => {})
-            .finally(() => {
-              Loading.hide();
-            });
+      if (emailTest) {
+        Loading.show({ message: "Sending test email..." });
+
+        try {
+          await testEmailSettings();
+        } catch {
+          isError.value = true;
+        } finally {
+          Loading.hide();
         }
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+      } else if (smsTest) {
+        Loading.show({ message: "Sending test SMS..." });
+
+        try {
+          await testSmsSettings();
+        } catch {
+          isError.value = true;
+        } finally {
+          Loading.hide();
+        }
+      }
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function testEmailSettings() {
+  async function testEmailSettings() {
     return axios.post<{ message: string }>("/core/emailtest/");
   }
 
-  function testSmsSettings() {
+  async function testSmsSettings() {
     return axios.post<{ message: string }>("/core/smstest/");
   }
 
-  function checkWebTermPerms() {
-    return axios.post<{ message: string }>("/core/webtermperms/");
-  }
-
-  function openWebTerminal() {
-    const url = router.resolve("/webterm").href;
-    openURL(url, undefined, {
-      popup: true,
-      width: 1280,
-      height: 720,
-    });
-  }
-
-  function runServerMaintenace(payload: ServerMaintenanceRequest) {
+  async function runServerMaintenace(payload: ServerMaintenanceRequest) {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .post("/core/servermaintenance/", payload)
-      .then(() => {
-        notifySuccess("Maintenance operations executed successfully");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+
+    try {
+      await axios.post("/core/servermaintenance/", payload);
+      notifySuccess("Maintenance operations executed successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function clearCache() {
+  async function clearCache() {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .post("/core/clearcache/")
-      .then(() => {
-        notifySuccess("Cache was cleared successfully");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+
+    try {
+      await axios.post("/core/clearcache/");
+      notifySuccess("Cache was cleared successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   return {
@@ -138,234 +126,229 @@ export const useCoreStore = defineStore("coreSettings", () => {
     isError,
     getCoreSettings,
     updateCoreSettings,
-    checkWebTermPerms,
-    openWebTerminal,
     runServerMaintenace,
     clearCache,
   };
-});
+}
 
-export const useCustomFieldStore = defineStore(
-  "customFields",
-  () => {
-    const customFields = ref<CustomField[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
+export async function checkWebTermPerms() {
+  const { data } = await axios.post<{
+    message: string;
+    status: number;
+  }>("/core/webtermperms/");
 
-    function getCustomFields(model?: CustomFieldModel) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .get<CustomField[]>("/core/customfields/", { params: { model: model } })
-        .then(({ data }) => {
-          customFields.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+  return data;
+}
+
+export function openWebTerminal() {
+  const url = router.resolve("/webterm").href;
+  openURL(url, undefined, {
+    popup: true,
+    width: 1280,
+    height: 720,
+  });
+}
+
+export function useCustomFieldStore() {
+  const customFields = ref<CustomField[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function _getCustomFields(model?: CustomFieldModel) {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<CustomField[]>("/core/customfields/", { params: { model: model } })
+      .then(({ data }) => {
+        customFields.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  const getCustomFields = useCachedAction(_getCustomFields, {
+    key: "getCustomFields",
+    duration: 1 * 30 * 1000,
+  });
+
+  const clientCustomFields = computed(() =>
+    customFields.value.filter((field) => !field.hide_in_ui && field.model === "client"),
+  );
+
+  const agentCustomFields = computed(() =>
+    customFields.value.filter((field) => !field.hide_in_ui && field.model === "agent"),
+  );
+
+  const siteCustomFields = computed(() =>
+    customFields.value.filter((field) => !field.hide_in_ui && field.model === "site"),
+  );
+
+  async function addCustomField(action: CustomField) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.post<CustomField>("/core/customfields/", action);
+      customFields.value.unshift(data);
+      notifySuccess("Custom Field saved successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    const clientCustomFields = computed(() =>
-      customFields.value.filter((field) => !field.hide_in_ui && field.model === "client"),
-    );
+  async function updateCustomField(id: number, field: CustomField) {
+    isLoading.value = true;
+    isError.value = false;
 
-    const agentCustomFields = computed(() =>
-      customFields.value.filter((field) => !field.hide_in_ui && field.model === "agent"),
-    );
+    try {
+      const { data } = await axios.put<CustomField>(`/core/customfields/${id}/`, field);
 
-    const siteCustomFields = computed(() =>
-      customFields.value.filter((field) => !field.hide_in_ui && field.model === "site"),
-    );
-
-    function addCustomField(action: CustomField) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .post<CustomField>("/core/customfields/", action)
-        .then(({ data: newAction }) => {
-          customFields.value.unshift(newAction);
-          notifySuccess("Custom Field saved successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+      const index = customFields.value.findIndex((a) => a.id === id);
+      if (index !== -1) {
+        customFields.value[index] = data;
+      }
+      notifySuccess("Custom Field updated successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function updateCustomField(id: number, action: CustomField) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .put<CustomField>(`/core/customfields/${id}/`, action)
-        .then(({ data }) => {
-          const index = customFields.value.findIndex((a) => a.id === id);
-          if (index !== -1) {
-            customFields.value[index] = data;
-          }
-          notifySuccess("Custom Field updated successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+  async function removeCustomField(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      await axios.delete(`/core/customfields/${id}/`);
+      const index = customFields.value.findIndex((a) => a.id === id);
+      if (index !== -1) {
+        customFields.value.splice(index, 1);
+      }
+      notifySuccess("custom Field removed successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function removeCustomField(id: number) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .delete(`/core/customfields/${id}/`)
-        .then(() => {
-          const index = customFields.value.findIndex((a) => a.id === id);
-          if (index !== -1) {
-            customFields.value.splice(index, 1);
-          }
-          notifySuccess("custom Field removed successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+  return {
+    customFields,
+    isLoading,
+    isError,
+    getCustomFields,
+    clientCustomFields,
+    agentCustomFields,
+    siteCustomFields,
+    addCustomField,
+    updateCustomField,
+    removeCustomField,
+  };
+}
+
+export function useURLActionStore() {
+  const urlActions = ref<URLAction[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function _getURLActions(params = {}) {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<URLAction[]>("/core/urlaction/", { params })
+      .then(({ data }) => {
+        urlActions.value = data.sort((a, b) => a.name.localeCompare(b.name));
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  const getURLActions = useCachedAction(_getURLActions, {
+    key: "getURLActions",
+    duration: 1 * 30 * 1000,
+  });
+
+  const webActions = computed(() =>
+    urlActions.value.filter((action) => action.action_type === "web"),
+  );
+  const restActions = computed(() =>
+    urlActions.value.filter((action) => action.action_type === "rest"),
+  );
+
+  async function addURLAction(action: URLAction) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.post<URLAction>("/core/urlaction/", action);
+      urlActions.value.unshift(data);
+      notifySuccess("URL Action saved successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    return {
-      customFields,
-      isLoading,
-      isError,
-      getCustomFields,
-      clientCustomFields,
-      agentCustomFields,
-      siteCustomFields,
-      addCustomField,
-      updateCustomField,
-      removeCustomField,
-    };
-  },
-  {
-    cache: {
-      getCustomFields: {
-        duration: 30 * 60 * 1000,
-      },
-    },
-  },
-);
+  async function updateURLAction(id: number, action: URLAction) {
+    isLoading.value = true;
+    isError.value = false;
 
-export const useURLActionStore = defineStore(
-  "urlActions",
-  () => {
-    const urlActions = ref<URLAction[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
-
-    function getURLActions(params = {}) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .get<URLAction[]>("/core/urlaction/", { params })
-        .then(({ data }) => {
-          urlActions.value = data.sort((a, b) => a.name.localeCompare(b.name));
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+    try {
+      const { data } = await axios.put<URLAction>(`/core/urlaction/${id}/`, action);
+      const index = urlActions.value.findIndex((a) => a.id === id);
+      if (index !== -1) {
+        urlActions.value[index] = data;
+      }
+      notifySuccess("URL Action updated successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    const webActions = computed(() =>
-      urlActions.value.filter((action) => action.action_type === "web"),
-    );
-    const restActions = computed(() =>
-      urlActions.value.filter((action) => action.action_type === "rest"),
-    );
+  async function removeURLAction(id: number) {
+    isLoading.value = true;
+    isError.value = false;
 
-    function addURLAction(action: URLAction) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .post<URLAction>("/core/urlaction/", action)
-        .then(({ data: newAction }) => {
-          urlActions.value.unshift(newAction);
-          notifySuccess("URL Action saved successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+    try {
+      await axios.delete(`/core/urlaction/${id}/`);
+      const index = urlActions.value.findIndex((a) => a.id === id);
+      if (index !== -1) {
+        urlActions.value.splice(index, 1);
+      }
+      notifySuccess("URL Action removed successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function updateURLAction(id: number, action: URLAction) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .put<URLAction>(`/core/urlaction/${id}/`, action)
-        .then(({ data: updatedAction }) => {
-          const index = urlActions.value.findIndex((a) => a.id === id);
-          if (index !== -1) {
-            urlActions.value[index] = updatedAction;
-          }
-          notifySuccess("URL Action updated successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    function removeURLAction(id: number) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .delete(`/core/urlaction/${id}/`)
-        .then(() => {
-          const index = urlActions.value.findIndex((a) => a.id === id);
-          if (index !== -1) {
-            urlActions.value.splice(index, 1);
-          }
-          notifySuccess("URL Action removed successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    return {
-      urlActions,
-      webActions,
-      restActions,
-      isLoading,
-      isError,
-      getURLActions,
-      addURLAction,
-      updateURLAction,
-      removeURLAction,
-    };
-  },
-  {
-    cache: {
-      getURLActions: {
-        duration: 1 * 60 * 1000,
-      },
-    },
-  },
-);
+  return {
+    urlActions,
+    webActions,
+    restActions,
+    isLoading,
+    isError,
+    getURLActions,
+    addURLAction,
+    updateURLAction,
+    removeURLAction,
+  };
+}
 
 // api requests that don't interact with the store data
 export async function runURLAction(actionId: number, model: string, modelId: number | string) {

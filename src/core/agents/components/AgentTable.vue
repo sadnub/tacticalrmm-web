@@ -9,11 +9,12 @@
       :filter-method="filterTable"
       :columns="columns"
       row-key="id"
+      flat
       binary-state-sort
       virtual-scroll
       :rows-per-page-options="[0]"
       no-data-label="No Agents"
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       column-select
       storage-key="agent-table"
     >
@@ -468,11 +469,10 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { type QTableColumn, useQuasar } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAgentStore } from "../api";
+import { agentStore } from "src/stores/api";
 import { runURLAction } from "src/core/settings/api";
 import { date } from "quasar";
 import { capitalize, getTimeLapse } from "src/utils/format";
-import { until } from "@vueuse/core";
 
 // ui imports
 import EditAgent from "./EditAgent.vue";
@@ -487,7 +487,7 @@ const $q = useQuasar();
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
+const { agents, selectedAgentId, isLoading } = agentStore;
 
 const tab = computed(() => dashboardStore.dashboardSettings.defaultAgentTblTab);
 const tableHeight = computed(() => dashboardStore.tableHeight);
@@ -654,8 +654,8 @@ const filteredAgents = computed(() => {
   // tab filter
   const tabFilteredAgents =
     tab.value === "mixed"
-      ? agentStore.agents
-      : agentStore.agents.filter((k) => k.monitoring_type === tab.value);
+      ? agents.value
+      : agents.value.filter((k) => k.monitoring_type === tab.value);
 
   // client tree filter
   if (selectedClientSite.value) {
@@ -785,12 +785,11 @@ function filterTable(
 }
 
 async function rowDoubleClicked(agentId: string, agentPlatform: string) {
-  agentStore.selectedAgentId = agentId;
+  selectedAgentId.value = agentId;
   agentStore.getAgent(agentId);
   switch (agentDblClickAction.value) {
     case "editagent":
-      await until(() => agentStore.isLoading).toBe(false, { timeout: 5000 });
-      if (agentStore.selectedAgent) showEditAgent(agentStore.selectedAgent);
+      showEditAgent(agentId);
       break;
     case "takecontrol":
       agentStore.runTakeControl(agentId);
@@ -805,7 +804,7 @@ async function rowDoubleClicked(agentId: string, agentPlatform: string) {
 }
 
 function agentRowSelected(agentId: string) {
-  agentStore.selectedAgentId = agentId;
+  selectedAgentId.value = agentId;
   agentStore.getAgent(agentId);
 }
 
@@ -828,7 +827,7 @@ function overdueAlert(
   };
 
   const alertColor = !alert_action ? dashPositiveColor : dashInfoColor;
-  agentStore.updateAgent(agent.agent_id, data);
+  void agentStore.updateAgent(agent.agent_id, data);
 
   $q.notify({
     color: alertColor.value,
@@ -842,18 +841,18 @@ function overdueAlert(
 }
 
 function rowSelectedClass(agent_id: string) {
-  if (agent_id === agentStore.selectedAgentId) {
+  if (agent_id === selectedAgentId.value) {
     return $q.dark.isActive ? "highlight-dark cursor-pointer" : "highlight cursor-pointer";
   } else {
     return "cursor-pointer";
   }
 }
 
-function showEditAgent(agent: Agent) {
+function showEditAgent(agentId: string) {
   $q.dialog({
     component: EditAgent,
     componentProps: {
-      agent: agent,
+      agentId: agentId,
     },
   });
 }

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         Reset Password
@@ -56,12 +56,8 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { until } from "@vueuse/shared";
 import { useDialogPluginComponent } from "quasar";
-import { useUserStore } from "../api";
-
-// setup stores
-const userStore = useUserStore();
+import { userStore } from "src/stores/api";
 
 const pass = ref("");
 const pass2 = ref("");
@@ -72,12 +68,11 @@ defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 async function submit() {
-  userStore.resetUserPassword(pass.value);
-
-  // stops the dialog from closing when there is an error
-  await until(() => userStore.isLoading).toBe(false);
-  if (userStore.isError) return;
-
-  onDialogOK();
+  try {
+    await userStore.resetUserPassword(pass.value);
+    onDialogOK();
+  } catch {
+    // do nothing
+  }
 }
 </script>

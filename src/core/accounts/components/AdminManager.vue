@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="width: 65vw; max-width: 70vw; min-height: 50vh">
       <q-bar>
         <q-btn
@@ -17,7 +17,7 @@
       <tactical-table
         v-model:pagination="pagination"
         dense
-        :rows="userStore.users"
+        :rows="users"
         :columns="columns"
         :filter="search"
         row-key="id"
@@ -73,7 +73,7 @@
         <!-- No data Slot -->
         <template #no-data>
           <div class="full-width row flex-center q-gutter-sm">
-            <span v-if="userStore.userCount === 0">No Users</span>
+            <span v-if="userCount === 0">No Users</span>
           </div>
         </template>
 
@@ -192,7 +192,7 @@
 import { ref, computed, reactive, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAuthStore } from "src/stores/auth";
-import { useUserStore } from "../api";
+import { userStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 // ui imports
@@ -264,7 +264,7 @@ const columns: TacticalColumn[] = [
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const userStore = useUserStore();
+const { users, userCount } = userStore;
 const auth = useAuthStore();
 
 const loggedInUser = computed(() => auth.username);
@@ -304,7 +304,7 @@ function deleteUser(user: User) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    userStore.removeUser(user.id);
+    void userStore.removeUser(user.id);
   });
 }
 
@@ -333,7 +333,7 @@ function toggleEnabled(user: User) {
     is_active: !user.is_active,
   };
 
-  userStore.updateUser(user.id, data);
+  void userStore.updateUser(user.id, data);
 }
 
 function ResetPassword(user: User) {
@@ -351,7 +351,7 @@ function reset2FA(user: User) {
     cancel: true,
     ok: { label: "Reset", color: "positive" },
   }).onOk(() => {
-    userStore.adminResetMFA(user);
+    void userStore.adminResetMFA(user);
   });
 }
 

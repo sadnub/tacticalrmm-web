@@ -1,11 +1,12 @@
 import { defineStore } from "pinia";
+import type { Ref } from "vue";
 import { ref, reactive, watch, onMounted, computed } from "vue";
 import axios from "axios";
-import { useLocalStorage } from "@vueuse/core";
+import { useLocalStorage, useStorage } from "@vueuse/core";
 import { formatDate as formatDateUtil } from "src/utils/format";
 import { Dark, LoadingBar, Screen } from "quasar";
 import { useDashWSConnection } from "src/websocket/websocket";
-import { useAgentStore } from "src/core/agents/api";
+import { agentStore } from "./api";
 import { useClientStore } from "src/core/clients/api";
 
 import type { AgentDblClickAction, ClientTreeSort, AgentTableTab } from "src/core/accounts/types";
@@ -38,12 +39,12 @@ export interface DashboardSettings {
   clearSearchWhenSwitching: boolean;
   defaultAgentTblTab: AgentTableTab;
   clientTreeSort: ClientTreeSort;
-  clientTreeSplitter: number;
+  clientTreeSplitter: Ref<number>;
   dashPositiveColor: string;
   dashNegativeColor: string;
   dashWarningColor: string;
   dashInfoColor: string;
-  darkMode: boolean;
+  darkMode: Ref<boolean>;
   loadingBarColor: string;
   dateFormat: string;
   timezoneOptions: string[];
@@ -60,7 +61,6 @@ export const useDashboardStore = defineStore(
     const daysUntilCertExpires = ref(180);
     const rmmVersion = useLocalStorage<string | null>("rmmVersion", null);
 
-    const agentStore = useAgentStore();
     const clientStore = useClientStore();
 
     const dashboardSettings = reactive<DashboardSettings>({
@@ -83,13 +83,13 @@ export const useDashboardStore = defineStore(
       clearSearchWhenSwitching: false,
       defaultAgentTblTab: "mixed",
       clientTreeSort: "alphafail",
-      clientTreeSplitter: 20,
+      clientTreeSplitter: useStorage("clientTreeSplitter", 20),
       dashPositiveColor: "positive",
       dashNegativeColor: "negative",
       dashWarningColor: "warning",
       dashInfoColor: "info",
       loadingBarColor: "",
-      darkMode: false,
+      darkMode: useStorage("darkMode", false),
       dateFormat: "MMM-DD-YYYY - HH:mm",
       timezoneOptions: [],
     });
@@ -121,13 +121,6 @@ export const useDashboardStore = defineStore(
     });
 
     const selectedClientSiteNode = ref<string | null>(null);
-
-    watch(
-      () => dashboardSettings.darkMode,
-      (newValue) => {
-        Dark.set(newValue);
-      },
-    );
 
     watch(
       () => dashboardSettings.loadingBarColor,
@@ -222,19 +215,33 @@ export const useDashboardStore = defineStore(
         .catch(() => {});
     }
 
+    // dark mode
+    watch(
+      () => dashboardSettings.darkMode,
+      (newValue) => {
+        Dark.set(newValue);
+        setDarkMode(newValue);
+      },
+    );
+
+    // set if saved in local storage
+    Dark.set(dashboardSettings.darkMode);
+
+    function setDarkMode(value: boolean) {
+      axios
+        .patch("/accounts/users/ui/", { dark_mode: value })
+        .then(() => {})
+        .catch(() => {});
+    }
+
+    // client tree splitter
     function setClientTreeSplitter(value: number) {
+      dashboardSettings.clientTreeSplitter = value;
       axios
         .patch("/accounts/users/ui/", { client_tree_splitter: value })
         .then(() => {})
         .catch(() => {});
     }
-
-    watch(
-      () => dashboardSettings.clientTreeSplitter,
-      (newValue) => {
-        setClientTreeSplitter(Math.floor(newValue));
-      },
-    );
 
     onMounted(getDashInfo);
 
@@ -251,6 +258,7 @@ export const useDashboardStore = defineStore(
       refreshDashboard,
       setShowCommunityScripts,
       setClientTreeSplitter,
+      setDarkMode,
 
       tableHeight,
       tabHeight,

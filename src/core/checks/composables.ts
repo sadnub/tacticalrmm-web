@@ -1,15 +1,17 @@
 import { computed, onMounted } from "vue";
 
-import { useAgentStore } from "../agents/api";
+import { checkStore } from "src/stores/api";
 import { usePolicyStore } from "../automation/api";
 import type { Option } from "../dashboard/types";
 
 // dropdown options
-export function useAgentCheckDropdown(agent_id: string) {
-  const agentStore = useAgentStore();
+export function useAgentCheckDropdown(agentId: string | null) {
+  const { checks, isLoading } = checkStore;
 
   const agentCheckOptions = computed(() => {
-    return agentStore.agentChecks.map(
+    if (!agentId) return [];
+
+    return checks.value.map(
       (check) =>
         ({
           type: "option",
@@ -18,18 +20,20 @@ export function useAgentCheckDropdown(agent_id: string) {
         }) as Option,
     );
   });
-
-  onMounted(agentStore.getAgentChecks(agent_id));
+  if (agentId) onMounted(() => checkStore.getAgentChecks(agentId));
 
   return {
     agentCheckOptions,
+    isLoading: computed(() => isLoading),
   };
 }
 
-export function usePolicyCheckDropdown(policyId: number) {
+export function usePolicyCheckDropdown(policyId: number | null) {
   const policyStore = usePolicyStore();
 
   const policyCheckOptions = computed(() => {
+    if (!policyId) return [];
+
     return policyStore.policyChecks.map(
       (check) =>
         ({
@@ -40,7 +44,7 @@ export function usePolicyCheckDropdown(policyId: number) {
     );
   });
 
-  onMounted(policyStore.getPolicyChecks(policyId));
+  if (policyId) onMounted(() => policyStore.getPolicyChecks(policyId));
 
   return {
     policyCheckOptions,

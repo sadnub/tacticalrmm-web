@@ -180,7 +180,7 @@
 
 <script>
 import AutomatedTaskForm from "src/core/tasks/components/AutomatedTaskForm.vue";
-import PolicyStatus from "src/components/automation/modals/PolicyStatus.vue";
+import PolicyStatus from "./PolicyStatus.vue";
 
 export default {
   name: "PolicyAutomatedTasksTab",
@@ -312,7 +312,7 @@ export default {
           title: "Are you sure?",
           message: `Run ${task.name} task`,
           cancel: true,
-          persistent: true,
+          noBackdropDismiss: true,
         })
         .onOk(() => {
           this.$q.loading.show();
@@ -333,7 +333,7 @@ export default {
           title: "Are you sure?",
           message: `Delete ${task.name} task`,
           cancel: true,
-          persistent: true,
+          noBackdropDismiss: true,
         })
         .onOk(() => {
           this.$q.loading.show();

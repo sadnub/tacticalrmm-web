@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 60vw; height: 75vh">
       <q-bar>
         <q-btn
@@ -18,7 +18,7 @@
         style="max-height: 70vh"
         binary-state-sort
         virtual-scroll
-        :rows="roleStore.roles"
+        :rows="roles"
         :columns="columns"
         row-key="id"
         :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: false }"
@@ -26,6 +26,7 @@
         :rows-per-page-options="[0]"
         column-select
         storage-key="permission-manager"
+        :loading="isLoading"
       >
         <template #top>
           <q-btn flat dense icon="add" label="New Role" @click="showAddRoleModal" />
@@ -97,7 +98,7 @@
 // composition imports
 import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useRoleStore } from "../api";
+import { roleStore } from "src/stores/api";
 
 // type imports
 import type { Role } from "../types";
@@ -132,7 +133,7 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // setup stores
-const roleStore = useRoleStore();
+const { roles, isLoading } = roleStore;
 
 const search = ref("");
 
@@ -157,7 +158,7 @@ function deleteRole(role: Role) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (role.id) roleStore.removeRole(role.id);
+    if (role.id) void roleStore.removeRole(role.id);
   });
 }
 

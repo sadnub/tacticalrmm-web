@@ -1,10 +1,9 @@
 import { ref } from "vue";
-import { defineStore } from "pinia";
 import axios from "axios";
 import type { AutomatedTask, AutomatedTaskUI } from "./types";
 import { convertFromBitArray, convertToBitArray, formatDateInputField } from "src/utils/format";
-
-const baseUrl = "/tasks";
+import { notifySuccess } from "src/utils/notify";
+import { useCachedAction } from "../dashboard/composables";
 
 export function processTaskDatafromDB(task: AutomatedTask): AutomatedTaskUI {
   return {
@@ -15,10 +14,10 @@ export function processTaskDatafromDB(task: AutomatedTask): AutomatedTaskUI {
     monthly_type:
       task.task_type === "monthlydow" ? "weeks" : task.task_type === "monthly" ? "days" : "days",
 
-    run_time_bit_weekdays: convertToBitArray(task.run_time_bit_weekdays),
-    monthly_months_of_year: convertToBitArray(task.monthly_months_of_year),
-    monthly_days_of_month: convertToBitArray(task.monthly_days_of_month),
-    monthly_weeks_of_month: convertToBitArray(task.monthly_weeks_of_month),
+    run_time_bit_weekdays: convertToBitArray(task.run_time_bit_weekdays || 0),
+    monthly_months_of_year: convertToBitArray(task.monthly_months_of_year || 0),
+    monthly_days_of_month: convertToBitArray(task.monthly_days_of_month || 0),
+    monthly_weeks_of_month: convertToBitArray(task.monthly_weeks_of_month || 0),
 
     run_time_date: formatDateInputField(task.run_time_date, true),
     expire_date: task.expire_date ? formatDateInputField(task.expire_date, true) : null,
@@ -42,35 +41,25 @@ export function processTaskDataforDB(task: AutomatedTaskUI): AutomatedTask {
   } as AutomatedTask;
 }
 
-export const useTaskStore = defineStore("tasks", () => {
+export function useTaskStore() {
   const tasks = ref<AutomatedTaskUI[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getTasks() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _getAgentTasks(agentId: string, _args?: { force: boolean }) {
     isLoading.value = true;
     isError.value = false;
+    tasks.value = [];
     axios
-      .get<AutomatedTask[]>(`${baseUrl}/`)
+      .get<AutomatedTask[]>(`/agents/${agentId}/tasks/`)
       .then(({ data }) => {
-        tasks.value = data.map((task) => processTaskDatafromDB(task));
-      })
-      .catch((e) => {
-        isError.value = true;
-        console.error(e);
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
-  }
-
-  function addTask(payload: AutomatedTaskUI) {
-    isLoading.value = true;
-    isError.value = false;
-    axios
-      .post<AutomatedTask>(`${baseUrl}/`, processTaskDataforDB(payload))
-      .then(({ data: newTask }) => {
-        tasks.value.push(processTaskDatafromDB(newTask));
+        tasks.value = data
+          .filter((task) => {
+            if (!task.task_result) return true;
+            else return task.task_result.sync_status !== "pendingdeletion";
+          })
+          .map((task) => processTaskDatafromDB(task));
       })
       .catch(() => {
         isError.value = true;
@@ -80,70 +69,87 @@ export const useTaskStore = defineStore("tasks", () => {
       });
   }
 
-  function updateTask(id: number, payload: AutomatedTaskUI) {
+  const getAgentTasks = useCachedAction(_getAgentTasks, {
+    key: "getAgentTasks",
+    duration: 1 * 30 * 1000,
+  });
+
+  async function addTask(payload: AutomatedTaskUI) {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .put<AutomatedTask>(`${baseUrl}/${id}/`, processTaskDataforDB(payload))
-      .then(({ data: updatedTask }) => {
-        const index = tasks.value.findIndex((task) => task.id === id);
-        if (index !== -1) {
-          tasks.value[index] = processTaskDatafromDB(updatedTask);
-        }
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+
+    try {
+      const { data } = await axios.post<AutomatedTask>("/tasks/", processTaskDataforDB(payload));
+      tasks.value.push(processTaskDatafromDB(data));
+      notifySuccess("Task added successfully");
+      return data;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function updateTaskPartial(id: number, payload: Partial<AutomatedTaskUI>) {
+  async function updateTask(id: number, payload: AutomatedTaskUI) {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .put<AutomatedTask>(`${baseUrl}/${id}/`, payload)
-      .then(({ data: updatedTask }) => {
-        const index = tasks.value.findIndex((task) => task.id === id);
-        if (index !== -1) {
-          tasks.value[index] = processTaskDatafromDB(updatedTask);
-        }
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+
+    try {
+      const { data } = await axios.put<AutomatedTask>(
+        `/tasks/${id}/`,
+        processTaskDataforDB(payload),
+      );
+      const index = tasks.value.findIndex((task) => task.id === id);
+      if (index !== -1) tasks.value[index] = processTaskDatafromDB(data);
+
+      notifySuccess("Task updated successfully");
+      return data;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function removeTask(id: number) {
+  async function updateTaskPartial(id: number, payload: Partial<AutomatedTaskUI>) {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .delete(`${baseUrl}/${id}/`)
-      .then(() => {
-        tasks.value = tasks.value.filter((task) => task.id !== id);
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+
+    try {
+      const { data } = await axios.put<AutomatedTask>(`/tasks/${id}/`, payload);
+      const index = tasks.value.findIndex((task) => task.id === id);
+      if (index !== -1) tasks.value[index] = processTaskDatafromDB(data);
+      notifySuccess("Task updated successfully");
+      return data;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function removeTask(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      await axios.delete(`/tasks/${id}/`);
+      tasks.value = tasks.value.filter((task) => task.id !== id);
+      notifySuccess("Task removed successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   function runTask(id: number, agent_id?: string) {
     isLoading.value = true;
     isError.value = false;
     axios
-      .post(`${baseUrl}/${id}/run/`, agent_id ? { agent_id } : {})
-      .then(({ data: updatedTask }) => {
-        const index = tasks.value.findIndex((task) => task.id === id);
-        if (index !== -1) {
-          tasks.value[index] = updatedTask;
-        }
+      .post(`/tasks/${id}/run/`, agent_id ? { agent_id } : {})
+      .then(() => {
+        notifySuccess("Task run initiated successfully. Task will run if the agent is online.");
       })
       .catch(() => {
         isError.value = true;
@@ -157,11 +163,11 @@ export const useTaskStore = defineStore("tasks", () => {
     tasks,
     isLoading,
     isError,
-    getTasks,
+    getAgentTasks,
     addTask,
     updateTask,
     updateTaskPartial,
     removeTask,
     runTask,
   };
-});
+}

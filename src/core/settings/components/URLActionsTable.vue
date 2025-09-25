@@ -80,7 +80,7 @@ import { useURLActionStore } from "../api";
 import URLActionsForm from "./URLActionsForm.vue";
 
 // types
-import { type URLActionType, type URLAction } from "src/types/core/urlactions";
+import { type URLActionType, type URLAction } from "src/core/settings/types";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 // define props

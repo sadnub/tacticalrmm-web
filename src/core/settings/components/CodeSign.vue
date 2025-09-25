@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 65vh">
       <q-bar>
         Code Signing
@@ -62,7 +62,7 @@ function confirmDelete() {
   $q.dialog({
     title: "Delete token?",
     cancel: true,
-    persistent: true,
+    noBackdropDismiss: true,
   }).onOk(() => {
     codeSignStore.removeToken();
   });

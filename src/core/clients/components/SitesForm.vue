@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ !!site ? `Editing ${site.name}` : "Adding Site" }}
@@ -21,17 +21,15 @@
         <q-card-section>
           <q-input
             v-model="state.name"
-            :rules="[(val) => !!val || 'Name is required']"
+            :rules="[(val: string) => !!val || 'Name is required']"
             filled
             dense
             label="Name"
           />
         </q-card-section>
 
-        <div v-if="fieldStore.siteCustomFields.length > 0" class="q-pl-sm text-h6">
-          Custom Fields
-        </div>
-        <q-card-section v-for="field in fieldStore.siteCustomFields" :key="field.id">
+        <div v-if="siteCustomFields.length > 0" class="q-pl-sm text-h6">Custom Fields</div>
+        <q-card-section v-for="field in siteCustomFields" :key="field.id">
           <CustomField v-model="siteCustomFieldValues[field.name]" :field="field" />
         </q-card-section>
 
@@ -57,13 +55,13 @@
 import { computed, onMounted, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
-import { useCustomFieldStore } from "src/core/settings/api";
+import { customFieldStore } from "src/stores/api";
 import { useSiteStore } from "../api";
 
 import { formatCustomFields } from "src/utils/format";
 
 // ui imports
-import CustomField from "src/components/ui/CustomField.vue";
+import CustomField from "src/core/dashboard/ui/CustomField.vue";
 
 // type imports
 import type { Site } from "../types";
@@ -78,7 +76,7 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const fieldStore = useCustomFieldStore();
+const { siteCustomFields } = customFieldStore;
 const siteStore = useSiteStore();
 
 // setup quasar dialog
@@ -96,7 +94,7 @@ const state = reactive({
 async function submit() {
   const data = {
     site: state,
-    custom_fields: formatCustomFields(fieldStore.customFields, siteCustomFieldValues.value),
+    custom_fields: formatCustomFields(siteCustomFields.value, siteCustomFieldValues.value),
   };
   if (props.site) siteStore.updateSite(props.site.id, data);
   else siteStore.addSite(data);
@@ -110,7 +108,7 @@ async function submit() {
 const siteCustomFieldValues = computed(() => {
   const mapped_custom_fields = {} as Record<string, unknown>;
   if (props.site && props.site.custom_fields) {
-    for (const field of fieldStore.clientCustomFields) {
+    for (const field of siteCustomFields.value) {
       const value = props.site.custom_fields.find((value) => value.field === field.id);
 
       if (field.type === "multiple") {
@@ -129,6 +127,6 @@ const siteCustomFieldValues = computed(() => {
 });
 
 onMounted(() => {
-  fieldStore.getCustomFields();
+  customFieldStore.getCustomFields();
 });
 </script>

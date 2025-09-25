@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 80vw">
       <q-bar>
         Testing {{ urlAction.name }}
@@ -85,7 +85,7 @@ import { useSiteDropdown, useClientDropdown } from "src/core/clients/composables
 import { runTestURLAction } from "../api";
 
 // type imports
-import type { URLAction } from "src/types/core/urlactions";
+import type { URLAction } from "src/core/settings/types";
 
 // define emits
 defineEmits([...useDialogPluginComponent.emits]);

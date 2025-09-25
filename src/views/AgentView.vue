@@ -15,7 +15,7 @@ import { watch } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAgentStore } from "src/core/agents/api";
+import { agentStore } from "src/stores/api";
 
 // ui imports
 import SummaryTab from "src/core/agents/components/tabs/SummaryTab.vue";
@@ -26,18 +26,17 @@ const $q = useQuasar();
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const agentStore = useAgentStore();
+const { selectedAgentId } = agentStore;
 
 dashboardStore.tabHeight = $q.screen.height - 309 - 50 - 36;
 
-agentStore.selectedAgentId =
-  typeof route.params.agent_id === "string" ? route.params.agent_id : null;
+selectedAgentId.value = typeof route.params.agent_id === "string" ? route.params.agent_id : null;
 
 // watch for route change
 watch(
   () => route.params.agent_id,
   () =>
-    (agentStore.selectedAgentId =
+    (selectedAgentId.value =
       typeof route.params.agent_id === "string" ? route.params.agent_id : null),
 );
 </script>

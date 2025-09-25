@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="width: 60vw; max-width: 90vw; min-height: 40vh">
       <q-bar>
         User Sessions for {{ user.username }}
@@ -9,9 +9,9 @@
       <tactical-table
         dense
         :style="{ 'max-height': `${$q.screen.height - 24}px` }"
-        :rows="userStore.userSessions"
+        :rows="userSessions"
         :columns="columns"
-        :loading="userStore.isLoading"
+        :loading="isLoading"
         :pagination="{ rowsPerPage: 0, sortBy: 'display', descending: true }"
         row-key="id"
         binary-state-sort
@@ -59,7 +59,7 @@
 // composition imports
 import { onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { useUserStore } from "../api";
+import { userStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 
 //types
@@ -101,7 +101,7 @@ const props = defineProps<{
 }>();
 
 // setup stores
-const userStore = useUserStore();
+const { isLoading, userSessions } = userStore;
 const dashboardStore = useDashboardStore();
 
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
@@ -114,7 +114,7 @@ function removeSession(session: UserSession) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    userStore.removeSession(session.digest);
+    void userStore.removeSession(session.digest);
   });
 }
 
@@ -124,7 +124,7 @@ function removeAllSessions() {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    userStore.removeAllUserSessions(props.user.id);
+    void userStore.removeAllUserSessions(props.user.id);
   });
 }
 

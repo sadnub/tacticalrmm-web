@@ -25,14 +25,14 @@
     </template>
 
     <template #option="scope">
-      <!-- option category -->
       <q-item
-        :key="scope.opt.value"
+        :key="scope.opt.value || scope.opt"
         v-bind="scope.itemProps"
         dense
-        :clickable="scope.opt.type === 'option'"
+        :clickable="scope.opt.type && scope.opt.type === 'header' ? false : true"
         :class="{ 'q-pl-lg': scope.opt.type === 'option' }"
       >
+        <!-- option category -->
         <q-item-section v-if="isHeaderOption(scope.opt)">
           <q-item-label class="text-subtitle1 text-grey-8">
             {{ scope.opt.label }}
@@ -40,7 +40,7 @@
         </q-item-section>
 
         <!-- normal object option -->
-        <template v-else-if="isSelectableOption(scope.opt) || typeof scope.opt === 'object'">
+        <template v-else-if="typeof scope.opt === 'object'">
           <q-item-section>
             <q-item-label>{{ scope.opt.label }}</q-item-label>
           </q-item-section>

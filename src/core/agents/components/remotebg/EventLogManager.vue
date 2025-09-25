@@ -16,14 +16,12 @@
       </div>
       <div class="col-7"></div>
       <div class="col-3">
-        <code v-if="agentStore.agentEventLog"
-          >{{ logType }} log total records: {{ agentStore.agentEventLog.length }}</code
-        >
+        <code v-if="agentEventLog">{{ logType }} log total records: {{ agentEventLogCount }}</code>
       </div>
     </div>
     <tactical-table
       dense
-      :rows="agentStore.agentEventLog"
+      :rows="agentEventLog"
       :columns="columns"
       :style="{ 'max-height': `${$q.screen.height - 85}px` }"
       :pagination="{ rowsPerPage: 0, sortBy: 'record', descending: true }"
@@ -32,7 +30,7 @@
       binary-state-sort
       virtual-scroll
       :rows-per-page-options="[0]"
-      :loading="agentStore.isLoading"
+      :loading="isLoading"
       column-select
       storage-key="eventlog-manager"
     >
@@ -85,10 +83,10 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useAgentStore } from "../../api";
+import { agentStore } from "src/stores/api";
 
 // ui imports
-import PreDialog from "src/components/ui/PreDialog.vue";
+import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 // static data
@@ -125,7 +123,7 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const agentStore = useAgentStore();
+const { agentEventLog, agentEventLogCount, isLoading } = agentStore;
 
 const lastDaysOptions = [1, 2, 3, 4, 5, 10, 30, 60, 90, 180, 360, 9999];
 

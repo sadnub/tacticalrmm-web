@@ -30,9 +30,9 @@
     <q-tab-panels v-model="tab">
       <q-tab-panel name="terminal" class="q-pa-none">
         <iframe
-          v-if="agentStore.meshCentralURLs.terminal"
+          v-if="meshCentralURLs.terminal"
           allow="clipboard-read; clipboard-write"
-          :src="agentStore.meshCentralURLs.terminal"
+          :src="meshCentralURLs.terminal"
           :style="{
             height: `${$q.screen.height - 30}px`,
             width: `${$q.screen.width}px`,
@@ -40,7 +40,7 @@
         ></iframe>
       </q-tab-panel>
       <q-tab-panel name="processes" class="q-pa-none">
-        <ProcessManager :agent_id="agentId" />
+        <ProcessManager :agent-id="agentId" />
       </q-tab-panel>
       <q-tab-panel v-if="agentPlatform === 'windows'" name="services" class="q-pa-none">
         <ServicesManager :agent-id="agentId" :agent-platform="agentPlatform" />
@@ -50,9 +50,9 @@
       </q-tab-panel>
       <q-tab-panel name="filebrowser" class="q-pa-none">
         <iframe
-          v-if="agentStore.meshCentralURLs.file"
+          v-if="meshCentralURLs.file"
           allow="clipboard-read; clipboard-write"
-          :src="agentStore.meshCentralURLs.file"
+          :src="meshCentralURLs.file"
           :style="{
             height: `${$q.screen.height - 30}px`,
             width: `${$q.screen.width}px`,
@@ -68,41 +68,54 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
-import { useAgentStore } from "src/core/agents/api";
 import { useDashboardStore } from "src/stores/dashboard";
+import { agentStore } from "src/stores/api";
 
 // ui imports
-import ProcessManager from "src/components/agents/remotebg/ProcessManager.vue";
-import ServicesManager from "src/components/agents/remotebg/ServicesManager.vue";
-import EventLogManager from "src/components/agents/remotebg/EventLogManager.vue";
+import ProcessManager from "src/core/agents/components/remotebg/ProcessManager.vue";
+import ServicesManager from "src/core/agents/components/remotebg/ServicesManager.vue";
+import EventLogManager from "src/core/agents/components/remotebg/EventLogManager.vue";
+
+// type imports
+import type { MeshUrls } from "src/core/agents/types";
 
 // setup quasar
 const $q = useQuasar();
 
 // setup stores
-const agentStore = useAgentStore();
-
-// dashinfo is loading onMount
-useDashboardStore();
+const { getAgentMeshCentralUrls } = agentStore;
 
 // vue router
-const { params } = useRoute();
+const { params, query } = useRoute();
 
 // meshcentral tabs
 const tab = ref("terminal");
 
-const agentId = computed(() => (typeof params.agentPlatform === "string" ? params.agent_id : ""));
+const agentId = computed(() => (typeof params.agent_id === "string" ? params.agent_id : ""));
+
 const agentPlatform = computed(() =>
-  typeof params.agentPlatform === "string" ? params.agentPlatform : "",
+  typeof query.agentPlatform === "string" ? query.agentPlatform : "",
 );
-onMounted(() => {
+
+const meshCentralURLs = ref<MeshUrls>({
+  hostname: "",
+  client: "",
+  site: "",
+});
+
+useMeta(() => ({
+  title: `${meshCentralURLs.value.hostname} - ${meshCentralURLs.value.client} - ${meshCentralURLs.value.site} | Remote Background`,
+}));
+
+onMounted(async () => {
+  useDashboardStore();
+
   if (agentId.value && typeof agentId.value === "string") {
     $q.loadingBar.setDefaults({ size: "0px" });
-    agentStore.getAgentMeshCentralUrls(agentId.value);
-
-    useMeta({
-      title: `${agentStore.selectedAgent?.hostname} - ${agentStore.selectedAgent?.client_name} - ${agentStore.selectedAgent?.site_name} | Remote Background`,
-    });
+    const result = await getAgentMeshCentralUrls(agentId.value);
+    if (result) {
+      meshCentralURLs.value = result;
+    }
   }
 });
 </script>

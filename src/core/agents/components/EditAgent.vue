@@ -78,9 +78,9 @@
                       label="Seconds"
                       class="col-2"
                       :rules="[
-                        (val) => !!val || '*Required',
-                        (val) => val >= 15 || 'Minimum is 15 seconds',
-                        (val) => val <= 86400 || 'Maximum is 86400 seconds',
+                        (val: number) => !!val || '*Required',
+                        (val: number) => val >= 15 || 'Minimum is 15 seconds',
+                        (val: number) => val <= 86400 || 'Maximum is 86400 seconds',
                       ]"
                     />
                   </q-card-section>
@@ -103,9 +103,9 @@
                       label="Minutes"
                       class="col-2"
                       :rules="[
-                        (val) => !!val || '*Required',
-                        (val) => val >= 2 || 'Minimum is 2 minutes',
-                        (val) => val < 9999999 || 'Maximum is 9999999 minutes',
+                        (val: number) => !!val || '*Required',
+                        (val: number) => val >= 2 || 'Minimum is 2 minutes',
+                        (val: number) => val < 9999999 || 'Maximum is 9999999 minutes',
                       ]"
                     />
                   </q-card-section>
@@ -128,9 +128,9 @@
                       label="Minutes"
                       class="col-2"
                       :rules="[
-                        (val) => !!val || '*Required',
-                        (val) => val >= 3 || 'Minimum is 3 minutes',
-                        (val) => val < 9999999 || 'Maximum is 9999999 minutes',
+                        (val: number) => !!val || '*Required',
+                        (val: number) => val >= 3 || 'Minimum is 3 minutes',
+                        (val: number) => val < 9999999 || 'Maximum is 9999999 minutes',
                       ]"
                     />
                   </q-card-section>
@@ -152,12 +152,12 @@
 
                 <!-- custom fields -->
                 <q-tab-panel name="customfields">
-                  <div v-if="fieldStore.agentCustomFields.length === 0" class="text-subtitle">
+                  <div v-if="agentCustomFields.length === 0" class="text-subtitle">
                     No agent custom fields found. Go to **Settings > Global Settings > Custom
                     Settings**
                   </div>
 
-                  <q-card-section v-for="field in fieldStore.agentCustomFields" :key="field.id">
+                  <q-card-section v-for="field in agentCustomFields" :key="field.id">
                     <CustomField v-model="agentCustomFieldValues[field.name]" :field="field" />
                   </q-card-section>
                 </q-tab-panel>
@@ -329,9 +329,8 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { until } from "@vueuse/shared";
-import { useAgentStore } from "../api";
-import { useCustomFieldStore } from "src/core/settings/api";
+import { agentStore } from "src/stores/api";
+import { customFieldStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useSiteDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
@@ -339,7 +338,7 @@ import { formatCustomFields } from "src/utils/format";
 
 // ui imports
 import PatchPolicyForm from "src/core/automation/components/PatchPolicyForm.vue";
-import CustomField from "src/components/ui/CustomField.vue";
+import CustomField from "src/core/dashboard/ui/CustomField.vue";
 
 // type imports
 import type { Agent, UpdateAgentRequest } from "../types";
@@ -353,10 +352,8 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const agentStore = useAgentStore();
-const fieldStore = useCustomFieldStore();
 const dashboardStore = useDashboardStore();
-
+const { agentCustomFields } = customFieldStore;
 const splitterModel = ref(25);
 const tab = ref("general");
 
@@ -380,7 +377,7 @@ const localAgent = reactive<UpdateAgentRequest>({
 const agentCustomFieldValues = computed(() => {
   const mapped_custom_fields = {} as Record<string, unknown>;
   if (props.agent && props.agent.custom_fields) {
-    for (const field of fieldStore.agentCustomFields) {
+    for (const field of agentCustomFields.value) {
       const value = props.agent.custom_fields.find((value) => value.field === field.id);
 
       if (field.type === "multiple") {
@@ -400,15 +397,16 @@ const agentCustomFieldValues = computed(() => {
 
 async function submit() {
   localAgent.custom_fields = formatCustomFields(
-    fieldStore.agentCustomFields,
+    agentCustomFields.value,
     agentCustomFieldValues.value,
   );
-  agentStore.updateAgent(props.agent.agent_id, localAgent);
 
-  await until(() => agentStore.isLoading).toBe(false);
-  if (agentStore.isError) return;
-
-  onDialogOK();
+  try {
+    await agentStore.updateAgent(props.agent.agent_id, localAgent);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 function weekDaystoString(array: number[]) {
@@ -428,5 +426,8 @@ function weekDaystoString(array: number[]) {
   return result.join(", ");
 }
 
-onMounted(() => console.log(props.agent));
+onMounted(() => {
+  customFieldStore.getCustomFields();
+  agentStore.getAgent(props.agent.agent_id);
+});
 </script>

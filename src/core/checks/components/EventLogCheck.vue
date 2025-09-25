@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         {{ check ? "Edit Event Log Check" : "Add Event Log Check" }}
@@ -134,14 +134,7 @@
         </div>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="checkStore.isLoading"
-            dense
-            flat
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -152,15 +145,12 @@
 // composition imports
 import { ref, watch, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useCheckStore } from "../api";
+import { checkStore } from "src/stores/api";
 import { failOptions, severityOptions } from "../composables";
 import { validateEventID } from "src/utils/validation";
 
 // import types
 import type { Check } from "../types";
-import type { Agent } from "src/core/agents/types";
-import type { Policy } from "src/core/automation/types";
-import { until } from "@vueuse/core";
 
 const logNameOptions = ["Application", "System", "Security"];
 
@@ -171,13 +161,13 @@ const failWhenOptions = [
 
 const props = defineProps<{
   check?: Check;
-  parent: Agent | Policy;
+  parent: { agent: string } | { policy: number };
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const checkStore = useCheckStore();
+const { isLoading } = checkStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -187,6 +177,7 @@ const localCheck = props.check
   ? reactive<Check>(Object.assign({}, props.check))
   : reactive<Check>({
       ...props.parent,
+      id: 0,
       check_type: "eventlog",
       log_name: "Application",
       event_id: 0,
@@ -232,13 +223,13 @@ async function submit() {
   if (localCheck.event_source === "") localCheck.event_source = null;
   if (localCheck.event_message === "") localCheck.event_message = null;
 
-  if (props.check) checkStore.updateCheck(localCheck.id, localCheck);
-  else checkStore.addCheck(localCheck);
+  try {
+    if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
+    else await checkStore.addCheck(localCheck);
 
-  // stops the dialog from closing when there is an error
-  await until(() => checkStore.isLoading).toBe(false);
-  if (checkStore.isError) return;
-
-  onDialogOK();
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 </script>
