@@ -8,13 +8,13 @@
       v-model:pagination="pagination"
       dense
       :style="{ 'max-height': `${tabHeight}px` }"
-      :rows="updateStore.updates"
+      :rows="updates"
       :columns="columns"
       :filter="filter"
       row-key="id"
       binary-state-sort
       virtual-scroll
-      :loading="updateStore.isLoading"
+      :loading="isLoading"
       :rows-per-page-options="[0]"
       no-data-label="No Windows Updates"
       column-select
@@ -172,9 +172,8 @@
 // composition imports
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useWinUpdateStore } from "../../api";
 import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore } from "src/stores/api";
+import { agentStore, updateStore } from "src/stores/api";
 
 // ui imports
 import WinUpdateDialog from "./WinUpdateDialog.vue";
@@ -230,7 +229,7 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const updateStore = useWinUpdateStore();
+const { updates, isLoading } = updateStore;
 const dashboardStore = useDashboardStore();
 
 const { selectedAgentPlatform, selectedAgentId } = agentStore;
@@ -251,8 +250,8 @@ const pagination = reactive({
   descending: false,
 });
 
-function editWinUpdate(id: number, action: PatchAction) {
-  updateStore.updateAgentUpdate(id, { action });
+async function editWinUpdate(id: number, action: PatchAction) {
+  await updateStore.updateAgentUpdate(id, { action });
 
   // TODO: Make sure to only isoloate updates to this one agent
   //refreshDashboard();

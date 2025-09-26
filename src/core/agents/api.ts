@@ -1,7 +1,6 @@
 import { ref, computed, watch } from "vue";
 import { openURL } from "quasar";
 import { router } from "src/router";
-import { defineStore } from "pinia";
 import axios from "axios";
 import { notifySuccess } from "src/utils/notify";
 import { useCachedAction } from "../dashboard/composables";
@@ -759,10 +758,11 @@ export function useAgentNoteStore() {
   };
 }
 
-export const useWinUpdateStore = defineStore("winUpdates", () => {
-  const updates = ref<WindowsUpdate[]>([]);
+export function useWindowsUpdateStore() {
   const isLoading = ref(false);
   const isError = ref(false);
+
+  const updates = ref<WindowsUpdate[]>([]);
 
   function getAgentUpdates(agent_id: string) {
     isLoading.value = true;
@@ -782,59 +782,51 @@ export const useWinUpdateStore = defineStore("winUpdates", () => {
       });
   }
 
-  function runAgentUpdateScan(agent_id: string) {
+  async function runAgentUpdateScan(agent_id: string) {
     isLoading.value = true;
     isError.value = false;
 
-    axios
-      .post(`/winupdate/${agent_id}/scan/`)
-      .then(() => {
-        notifySuccess("Update scan initiated successfully.");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      await axios.post(`/winupdate/${agent_id}/scan/`);
+      notifySuccess("Update scan initiated successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function runAgentUpdateInstall(agent_id: string) {
+  async function runAgentUpdateInstall(agent_id: string) {
     isLoading.value = true;
     isError.value = false;
 
-    axios
-      .post(`/winupdate/${agent_id}/install/`)
-      .then(() => {
-        notifySuccess("Update installation process started.");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      await axios.post(`/winupdate/${agent_id}/install/`);
+      notifySuccess("Update installation process started.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function updateAgentUpdate(id: number, payload: Partial<WindowsUpdate>) {
+  async function updateAgentUpdate(id: number, payload: Partial<WindowsUpdate>) {
     isLoading.value = true;
     isError.value = false;
 
-    axios
-      .put<WindowsUpdate>(`/winupdate/${id}/`, payload)
-      .then(({ data: updatedUpdate }) => {
-        const index = updates.value.findIndex((update) => update.id === id);
-        if (index !== -1) {
-          updates.value[index] = updatedUpdate;
-        }
-        notifySuccess(`Update was modified successfully.`);
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      const { data: updatedUpdate } = await axios.put<WindowsUpdate>(`/winupdate/${id}/`, payload);
+      const index = updates.value.findIndex((update) => update.id === id);
+      if (index !== -1) {
+        updates.value[index] = updatedUpdate;
+      }
+      notifySuccess(`Update was modified successfully.`);
+      return updatedUpdate;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   return {
@@ -846,4 +838,4 @@ export const useWinUpdateStore = defineStore("winUpdates", () => {
     runAgentUpdateInstall,
     updateAgentUpdate,
   };
-});
+}
