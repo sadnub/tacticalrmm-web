@@ -24,7 +24,7 @@
           </q-item-section>
 
           <q-item-section side top>
-            <q-item-label caption>{{ getTimeLapse(alert.alert_time) }}</q-item-label>
+            <q-item-label caption>{{ getTimeLapse(Number(alert.alert_time)) }}</q-item-label>
             <q-item-label>
               <q-icon
                 v-close-popup
@@ -55,127 +55,88 @@
   </q-btn>
 </template>
 
-<script>
-import { mapState } from "vuex";
+<script lang="ts" setup>
+import { onMounted, ref, computed } from "vue";
+import { useQuasar } from "quasar";
+import { useInterval } from "@vueuse/core";
 import AlertsOverview from "src/core/alerts/components/AlertsOverview.vue";
 import { getTimeLapse } from "src/utils/format";
+import { useDashboardStore } from "src/stores/dashboard";
+import { alertsStore } from "src/stores/api";
+import type { Alert } from "src/core/alerts/types";
 
-export default {
-  name: "AlertsIcon",
-  setup() {
-    return {
-      getTimeLapse,
-    };
-  },
-  data() {
-    return {
-      alertsCount: 0,
-      topAlerts: [],
-      poll: null,
-    };
-  },
-  computed: {
-    ...mapState(["dash_info_color", "dash_warning_color", "dash_negative_color"]),
-    badgeColor() {
-      const severities = this.topAlerts.map((alert) => alert.severity);
+const $q = useQuasar();
+const dashboardStore = useDashboardStore();
 
-      if (severities.includes("error")) return this.dash_negative_color;
-      else if (severities.includes("warning")) return this.dash_warning_color;
-      else return this.dash_info_color;
-    },
-  },
-  mounted() {
-    this.getAlerts();
-    this.pollAlerts();
-  },
-  beforeUnmount() {
-    clearInterval(this.poll);
-  },
-  methods: {
-    getAlerts() {
-      this.$axios.patch("alerts/", { top: 10 }).then((r) => {
-        this.alertsCount = r.data.alerts_count;
-        this.topAlerts = r.data.alerts;
-      });
-    },
-    showOverview() {
-      this.$q
-        .dialog({
-          component: AlertsOverview,
-        })
-        .onDismiss(() => {
-          this.getAlerts();
-        });
-    },
-    snoozeAlert(alert) {
-      this.$q
-        .dialog({
-          title: "Snooze Alert",
-          message: "How many days to snooze alert?",
-          prompt: {
-            model: "",
-            type: "number",
-            isValid: (val) => !!val && val > 0 && val < 9999,
-          },
-          cancel: true,
-        })
-        .onOk((days) => {
-          this.$q.loading.show();
+const alertsCount = ref(0);
+const topAlerts = ref<Alert[]>([]);
 
-          const data = {
-            id: alert.id,
-            type: "snooze",
-            snooze_days: days,
-          };
+const badgeColor = computed(() => {
+  const severities = topAlerts.value.map((a) => a.severity);
+  if (severities.includes("error")) return dashboardStore.dashboardSettings.dashNegativeColor;
+  else if (severities.includes("warning")) return dashboardStore.dashboardSettings.dashWarningColor;
+  else return dashboardStore.dashboardSettings.dashInfoColor;
+});
 
-          this.$axios
-            .put(`alerts/${alert.id}/`, data)
-            .then(() => {
-              this.getAlerts();
-              this.$q.loading.hide();
-              this.notifySuccess(`The alert has been snoozed for ${days} days`);
-            })
-            .catch(() => {
-              this.$q.loading.hide();
-            });
-        });
-    },
-    resolveAlert(alert) {
-      this.$q.loading.show();
+function getAlerts() {
+  void alertsStore.getTopAlerts(10).then((data) => {
+    alertsCount.value = data.alerts_count;
+    topAlerts.value = data.alerts;
+  });
+}
 
-      const data = {
-        id: alert.id,
-        type: "resolve",
-      };
+function showOverview() {
+  $q.dialog({ component: AlertsOverview }).onDismiss(() => {
+    getAlerts();
+  });
+}
 
-      this.$axios
-        .put(`alerts/${alert.id}/`, data)
-        .then(() => {
-          this.getAlerts();
-          this.$q.loading.hide();
-          this.notifySuccess("The alert has been resolved");
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
+function snoozeAlert(alert: Alert) {
+  $q.dialog({
+    title: "Snooze Alert",
+    message: "How many days to snooze alert?",
+    prompt: {
+      model: "",
+      type: "number",
+      isValid: (val: string) => !!val && Number(val) > 0 && Number(val) < 9999,
     },
-    alertIconColor(severity) {
-      if (severity === "error") return this.dash_negative_color;
-      else if (severity === "warning") return this.dash_warning_color;
-      else return this.dash_info_color;
-    },
-    alertsCountText() {
-      if (this.alertsCount > 99) return "99+";
-      else return this.alertsCount;
-    },
-    pollAlerts() {
-      this.poll = setInterval(
-        () => {
-          this.getAlerts();
-        },
-        60 * 1 * 1000,
-      );
-    },
+    cancel: true,
+  }).onOk((days: number) => {
+    $q.loading.show();
+    void alertsStore
+      .snoozeAlert(alert.id, days)
+      .then(() => getAlerts())
+      .finally(() => $q.loading.hide());
+  });
+}
+
+function resolveAlert(alert: Alert) {
+  $q.loading.show();
+  void alertsStore
+    .resolveAlert(alert.id)
+    .then(() => getAlerts())
+    .finally(() => $q.loading.hide());
+}
+
+function alertIconColor(severity: string) {
+  if (severity === "error") return dashboardStore.dashboardSettings.dashNegativeColor;
+  else if (severity === "warning") return dashboardStore.dashboardSettings.dashWarningColor;
+  else return dashboardStore.dashboardSettings.dashInfoColor;
+}
+
+function alertsCountText() {
+  if (alertsCount.value > 99) return "99+";
+  else return alertsCount.value;
+}
+
+// Use VueUse interval for automatic cleanup
+useInterval(60 * 1000, {
+  callback: () => {
+    getAlerts();
   },
-};
+});
+
+onMounted(() => {
+  getAlerts();
+});
 </script>

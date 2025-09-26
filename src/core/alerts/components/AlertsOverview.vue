@@ -20,7 +20,7 @@
         <div class="q-pa-sm col-3">
           <q-select
             v-model="clientFilter"
-            :options="clientsOptions"
+            :options="clientOptions"
             label="Clients"
             multiple
             filled
@@ -177,346 +177,262 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
+import { computed, reactive, ref } from "vue";
+import { useQuasar, useDialogPluginComponent } from "quasar";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
-import { computed } from "vue";
-import { useStore } from "vuex";
+import { useDashboardStore } from "src/stores/dashboard";
+import { useClientDropdown } from "src/core/clients/composables";
+import { capitalize } from "src/utils/format";
+import { alertsStore } from "src/stores/api";
+import type { Alert, AlertSearchParams, AlertSeverity } from "src/core/alerts/types";
 
-export default {
-  name: "AlertsOverview",
-  emits: ["hide"],
-  setup() {
-    // setup vuex store
-    const store = useStore();
-    const formatDate = computed(() => store.getters.formatDate);
-    return {
-      formatDate,
-    };
+// emits
+defineEmits([...useDialogPluginComponent.emits]);
+useDialogPluginComponent();
+const $q = useQuasar();
+
+// stores
+const dashboardStore = useDashboardStore();
+const formatDate = dashboardStore.formatDate;
+
+// composables
+const { clientOptions } = useClientDropdown();
+
+// state
+const alerts = ref<Alert[]>([]);
+const selectedAlerts = ref<Alert[]>([]);
+const severityFilter = ref<AlertSeverity[]>([]);
+const clientFilter = ref<number[]>([]);
+const timeFilter = ref<number>(30);
+const includeResolved = ref(false);
+const includeSnoozed = ref(false);
+const searched = ref(false);
+
+const severityOptions = [
+  { label: "Informational", value: "info" },
+  { label: "Warning", value: "warning" },
+  { label: "Error", value: "error" },
+];
+
+const timeOptions = [
+  { value: 1, label: "1 Day Ago" },
+  { value: 7, label: "1 Week Ago" },
+  { value: 30, label: "30 Days Ago" },
+  { value: 90, label: "3 Months Ago" },
+  { value: 180, label: "6 Months Ago" },
+  { value: 365, label: "1 Year Ago" },
+  { value: 0, label: "Everything" },
+];
+
+const columns = [
+  {
+    name: "alert_time",
+    label: "Time",
+    field: "alert_time",
+    align: "left" as const,
+    sortable: true,
+    format: (a: string) => formatDate(a),
   },
-  data() {
-    return {
-      alerts: [],
-      selectedAlerts: [],
-      severityFilter: [],
-      clientFilter: [],
-      timeFilter: 30,
-      includeResolved: false,
-      includeSnoozed: false,
-      searched: false,
-      clientsOptions: [],
-      severityOptions: [
-        { label: "Informational", value: "info" },
-        { label: "Warning", value: "warning" },
-        { label: "Error", value: "error" },
-      ],
-      timeOptions: [
-        { value: 1, label: "1 Day Ago" },
-        { value: 7, label: "1 Week Ago" },
-        { value: 30, label: "30 Days Ago" },
-        { value: 90, label: "3 Months Ago" },
-        { value: 180, label: "6 Months Ago" },
-        { value: 365, label: "1 Year Ago" },
-        { value: 0, label: "Everything" },
-      ],
-      columns: [
-        {
-          name: "alert_time",
-          label: "Time",
-          field: "alert_time",
-          align: "left",
-          sortable: true,
-          format: (a) => this.formatDate(a),
-        },
-        {
-          name: "client",
-          label: "Client",
-          field: "client",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "site",
-          label: "Site",
-          field: "site",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "hostname",
-          label: "Agent",
-          field: "hostname",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "alert_type",
-          label: "Type",
-          field: "alert_type",
-          align: "left",
-          sortable: true,
-          format: (a) => this.capitalize(a, true),
-        },
-        {
-          name: "severity",
-          label: "Severity",
-          field: "severity",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "message",
-          label: "Message",
-          field: "message",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "resolved_on",
-          label: "Resolved On",
-          field: "resolved_on",
-          align: "left",
-          sortable: true,
-          format: (a) => this.formatDate(a),
-        },
-        {
-          name: "snoozed_until",
-          label: "Snoozed Until",
-          field: "snoozed_until",
-          align: "left",
-          sortable: true,
-          format: (a) => this.formatDate(a),
-        },
-        { name: "actions", label: "Actions", align: "left" },
-      ],
-      pagination: {
-        rowsPerPage: 50,
-        sortBy: "alert_time",
-        descending: true,
+  { name: "client", label: "Client", field: "client", align: "left" as const, sortable: true },
+  { name: "site", label: "Site", field: "site", align: "left" as const, sortable: true },
+  { name: "hostname", label: "Agent", field: "hostname", align: "left" as const, sortable: true },
+  {
+    name: "alert_type",
+    label: "Type",
+    field: "alert_type",
+    align: "left" as const,
+    sortable: true,
+    format: (a: string) => capitalize(a),
+  },
+  {
+    name: "severity",
+    label: "Severity",
+    field: "severity",
+    align: "left" as const,
+    sortable: true,
+  },
+  { name: "message", label: "Message", field: "message", align: "left" as const, sortable: true },
+  {
+    name: "resolved_on",
+    label: "Resolved On",
+    field: "resolved_on",
+    align: "left" as const,
+    sortable: true,
+    format: (a: string) => formatDate(a),
+  },
+  {
+    name: "snoozed_until",
+    label: "Snoozed Until",
+    field: "snoozed_until",
+    align: "left" as const,
+    sortable: true,
+    format: (a: string) => formatDate(a),
+  },
+  { name: "actions", label: "Actions", field: "actions", align: "left" as const },
+];
+
+const pagination = reactive({ rowsPerPage: 50, sortBy: "alert_time", descending: true });
+
+const noDataText = computed(() =>
+  searched.value ? "No data found. Try to refine you search" : "Click search to find alerts",
+);
+
+const visibleColumns = computed(() => {
+  return columns.map((column) => {
+    if (column.name === "snoozed_until") {
+      if (includeSnoozed.value) return column.name;
+    } else if (column.name === "resolved_on") {
+      if (includeResolved.value) return column.name;
+    } else {
+      return column.name;
+    }
+  });
+});
+
+function search() {
+  $q.loading.show();
+
+  selectedAlerts.value = [];
+  searched.value = true;
+
+  const params: AlertSearchParams = {
+    snoozedFilter: includeSnoozed.value,
+    resolvedFilter: includeResolved.value,
+  };
+
+  if (clientFilter.value.length > 0) params.clientFilter = clientFilter.value;
+  if (timeFilter.value) params.timeFilter = timeFilter.value;
+  if (severityFilter.value.length > 0) params.severityFilter = severityFilter.value;
+
+  alertsStore.searchAlerts(params);
+  alerts.value = (alertsStore.alerts.value as Alert[]).slice();
+  $q.loading.hide();
+}
+
+function snoozeAlert(alert: Alert) {
+  $q.dialog({
+    title: "Snooze Alert",
+    message: "How many days to snooze alert?",
+    prompt: {
+      model: "",
+      type: "number",
+      isValid: (val: string) => {
+        const n = Number(val);
+        return !!n && n > 0 && n < 9999;
       },
-    };
-  },
-  computed: {
-    noDataText() {
-      return this.searched
-        ? "No data found. Try to refine you search"
-        : "Click search to find alerts";
     },
-    visibleColumns() {
-      return this.columns.map((column) => {
-        if (column.name === "snoozed_until") {
-          if (this.includeSnoozed) return column.name;
-        } else if (column.name === "resolved_on") {
-          if (this.includeResolved) return column.name;
-        } else {
-          return column.name;
-        }
+    cancel: true,
+  }).onOk((days: number) => {
+    $q.loading.show();
+
+    void alertsStore
+      .snoozeAlert(alert.id, days)
+      .then(() => {
+        search();
+        $q.loading.hide();
+      })
+      .catch(() => {
+        $q.loading.hide();
       });
+  });
+}
+
+function unsnoozeAlert(alert: Alert) {
+  $q.loading.show();
+
+  void alertsStore
+    .unsnoozeAlert(alert.id)
+    .then(() => {
+      search();
+    })
+    .finally(() => {
+      $q.loading.hide();
+    });
+}
+
+function resolveAlert(alert: Alert) {
+  $q.loading.show();
+
+  void alertsStore
+    .resolveAlert(alert.id)
+    .then(() => {
+      search();
+    })
+    .finally(() => {
+      $q.loading.hide();
+    });
+}
+
+function resolveAlertBulk(alertsParam: Alert[]) {
+  $q.loading.show();
+
+  const ids = alertsParam.map((a) => a.id);
+  void alertsStore
+    .bulkResolveAlerts(ids)
+    .then(() => {
+      search();
+    })
+    .finally(() => {
+      $q.loading.hide();
+    });
+}
+
+function snoozeAlertBulk(alertsParam: Alert[]) {
+  $q.dialog({
+    title: "Snooze Alert",
+    message: "How many days to snooze alert?",
+    prompt: {
+      model: "",
+      type: "number",
+      isValid: (val: string) => {
+        const n = Number(val);
+        return !!n && n > 0 && n < 9999;
+      },
     },
-  },
-  mounted() {
-    this.getClients();
-  },
-  methods: {
-    getClients() {
-      this.$axios.get("/clients/").then((r) => {
-        this.clientsOptions = Object.freeze(
-          r.data.map((client) => ({ label: client.name, value: client.id })),
-        );
+    cancel: true,
+  }).onOk((days: number) => {
+    $q.loading.show();
+
+    const ids = alertsParam.map((a) => a.id);
+    void alertsStore
+      .bulkSnoozeAlerts(ids, days)
+      .then(() => {
+        search();
+      })
+      .finally(() => {
+        $q.loading.hide();
       });
-    },
-    search() {
-      this.$q.loading.show();
+  });
+}
 
-      this.selectedAlerts = [];
-      this.searched = true;
+function showScriptOutput(alert: Alert, failure = false) {
+  const results: Record<string, unknown> = {};
+  if (failure) {
+    results.readable_desc = `${alert.alert_type} failure action results`;
+    results.execution_time = alert.action_execution_time;
+    results.retcode = alert.action_retcode;
+    results.stdout = alert.action_stdout;
+    results.errout = alert.action_errout;
+    results.last_run = alert.action_run;
+  } else {
+    results.readable_desc = `${alert.alert_type} resolved action results`;
+    results.execution_time = alert.resolved_action_execution_time;
+    results.retcode = alert.resolved_action_retcode;
+    results.stdout = alert.resolved_action_stdout;
+    results.errout = alert.resolved_action_errout;
+    results.last_run = alert.resolved_action_run;
+  }
 
-      const data = {
-        snoozedFilter: this.includeSnoozed,
-        resolvedFilter: this.includeResolved,
-      };
+  $q.dialog({
+    component: ScriptOutput,
+    componentProps: { scriptInfo: results },
+  });
+}
 
-      if (this.clientFilter.length > 0) data["clientFilter"] = this.clientFilter;
-      if (this.timeFilter) data["timeFilter"] = this.timeFilter;
-      if (this.severityFilter.length > 0) data["severityFilter"] = this.severityFilter;
-
-      this.$axios
-        .patch("/alerts/", data)
-        .then((r) => {
-          this.$q.loading.hide();
-          this.alerts = Object.freeze(r.data);
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    snoozeAlert(alert) {
-      this.$q
-        .dialog({
-          title: "Snooze Alert",
-          message: "How many days to snooze alert?",
-          prompt: {
-            model: "",
-            type: "number",
-            isValid: (val) => !!val && val > 0 && val < 9999,
-          },
-          cancel: true,
-        })
-        .onOk((days) => {
-          this.$q.loading.show();
-
-          const data = {
-            id: alert.id,
-            type: "snooze",
-            snooze_days: days,
-          };
-
-          this.$axios
-            .put(`alerts/${alert.id}/`, data)
-            .then(() => {
-              this.search();
-              this.$q.loading.hide();
-              this.notifySuccess(`The alert has been snoozed for ${days} days`);
-            })
-            .catch(() => {
-              this.$q.loading.hide();
-            });
-        });
-    },
-    unsnoozeAlert(alert) {
-      this.$q.loading.show();
-
-      const data = {
-        id: alert.id,
-        type: "unsnooze",
-      };
-
-      this.$axios
-        .put(`alerts/${alert.id}/`, data)
-        .then(() => {
-          this.search();
-          this.$q.loading.hide();
-          this.notifySuccess("The alert has been unsnoozed");
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    resolveAlert(alert) {
-      this.$q.loading.show();
-
-      const data = {
-        id: alert.id,
-        type: "resolve",
-      };
-
-      this.$axios
-        .put(`alerts/${alert.id}/`, data)
-        .then(() => {
-          this.search();
-          this.$q.loading.hide();
-          this.notifySuccess("The alert has been resolved");
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    resolveAlertBulk(alerts) {
-      this.$q.loading.show();
-
-      const data = {
-        alerts: alerts.map((alert) => alert.id),
-        bulk_action: "resolve",
-      };
-
-      this.$axios
-        .post("alerts/bulk/", data)
-        .then(() => {
-          this.search();
-          this.$q.loading.hide();
-          this.notifySuccess("Alerts were resolved");
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    snoozeAlertBulk(alerts) {
-      this.$q
-        .dialog({
-          title: "Snooze Alert",
-          message: "How many days to snooze alert?",
-          prompt: {
-            model: "",
-            type: "number",
-            isValid: (val) => !!val && val > 0 && val < 9999,
-          },
-          cancel: true,
-        })
-        .onOk((days) => {
-          this.$q.loading.show();
-
-          const data = {
-            alerts: alerts.map((alert) => alert.id),
-            bulk_action: "snooze",
-            snooze_days: days,
-          };
-
-          this.$axios
-            .post("alerts/bulk/", data)
-            .then(() => {
-              this.search();
-              this.$q.loading.hide();
-              this.notifySuccess(`Alerts were snoozed for ${days} days`);
-            })
-            .catch(() => {
-              this.$q.loading.hide();
-            });
-        });
-    },
-    showScriptOutput(alert, failure = false) {
-      const results = {};
-      if (failure) {
-        results.readable_desc = `${alert.alert_type} failure action results`;
-        results.execution_time = alert.action_execution_time;
-        results.retcode = alert.action_retcode;
-        results.stdout = alert.action_stdout;
-        results.errout = alert.action_errout;
-        results.last_run = alert.action_run;
-      } else {
-        results.readable_desc = `${alert.alert_type} resolved action results`;
-        results.execution_time = alert.resolved_action_execution_time;
-        results.retcode = alert.resolved_action_retcode;
-        results.stdout = alert.resolved_action_stdout;
-        results.errout = alert.resolved_action_errout;
-        results.last_run = alert.resolved_action_run;
-      }
-
-      this.$q.dialog({
-        component: ScriptOutput,
-        componentProps: {
-          scriptInfo: results,
-        },
-      });
-    },
-    alertColor(severity) {
-      if (severity === "error") {
-        return "red";
-      }
-      if (severity === "warning") {
-        return "orange";
-      }
-      if (severity === "info") {
-        return "info";
-      }
-    },
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-  },
-};
+function alertColor(severity: string) {
+  if (severity === "error") return "red";
+  if (severity === "warning") return "orange";
+  if (severity === "info") return "info";
+}
 </script>

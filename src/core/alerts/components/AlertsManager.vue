@@ -184,188 +184,129 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts" setup>
+import { reactive, ref, computed } from "vue";
+import { useQuasar, useDialogPluginComponent } from "quasar";
+import { alertTemplateStore } from "src/stores/api";
+import { useDashboardStore } from "src/stores/dashboard";
 import AlertTemplateForm from "src/core/alerts/components/AlertTemplateForm.vue";
 import AlertExclusions from "src/core/alerts/components/AlertExclusions.vue";
 import AlertTemplateRelated from "src/core/alerts/components/AlertTemplateRelated.vue";
 
-export default {
-  name: "AlertsManager",
-  emits: ["hide", "ok", "cancel"],
-  data() {
-    return {
-      selectedTemplate: null,
-      templates: [],
-      columns: [
-        {
-          name: "is_active",
-          label: "Active",
-          field: "is_active",
-          align: "left",
-        },
-        {
-          name: "agent_settings",
-          label: "Agent Settings",
-          field: "agent_settings",
-        },
-        {
-          name: "check_settings",
-          label: "Check Settings",
-          field: "check_settings",
-        },
-        {
-          name: "task_settings",
-          label: "Task Settings",
-          field: "task_settings",
-        },
-        { name: "name", label: "Name", field: "name", align: "left" },
-        {
-          name: "applied_to",
-          label: "Applied To",
-          field: "applied_to",
-          align: "left",
-        },
-        {
-          name: "alert_exclusions",
-          label: "Alert Exclusions",
-          field: "alert_exclusions",
-          align: "left",
-        },
-        {
-          name: "action_name",
-          label: "Failure Action",
-          field: "action_name",
-          align: "left",
-        },
-        {
-          name: "resolved_action_name",
-          label: "Resolved Action",
-          field: "resolved_action_name",
-          align: "left",
-        },
-      ],
-      pagination: {
-        rowsPerPage: 0,
-        sortBy: "name",
-        descending: true,
-      },
-    };
-  },
-  mounted() {
-    this.getTemplates();
-  },
-  methods: {
-    getTemplates() {
-      this.$q.loading.show();
-      this.$axios
-        .get("alerts/templates/")
-        .then((r) => {
-          this.templates = r.data;
-          this.$q.loading.hide();
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    clearRow() {
-      this.selectedTemplate = null;
-    },
-    refresh() {
-      this.$store.dispatch("refreshDashboard");
-      this.getTemplates();
-      this.clearRow();
-    },
-    deleteTemplate(template) {
-      this.$q
-        .dialog({
-          title: `Delete alert template ${template.name}?`,
-          cancel: true,
-          ok: { label: "Delete", color: "negative" },
-        })
-        .onOk(() => {
-          this.$q.loading.show();
-          this.$axios
-            .delete(`alerts/templates/${template.id}/`)
-            .then(() => {
-              this.refresh();
-              this.$q.loading.hide();
-              this.notifySuccess(`Alert template ${template.name} was deleted!`);
-            })
-            .catch(() => {
-              this.$q.loading.hide();
-            });
-        });
-    },
-    showEditTemplateModal(template) {
-      this.$q
-        .dialog({
-          component: AlertTemplateForm,
-          componentProps: {
-            alertTemplate: template,
-          },
-        })
-        .onOk(() => {
-          this.refresh();
-        });
-    },
-    showAddTemplateModal() {
-      this.clearRow();
-      this.$q
-        .dialog({
-          component: AlertTemplateForm,
-        })
-        .onOk(() => {
-          this.refresh();
-        });
-    },
-    showAlertExclusions(template) {
-      this.$q
-        .dialog({
-          component: AlertExclusions,
-          componentProps: {
-            template: template,
-          },
-        })
-        .onOk(() => {
-          this.refresh();
-        });
-    },
-    showTemplateApplied(template) {
-      this.$q.dialog({
-        component: AlertTemplateRelated,
-        componentProps: {
-          template: template,
-        },
-      });
-    },
-    toggleEnabled(template) {
-      const text = !template.is_active
-        ? "Template enabled successfully"
-        : "Template disabled successfully";
+// emits
+defineEmits(["hide", "ok", "cancel", ...useDialogPluginComponent.emits]);
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
+const $q = useQuasar();
 
-      const data = {
-        id: template.id,
-        is_active: !template.is_active,
-      };
+// stores
+const dashboardStore = useDashboardStore();
 
-      this.$axios.put(`alerts/templates/${template.id}/`, data).then(() => {
-        this.notifySuccess(text);
-        this.$store.dispatch("refreshDashboard");
-      });
-    },
-    rowSelectedClass(id, selectedTemplate) {
-      if (selectedTemplate && selectedTemplate.id === id)
-        return this.$q.dark.isActive ? "highlight-dark" : "highlight";
-    },
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
+// state
+const selectedTemplate = ref<any | null>(null);
+const templates = computed(() => alertTemplateStore.alertTemplates);
+
+const columns = [
+  { name: "is_active", label: "Active", field: "is_active", align: "left" },
+  { name: "agent_settings", label: "Agent Settings", field: "agent_settings" },
+  { name: "check_settings", label: "Check Settings", field: "check_settings" },
+  { name: "task_settings", label: "Task Settings", field: "task_settings" },
+  { name: "name", label: "Name", field: "name", align: "left" },
+  { name: "applied_to", label: "Applied To", field: "applied_to", align: "left" },
+  { name: "alert_exclusions", label: "Alert Exclusions", field: "alert_exclusions", align: "left" },
+  { name: "action_name", label: "Failure Action", field: "action_name", align: "left" },
+  {
+    name: "resolved_action_name",
+    label: "Resolved Action",
+    field: "resolved_action_name",
+    align: "left",
   },
-};
+];
+
+const pagination = reactive({ rowsPerPage: 0, sortBy: "name", descending: true });
+
+function getTemplates() {
+  alertTemplateStore.getAlertTemplates();
+}
+
+function clearRow() {
+  selectedTemplate.value = null;
+}
+
+function refresh() {
+  dashboardStore.refreshDashboard();
+  getTemplates();
+  clearRow();
+}
+
+function deleteTemplate(template: any) {
+  $q.dialog({
+    title: `Delete alert template ${template.name}?`,
+    cancel: true,
+    ok: { label: "Delete", color: "negative" },
+  }).onOk(async () => {
+    try {
+      await alertTemplateStore.removeAlertTemplate(template.id);
+      refresh();
+    } catch {
+      // Error handling is done in the store
+    }
+  });
+}
+
+function showEditTemplateModal(template: any) {
+  $q.dialog({
+    component: AlertTemplateForm,
+    componentProps: { alertTemplate: template },
+  }).onOk(() => {
+    refresh();
+  });
+}
+
+function showAddTemplateModal() {
+  clearRow();
+  $q.dialog({ component: AlertTemplateForm }).onOk(() => {
+    refresh();
+  });
+}
+
+function showAlertExclusions(template: any) {
+  $q.dialog({
+    component: AlertExclusions,
+    componentProps: { template },
+  }).onOk(() => {
+    refresh();
+  });
+}
+
+function showTemplateApplied(template: any) {
+  $q.dialog({ component: AlertTemplateRelated, componentProps: { template } });
+}
+
+function toggleEnabled(template: any) {
+  const text = !template.is_active
+    ? "Template enabled successfully"
+    : "Template disabled successfully";
+
+  const updatedTemplate = { ...template, is_active: !template.is_active };
+
+  alertTemplateStore.updateAlertTemplate(template.id, updatedTemplate).then(() => {
+    $q.notify({ type: "positive", message: text });
+    dashboardStore.refreshDashboard();
+  });
+}
+
+function rowSelectedClass(id: number, currentSelected: any) {
+  if (currentSelected && currentSelected.id === id)
+    return $q.dark.isActive ? "highlight-dark" : "highlight";
+}
+
+function show() {
+  (dialogRef as any).value.show();
+}
+function hide() {
+  (dialogRef as any).value.hide();
+}
+
+// init
+getTemplates();
 </script>

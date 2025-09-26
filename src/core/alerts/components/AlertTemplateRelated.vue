@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialog" @hide="onHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="width: 60vw">
       <q-bar>
         Assigned to {{ template.name }}
@@ -62,49 +62,41 @@
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: "AlertTemplateRelated",
-  props: {
-    template: !Object,
-  },
-  emits: ["hide", "ok", "cancel"],
-  data() {
-    return {
-      tab: "policies",
-      related: {},
-      thumbStyle: {
-        right: "2px",
-        borderRadius: "5px",
-        backgroundColor: "#027be3",
-        width: "5px",
-        opacity: 0.75,
-      },
-    };
-  },
-  mounted() {
-    this.$q.loading.show();
+<script lang="ts" setup>
+import { ref, onMounted } from "vue";
+import { useDialogPluginComponent } from "quasar";
+import { alertTemplateStore } from "src/stores/api";
+import type { AlertTemplate } from "src/core/alerts/types";
 
-    this.$axios
-      .get(`/alerts/templates/${this.template.id}/related/`)
-      .then((r) => {
-        this.$q.loading.hide();
-        this.related = r.data;
-      })
-      .catch(() => {
-        this.$q.loading.hide();
-      });
-  },
-  methods: {
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-  },
+const props = defineProps<{ template: AlertTemplate }>();
+defineEmits([...useDialogPluginComponent.emits]);
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
+
+const tab = ref("policies");
+const related = ref<{
+  policies: Array<{ id: number; name: string }>;
+  clients: Array<{ id: number; name: string }>;
+  sites: Array<{ id: number; name: string }>;
+}>({
+  policies: [],
+  clients: [],
+  sites: [],
+});
+const thumbStyle = {
+  right: "2px",
+  borderRadius: "5px",
+  backgroundColor: "#027be3",
+  width: "5px",
+  opacity: "0.75",
 };
+
+async function loadRelated() {
+  try {
+    related.value = await alertTemplateStore.getAlertTemplateRelated(props.template.id);
+  } catch {
+    //
+  }
+}
+
+onMounted(loadRelated);
 </script>

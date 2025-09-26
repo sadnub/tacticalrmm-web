@@ -61,3 +61,46 @@ export interface AlertTemplate {
   excluded_clients?: number[];
   excluded_agents?: number[];
 }
+
+// core alert types (non-template)
+export interface Alert {
+  id: number;
+  agent_id?: string;
+  client: string;
+  site: string;
+  hostname: string;
+  alert_type: string;
+  severity: AlertSeverity;
+  message: string;
+  alert_time: string | number;
+  resolved_on?: string | null;
+  snoozed_until?: string | null;
+  resolved?: boolean;
+  snoozed?: boolean;
+
+  // optional fields for action results
+  action_execution_time?: string | null;
+  action_retcode?: number | null;
+  action_stdout?: string | null;
+  action_errout?: string | null;
+  action_run?: string | null;
+
+  resolved_action_execution_time?: string | null;
+  resolved_action_retcode?: number | null;
+  resolved_action_stdout?: string | null;
+  resolved_action_errout?: string | null;
+  resolved_action_run?: string | null;
+}
+
+export interface TopAlertsResponse {
+  alerts_count: number;
+  alerts: Alert[];
+}
+
+export interface AlertSearchParams {
+  clientFilter?: number[];
+  severityFilter?: AlertSeverity[];
+  timeFilter?: number; // days or 0 for all
+  snoozedFilter?: boolean;
+  resolvedFilter?: boolean;
+}

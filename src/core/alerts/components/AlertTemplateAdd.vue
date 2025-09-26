@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialog" @hide="onHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
         Edit Alert Template assigned to {{ type }}
@@ -32,98 +32,75 @@
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: "AlertTemplateAdd",
-  props: {
-    object: !Object,
-    type: {
-      required: true,
-      type: String,
-      validator: function (value) {
-        // The value must match one of these strings
-        return ["site", "client", "policy"].includes(value);
-      },
-    },
-  },
-  emits: ["hide", "ok", "cancel"],
-  data() {
-    return {
-      selectedTemplate: null,
-      options: [],
-    };
-  },
-  mounted() {
-    this.getAlertTemplates();
-    this.selectedTemplate = this.object.alert_template;
-  },
-  methods: {
-    submit() {
-      // close because nothing was edited
-      if (this.object.alert_template === this.selectedTemplate) {
-        this.hide();
-        return;
-      }
+<script lang="ts" setup>
+import { ref, onMounted } from "vue";
+import { useQuasar, useDialogPluginComponent } from "quasar";
+import { alertTemplateStore } from "src/stores/api";
+import { capitalize } from "src/utils/format";
+import { notifySuccess } from "src/utils/notify";
 
-      this.$q.loading.show();
+type AlertAssignType = "site" | "client" | "policy";
 
-      let url = "";
-      let data = {};
-      if (this.type === "client") {
-        url = `/clients/${this.object.id}/`;
-        data = {
-          client: { id: this.object.id, alert_template: this.selectedTemplate },
-        };
-      } else if (this.type === "site") {
-        url = `/clients/sites/${this.object.id}/`;
-        data = {
-          site: { id: this.object.id, alert_template: this.selectedTemplate },
-        };
-      } else if (this.type === "policy") {
-        url = `/automation/policies/${this.object.id}/`;
-        data = { id: this.object.id, alert_template: this.selectedTemplate };
-      }
+const props = defineProps<{ object: any; type: AlertAssignType }>();
+defineEmits(["hide", "ok", "cancel", ...useDialogPluginComponent.emits]);
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+const $q = useQuasar();
 
-      const text = this.selectedTemplate ? "assigned" : "removed";
-      this.$axios
-        .put(url, data)
-        .then(() => {
-          this.$q.loading.hide();
-          this.onOk();
-          this.notifySuccess(`Alert Template ${text} successfully!`);
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    getAlertTemplates() {
-      this.$q.loading.show();
-      this.$axios
-        .get("/alerts/templates/")
-        .then((r) => {
-          this.options = r.data.map((template) => ({
-            label: template.name,
-            value: template.id,
-          }));
-          this.$q.loading.hide();
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-    onOk() {
-      this.$emit("ok");
-      this.hide();
-    },
-  },
-};
+const form = ref();
+const selectedTemplate = ref<number | null>(null);
+const options = ref<{ label: string; value: number }[]>([]);
+
+function submit() {
+  if (props.object.alert_template === selectedTemplate.value) {
+    hide();
+    return;
+  }
+
+  $q.loading.show();
+
+  let url = "";
+  let data: Record<string, unknown> = {};
+  if (props.type === "client") {
+    url = `/clients/${props.object.id}/`;
+    data = { client: { id: props.object.id, alert_template: selectedTemplate.value } };
+  } else if (props.type === "site") {
+    url = `/clients/sites/${props.object.id}/`;
+    data = { site: { id: props.object.id, alert_template: selectedTemplate.value } };
+  } else if (props.type === "policy") {
+    url = `/automation/policies/${props.object.id}/`;
+    data = { id: props.object.id, alert_template: selectedTemplate.value };
+  }
+
+  const text = selectedTemplate.value ? "assigned" : "removed";
+  axios
+    .put(url, data)
+    .then(() => {
+      $q.loading.hide();
+      onDialogOK();
+      notifySuccess(`Alert Template ${text} successfully!`);
+    })
+    .catch(() => {
+      $q.loading.hide();
+    });
+}
+
+function getAlertTemplates() {
+  alertTemplateStore.getAlertTemplates();
+  options.value = alertTemplateStore.alertTemplates.map((template) => ({
+    label: template.name,
+    value: template.id,
+  }));
+}
+
+function show() {
+  (dialogRef as any).value.show();
+}
+function hide() {
+  (dialogRef as any).value.hide();
+}
+
+onMounted(() => {
+  getAlertTemplates();
+  selectedTemplate.value = props.object.alert_template ?? null;
+});
 </script>
