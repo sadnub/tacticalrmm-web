@@ -1,10 +1,10 @@
 <template>
   <q-dialog
-    ref="dialog"
+    ref="dialogRef"
     maximized
     transition-show="slide-up"
     transition-hide="slide-down"
-    @hide="onHide"
+    @hide="onDialogHide"
   >
     <q-card>
       <q-bar>
@@ -66,14 +66,9 @@
       <q-separator />
 
       <q-card-section>
-        <q-table
+        <tactical-table
           v-model:pagination="pagination"
           v-model:selected="selectedAlerts"
-          :table-class="{
-            'table-bgcolor': !$q.dark.isActive,
-            'table-bgcolor-dark': $q.dark.isActive,
-          }"
-          class="audit-mgr-tbl-sticky"
           :rows="alerts"
           :columns="columns"
           :rows-per-page-options="[25, 50, 100, 500, 1000]"
@@ -84,6 +79,8 @@
           row-key="id"
           dense
           virtual-scroll
+          :loading="isLoading"
+          storage-key="alerts-overview"
         >
           <template #top>
             <div class="col-1 q-table__title">Alerts</div>
@@ -171,7 +168,7 @@
               }}</q-badge>
             </q-td>
           </template>
-        </q-table>
+        </tactical-table>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -189,18 +186,17 @@ import type { Alert, AlertSearchParams, AlertSeverity } from "src/core/alerts/ty
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
-useDialogPluginComponent();
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // stores
 const dashboardStore = useDashboardStore();
-const formatDate = dashboardStore.formatDate;
+const { alerts, isLoading } = alertsStore;
 
 // composables
 const { clientOptions } = useClientDropdown();
 
 // state
-const alerts = ref<Alert[]>([]);
 const selectedAlerts = ref<Alert[]>([]);
 const severityFilter = ref<AlertSeverity[]>([]);
 const clientFilter = ref<number[]>([]);
@@ -232,7 +228,7 @@ const columns = [
     field: "alert_time",
     align: "left" as const,
     sortable: true,
-    format: (a: string) => formatDate(a),
+    format: (a: string) => dashboardStore.formatDate(a),
   },
   { name: "client", label: "Client", field: "client", align: "left" as const, sortable: true },
   { name: "site", label: "Site", field: "site", align: "left" as const, sortable: true },
@@ -259,7 +255,7 @@ const columns = [
     field: "resolved_on",
     align: "left" as const,
     sortable: true,
-    format: (a: string) => formatDate(a),
+    format: (a: string) => dashboardStore.formatDate(a),
   },
   {
     name: "snoozed_until",
@@ -267,7 +263,7 @@ const columns = [
     field: "snoozed_until",
     align: "left" as const,
     sortable: true,
-    format: (a: string) => formatDate(a),
+    format: (a: string) => dashboardStore.formatDate(a),
   },
   { name: "actions", label: "Actions", field: "actions", align: "left" as const },
 ];
@@ -291,8 +287,6 @@ const visibleColumns = computed(() => {
 });
 
 function search() {
-  $q.loading.show();
-
   selectedAlerts.value = [];
   searched.value = true;
 
@@ -305,9 +299,7 @@ function search() {
   if (timeFilter.value) params.timeFilter = timeFilter.value;
   if (severityFilter.value.length > 0) params.severityFilter = severityFilter.value;
 
-  alertsStore.searchAlerts(params);
-  alerts.value = (alertsStore.alerts.value as Alert[]).slice();
-  $q.loading.hide();
+  void alertsStore.searchAlerts(params);
 }
 
 function snoozeAlert(alert: Alert) {
@@ -324,58 +316,29 @@ function snoozeAlert(alert: Alert) {
     },
     cancel: true,
   }).onOk((days: number) => {
-    $q.loading.show();
-
-    void alertsStore
-      .snoozeAlert(alert.id, days)
-      .then(() => {
-        search();
-        $q.loading.hide();
-      })
-      .catch(() => {
-        $q.loading.hide();
-      });
+    void alertsStore.snoozeAlert(alert.id, days).then(() => {
+      search();
+    });
   });
 }
 
 function unsnoozeAlert(alert: Alert) {
-  $q.loading.show();
-
-  void alertsStore
-    .unsnoozeAlert(alert.id)
-    .then(() => {
-      search();
-    })
-    .finally(() => {
-      $q.loading.hide();
-    });
+  void alertsStore.unsnoozeAlert(alert.id).then(() => {
+    search();
+  });
 }
 
 function resolveAlert(alert: Alert) {
-  $q.loading.show();
-
-  void alertsStore
-    .resolveAlert(alert.id)
-    .then(() => {
-      search();
-    })
-    .finally(() => {
-      $q.loading.hide();
-    });
+  void alertsStore.resolveAlert(alert.id).then(() => {
+    search();
+  });
 }
 
 function resolveAlertBulk(alertsParam: Alert[]) {
-  $q.loading.show();
-
   const ids = alertsParam.map((a) => a.id);
-  void alertsStore
-    .bulkResolveAlerts(ids)
-    .then(() => {
-      search();
-    })
-    .finally(() => {
-      $q.loading.hide();
-    });
+  void alertsStore.bulkResolveAlerts(ids).then(() => {
+    search();
+  });
 }
 
 function snoozeAlertBulk(alertsParam: Alert[]) {
@@ -392,17 +355,10 @@ function snoozeAlertBulk(alertsParam: Alert[]) {
     },
     cancel: true,
   }).onOk((days: number) => {
-    $q.loading.show();
-
     const ids = alertsParam.map((a) => a.id);
-    void alertsStore
-      .bulkSnoozeAlerts(ids, days)
-      .then(() => {
-        search();
-      })
-      .finally(() => {
-        $q.loading.hide();
-      });
+    void alertsStore.bulkSnoozeAlerts(ids, days).then(() => {
+      search();
+    });
   });
 }
 

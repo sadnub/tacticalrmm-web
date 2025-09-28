@@ -10,19 +10,17 @@
         @click="debugLogStore.getDebugLog(requestData)"
       />Debug Log
       <q-space />
-      <q-btn v-close-popup dense flat icon="close">
-        <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
-      </q-btn>
+      <q-btn v-close-popup dense flat icon="close" />
     </q-bar>
     <tactical-table
       :style="{
         'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
       }"
-      :rows="debugLogStore.debugLog"
+      :rows="debugLog"
       :columns="columns"
       :title="modal ? 'Debug Logs' : ''"
       :pagination="{ sortBy: 'entry_time', descending: true, rowsPerPage: 0 }"
-      :loading="debugLogStore.isLoading"
+      :loading="isLoading"
       :filter="filter"
       virtual-scroll
       dense
@@ -80,7 +78,7 @@
       </template>
 
       <template #top-row>
-        <q-tr v-if="debugLogStore.debugLog.length === 1000">
+        <q-tr v-if="debugLog.length === 1000">
           <q-td colspan="100%">
             <q-icon name="warning" :color="dashWarningColor" />
             Results are limited to 1000 rows.
@@ -94,7 +92,7 @@
 <script lang="ts" setup>
 // composition api
 import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
-import { useDebugLogStore } from "../api";
+import { debugLogStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { formatTableColumnText } from "src/utils/format";
@@ -166,7 +164,7 @@ const props = defineProps<{
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const debugLogStore = useDebugLogStore();
+const { debugLog, isLoading } = debugLogStore;
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
 const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
@@ -195,7 +193,13 @@ if (props.agent) {
 }
 
 // watchers
-watch(requestData, () => debugLogStore.getDebugLog(requestData), { deep: true });
+watch(
+  requestData,
+  () => {
+    debugLogStore.getDebugLog(requestData);
+  },
+  { deep: true },
+);
 
 // vue component hooks
 onMounted(() => {

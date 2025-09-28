@@ -32,15 +32,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="clientStore.isLoading"
-            dense
-            flat
-            push
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat push label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -49,16 +41,14 @@
 
 <script lang="ts" setup>
 // composition imports
-import { onMounted, reactive, computed } from "vue";
+import { onMounted, reactive, computed, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useClientStore } from "../api";
+import { clientStore } from "src/stores/api";
 import { customFieldStore } from "src/stores/api";
 import { formatCustomFields } from "src/utils/format";
 
 // ui imports
 import CustomField from "src/core/dashboard/ui/CustomField.vue";
-
-import { until } from "@vueuse/shared";
 
 // type imports
 import type { CustomFieldValueField } from "src/core/settings/types";
@@ -71,7 +61,7 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const clientStore = useClientStore();
+const { isLoading } = clientStore;
 const { clientCustomFields } = customFieldStore;
 // setup quasar dialog
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
@@ -79,6 +69,7 @@ const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 // clients form logic
 const state = reactive({ name: props.client ? props.client.name : "" });
 const site = reactive({ name: "" });
+const localClient = ref<Client | undefined>(undefined);
 
 async function submit() {
   const data = {
@@ -87,21 +78,20 @@ async function submit() {
     custom_fields: formatCustomFields(clientCustomFields.value, clientCustomFieldValues.value),
   };
 
-  if (props.client) clientStore.updateClient(props.client.id, data);
-  else clientStore.addClient(data);
-
-  await until(() => clientStore.isLoading).toBe(false);
-
-  if (clientStore.isError) return;
-
-  onDialogOK();
+  try {
+    if (props.client) await clientStore.updateClient(props.client.id, data);
+    else await clientStore.addClient(data);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 const clientCustomFieldValues = computed(() => {
   const mapped_custom_fields = {} as Record<string, unknown>;
-  if (clientStore.client && clientStore.client.custom_fields) {
+  if (localClient.value?.custom_fields) {
     for (const field of clientCustomFields.value) {
-      const value = clientStore.client.custom_fields.find((value) => value.field === field.id);
+      const value = localClient.value.custom_fields.find((value) => value.field === field.id);
 
       if (field.type === "multiple") {
         if (value) mapped_custom_fields[field.name] = value.value;
@@ -118,8 +108,12 @@ const clientCustomFieldValues = computed(() => {
   return mapped_custom_fields as Record<string, CustomFieldValueField>;
 });
 
+async function getClient() {
+  if (props.client) localClient.value = await clientStore.getClient(props.client.id);
+}
+
 onMounted(() => {
+  void getClient();
   customFieldStore.getCustomFields();
-  if (props.client) clientStore.getClient(props.client.id);
 });
 </script>

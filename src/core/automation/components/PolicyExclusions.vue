@@ -1,14 +1,12 @@
 <template>
-  <q-dialog ref="dialog" @hide="onHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="width: 50vw; max-width: 50vw">
       <q-bar>
         Policy Exclusions for {{ policy.name }}
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-form ref="form" @submit.prevent="onSubmit">
+      <q-form @submit.prevent="submit">
         <q-card-section>
           <tactical-dropdown
             v-model="localPolicy.excluded_clients"
@@ -45,91 +43,42 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn dense flat label="Save" color="primary" type="submit" />
+          <q-btn dense flat label="Save" color="primary" type="submit" :loading="isLoading" />
         </q-card-actions>
       </q-form>
     </q-card>
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: "PolicyExclusions",
-  props: { policy: !Object },
-  emits: ["hide", "ok", "cancel"],
-  data() {
-    return {
-      localPolicy: {
-        excluded_clients: [],
-        excluded_sites: [],
-        excluded_agents: [],
-      },
-      clientOptions: [],
-      siteOptions: [],
-      agentOptions: [],
-    };
-  },
-  created() {
-    // copy prop data locally
-    this.localPolicy.id = this.policy.id;
-    this.localPolicy.excluded_clients = this.policy.excluded_clients;
-    this.localPolicy.excluded_sites = this.policy.excluded_sites;
-    this.localPolicy.excluded_agents = this.policy.excluded_agents;
+<script lang="ts" setup>
+import { reactive } from "vue";
+import { useDialogPluginComponent, extend } from "quasar";
+import { useClientDropdown } from "src/core/clients/composables";
+import { useSiteDropdown } from "src/core/clients/composables";
+import { useAgentDropdown } from "src/core/agents/composables";
+import { policyStore } from "src/stores/api";
+import type { Policy } from "src/core/automation/types";
 
-    this.getOptions();
-  },
-  methods: {
-    onSubmit() {
-      this.$axios
-        .put(`automation/policies/${this.policy.id}/`, this.localPolicy)
-        .then(() => {
-          this.$q.loading.hide();
-          this.onOk();
-          this.notifySuccess("Policy exclusions added");
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    getClientsandSites() {
-      this.$q.loading.show();
-      this.$axios
-        .get("/clients/")
-        .then((r) => {
-          this.clientOptions = r.data.map((client) => ({
-            label: client.name,
-            value: client.id,
-          }));
+const props = defineProps<{ policy: Policy }>();
+defineEmits([...useDialogPluginComponent.emits]);
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-          r.data.forEach((client) => {
-            this.siteOptions.push({ category: client.name });
-            client.sites.forEach((site) =>
-              this.siteOptions.push({ label: site.name, value: site.id }),
-            );
-          });
-          this.$q.loading.hide();
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    getOptions() {
-      this.getAgentOptions("id").then((options) => (this.agentOptions = Object.freeze(options)));
-      this.getClientsandSites();
-    },
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-    onOk() {
-      this.$emit("ok");
-      this.hide();
-    },
-  },
-};
+// Dropdown options from composables
+const { clientOptions } = useClientDropdown();
+const { siteOptions } = useSiteDropdown();
+const { agentOptions } = useAgentDropdown();
+
+// Local editable copy of the policy, typed, copied in one line
+const localPolicy = reactive<Policy>(extend(true, {}, props.policy));
+
+const { isLoading } = policyStore;
+
+async function submit() {
+  try {
+    await policyStore.updatePolicy(props.policy.id, localPolicy);
+    onDialogOK();
+  } catch {
+    //
+  }
+}
 </script>

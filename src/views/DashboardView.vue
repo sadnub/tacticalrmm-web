@@ -217,9 +217,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useQuasar, QTree } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useClientStore } from "src/core/clients/api";
-import { useSiteStore } from "src/core/clients/api";
-import { useURLActionStore, runURLAction } from "src/core/settings/api";
+import { clientStore, siteStore, urlActionStore, runURLAction } from "src/stores/api";
 import axios from "axios";
 
 // import ui
@@ -239,10 +237,10 @@ import { notifySuccess, notifyWarning } from "src/utils/notify";
 import type { ClientTreeNode } from "src/core/dashboard/types";
 
 // setup stores
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
+const { clients } = clientStore;
+const { webActions } = urlActionStore;
+
 const dashboardStore = useDashboardStore();
-const urlActionStore = useURLActionStore();
 
 const $q = useQuasar();
 
@@ -251,7 +249,7 @@ const innerModel = ref(($q.screen.height - 82) / 2);
 const clientTree = computed((): ClientTreeNode[] => {
   const output: ClientTreeNode[] = [];
 
-  for (const client of clientStore.clients) {
+  for (const client of clients.value) {
     const childSites: ClientTreeNode[] = [];
 
     for (const site of client.sites) {
@@ -353,8 +351,8 @@ function showDeleteModal(node: ClientTreeNode) {
       cancel: true,
       ok: { label: "Delete", color: "negative" },
     }).onOk(() => {
-      if (node.children) clientStore.removeClient(node.id);
-      else siteStore.removeSite(node.id);
+      if (node.children) void clientStore.removeClient(node.id);
+      else void siteStore.removeSite(node.id);
       dashboardStore.selectedClientSiteNode = null;
     });
   }
@@ -406,7 +404,7 @@ function showToggleMaintenance(node: ClientTreeNode) {
 }
 
 const urlActions = computed(() => {
-  const actions = urlActionStore.urlActions
+  const actions = webActions.value
     .filter((action) => action.action_type === "web")
     .sort((a, b) => a.name.localeCompare(b.name));
 

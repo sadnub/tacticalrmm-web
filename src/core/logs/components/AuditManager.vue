@@ -9,7 +9,7 @@
     <tactical-table
       v-model:pagination="requestData.pagination"
       :title="modal ? 'Audit Logs' : ''"
-      :rows="auditLogStore.auditLog"
+      :rows="auditLog"
       :columns="columns"
       :style="{
         'max-height': !modal ? `${tabHeight}px` : `${$q.screen.height - 33}px`,
@@ -127,7 +127,7 @@ import { useClientDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useUserDropdown } from "src/core/accounts/composables";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAuditLogStore } from "../api";
+import { auditLogStore } from "src/stores/api";
 import { formatDate, formatTableColumnText } from "src/utils/format";
 
 // ui imported
@@ -275,7 +275,7 @@ const props = defineProps<{
 }>();
 
 // setup stores
-const auditLogStore = useAuditLogStore();
+const { auditLog, rowsNumber } = auditLogStore;
 const dashboardStore = useDashboardStore();
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
@@ -319,12 +319,9 @@ function search() {
   loading.value = false;
 }
 
-watch(
-  () => auditLogStore.rowsNumber,
-  (newValue) => {
-    requestData.pagination.rowsNumber = newValue;
-  },
-);
+watch(rowsNumber, (newValue) => {
+  requestData.pagination.rowsNumber = newValue;
+});
 
 function onRequest(data: { pagination: Pagination }) {
   if (data) {

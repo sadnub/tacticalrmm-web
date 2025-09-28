@@ -1,60 +1,386 @@
 import { ref } from "vue";
-import { defineStore } from "pinia";
 import axios from "axios";
 import type { Check } from "../checks/types";
-import type { Policy, ResetPatchPolicyRequest, WinPatchPolicy } from "./types";
+import type { Policy, ResetPatchPolicyRequest, WinPatchPolicy, PolicyRelated } from "./types";
+import { notifySuccess } from "src/utils/notify";
+import { useCachedAction } from "../dashboard/composables";
+import { processTaskDatafromDB, processTaskDataforDB } from "../tasks/api";
+import type { AutomatedTask, AutomatedTaskUI } from "../tasks/types";
 
-export const usePolicyStore = defineStore("policies", () => {
+// Policy store (plain composable, mirrors checks api style)
+export function usePolicyStore() {
   const policies = ref<Policy[]>([]);
-  const policyChecks = ref<Check[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getPolicies() {
+  function _getPolicies() {
     isLoading.value = true;
-    isError.value = true;
-
+    isError.value = false;
     axios
       .get<Policy[]>("automation/policies/")
       .then(({ data }) => {
         policies.value = data;
       })
-      .catch(() => (isError.value = true))
-      .finally(() => (isLoading.value = false));
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
 
-  function getPolicyChecks(id: number) {
-    isLoading.value = true;
-    isError.value = true;
-    policyChecks.value = [];
+  const getPolicies = useCachedAction(_getPolicies, {
+    key: "getPolicies",
+    duration: 1 * 30 * 1000, // 30 seconds cache
+  });
 
-    axios
-      .get<Check[]>(`automation/policies/${id}/checks/`)
-      .then(({ data }) => {
-        policyChecks.value = data;
-      })
-      .catch(() => (isError.value = true))
-      .finally(() => (isLoading.value = false));
+  async function addPolicy(payload: Policy, copyId?: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const requestData = copyId ? { ...payload, copyId } : payload;
+      const { data } = await axios.post<Policy>("automation/policies/", requestData);
+      policies.value.unshift(data);
+      notifySuccess("Policy was created successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function updatePolicy(id: number, payload: Partial<Policy>) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.put<Policy>(`automation/policies/${id}/`, payload);
+      const index = policies.value.findIndex((p) => p.id === id);
+      if (index !== -1) policies.value[index] = data;
+      notifySuccess("Policy was updated successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function removePolicy(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      await axios.delete(`automation/policies/${id}/`);
+      const index = policies.value.findIndex((p) => p.id === id);
+      if (index !== -1) policies.value.splice(index, 1);
+      notifySuccess("Policy was removed successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function getPolicyRelated(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.get<PolicyRelated>(`/automation/policies/${id}/related/`);
+      return data;
+    } catch {
+      isError.value = true;
+      return {
+        default_server_policy: false,
+        default_workstation_policy: false,
+        server_clients: [],
+        workstation_clients: [],
+        server_sites: [],
+        workstation_sites: [],
+        agents: [],
+      };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function getCheckStatus(checkId: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.get(`/automation/checks/${checkId}/status/`);
+      return data;
+    } catch {
+      isError.value = true;
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function getTaskStatus(taskId: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.get(`/automation/tasks/${taskId}/status/`);
+      return data;
+    } catch {
+      isError.value = true;
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function getPolicyOverview() {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.get("/automation/policies/overview/");
+      return data;
+    } catch {
+      isError.value = true;
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   return {
     policies,
-    policyChecks,
-    getPolicies,
-    getPolicyChecks,
     isLoading,
     isError,
+    getPolicies,
+    addPolicy,
+    updatePolicy,
+    removePolicy,
+    getPolicyRelated,
+    getCheckStatus,
+    getTaskStatus,
+    getPolicyOverview,
   };
-});
+}
 
-export const usePatchPolicyStore = defineStore("patchPolicies", () => {
+// Policy Checks store (plain composable)
+export function usePolicyChecksStore() {
+  const policyChecks = ref<Check[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function getPolicyChecks(policyId: number) {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<Check[]>(`automation/policies/${policyId}/checks/`)
+      .then(({ data }) => {
+        policyChecks.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  async function addCheck(check: Check) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.post<Check>("/checks/", check);
+      policyChecks.value.push(data);
+      notifySuccess("Check added successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function updateCheck(id: number, check: Partial<Check>) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.put<Check>(`/checks/${id}/`, check);
+
+      // Update local policy checks array
+      const index = policyChecks.value.findIndex((c) => c.id === id);
+      if (index !== -1) {
+        policyChecks.value[index] = data;
+      }
+      notifySuccess("Check updated successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function removeCheck(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      await axios.delete(`/checks/${id}/`);
+
+      // Update local policy checks array
+      const index = policyChecks.value.findIndex((c) => c.id === id);
+      if (index !== -1) {
+        policyChecks.value.splice(index, 1);
+      }
+      notifySuccess("Check removed successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  return {
+    policyChecks,
+    isLoading,
+    isError,
+    getPolicyChecks,
+    addCheck,
+    updateCheck,
+    removeCheck,
+  };
+}
+
+// Policy Tasks store (plain composable)
+export function usePolicyTasksStore() {
+  const policyTasks = ref<AutomatedTaskUI[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function getPolicyTasks(policyId: number) {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<AutomatedTask[]>(`/automation/policies/${policyId}/tasks/`)
+      .then(({ data }) => {
+        // Process each task from DB to UI format
+        policyTasks.value = data.map((task) => processTaskDatafromDB(task));
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  async function addTask(task: AutomatedTaskUI) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.post<AutomatedTask>("/tasks/", processTaskDataforDB(task));
+
+      // Update local array with the processed task
+      const processedTask = processTaskDatafromDB(data);
+      policyTasks.value.push(processedTask);
+      notifySuccess("Task added successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function updateTask(id: number, task: AutomatedTaskUI) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.put<AutomatedTask>(`/tasks/${id}/`, processTaskDataforDB(task));
+
+      // Update local array
+      const index = policyTasks.value.findIndex((t) => t.id === id);
+      if (index !== -1) {
+        const processedTask = processTaskDatafromDB(data);
+        policyTasks.value[index] = processedTask;
+      }
+      notifySuccess("Task updated successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function updateTaskPartial(id: number, task: Partial<AutomatedTaskUI>) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.put<AutomatedTask>(`/tasks/${id}/`, task);
+
+      // Update local array
+      const index = policyTasks.value.findIndex((t) => t.id === id);
+      if (index !== -1) {
+        const processedTask = processTaskDatafromDB(data);
+        policyTasks.value[index] = processedTask;
+      }
+      notifySuccess("Task updated successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function removeTask(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      await axios.delete(`/tasks/${id}/`);
+
+      // Update local array
+      const index = policyTasks.value.findIndex((t) => t.id === id);
+      if (index !== -1) {
+        policyTasks.value.splice(index, 1);
+      }
+      notifySuccess("Task removed successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  function runTask(id: number, agent_id?: string) {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .post(`/tasks/${id}/run/`, agent_id ? { agent_id } : {})
+      .then(() => {
+        notifySuccess("Task execution started");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  return {
+    policyTasks,
+    isLoading,
+    isError,
+    getPolicyTasks,
+    addTask,
+    updateTask,
+    updateTaskPartial,
+    removeTask,
+    runTask,
+  };
+}
+
+// Patch Policy store (plain composable, mirrors checks api style)
+export function usePatchPolicyStore() {
   const isLoading = ref(false);
   const isError = ref(false);
 
   async function getPatchPolicy(id: number) {
     isLoading.value = true;
     isError.value = false;
-
     try {
       const { data } = await axios.get<WinPatchPolicy>(`/automation/patchpolicy/${id}/`);
       return data;
@@ -68,9 +394,9 @@ export const usePatchPolicyStore = defineStore("patchPolicies", () => {
   async function addPatchPolicy(policy: WinPatchPolicy) {
     isLoading.value = true;
     isError.value = false;
-
     try {
       const { data } = await axios.post<WinPatchPolicy>("/automation/patchpolicy/", policy);
+      notifySuccess("Patch policy was created successfully.");
       return data;
     } catch (e) {
       isError.value = true;
@@ -83,12 +409,12 @@ export const usePatchPolicyStore = defineStore("patchPolicies", () => {
   async function updatePatchPolicy(policy: WinPatchPolicy) {
     isLoading.value = true;
     isError.value = false;
-
     try {
       const { data } = await axios.put<WinPatchPolicy>(
         `/automation/patchpolicy/${policy.id}/`,
         policy,
       );
+      notifySuccess("Patch policy was updated successfully.");
       return data;
     } catch (e) {
       isError.value = true;
@@ -101,9 +427,9 @@ export const usePatchPolicyStore = defineStore("patchPolicies", () => {
   async function deletePatchPolicy(id: number) {
     isLoading.value = true;
     isError.value = false;
-
     try {
       await axios.delete(`/automation/patchpolicy/${id}/`);
+      notifySuccess("Patch policy was removed successfully.");
     } catch (e) {
       isError.value = true;
       throw e;
@@ -113,14 +439,14 @@ export const usePatchPolicyStore = defineStore("patchPolicies", () => {
   }
 
   return {
-    addPatchPolicy,
-    updatePatchPolicy,
-    deletePatchPolicy,
     isLoading,
     isError,
     getPatchPolicy,
+    addPatchPolicy,
+    updatePatchPolicy,
+    deletePatchPolicy,
   };
-});
+}
 
 export async function sendPatchPolicyReset(payload: ResetPatchPolicyRequest) {
   const { data } = await axios.post(`/automation/patchpolicy/reset/`, payload);

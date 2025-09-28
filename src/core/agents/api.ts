@@ -22,7 +22,6 @@ import type {
   RunScriptRequest,
   AgentVersionsResponse,
   AgentCommandRequest,
-  UpdateAgentRequest,
 } from "./types";
 import type { ScriptResult } from "../scripts/types";
 
@@ -98,7 +97,7 @@ export function useAgentStore() {
 
   const getAgent = useCachedAction(_getAgent, { key: "getAgent", duration: 1 * 60 * 1000 });
 
-  async function updateAgent(agentId: string, payload: Partial<UpdateAgentRequest>) {
+  async function updateAgent(agentId: string, payload: Partial<Agent>) {
     isLoading.value = true;
     isError.value = false;
 

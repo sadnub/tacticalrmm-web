@@ -8,7 +8,7 @@
           flat
           push
           icon="refresh"
-          @click="actionStore.getPendingActions"
+          @click="pendingActionStore.getPendingActions()"
         />
         {{ agent ? `Pending Actions for ${agent.hostname}` : "All Pending Actions" }}
         <q-space />
@@ -25,7 +25,7 @@
         virtual-scroll
         :rows-per-page-options="[0]"
         no-data-label="No Pending Actions"
-        :loading="actionStore.isLoading"
+        :loading="isLoading"
       >
         <template #top>
           <q-space />
@@ -110,7 +110,7 @@
 // composition imports
 import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { usePendingActionStore } from "../api";
+import { pendingActionStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { getNextAgentUpdateTime } from "src/utils/format";
 
@@ -187,14 +187,14 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const actionStore = usePendingActionStore();
+const { pendingActions, isLoading } = pendingActionStore;
 const dashboardStore = useDashboardStore();
 
 // pending actions logic
 const showCompleted = ref(false);
 const completedCount = computed(() => {
   try {
-    return actionStore.pendingActions.filter((action) => action.status === "completed").length;
+    return pendingActions.value.filter((action) => action.status === "completed").length;
   } catch (e) {
     console.error(e);
     return 0;
@@ -207,8 +207,8 @@ const visibleColumns = computed(() => {
 });
 
 const filteredActions = computed(() => {
-  if (showCompleted.value) return actionStore.pendingActions;
-  else return actionStore.pendingActions.filter((action) => action.status !== "completed");
+  if (showCompleted.value) return pendingActions.value;
+  else return pendingActions.value.filter((action) => action.status !== "completed");
 });
 
 function showOutput(details: string) {
@@ -228,16 +228,12 @@ function cancelPendingAction(action: PendingAction) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    actionStore.isLoading = true;
-
-    actionStore.deletePendingAction(action.id);
+    void pendingActionStore.deletePendingAction(action.id);
 
     // TODO: Only update the agent and not pull every single agent
     // store.dispatch("refreshDashboard");
-
-    actionStore.isLoading = false;
   });
 }
 
-onMounted(actionStore.getPendingActions);
+onMounted(() => pendingActionStore.getPendingActions());
 </script>

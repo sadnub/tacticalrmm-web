@@ -32,7 +32,7 @@
       <q-item-section>VNC</q-item-section>
     </q-item>
 
-    <q-item v-ripple clickable @click="actionStore.getURLActions">
+    <q-item v-ripple clickable>
       <q-item-section side>
         <q-icon size="xs" name="open_in_new" />
       </q-item-section>
@@ -43,7 +43,7 @@
       <q-menu auto-close anchor="top end" self="top start">
         <q-list>
           <q-item
-            v-for="action in actionStore.webActions"
+            v-for="action in webActions"
             :key="action.id"
             v-close-popup
             dense
@@ -229,11 +229,12 @@
 
 <script lang="ts" setup>
 // composition imports
+import { onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useURLActionStore, runURLAction } from "src/core/settings/api";
+import { urlActionStore, runURLAction } from "src/stores/api";
 import { agentStore, checkStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
-import { useWinUpdateStore } from "../api";
+import { updateStore } from "src/stores/api";
 
 // ui imports
 import PendingActions from "src/core/logs/components/PendingActions.vue";
@@ -255,8 +256,8 @@ defineProps<{
 
 // setup stores
 const { selectedAgent } = agentStore;
-const actionStore = useURLActionStore();
-const updateStore = useWinUpdateStore();
+const { webActions } = urlActionStore;
+// updateStore is already imported from centralized store
 
 // setup dropdowns
 const { favoriteScriptOptions } = useScriptDropdown();
@@ -309,11 +310,11 @@ function toggleMaintenance(agent: Agent) {
 }
 
 function runPatchStatusScan(agent: Agent) {
-  updateStore.runAgentUpdateScan(agent.agent_id);
+  void updateStore.runAgentUpdateScan(agent.agent_id);
 }
 
 function installPatches(agent: Agent) {
-  updateStore.runAgentUpdateInstall(agent.agent_id);
+  void updateStore.runAgentUpdateInstall(agent.agent_id);
 }
 
 function runChecks(agent: Agent) {
@@ -435,4 +436,8 @@ function deleteAgent(agent: Agent) {
     void agentStore.removeAgent(agent.agent_id);
   });
 }
+
+onMounted(() => {
+  urlActionStore.getURLActions();
+});
 </script>

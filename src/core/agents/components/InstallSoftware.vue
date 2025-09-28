@@ -11,14 +11,14 @@
           v-model:pagination="pagination"
           dense
           flat
-          :rows="chocoStore.chocos"
+          :rows="chocos"
           :columns="columns"
           :filter="filter"
           :style="{ 'max-height': '50vh' }"
           binary-state-sort
           :rows-per-page-options="[100, 200, 500, 1000]"
           row-key="name"
-          :loading="chocoStore.isLoading"
+          :loading="isLoading"
         >
           <template #top-right>
             <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
@@ -53,7 +53,7 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { useChocosStore } from "src/core/software/api";
+import { chocosStore } from "src/stores/api";
 import { agentSoftwareStore } from "src/stores/api";
 
 import type { TacticalColumn } from "src/core/dashboard/types";
@@ -77,7 +77,7 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const chocoStore = useChocosStore();
+const { chocos, isLoading } = chocosStore;
 
 // quasar setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -113,5 +113,5 @@ function installSoftware(name: string) {
   });
 }
 
-onMounted(chocoStore.getChocosSoftware);
+onMounted(chocosStore.getChocosSoftware);
 </script>

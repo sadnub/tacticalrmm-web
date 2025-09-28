@@ -3,7 +3,7 @@ import { computed, onMounted, unref } from "vue";
 import { removeEmptyCategories } from "src/utils/format";
 import trmmLogo from "src/assets/trmm_256.png";
 
-import { useScriptStore } from "./api";
+import { scriptStore } from "src/stores/api";
 import type { Script } from "./types";
 import type { AgentPlat } from "src/core/agents/types";
 import { type SelectableOption, type HeaderOption, isHeaderOption } from "../dashboard/types";
@@ -14,9 +14,8 @@ export type ScriptOption = HeaderOption | ScriptSelectableOption;
 const baseUrl = "https://github.com/amidaware/community-scripts/blob/main/scripts/";
 
 export function useScriptDropdown(plat?: MaybeRef<AgentPlat | "all">) {
-  const scriptStore = useScriptStore();
-
-  const scriptOptions = computed(() => formatScriptOptions(scriptStore.scripts));
+  const { scripts, isLoading } = scriptStore;
+  const scriptOptions = computed(() => formatScriptOptions(scripts.value));
 
   const filterByPlatformOptions = computed(() => {
     const currentPlat = unref(plat);
@@ -51,7 +50,7 @@ export function useScriptDropdown(plat?: MaybeRef<AgentPlat | "all">) {
   });
 
   const favoriteScriptOptions = computed(() => {
-    const filtered = scriptStore.scripts.filter((item) => item.favorite);
+    const filtered = scripts.value.filter((item) => item.favorite);
     return filtered.map(
       (script) =>
         ({
@@ -75,7 +74,7 @@ export function useScriptDropdown(plat?: MaybeRef<AgentPlat | "all">) {
     filterByPlatformOptions,
     serverScriptOptions,
     favoriteScriptOptions,
-    isLoading: computed(() => scriptStore.isLoading),
+    isLoading,
     getScriptById,
   };
 }

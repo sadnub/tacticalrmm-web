@@ -202,7 +202,7 @@
         <q-btn dense flat label="Cancel" @click="closeEditor" />
         <q-btn
           v-if="!readonly"
-          :loading="scriptStore.isLoading"
+          :loading="isLoading"
           dense
           flat
           label="Save"
@@ -220,11 +220,10 @@ import { ref, reactive, watch, computed } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAgentDropdown, agentPlatformOptions } from "src/core/agents/composables";
 import { notifyError } from "src/utils/notify";
-import { useScriptStore } from "../api";
+import { scriptStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { shellOptions } from "../composables";
 import { envVarsLabel } from "src/constants/constants";
-import { until } from "@vueuse/core";
 // ui imports
 import TestScriptModal from "./TestScriptModal.vue";
 import * as monaco from "monaco-editor";
@@ -277,7 +276,7 @@ const $q = useQuasar();
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const scriptStore = useScriptStore();
+const { isLoading } = scriptStore;
 
 // setup agent dropdown
 const { agentOptions, isLoading: agentLoading } = useAgentDropdown();
@@ -347,18 +346,17 @@ const lang = computed(() => {
 });
 
 async function submit() {
-  // edit existing script
-  if (props.script && !props.clone && props.script.id) {
-    scriptStore.updateScript(props.script.id, script);
-  } else {
-    scriptStore.addScript(script);
+  try {
+    // edit existing script
+    if (props.script && !props.clone && props.script.id) {
+      await scriptStore.updateScript(props.script.id, script);
+    } else {
+      await scriptStore.addScript(script);
+    }
+    onDialogOK();
+  } catch {
+    //
   }
-
-  await until(() => scriptStore.isLoading).toBe(false);
-
-  if (scriptStore.isError) return;
-
-  onDialogOK();
 }
 
 function openTestScriptModal(ctx: string) {

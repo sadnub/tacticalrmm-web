@@ -341,7 +341,7 @@ import PatchPolicyForm from "src/core/automation/components/PatchPolicyForm.vue"
 import CustomField from "src/core/dashboard/ui/CustomField.vue";
 
 // type imports
-import type { Agent, UpdateAgentRequest } from "../types";
+import type { Agent, UpdateAgentRequest, AgentMonitoringType } from "../types";
 import type { CustomFieldValueField } from "src/core/settings/types";
 
 const props = defineProps<{
@@ -402,7 +402,13 @@ async function submit() {
   );
 
   try {
-    await agentStore.updateAgent(props.agent.agent_id, localAgent);
+    await agentStore.updateAgent(props.agent.agent_id, {
+      ...localAgent,
+      monitoring_type: localAgent.monitoring_type as AgentMonitoringType,
+      description: localAgent.description || "",
+      time_zone: localAgent.time_zone || "",
+      custom_fields: localAgent.custom_fields || [],
+    });
     onDialogOK();
   } catch {
     //

@@ -1,7 +1,6 @@
 import { computed, onMounted } from "vue";
 
-import { checkStore } from "src/stores/api";
-import { usePolicyStore } from "../automation/api";
+import { checkStore, policyChecksStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
 
 // dropdown options
@@ -24,17 +23,16 @@ export function useAgentCheckDropdown(agentId: string | null) {
 
   return {
     agentCheckOptions,
-    isLoading: computed(() => isLoading),
+    isLoading,
   };
 }
 
 export function usePolicyCheckDropdown(policyId: number | null) {
-  const policyStore = usePolicyStore();
-
+  const { policyChecks, isLoading } = policyChecksStore;
   const policyCheckOptions = computed(() => {
     if (!policyId) return [];
 
-    return policyStore.policyChecks.map(
+    return policyChecks.value.map(
       (check) =>
         ({
           type: "option",
@@ -44,11 +42,11 @@ export function usePolicyCheckDropdown(policyId: number | null) {
     );
   });
 
-  if (policyId) onMounted(() => policyStore.getPolicyChecks(policyId));
+  if (policyId) onMounted(() => policyChecksStore.getPolicyChecks(policyId));
 
   return {
     policyCheckOptions,
-    isLoading: computed(() => policyStore.isLoading),
+    isLoading,
   };
 }
 

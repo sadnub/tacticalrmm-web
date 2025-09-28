@@ -188,10 +188,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useQuasar } from "quasar";
-import { usePatchPolicyStore } from "../api";
+import { patchPolicyStore } from "src/stores/api";
 import type { WinPatchPolicy, Policy } from "../types";
 import type { Agent } from "src/core/agents/types";
-import { notifySuccess } from "src/utils/notify";
 
 const props = defineProps<{
   policy?: Policy;
@@ -200,9 +199,6 @@ const props = defineProps<{
 
 const emit = defineEmits(["hide"]);
 const $q = useQuasar();
-
-// setup stores
-const patchPolicyStore = usePatchPolicyStore();
 
 const editing = ref(false);
 
@@ -268,12 +264,9 @@ async function submit() {
   try {
     if (editing.value) {
       await patchPolicyStore.updatePatchPolicy(winupdatepolicy.value);
-      notifySuccess("Patch policy updated successfully!");
     } else {
       await patchPolicyStore.addPatchPolicy(winupdatepolicy.value);
-      notifySuccess("Patch policy added successfully!");
     }
-
     emit("hide");
   } catch {
     //
@@ -287,15 +280,7 @@ function deletePolicy(policy: WinPatchPolicy) {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
     if (!policy.id) return;
-
-    patchPolicyStore
-      .deletePatchPolicy(policy.id)
-      .then(() => {
-        notifySuccess("Patch policy deleted successfully!");
-      })
-      .catch(() => {
-        //
-      });
+    void patchPolicyStore.deletePatchPolicy(policy.id);
   });
 }
 </script>

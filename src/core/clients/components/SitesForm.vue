@@ -35,15 +35,7 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat push label="Cancel" />
-          <q-btn
-            :loading="siteStore.isLoading"
-            dense
-            flat
-            push
-            label="Save"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat push label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -56,7 +48,7 @@ import { computed, onMounted, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { customFieldStore } from "src/stores/api";
-import { useSiteStore } from "../api";
+import { siteStore } from "src/stores/api";
 
 import { formatCustomFields } from "src/utils/format";
 
@@ -66,7 +58,6 @@ import CustomField from "src/core/dashboard/ui/CustomField.vue";
 // type imports
 import type { Site } from "../types";
 import type { CustomFieldValueField } from "src/core/settings/types";
-import { until } from "@vueuse/shared";
 
 const props = defineProps<{
   site?: Site;
@@ -76,8 +67,8 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
+const { isLoading } = siteStore;
 const { siteCustomFields } = customFieldStore;
-const siteStore = useSiteStore();
 
 // setup quasar dialog
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
@@ -92,17 +83,18 @@ const state = reactive({
 });
 
 async function submit() {
-  const data = {
-    site: state,
-    custom_fields: formatCustomFields(siteCustomFields.value, siteCustomFieldValues.value),
-  };
-  if (props.site) siteStore.updateSite(props.site.id, data);
-  else siteStore.addSite(data);
+  try {
+    const data = {
+      site: state,
+      custom_fields: formatCustomFields(siteCustomFields.value, siteCustomFieldValues.value),
+    };
+    if (props.site) await siteStore.updateSite(props.site.id, data);
+    else await siteStore.addSite(data);
 
-  await until(() => siteStore.isLoading).toBe(false);
-
-  if (siteStore.isError) return;
-  onDialogOK();
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 const siteCustomFieldValues = computed(() => {

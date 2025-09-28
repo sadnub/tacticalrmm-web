@@ -25,13 +25,14 @@
     <tactical-table
       v-model:pagination="pagination"
       dense
-      :rows="keyStore.keys"
+      :rows="keys"
       :columns="columns"
       row-key="id"
       binary-state-sort
       hide-pagination
       virtual-scroll
       :rows-per-page-options="[0]"
+      :loading="isLoading"
       no-data-label="No Keys added yet"
     >
       <!-- body slots -->
@@ -80,7 +81,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { useQuasar } from "quasar";
-import { useGlobalKeyStore } from "../api";
+import { globalKeyStore } from "src/stores/api";
 
 // ui imports
 import KeyStoreForm from "./KeyStoreForm.vue";
@@ -117,7 +118,7 @@ const pagination = ref({
 const $q = useQuasar();
 
 // setup stores
-const keyStore = useGlobalKeyStore();
+const { keys, isLoading } = globalKeyStore;
 
 function addKeyForm() {
   $q.dialog({
@@ -139,6 +140,6 @@ function deleteKey(key: GlobalKey) {
     title: `Delete key: ${key.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(() => keyStore.removeKey(key.id));
+  }).onOk(() => void globalKeyStore.removeKey(key.id));
 }
 </script>

@@ -104,3 +104,22 @@ export interface AlertSearchParams {
   snoozedFilter?: boolean;
   resolvedFilter?: boolean;
 }
+
+// API request/response types
+export interface BulkActionRequest {
+  alerts: number[];
+  bulk_action: "resolve" | "snooze";
+  snooze_days?: number;
+}
+
+export interface AlertActionRequest {
+  id: number;
+  type: "snooze" | "unsnooze" | "resolve";
+  snooze_days?: number;
+}
+
+export interface AlertTemplateRelated {
+  policies: Array<{ id: number; name: string }>;
+  clients: Array<{ id: number; name: string }>;
+  sites: Array<{ id: number; name: string }>;
+}

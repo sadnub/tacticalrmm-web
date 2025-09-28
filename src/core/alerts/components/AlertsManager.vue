@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialog" @hide="onHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <div class="q-dialog-plugin" style="width: 90vw; max-width: 90vw">
       <q-card>
         <q-bar>
@@ -10,7 +10,7 @@
             flat
             push
             icon="refresh"
-            @click="refresh"
+            @click="alertTemplateStore.getAlertTemplates({ force: true })"
           />Alerts Manager
           <q-space />
           <q-btn v-close-popup dense flat icon="close" />
@@ -29,7 +29,7 @@
               @click="showAddTemplateModal"
             />
           </div>
-          <q-table
+          <tactical-table
             v-model:pagination="pagination"
             dense
             :rows="templates"
@@ -40,6 +40,7 @@
             virtual-scroll
             :rows-per-page-options="[0]"
             no-data-label="No Alert Templates"
+            storage-key="alerts-manager"
           >
             <!-- header slots -->
             <template #header-cell-is_active="props">
@@ -75,9 +76,6 @@
               <q-tr
                 :props="props"
                 class="cursor-pointer"
-                :class="rowSelectedClass(props.row.id, selectedTemplate)"
-                @click="selectedTemplate = props.row"
-                @contextmenu="selectedTemplate = props.row"
                 @dblclick="showEditTemplateModal(props.row)"
               >
                 <!-- context menu -->
@@ -112,72 +110,85 @@
                     </q-item>
                   </q-list>
                 </q-menu>
-                <!-- enabled checkbox -->
-                <q-td>
-                  <q-checkbox
-                    v-model="props.row.is_active"
-                    dense
-                    @update:model-value="toggleEnabled(props.row)"
-                  />
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  <!-- is_active -->
+                  <template v-if="col.name === 'is_active'">
+                    <q-checkbox
+                      v-model="props.row.is_active"
+                      dense
+                      @update:model-value="toggleEnabled(props.row)"
+                    />
+                  </template>
+
+                  <!-- agent_settings -->
+                  <template v-else-if="col.name === 'agent_settings'">
+                    <q-icon v-if="props.row.agent_settings" color="primary" name="done" size="sm">
+                      <q-tooltip>Alert template has agent alert settings</q-tooltip>
+                    </q-icon>
+                  </template>
+
+                  <!-- check_settings -->
+                  <template v-else-if="col.name === 'check_settings'">
+                    <q-icon v-if="props.row.check_settings" color="primary" name="done" size="sm">
+                      <q-tooltip>Alert template has check alert settings</q-tooltip>
+                    </q-icon>
+                  </template>
+
+                  <!-- task_settings -->
+                  <template v-else-if="col.name === 'task_settings'">
+                    <q-icon v-if="props.row.task_settings" color="primary" name="done" size="sm">
+                      <q-tooltip>Alert template has task alert settings</q-tooltip>
+                    </q-icon>
+                  </template>
+
+                  <!-- name -->
+                  <template v-else-if="col.name === 'name'">
+                    {{ props.row.name }}
+                    <q-chip
+                      v-if="props.row.default_template"
+                      color="primary"
+                      text-color="white"
+                      size="sm"
+                      >Default</q-chip
+                    >
+                  </template>
+
+                  <!-- applied_to -->
+                  <template v-else-if="col.name === 'applied_to'">
+                    <span class="text-primary" @click="showTemplateApplied(props.row)"
+                      >Show where template is applied ({{ props.row.applied_count }})</span
+                    >
+                  </template>
+
+                  <!-- alert_exclusions -->
+                  <template v-else-if="col.name === 'alert_exclusions'">
+                    <span class="text-primary" @click="showAlertExclusions(props.row)"
+                      >Alert Exclusions ({{
+                        props.row.excluded_agents.length +
+                        props.row.excluded_clients.length +
+                        props.row.excluded_sites.length
+                      }})</span
+                    >
+                  </template>
+
+                  <!-- action_name -->
+                  <template v-else-if="col.name === 'action_name'">
+                    {{ props.row.action_name }}
+                  </template>
+
+                  <!-- resolved_action_name -->
+                  <template v-else-if="col.name === 'resolved_action_name'">
+                    {{ props.row.resolved_action_name }}
+                  </template>
+
+                  <!-- default fallback -->
+                  <template v-else>
+                    {{ col.value }}
+                  </template>
                 </q-td>
-                <!-- agent settings -->
-                <q-td>
-                  <q-icon v-if="props.row.agent_settings" color="primary" name="done" size="sm">
-                    <q-tooltip>Alert template has agent alert settings</q-tooltip>
-                  </q-icon>
-                </q-td>
-                <!-- text settings -->
-                <q-td>
-                  <q-icon v-if="props.row.check_settings" color="primary" name="done" size="sm">
-                    <q-tooltip>Alert template has check alert settings</q-tooltip>
-                  </q-icon>
-                </q-td>
-                <!-- dashboard settings -->
-                <q-td>
-                  <q-icon v-if="props.row.task_settings" color="primary" name="done" size="sm">
-                    <q-tooltip>Alert template has task alert settings</q-tooltip>
-                  </q-icon>
-                </q-td>
-                <!-- name -->
-                <q-td
-                  >{{ props.row.name }}
-                  <q-chip
-                    v-if="props.row.default_template"
-                    color="primary"
-                    text-color="white"
-                    size="sm"
-                    >Default</q-chip
-                  >
-                </q-td>
-                <!-- applied to -->
-                <q-td>
-                  <span
-                    style="cursor: pointer; text-decoration: underline"
-                    class="text-primary"
-                    @click="showTemplateApplied(props.row)"
-                    >Show where template is applied ({{ props.row.applied_count }})</span
-                  ></q-td
-                >
-                <!-- alert exclusions -->
-                <q-td>
-                  <span
-                    style="cursor: pointer; text-decoration: underline"
-                    class="text-primary"
-                    @click="showAlertExclusions(props.row)"
-                    >Alert Exclusions ({{
-                      props.row.excluded_agents.length +
-                      props.row.excluded_clients.length +
-                      props.row.excluded_sites.length
-                    }})</span
-                  ></q-td
-                >
-                <!-- failure action -->
-                <q-td>{{ props.row.action_name }}</q-td>
-                <!-- resolve action -->
-                <q-td>{{ props.row.resolved_action_name }}</q-td>
               </q-tr>
             </template>
-          </q-table>
+          </tactical-table>
         </div>
       </q-card>
     </div>
@@ -185,16 +196,17 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref, computed } from "vue";
+import { reactive, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { alertTemplateStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import AlertTemplateForm from "src/core/alerts/components/AlertTemplateForm.vue";
 import AlertExclusions from "src/core/alerts/components/AlertExclusions.vue";
 import AlertTemplateRelated from "src/core/alerts/components/AlertTemplateRelated.vue";
+import type { AlertTemplate } from "src/core/alerts/types";
 
 // emits
-defineEmits(["hide", "ok", "cancel", ...useDialogPluginComponent.emits]);
+defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
@@ -202,8 +214,7 @@ const $q = useQuasar();
 const dashboardStore = useDashboardStore();
 
 // state
-const selectedTemplate = ref<any | null>(null);
-const templates = computed(() => alertTemplateStore.alertTemplates);
+const { alertTemplates: templates } = alertTemplateStore;
 
 const columns = [
   { name: "is_active", label: "Active", field: "is_active", align: "left" },
@@ -224,89 +235,50 @@ const columns = [
 
 const pagination = reactive({ rowsPerPage: 0, sortBy: "name", descending: true });
 
-function getTemplates() {
-  alertTemplateStore.getAlertTemplates();
-}
-
-function clearRow() {
-  selectedTemplate.value = null;
-}
-
-function refresh() {
-  dashboardStore.refreshDashboard();
-  getTemplates();
-  clearRow();
-}
-
-function deleteTemplate(template: any) {
+function deleteTemplate(template: AlertTemplate) {
   $q.dialog({
     title: `Delete alert template ${template.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(async () => {
-    try {
-      await alertTemplateStore.removeAlertTemplate(template.id);
-      refresh();
-    } catch {
-      // Error handling is done in the store
-    }
+  }).onOk(() => {
+    void alertTemplateStore.removeAlertTemplate(template.id);
   });
 }
 
-function showEditTemplateModal(template: any) {
+function showEditTemplateModal(template: AlertTemplate) {
   $q.dialog({
     component: AlertTemplateForm,
     componentProps: { alertTemplate: template },
-  }).onOk(() => {
-    refresh();
   });
 }
 
 function showAddTemplateModal() {
-  clearRow();
-  $q.dialog({ component: AlertTemplateForm }).onOk(() => {
-    refresh();
-  });
+  $q.dialog({ component: AlertTemplateForm });
 }
 
-function showAlertExclusions(template: any) {
+function showAlertExclusions(template: AlertTemplate) {
   $q.dialog({
     component: AlertExclusions,
     componentProps: { template },
-  }).onOk(() => {
-    refresh();
   });
 }
 
-function showTemplateApplied(template: any) {
+function showTemplateApplied(template: AlertTemplate) {
   $q.dialog({ component: AlertTemplateRelated, componentProps: { template } });
 }
 
-function toggleEnabled(template: any) {
-  const text = !template.is_active
-    ? "Template enabled successfully"
-    : "Template disabled successfully";
-
+async function toggleEnabled(template: AlertTemplate) {
   const updatedTemplate = { ...template, is_active: !template.is_active };
 
-  alertTemplateStore.updateAlertTemplate(template.id, updatedTemplate).then(() => {
-    $q.notify({ type: "positive", message: text });
+  try {
+    await alertTemplateStore.updateAlertTemplate(template.id, updatedTemplate);
     dashboardStore.refreshDashboard();
-  });
+  } catch {
+    // Error handling is done in the store
+  }
 }
 
-function rowSelectedClass(id: number, currentSelected: any) {
-  if (currentSelected && currentSelected.id === id)
-    return $q.dark.isActive ? "highlight-dark" : "highlight";
-}
-
-function show() {
-  (dialogRef as any).value.show();
-}
-function hide() {
-  (dialogRef as any).value.hide();
-}
-
-// init
-getTemplates();
+onMounted(() => {
+  alertTemplateStore.getAlertTemplates();
+});
 </script>

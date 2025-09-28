@@ -39,7 +39,7 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup flat label="Cancel" />
-          <q-btn flat label="Submit" color="primary" type="submit" />
+          <q-btn flat label="Submit" color="primary" type="submit" :loading="isLoading" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -49,7 +49,7 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useGlobalKeyStore } from "../api";
+import { globalKeyStore } from "src/stores/api";
 
 // type imports
 import type { GlobalKey } from "../types";
@@ -61,7 +61,7 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const keyStore = useGlobalKeyStore();
+const { isLoading } = globalKeyStore;
 
 const isPwd = ref(true);
 
@@ -69,10 +69,13 @@ const localKey = reactive<GlobalKey>(
   props.globalKey ? Object.assign({}, props.globalKey) : { id: 0, name: "", value: "" },
 );
 
-function submit() {
-  if (props.globalKey) keyStore.updateKey(localKey.id, localKey);
-  else keyStore.addKey(localKey);
-
-  onDialogOK();
+async function submit() {
+  try {
+    if (props.globalKey) await globalKeyStore.updateKey(localKey.id, localKey);
+    else await globalKeyStore.addKey(localKey);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 </script>

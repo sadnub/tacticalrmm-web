@@ -680,12 +680,7 @@
               />
               <q-btn v-if="step < 5" color="primary" label="Next" @click="stepper?.next()" />
               <q-space />
-              <q-btn
-                color="primary"
-                label="Submit"
-                :loading="templateStore.isLoading"
-                type="submit"
-              />
+              <q-btn color="primary" label="Submit" :loading="isLoading" type="submit" />
             </q-stepper-navigation>
           </template>
         </q-stepper>
@@ -697,9 +692,8 @@
 <script setup lang="ts">
 import { computed, ref, reactive, watch } from "vue";
 import { useQuasar, useDialogPluginComponent, type QStepper } from "quasar";
-import { until } from "@vueuse/shared";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAlertTemplateStore } from "../api";
+import { alertTemplateStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useURLActionDropdown } from "src/core/settings/composables";
 import { isValidEmail } from "src/utils/validation";
@@ -709,7 +703,7 @@ import type { AlertTemplate, AlertSeverity } from "src/core/alerts/types";
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const templateStore = useAlertTemplateStore();
+const { isLoading } = alertTemplateStore;
 
 const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
 const server_scripts_enabled = computed(
@@ -925,12 +919,15 @@ function removeSMSNumber(num: string) {
 }
 
 async function submit() {
-  if (props.alertTemplate) templateStore.updateAlertTemplate(template.id, template);
-  else templateStore.addAlertTemplate(template);
-
-  await until(() => templateStore.isLoading).toBe(false);
-  if (templateStore.isError) return;
-
-  onDialogOK();
+  try {
+    if (props.alertTemplate) {
+      await alertTemplateStore.updateAlertTemplate(template.id, template);
+    } else {
+      await alertTemplateStore.addAlertTemplate(template);
+    }
+    onDialogOK();
+  } catch {
+    // Error handling is done in the store
+  }
 }
 </script>

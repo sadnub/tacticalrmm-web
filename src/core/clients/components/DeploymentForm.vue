@@ -55,14 +55,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="deployStore.isLoading"
-            dense
-            flat
-            label="Create"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Create" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -74,17 +67,16 @@
 import { reactive } from "vue";
 import { useDialogPluginComponent, date } from "quasar";
 import { useSiteDropdown } from "src/core/clients/composables";
-import { useDeploymentStore } from "../api";
+import { deploymentStore } from "src/stores/api";
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
 import { GOARCH_AMD64, GOARCH_i386 } from "src/constants/constants";
-import { until } from "@vueuse/shared";
 
 import type { Deployment } from "../types";
 
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const deployStore = useDeploymentStore();
+const { isLoading } = deploymentStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -106,16 +98,13 @@ const state = reactive<Deployment>({
 async function submit() {
   if (state.expires) state.expires = formatDateStringwithTimezone(state.expires);
 
-  deployStore.addDeployment(state);
+  try {
+    await deploymentStore.addDeployment(state);
 
-  await until(() => deployStore.isLoading).toBe(false);
-
-  // stops the dialog from closing on errors
-  if (deployStore.isError) {
-    // revert expires field back
+    onDialogOK();
+  } catch {
     if (state.expires) state.expires = formatDateInputField(state.expires);
     return;
   }
-  onDialogOK();
 }
 </script>

@@ -1,14 +1,14 @@
 import { onMounted, computed } from "vue";
-import { useClientStore } from "./api";
+import { clientStore } from "src/stores/api";
 
 import type { Client } from "./types";
 import { type SelectableOption, type Option, type HeaderOption } from "../dashboard/types";
 
 export function useClientDropdown() {
-  const clientStore = useClientStore();
+  const { clients, isLoading } = clientStore;
 
   const clientOptions = computed(() => {
-    return clientStore.clients.map(
+    return clients.value.map(
       (client) =>
         ({
           type: "option",
@@ -22,7 +22,7 @@ export function useClientDropdown() {
 
   return {
     clientOptions,
-    isLoading: clientStore.isLoading,
+    isLoading,
   };
 }
 
@@ -32,17 +32,17 @@ export interface SiteSelectableOption extends SelectableOption {
 export type SiteOption = HeaderOption | SiteSelectableOption;
 
 export function useSiteDropdown() {
-  const clientStore = useClientStore();
+  const { clients, isLoading } = clientStore;
 
   const siteOptions = computed<SiteOption[]>(() => {
-    return _formatSiteOptions(clientStore.clients);
+    return _formatSiteOptions(clients.value);
   });
 
   onMounted(clientStore.getClients);
 
   return {
     siteOptions,
-    isLoading: clientStore.isLoading,
+    isLoading,
   };
 }
 

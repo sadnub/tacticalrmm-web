@@ -1,14 +1,14 @@
 import { computed, onMounted } from "vue";
 
-import { usePolicyStore } from "./api";
+import { policyStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
 
 // dropdown options
 export function usePolicyDropdown() {
-  const policyStore = usePolicyStore();
+  const { policies, isLoading } = policyStore;
 
   const policyOptions = computed(() => {
-    return policyStore.policies.map(
+    return policies.value.map(
       (policy) =>
         ({
           type: "option",
@@ -22,5 +22,6 @@ export function usePolicyDropdown() {
 
   return {
     policyOptions,
+    isLoading,
   };
 }

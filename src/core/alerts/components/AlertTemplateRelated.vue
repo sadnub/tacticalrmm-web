@@ -66,18 +66,16 @@
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { alertTemplateStore } from "src/stores/api";
-import type { AlertTemplate } from "src/core/alerts/types";
+
+// types
+import type { AlertTemplate, AlertTemplateRelated } from "src/core/alerts/types";
 
 const props = defineProps<{ template: AlertTemplate }>();
 defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 const tab = ref("policies");
-const related = ref<{
-  policies: Array<{ id: number; name: string }>;
-  clients: Array<{ id: number; name: string }>;
-  sites: Array<{ id: number; name: string }>;
-}>({
+const related = ref<AlertTemplateRelated>({
   policies: [],
   clients: [],
   sites: [],

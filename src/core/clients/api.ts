@@ -1,9 +1,9 @@
 import { ref, computed } from "vue";
-import { defineStore } from "pinia";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { notifySuccess } from "src/utils/notify";
 import { useDashboardStore } from "src/stores/dashboard";
+import { useCachedAction } from "../dashboard/composables";
 import type {
   Client,
   ClientCustomFieldValue,
@@ -12,372 +12,298 @@ import type {
   Deployment,
 } from "./types";
 
-export const useClientStore = defineStore(
-  "clients",
-  () => {
-    const clients = ref<Client[]>([]);
-    const client = ref<Client | null>(null);
-    const isLoading = ref(false);
-    const isError = ref(false);
+export function useClientStore() {
+  const clients = ref<Client[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
 
-    const clientCount = computed(() => clients.value.length);
+  const clientCount = computed(() => clients.value.length);
 
-    const router = useRouter();
-    const dashboardStore = useDashboardStore();
+  const router = useRouter();
+  const dashboardStore = useDashboardStore();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function getClients(_args?: { force: boolean }) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .get<Client[]>("/clients/")
-        .then(({ data }) => {
-          if (data.length === 0) void router.push({ name: "InitialSetup" });
-          clients.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
+  function _getClients() {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<Client[]>("/clients/")
+      .then(({ data }) => {
+        if (data.length === 0) void router.push({ name: "InitialSetup" });
+        clients.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
 
-    interface ClientAddRequest {
-      client: {
-        name: string;
-      };
-      site: {
-        name: string;
-      };
-      timezone?: string;
-      companyname?: string;
-      initialsetup?: boolean;
-      custom_fields?: ClientCustomFieldValue[];
-    }
-    function addClient(payload: ClientAddRequest) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .post<Client>("/clients/", payload)
-        .then(({ data }) => {
-          clients.value.unshift(data);
-          notifySuccess("Client was added successfully");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
+  const getClients = useCachedAction(_getClients, {
+    key: "getClients",
+    duration: 1 * 60 * 1000, // 1 minute cache
+  });
 
-    interface ClientUpdateRequest {
-      client: {
-        name: string;
-      };
-      custom_fields: ClientCustomFieldValue[];
-    }
-
-    function updateClient(id: number, payload: ClientUpdateRequest) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .put<Client>(`/clients/${id}/`, payload)
-        .then(({ data }) => {
-          const index = clients.value.findIndex((client: Client) => client.id === id);
-          if (index !== -1) {
-            clients.value[index] = data;
-          }
-          notifySuccess("Client was modified successfully");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function getClient(id: number, _args?: { force: boolean }) {
-      isLoading.value = true;
-      isError.value = false;
-      client.value = null;
-      axios
-        .get(`/clients/${id}/`)
-        .then(({ data }) => {
-          client.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    function removeClient(id: number, moveToSite?: number) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .delete(`/clients/${id}/`, { params: moveToSite ? { move_to_site: id } : {} })
-        .then(() => {
-          const index = clients.value.findIndex((client: Client) => client.id === id);
-          if (index !== -1) {
-            clients.value.splice(index, 1);
-          }
-
-          dashboardStore.refreshDashboard();
-          notifySuccess("Client was deleted successfully");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    return {
-      clients,
-      client,
-      isLoading,
-      isError,
-      clientCount,
-      getClients,
-      getClient,
-      addClient,
-      updateClient,
-      removeClient,
+  interface ClientAddRequest {
+    client: {
+      name: string;
     };
-  },
-  {
-    cache: {
-      getClients: {
-        duration: 1 * 60 * 1000,
-      },
-      getClient: {
-        duration: 1 * 60 * 1000,
-      },
-    },
-  },
-);
-
-export const useSiteStore = defineStore(
-  "sites",
-  () => {
-    const sites = ref<Site[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
-
-    const siteCount = computed(() => sites.value.length);
-
-    const dashboardStore = useDashboardStore();
-    const clientStore = useClientStore();
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function getSites(_args?: { force: true }) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .get<Site[]>("/clients/sites/")
-        .then(({ data }) => {
-          sites.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    interface SiteAddUpdateRequest {
-      site: {
-        name: string;
-        client?: number | undefined;
-      };
-      custom_fields: SiteCustomFieldValue[];
-    }
-
-    function addSite(payload: SiteAddUpdateRequest) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .post<Site>("/clients/sites/", payload)
-        .then(({ data }) => {
-          // add new site to this store
-          sites.value.unshift(data);
-
-          // add new site to client store for tree
-          const client = clientStore.clients.find((client) => client.id === data.client);
-          if (client) client.sites.unshift(data);
-
-          notifySuccess("Site was added successfully");
-        })
-        .catch(() => {
-          isError.value = false;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    function updateSite(id: number, payload: SiteAddUpdateRequest) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .put<Site>(`/clients/sites/${id}/`, payload)
-        .then(({ data }) => {
-          // add to this site store
-          const index = sites.value.findIndex((site) => site.id === id);
-          if (index !== -1) {
-            sites.value[index] = data;
-          }
-
-          // add to client store for tree
-          const client = clientStore.clients.find((client) => client.id === data.client);
-          if (client) {
-            const index = client.sites.findIndex((site) => site.id === id);
-            if (index !== -1) {
-              client.sites[index] = data;
-            }
-          }
-
-          notifySuccess("Site was modified successfully");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    function removeSite(id: number, moveToSite?: number) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .delete<Site>(`/clients/sites/${id}/`, {
-          params: moveToSite ? { move_to_site: moveToSite } : {},
-        })
-        .then(() => {
-          const index = sites.value.findIndex((site: Site) => site.id === id);
-          if (index !== -1) {
-            sites.value.splice(index, 1);
-          }
-
-          // reload clients and agents for dashboard tree
-          dashboardStore.refreshDashboard();
-
-          notifySuccess("Site was deleted successfully");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    return {
-      sites,
-      isLoading,
-      isError,
-      siteCount,
-      getSites,
-      addSite,
-      updateSite,
-      removeSite,
+    site: {
+      name: string;
     };
-  },
-  {
-    cache: {
-      getSites: {
-        duration: 1 * 60 * 1000,
-      },
-    },
-  },
-);
-
-export const useDeploymentStore = defineStore(
-  "deployments",
-  () => {
-    const deployments = ref<Deployment[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function getDeployments(_args?: { force: true }) {
-      isLoading.value = true;
-      isError.value = false;
-
-      axios
-        .get<Deployment[]>("/clients/deployments/")
-        .then(({ data }) => {
-          deployments.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+    timezone?: string;
+    companyname?: string;
+    initialsetup?: boolean;
+    custom_fields?: ClientCustomFieldValue[];
+  }
+  async function addClient(payload: ClientAddRequest) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.post<Client>("/clients/", payload);
+      clients.value.unshift(data);
+      notifySuccess("Client was added successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function addDeployment(payload: Deployment) {
-      isLoading.value = true;
-      isError.value = false;
-
-      axios
-        .post<Deployment>("/clients/deployments/", payload)
-        .then(({ data }) => {
-          deployments.value.unshift(data);
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+  async function updateClient(id: number, payload: Partial<Client>) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.put<Client>(`/clients/${id}/`, payload);
+      const index = clients.value.findIndex((client: Client) => client.id === id);
+      if (index !== -1) {
+        clients.value[index] = data;
+      }
+      notifySuccess("Client was modified successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function removeDeployment(id: number) {
-      isLoading.value = true;
-      isError.value = false;
-
-      axios
-        .delete(`/client/deployments/${id}/`)
-        .then(() => {
-          const index = deployments.value.findIndex((d) => d.id === id);
-          if (index !== -1) {
-            deployments.value.splice(index, 1);
-          }
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+  async function getClient(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.get<Client>(`/clients/${id}/`);
+      return data;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    return {
-      deployments,
-      isLoading,
-      isError,
+  async function removeClient(id: number, moveToSite?: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      await axios.delete(`/clients/${id}/`, { params: moveToSite ? { move_to_site: id } : {} });
+      const index = clients.value.findIndex((client: Client) => client.id === id);
+      if (index !== -1) {
+        clients.value.splice(index, 1);
+      }
 
-      getDeployments,
-      addDeployment,
-      removeDeployment,
+      dashboardStore.refreshDashboard();
+      notifySuccess("Client was deleted successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  return {
+    clients,
+    isLoading,
+    isError,
+    clientCount,
+    getClients,
+    getClient,
+    addClient,
+    updateClient,
+    removeClient,
+  };
+}
+
+export function useSiteStore() {
+  const sites = ref<Site[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  const siteCount = computed(() => sites.value.length);
+
+  const dashboardStore = useDashboardStore();
+
+  function _getSites() {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<Site[]>("/clients/sites/")
+      .then(({ data }) => {
+        sites.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  const getSites = useCachedAction(_getSites, {
+    key: "getSites",
+    duration: 1 * 60 * 1000, // 1 minute cache
+  });
+
+  interface SiteAddUpdateRequest {
+    site: {
+      name: string;
+      client?: number | undefined;
     };
-  },
-  {
-    cache: {
-      getDeployments: {
-        duration: 30 * 1000,
-      },
-    },
-  },
-);
+    custom_fields: SiteCustomFieldValue[];
+  }
+
+  async function addSite(payload: SiteAddUpdateRequest) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.post<Site>("/clients/sites/", payload);
+      // add new site to this store
+      sites.value.unshift(data);
+
+      notifySuccess("Site was added successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function updateSite(id: number, payload: Partial<Site>) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.put<Site>(`/clients/sites/${id}/`, payload);
+      // add to this site store
+      const index = sites.value.findIndex((site) => site.id === id);
+      if (index !== -1) {
+        sites.value[index] = data;
+      }
+
+      notifySuccess("Site was modified successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function removeSite(id: number, moveToSite?: number) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      await axios.delete<Site>(`/clients/sites/${id}/`, {
+        params: moveToSite ? { move_to_site: moveToSite } : {},
+      });
+      const index = sites.value.findIndex((site: Site) => site.id === id);
+      if (index !== -1) {
+        sites.value.splice(index, 1);
+      }
+
+      // reload clients and agents for dashboard tree
+      dashboardStore.refreshDashboard();
+
+      notifySuccess("Site was deleted successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  return {
+    sites,
+    isLoading,
+    isError,
+    siteCount,
+    getSites,
+    addSite,
+    updateSite,
+    removeSite,
+  };
+}
+
+export function useDeploymentStore() {
+  const deployments = ref<Deployment[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function _getDeployments() {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .get<Deployment[]>("/clients/deployments/")
+      .then(({ data }) => {
+        deployments.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  const getDeployments = useCachedAction(_getDeployments, {
+    key: "getDeployments",
+    duration: 30 * 1000, // 30 seconds cache
+  });
+
+  async function addDeployment(payload: Deployment) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.post<Deployment>("/clients/deployments/", payload);
+      deployments.value.unshift(data);
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function removeDeployment(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      await axios.delete(`/client/deployments/${id}/`);
+      const index = deployments.value.findIndex((d) => d.id === id);
+      if (index !== -1) {
+        deployments.value.splice(index, 1);
+      }
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  return {
+    deployments,
+    isLoading,
+    isError,
+    getDeployments,
+    addDeployment,
+    removeDeployment,
+  };
+}

@@ -14,7 +14,7 @@
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <tactical-table
-        :rows="clientStore.clients"
+        :rows="clients"
         :columns="columns"
         style="height: 70vh"
         :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: false }"
@@ -24,7 +24,7 @@
         virtual-scroll
         :rows-per-page-options="[0]"
         no-data-label="No Clients"
-        :loading="clientStore.isLoading"
+        :loading="isLoading"
         storage-key="clients-manager"
       >
         <!-- top slot -->
@@ -105,7 +105,7 @@
 // composition imports
 import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useClientStore } from "../api";
+import { clientStore } from "src/stores/api";
 
 // ui imports
 import ClientsForm from "./ClientsForm.vue";
@@ -128,7 +128,7 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const clientStore = useClientStore();
+const { clients, isLoading } = clientStore;
 
 defineEmits(useDialogPluginComponent.emits);
 
@@ -156,7 +156,7 @@ function showClientDeleteModal(client: Client) {
       message: `Delete client: ${client.name}.`,
       cancel: true,
       ok: { label: "Delete", color: "negative" },
-    }).onOk(() => clientStore.removeClient(client.id));
+    }).onOk(() => void clientStore.removeClient(client.id));
   }
 }
 

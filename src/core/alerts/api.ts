@@ -1,27 +1,15 @@
 import { ref } from "vue";
 import axios from "axios";
-import type { AlertTemplate, Alert, AlertSearchParams } from "./types";
+import type {
+  AlertTemplate,
+  Alert,
+  AlertSearchParams,
+  BulkActionRequest,
+  AlertActionRequest,
+  AlertTemplateRelated,
+} from "./types";
 import { notifySuccess } from "src/utils/notify";
 import { useCachedAction } from "../dashboard/composables";
-
-// Type definitions for API responses
-type AlertTemplateResponse = AlertTemplate;
-type AlertResponse = Alert;
-interface BulkActionRequest {
-  alerts: number[];
-  bulk_action: "resolve" | "snooze";
-  snooze_days?: number;
-}
-interface AlertActionRequest {
-  id: number;
-  type: "snooze" | "unsnooze" | "resolve";
-  snooze_days?: number;
-}
-interface AlertTemplateRelated {
-  policies: Array<{ id: number; name: string }>;
-  clients: Array<{ id: number; name: string }>;
-  sites: Array<{ id: number; name: string }>;
-}
 
 // Alert Templates store (plain composable, mirrors checks api style)
 export function useAlertTemplateStore() {
@@ -29,11 +17,11 @@ export function useAlertTemplateStore() {
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getAlertTemplates() {
+  function _getAlertTemplates() {
     isLoading.value = true;
     isError.value = false;
     axios
-      .get<AlertTemplateResponse[]>("/alerts/templates/")
+      .get<AlertTemplate[]>("/alerts/templates/")
       .then(({ data }) => {
         alertTemplates.value = data;
       })
@@ -45,11 +33,16 @@ export function useAlertTemplateStore() {
       });
   }
 
+  const getAlertTemplates = useCachedAction(_getAlertTemplates, {
+    key: "getAlertTemplates",
+    duration: 1 * 30 * 1000, // 30 seconds cache
+  });
+
   async function addAlertTemplate(payload: AlertTemplate) {
     isLoading.value = true;
     isError.value = false;
     try {
-      const { data } = await axios.post<AlertTemplateResponse>("alerts/templates/", payload);
+      const { data } = await axios.post<AlertTemplate>("alerts/templates/", payload);
       alertTemplates.value.unshift(data);
       notifySuccess("Alert template was created successfully.");
     } catch {
@@ -63,7 +56,7 @@ export function useAlertTemplateStore() {
     isLoading.value = true;
     isError.value = false;
     try {
-      const { data } = await axios.put<AlertTemplateResponse>(`alerts/templates/${id}/`, payload);
+      const { data } = await axios.put<AlertTemplate>(`alerts/templates/${id}/`, payload);
       const index = alertTemplates.value.findIndex((a) => a.id === id);
       if (index !== -1) alertTemplates.value[index] = data;
       notifySuccess("Alert template was updated successfully.");
@@ -126,26 +119,15 @@ export function useAlertsStore() {
   const isLoading = ref(false);
   const isError = ref(false);
   const alertsCount = ref(0);
-
-  async function getTopAlerts(limit = 10) {
-    searchAlerts({});
-
-    // Small delay to allow cached action to potentially complete
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    const topAlerts = alerts.value.slice(0, limit);
-    alertsCount.value = alerts.value.length;
-    return {
-      alerts_count: alerts.value.length,
-      alerts: topAlerts,
-    };
-  }
+  const lastSearchParams = ref<AlertSearchParams>({});
 
   function _searchAlerts(params: AlertSearchParams) {
     isLoading.value = true;
     isError.value = false;
+    // Save the search parameters for later use
+    lastSearchParams.value = { ...params };
     axios
-      .patch<AlertResponse[]>("/alerts/", params)
+      .patch<Alert[]>("/alerts/", params)
       .then(({ data }) => {
         alerts.value = data;
       })
@@ -162,6 +144,10 @@ export function useAlertsStore() {
     duration: 1 * 30 * 1000, // 30 seconds cache
   });
 
+  function refreshSearch() {
+    searchAlerts(lastSearchParams.value);
+  }
+
   async function snoozeAlert(id: number, days: number) {
     isLoading.value = true;
     isError.value = false;
@@ -177,6 +163,7 @@ export function useAlertsStore() {
           alert.snoozed_until = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
         }
       }
+      notifySuccess("Alert snoozed successfully.");
     } catch {
       isError.value = true;
     } finally {
@@ -199,6 +186,7 @@ export function useAlertsStore() {
           alert.snoozed_until = null;
         }
       }
+      notifySuccess("Alert unsnoozed successfully.");
     } catch {
       isError.value = true;
     } finally {
@@ -221,6 +209,7 @@ export function useAlertsStore() {
           alert.resolved_on = new Date().toISOString();
         }
       }
+      notifySuccess("Alert resolved successfully.");
     } catch {
       isError.value = true;
     } finally {
@@ -246,6 +235,9 @@ export function useAlertsStore() {
           }
         }
       });
+      notifySuccess(`${ids.length} alerts resolved successfully.`);
+      // Refresh search to update the view
+      refreshSearch();
     } catch {
       isError.value = true;
     } finally {
@@ -271,6 +263,9 @@ export function useAlertsStore() {
           }
         }
       });
+      notifySuccess(`${ids.length} alerts snoozed successfully.`);
+      // Refresh search to update the view
+      refreshSearch();
     } catch {
       isError.value = true;
     } finally {
@@ -284,8 +279,8 @@ export function useAlertsStore() {
     alertsCount,
     isLoading,
     isError,
-    getTopAlerts,
     searchAlerts,
+    refreshSearch,
     snoozeAlert,
     unsnoozeAlert,
     resolveAlert,

@@ -274,7 +274,7 @@
         :style="{ 'max-height': `${$q.screen.height - 182}px` }"
         :rows="visibleScripts"
         :columns="columns"
-        :loading="scriptStore.isLoading"
+        :loading="isLoading"
         :pagination="{ rowsPerPage: 0, sortBy: 'favorite', descending: true }"
         :filter="search"
         row-key="id"
@@ -494,7 +494,7 @@ import { ref, computed, onMounted } from "vue";
 import type { QTreeNode } from "quasar";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useStorage } from "@vueuse/core";
-import { useScriptStore } from "../api";
+import { scriptStore } from "src/stores/api";
 import { useDashboardStore } from "src/stores/dashboard";
 import { capitalize } from "src/utils/format";
 
@@ -577,7 +577,7 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const scriptStore = useScriptStore();
+const { scripts, isLoading } = scriptStore;
 const dashboardStore = useDashboardStore();
 
 const showCommunityScripts = computed(() => dashboardStore.dashboardSettings.showCommunityScripts);
@@ -587,14 +587,14 @@ const showHiddenScripts = ref(false);
 
 function favoriteScript(script: Script) {
   if (script.id)
-    scriptStore.updateScript(script.id, {
+    void scriptStore.updateScript(script.id, {
       favorite: !script.favorite,
     });
 }
 
 function hideScript(script: Script) {
   if (script.id)
-    scriptStore.updateScript(script.id, {
+    void scriptStore.updateScript(script.id, {
       hidden: !script.hidden,
     });
 }
@@ -605,7 +605,7 @@ function deleteScript(script: Script) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (script.id) scriptStore.removeScript(script.id);
+    if (script.id) void scriptStore.removeScript(script.id);
   });
 }
 
@@ -622,12 +622,12 @@ const expanded = useStorage(`${storageKey}expanded`, []);
 const visibleScripts = computed(() => {
   if (showHiddenScripts.value) {
     return showCommunityScripts.value
-      ? scriptStore.scripts
-      : scriptStore.scripts.filter((i) => i.script_type !== "builtin");
+      ? scripts.value
+      : scripts.value.filter((i) => i.script_type !== "builtin");
   } else {
     return showCommunityScripts.value
-      ? scriptStore.scripts.filter((i) => !i.hidden)
-      : scriptStore.scripts.filter((i) => i.script_type !== "builtin" && !i.hidden);
+      ? scripts.value.filter((i) => !i.hidden)
+      : scripts.value.filter((i) => i.script_type !== "builtin" && !i.hidden);
   }
 });
 
@@ -734,5 +734,5 @@ function ScriptSnippetModal() {
   });
 }
 
-onMounted(scriptStore.getScripts);
+onMounted(() => scriptStore.getScripts());
 </script>

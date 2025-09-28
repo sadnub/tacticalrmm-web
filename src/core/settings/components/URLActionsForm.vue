@@ -85,7 +85,7 @@
         <q-card-actions align="right">
           <q-btn v-if="type === 'rest'" flat label="Test" color="primary" @click="testWebHook" />
           <q-btn v-close-popup flat label="Cancel" />
-          <q-btn flat label="Submit" color="primary" type="submit" />
+          <q-btn flat label="Submit" color="primary" type="submit" :loading="isLoading" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -96,7 +96,7 @@
 // composition imports
 import { ref, computed, reactive, watch } from "vue";
 import { useDialogPluginComponent, useQuasar, extend } from "quasar";
-import { useURLActionStore } from "../api";
+import { urlActionStore } from "src/stores/api";
 
 // ui imports
 import TestURLAction from "./TestURLAction.vue";
@@ -105,7 +105,6 @@ import TestURLAction from "./TestURLAction.vue";
 import type { URLAction, URLActionType } from "src/core/settings/types";
 
 import * as monaco from "monaco-editor";
-import { until } from "@vueuse/shared";
 
 // define emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -118,7 +117,7 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const actionStore = useURLActionStore();
+const { isLoading } = urlActionStore;
 
 // static data
 const URLActionMethods = [
@@ -153,14 +152,14 @@ watch(
 );
 
 async function submit() {
-  if (props.action) actionStore.updateURLAction(localAction.id, localAction);
-  else actionStore.addURLAction(localAction);
+  try {
+    if (props.action) await urlActionStore.updateURLAction(localAction.id, localAction);
+    else await urlActionStore.addURLAction(localAction);
 
-  await until(() => actionStore.isLoading).toBe(false);
-
-  if (actionStore.isError) return;
-
-  onDialogOK();
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 const editorDiv = ref<HTMLElement | null>(null);

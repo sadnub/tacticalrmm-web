@@ -2,14 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
-        <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-          @click="clientStore.getClient(props.client.id, { force: true })"
-        />Sites for
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getClient" />Sites for
         {{ client.name }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -86,7 +79,7 @@
 // composition imports
 import { computed, onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useClientStore, useSiteStore } from "../api";
+import { clientStore, siteStore } from "src/stores/api";
 
 // ui imports
 import SitesForm from "./SitesForm.vue";
@@ -114,10 +107,8 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
 
-const sites = computed(() => clientStore.client?.sites || []);
+const sites = computed(() => props.client.sites || []);
 
 // setup quasar dialog
 const $q = useQuasar();
@@ -144,7 +135,7 @@ function showSiteDeleteModal(site: Site) {
       message: `Delete site: ${site.name}.`,
       cancel: true,
       ok: { label: "Delete", color: "negative" },
-    }).onOk(() => siteStore.removeSite(site.id));
+    }).onOk(() => void siteStore.removeSite(site.id));
   }
 }
 
@@ -166,5 +157,9 @@ function showAddSite() {
   });
 }
 
-onMounted(() => clientStore.getClient(props.client.id));
+async function getClient() {
+  await clientStore.getClient(props.client.id);
+}
+
+onMounted(() => void getClient());
 </script>

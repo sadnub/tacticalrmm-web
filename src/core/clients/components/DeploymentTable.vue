@@ -8,7 +8,7 @@
           flat
           push
           icon="refresh"
-          @click="deployStore.getDeployments({ force: true })"
+          @click="deploymentStore.getDeployments({ force: true })"
         />
         Manage Deployments
         <q-space />
@@ -25,7 +25,7 @@
         row-key="id"
         :pagination="{ rowsPerPage: 0, sortBy: 'id', descending: true }"
         no-data-label="No Deployments"
-        :loading="deployStore.isLoading"
+        :loading="isLoading"
         column-select
         storage-key="deployments"
       >
@@ -94,7 +94,7 @@
 import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent, copyToClipboard } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useDeploymentStore } from "../api";
+import { deploymentStore } from "src/stores/api";
 import { notifySuccess } from "src/utils/notify";
 import { getBaseUrl } from "src/boot/axios";
 
@@ -158,14 +158,13 @@ defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const deployStore = useDeploymentStore();
+const { deployments, isLoading } = deploymentStore;
 
 // quasar dialog setup
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // deployment logic
-const deployments = ref([]);
 
 const search = ref("");
 
@@ -175,7 +174,7 @@ function deleteDeployment(deployment: Deployment) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (deployment.id) deployStore.removeDeployment(deployment.id);
+    if (deployment.id) void deploymentStore.removeDeployment(deployment.id);
   });
 }
 
@@ -192,5 +191,5 @@ function showAddDeployment() {
   });
 }
 
-onMounted(deployStore.getDeployments);
+onMounted(deploymentStore.getDeployments);
 </script>

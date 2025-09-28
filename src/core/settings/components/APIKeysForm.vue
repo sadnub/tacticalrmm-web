@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
-        {{ title }}
+        {{ apiKey ? "Edit API Key" : "Add API Key" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
@@ -52,7 +52,7 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup flat label="Cancel" />
-          <q-btn flat label="Submit" color="primary" type="submit" :loading="loading" />
+          <q-btn flat label="Submit" color="primary" type="submit" :loading="isLoading" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -61,12 +61,11 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, reactive } from "vue";
+import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAPIKeyStore } from "../api";
+import { apiKeyStore } from "src/stores/api";
 import { useUserDropdown } from "src/core/accounts/composables";
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
-import { until } from "@vueuse/shared";
 
 // ui imports
 import type { APIKey } from "../types";
@@ -81,7 +80,7 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const keyStore = useAPIKeyStore();
+const { isLoading } = apiKeyStore;
 
 // setup dropdowns
 const { userOptions } = useUserDropdown();
@@ -90,26 +89,24 @@ const { userOptions } = useUserDropdown();
 const localKey = props.apiKey
   ? reactive<APIKey>(Object.assign({}, props.apiKey))
   : reactive<APIKey>({ name: "", expiration: "", key: "", user: 0 });
-const loading = ref(false);
 
 // remove Z from date string
 if (props.apiKey) {
   localKey.expiration = formatDateInputField(localKey.expiration);
 }
 
-const title = computed(() => (props.apiKey ? "Edit API Key" : "Add API Key"));
-
 async function submit() {
-  loading.value = true;
+  try {
+    // convert date to local timezone if exists
+    if (localKey.expiration)
+      localKey.expiration = formatDateStringwithTimezone(localKey.expiration);
 
-  // convert date to local timezone if exists
-  if (localKey.expiration) localKey.expiration = formatDateStringwithTimezone(localKey.expiration);
+    if (props.apiKey && localKey.id) await apiKeyStore.updateAPIKey(localKey.id, localKey);
+    else await apiKeyStore.addAPIKey(localKey);
 
-  if (props.apiKey && localKey.id) void keyStore.updateAPIKey(localKey.id, localKey);
-  else void keyStore.addAPIKey(localKey);
-
-  await until(() => keyStore.isLoading).toBe(false);
-  if (keyStore.isError) return;
-  onDialogOK();
+    onDialogOK();
+  } catch {
+    localKey.expiration = formatDateInputField(localKey.expiration);
+  }
 }
 </script>

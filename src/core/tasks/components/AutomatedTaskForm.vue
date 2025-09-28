@@ -628,7 +628,7 @@
                       validateTimePeriod(val) ||
                       'Valid values are 1-3 digits followed by (D|d|H|h|M|m|S|s)',
                     (val: number) => (localTask.task_repetition_interval ? !!val : true), // field is required if repetition interval is set
-                    (val: number) =>
+                    (val: string) =>
                       convertPeriodToSeconds(val) >=
                         convertPeriodToSeconds(String(localTask.task_repetition_interval)) ||
                       'Repetition duration must be greater than repetition interval',

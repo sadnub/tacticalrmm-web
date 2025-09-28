@@ -51,7 +51,7 @@
                 dense
                 options-dense
                 filled
-                :options="coreStore.coreSettings?.all_timezones || []"
+                :options="coreSettings?.all_timezones || []"
               />
             </q-card-section>
 
@@ -88,14 +88,12 @@
 <script lang="ts" setup>
 import { onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { useCoreStore } from "src/core/settings/api";
-import { useClientStore } from "src/core/clients/api";
-
-// setup stores
-const coreStore = useCoreStore();
-const clientStore = useClientStore();
+import { coreStore, clientStore } from "src/stores/api";
 
 const router = useRouter();
+
+// setup stores
+const { coreSettings } = coreStore;
 
 const form = reactive({
   client: {
@@ -109,9 +107,13 @@ const form = reactive({
   initialsetup: true,
 });
 
-function submit() {
-  clientStore.addClient(form);
-  void router.push({ name: "Dashboard" });
+async function submit() {
+  try {
+    await clientStore.addClient(form);
+    await router.push({ name: "Dashboard" });
+  } catch {
+    //
+  }
 }
 
 onMounted(coreStore.getCoreSettings);

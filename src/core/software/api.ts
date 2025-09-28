@@ -1,44 +1,42 @@
-import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
+import { useCachedAction } from "../dashboard/composables";
 
 export interface ChocoSoftware {
   id: number;
   name: string;
 }
 
-export const useChocosStore = defineStore(
-  "chocos",
-  () => {
-    const chocos = ref<readonly ChocoSoftware[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
+export function useChocosStore() {
+  const chocos = ref<readonly ChocoSoftware[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
 
-    async function getChocosSoftware() {
-      isLoading.value = true;
-      isError.value = false;
-      try {
-        const { data } = await axios.get<ChocoSoftware[]>(`/software/chocos/`);
+  function _getChocosSoftware() {
+    isLoading.value = true;
+    isError.value = false;
+    axios
+      .get<ChocoSoftware[]>(`/software/chocos/`)
+      .then(({ data }) => {
         chocos.value = Object.freeze(data);
-      } catch {
+      })
+      .catch(() => {
         isError.value = true;
-      } finally {
+      })
+      .finally(() => {
         isLoading.value = false;
-      }
-    }
+      });
+  }
 
-    return {
-      chocos,
-      isLoading,
-      isError,
-      getChocosSoftware,
-    };
-  },
-  {
-    cache: {
-      getChocosSoftware: {
-        duration: 60 * 60 * 1000,
-      },
-    },
-  },
-);
+  const getChocosSoftware = useCachedAction(_getChocosSoftware, {
+    key: "getChocosSoftware",
+    duration: 60 * 60 * 1000, // 1 hour cache
+  });
+
+  return {
+    chocos,
+    isLoading,
+    isError,
+    getChocosSoftware,
+  };
+}

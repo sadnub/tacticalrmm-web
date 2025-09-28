@@ -1,5 +1,4 @@
 import { computed, ref } from "vue";
-import { defineStore } from "pinia";
 import axios from "axios";
 import { openURL, Loading } from "quasar";
 import { router } from "src/router";
@@ -367,212 +366,184 @@ export async function runTestURLAction(payload: TestRunURLActionRequest) {
     });
 }
 
-export const useAPIKeyStore = defineStore(
-  "apiKeys",
-  () => {
-    const apiKeys = ref<APIKey[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
+export function useAPIKeyStore() {
+  const apiKeys = ref<APIKey[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
 
-    function getAPIKeys() {
-      isLoading.value = true;
-      isError.value = false;
+  function _getAPIKeys() {
+    isLoading.value = true;
+    isError.value = false;
 
-      axios
-        .get<APIKey[]>("/accounts/apikeys/")
-        .then(({ data }) => {
-          apiKeys.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+    axios
+      .get<APIKey[]>("/accounts/apikeys/")
+      .then(({ data }) => {
+        apiKeys.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  const getAPIKeys = useCachedAction(_getAPIKeys, {
+    key: "getAPIKeys",
+    duration: 1 * 60 * 1000, // 1 minute cache
+  });
+
+  async function addAPIKey(newAPIKey: Omit<APIKey, "id">) {
+    isLoading.value = true;
+    isError.value = false;
+    try {
+      const { data } = await axios.post<APIKey>("/accounts/apikeys/", newAPIKey);
+      apiKeys.value.push(data);
+      notifySuccess("API Key saved successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function addAPIKey(newAPIKey: Omit<APIKey, "id">) {
-      isLoading.value = true;
-      isError.value = false;
-      axios
-        .post<APIKey>("/accounts/apikeys/", newAPIKey)
-        .then(({ data }) => {
-          apiKeys.value.push(data);
-          notifySuccess("API Key saved successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+  async function updateAPIKey(id: number, updatedAPIKey: Partial<APIKey>) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.put<APIKey>(`/accounts/apikeys/${id}/`, updatedAPIKey);
+      const index = apiKeys.value.findIndex((key) => key.id === id);
+      if (index !== -1) {
+        apiKeys.value[index] = data;
+      }
+      notifySuccess("API Key updated successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function updateAPIKey(id: number, updatedAPIKey: Partial<APIKey>) {
-      isLoading.value = true;
-      isError.value = false;
+  async function removeAPIKey(id: number) {
+    isLoading.value = true;
+    isError.value = false;
 
-      axios
-        .put<APIKey>(`/accounts/apikeys/${id}/`, updatedAPIKey)
-        .then(({ data }) => {
-          const index = apiKeys.value.findIndex((key) => key.id === id);
-          if (index !== -1) {
-            apiKeys.value[index] = data;
-          }
-          notifySuccess("API Key updated successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+    try {
+      await axios.delete(`/accounts/apikeys/${id}/`);
+      apiKeys.value = apiKeys.value.filter((key) => key.id !== id);
+      notifySuccess("API Key removed successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function removeAPIKey(id: number) {
-      isLoading.value = true;
-      isError.value = false;
+  return {
+    apiKeys,
+    isLoading,
+    isError,
+    getAPIKeys,
+    addAPIKey,
+    updateAPIKey,
+    removeAPIKey,
+  };
+}
 
-      axios
-        .delete(`/accounts/apikeys/${id}/`)
-        .then(() => {
-          apiKeys.value = apiKeys.value.filter((key) => key.id !== id);
-          notifySuccess("API Key removed successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+export function useGlobalKeyStore() {
+  const keys = ref<GlobalKey[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function _getKeys() {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .get<GlobalKey[]>("/core/keystore/")
+      .then(({ data }) => {
+        keys.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  const getKeys = useCachedAction(_getKeys, {
+    key: "getKeys",
+    duration: 1 * 60 * 1000, // 1 minute cache
+  });
+
+  async function addKey(newKey: Omit<GlobalKey, "id">) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.post<GlobalKey>("/core/keystore/", newKey);
+      keys.value.push(data);
+      notifySuccess("Key saved successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    return {
-      apiKeys,
-      isLoading,
-      isError,
-      getAPIKeys,
-      addAPIKey,
-      updateAPIKey,
-      removeAPIKey,
-    };
-  },
-  {
-    cache: {
-      getAPIKeys: {
-        duration: 1 * 30 * 1000, // 30 seconds
-      },
-    },
-  },
-);
+  async function updateKey(id: number, updatedKey: GlobalKey) {
+    isLoading.value = true;
+    isError.value = false;
 
-export const useGlobalKeyStore = defineStore(
-  "globalKeyStore",
-  () => {
-    const keys = ref<GlobalKey[]>([]);
-    const isLoading = ref(false);
-    const isError = ref(false);
+    try {
+      const { data } = await axios.put<GlobalKey>(`/core/keystore/${id}/`, updatedKey);
+      const index = keys.value.findIndex((key) => key.id === id);
+      if (index !== -1) {
+        keys.value[index] = data;
+      }
 
-    function getKeys() {
-      isLoading.value = true;
-      isError.value = false;
-
-      axios
-        .get<GlobalKey[]>("/core/keystore/")
-        .then(({ data }) => {
-          keys.value = data;
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+      notifySuccess("Key updated successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function addKey(newKey: Omit<GlobalKey, "id">) {
-      isLoading.value = true;
-      isError.value = false;
+  async function removeKey(id: number) {
+    isLoading.value = true;
+    isError.value = false;
 
-      axios
-        .post<GlobalKey>("/core/keystore/", newKey)
-        .then(({ data }) => {
-          keys.value.push(data);
-          notifySuccess("Key saved successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
+    try {
+      await axios.delete(`/core/keystore/${id}/`);
+      keys.value = keys.value.filter((key) => key.id !== id);
+      notifySuccess("Key removed successfully.");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    function updateKey(id: number, updatedKey: GlobalKey) {
-      isLoading.value = true;
-      isError.value = false;
+  return {
+    keys,
+    isLoading,
+    isError,
+    getKeys,
+    addKey,
+    updateKey,
+    removeKey,
+  };
+}
 
-      axios
-        .put<GlobalKey>(`/core/keystore/${id}/`, updatedKey)
-        .then(({ data }) => {
-          const index = keys.value.findIndex((key) => key.id === id);
-          if (index !== -1) {
-            keys.value[index] = data;
-          }
-
-          notifySuccess("Key updated successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    function removeKey(id: number) {
-      isLoading.value = true;
-      isError.value = false;
-
-      axios
-        .delete(`/core/keystore/${id}/`)
-        .then(() => {
-          keys.value = keys.value.filter((key) => key.id !== id);
-          notifySuccess("Key removed successfully.");
-        })
-        .catch(() => {
-          isError.value = true;
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-    }
-
-    return {
-      keys,
-      isLoading,
-      isError,
-      getKeys,
-      addKey,
-      updateKey,
-      removeKey,
-    };
-  },
-  {
-    cache: {
-      getKeys: {
-        duration: 1 * 30 * 1000, // 30 seconds
-      },
-    },
-  },
-);
-
-export const useCodeSignStore = defineStore("codeSignStore", () => {
+export function useCodeSignStore() {
   const token = ref<string | null>(null);
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getToken() {
+  function _getToken() {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -588,52 +559,48 @@ export const useCodeSignStore = defineStore("codeSignStore", () => {
       });
   }
 
-  function removeToken() {
+  const getToken = useCachedAction(_getToken, {
+    key: "getToken",
+    duration: 1 * 60 * 1000, // 1 minute cache
+  });
+
+  async function removeToken() {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .delete("/core/codesign/")
-      .then(() => {
-        token.value = null;
-        notifySuccess("Token was deleted!");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      await axios.delete("/core/codesign/");
+      token.value = null;
+      notifySuccess("Token was deleted!");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function codeSignAgents() {
+  async function codeSignAgents() {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .post("/core/codesign/")
-      .then(() => {
-        notifySuccess("Agents will signed");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      await axios.post("/core/codesign/");
+      notifySuccess("Agents will signed");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function updateToken(token: string) {
+  async function updateToken(token: string) {
     isError.value = false;
-    axios
-      .patch("/core/codesign/", { token })
-      .then(() => {
-        notifySuccess("Token was updated successfully");
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      await axios.patch("/core/codesign/", { token });
+      notifySuccess("Token was updated successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   return {
@@ -645,4 +612,4 @@ export const useCodeSignStore = defineStore("codeSignStore", () => {
     codeSignAgents,
     updateToken,
   };
-});
+}

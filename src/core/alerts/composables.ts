@@ -1,14 +1,13 @@
 import { computed, onMounted } from "vue";
 
-import { useAlertTemplateStore } from "./api";
+import { alertTemplateStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
 
 // dropdown options
 export function useAlertTemplateDropdown() {
-  const templateStore = useAlertTemplateStore();
-
+  const { alertTemplates, isLoading } = alertTemplateStore;
   const alertTemplateOptions = computed(() => {
-    return templateStore.alertTemplates.map(
+    return alertTemplates.value.map(
       (template) =>
         ({
           type: "option",
@@ -18,10 +17,10 @@ export function useAlertTemplateDropdown() {
     );
   });
 
-  onMounted(templateStore.getAlertTemplates);
+  onMounted(alertTemplateStore.getAlertTemplates);
 
   return {
     alertTemplateOptions,
-    isLoading: computed(() => templateStore.isLoading),
+    isLoading,
   };
 }

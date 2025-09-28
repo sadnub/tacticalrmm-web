@@ -16,13 +16,14 @@
     <tactical-table
       v-model:pagination="pagination"
       dense
-      :rows="keyStore.apiKeys"
+      :rows="apiKeys"
       :columns="columns"
       row-key="id"
       binary-state-sort
       hide-pagination
       virtual-scroll
       :rows-per-page-options="[0]"
+      :loading="isLoading"
       no-data-label="No API tokens added yet"
       storage-key="apiKeyTable"
     >
@@ -80,7 +81,7 @@
 import { ref, onMounted } from "vue";
 import { useQuasar, copyToClipboard } from "quasar";
 import { useDashboardStore } from "src/stores/dashboard";
-import { useAPIKeyStore } from "../api";
+import { apiKeyStore } from "src/stores/api";
 import { notifySuccess, notifyError } from "src/utils/notify";
 import APIKeysForm from "src/core/settings/components/APIKeysForm.vue";
 import type { APIKey } from "../types";
@@ -131,7 +132,7 @@ const $q = useQuasar();
 
 // setup stores
 const dashboardStore = useDashboardStore();
-const keyStore = useAPIKeyStore();
+const { apiKeys, isLoading } = apiKeyStore;
 
 // setup table
 const pagination = ref({
@@ -155,7 +156,7 @@ function deleteAPIKey(key: APIKey) {
     title: `Delete API key: ${key.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(() => key.id && void keyStore.removeAPIKey(key.id));
+  }).onOk(() => key.id && void apiKeyStore.removeAPIKey(key.id));
 }
 
 // quasar dialog functions
@@ -174,5 +175,5 @@ function addAPIKey() {
   });
 }
 
-onMounted(keyStore.getAPIKeys);
+onMounted(() => apiKeyStore.getAPIKeys());
 </script>

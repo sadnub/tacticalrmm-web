@@ -16,22 +16,17 @@
           flat
           push
           icon="refresh"
-          @click="snippetStore.getScriptSnippets({ force: true })"
+          @click="scriptSnippetStore.getScriptSnippets({ force: true })"
         />Script Snippets
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <tactical-table
         dense
-        :table-class="{
-          'table-bgcolor': !$q.dark.isActive,
-          'table-bgcolor-dark': $q.dark.isActive,
-        }"
         :style="{ 'max-height': `${$q.screen.height - 300 - 32}px` }"
-        class="tbl-sticky"
-        :rows="snippetStore.snippets"
+        :rows="snippets"
         :columns="columns"
-        :loading="snippetStore.isLoading"
+        :loading="isLoading"
         :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: true }"
         row-key="id"
         binary-state-sort
@@ -156,7 +151,7 @@
 // composition imports
 import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useScriptSnippetStore } from "../api";
+import { scriptSnippetStore } from "src/stores/api";
 
 // ui imports
 import ScriptSnippetFormModal from "./ScriptSnippetFormModal.vue";
@@ -195,7 +190,7 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const snippetStore = useScriptSnippetStore();
+const { snippets, isLoading } = scriptSnippetStore;
 
 const search = ref("");
 
@@ -205,7 +200,7 @@ function deleteSnippet(snippet: ScriptSnippet) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (snippet.id) snippetStore.removeScriptSnippet(snippet.id);
+    if (snippet.id) void scriptSnippetStore.removeScriptSnippet(snippet.id);
   });
 }
 
@@ -224,5 +219,5 @@ function editSnippetModal(snippet: ScriptSnippet) {
   });
 }
 
-onMounted(snippetStore.getScriptSnippets);
+onMounted(scriptSnippetStore.getScriptSnippets);
 </script>

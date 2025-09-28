@@ -241,7 +241,7 @@ function reset2FA() {
     message: "Are you sure you would like to reset your 2FA token?",
     cancel: true,
     persistent: true,
-  }).onOk(() => userStore.userResetMFA());
+  }).onOk(() => void userStore.userResetMFA());
 }
 
 async function openWebTerm() {

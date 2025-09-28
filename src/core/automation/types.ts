@@ -37,3 +37,37 @@ export interface ResetPatchPolicyRequest {
   site?: number | null;
   client?: number | null;
 }
+
+// Policy related types
+export interface PolicyRelated {
+  default_server_policy: boolean;
+  default_workstation_policy: boolean;
+  server_clients: Array<{ id: number; name: string }>;
+  workstation_clients: Array<{ id: number; name: string }>;
+  server_sites: Array<{ id: number; name: string; client_name: string }>;
+  workstation_sites: Array<{ id: number; name: string; client_name: string }>;
+  agents: Array<{ pk: string; hostname: string; client: string; site: string }>;
+}
+
+// Tree structure types for policy overview
+export interface PolicyTreeClient {
+  name: string;
+  server_policy?: Policy;
+  workstation_policy?: Policy;
+  sites: PolicyTreeSite[];
+}
+
+export interface PolicyTreeSite {
+  name: string;
+  server_policy?: Policy;
+  workstation_policy?: Policy;
+}
+
+export interface PolicyTreeItem {
+  label: string;
+  id: number;
+  icon: string;
+  selectable: boolean;
+  children?: PolicyTreeItem[];
+  key: string;
+}

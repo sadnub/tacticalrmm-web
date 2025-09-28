@@ -1,6 +1,6 @@
-import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
+import { useCachedAction } from "../dashboard/composables";
 import type {
   PendingAction,
   DebugLog,
@@ -9,13 +9,13 @@ import type {
   GetDebugLogRequest,
 } from "./types";
 
-export const usePendingActionStore = defineStore("pendingActions", () => {
+export function usePendingActionStore() {
   const pendingActions = ref<PendingAction[]>([]);
   const agentPendingActions = ref<PendingAction[]>([]);
   const isLoading = ref(false);
   const isError = ref(true);
 
-  function getPendingActions() {
+  function _getPendingActions() {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -31,41 +31,40 @@ export const usePendingActionStore = defineStore("pendingActions", () => {
       });
   }
 
-  function getAgentPendingActions(agentId: string) {
+  const getPendingActions = useCachedAction(_getPendingActions, {
+    key: "getPendingActions",
+    duration: 30 * 1000, // 30 seconds cache
+  });
+
+  async function getAgentPendingActions(agentId: string) {
     isLoading.value = true;
     isError.value = false;
     agentPendingActions.value = [];
 
-    axios
-      .get<PendingAction[]>(`/agents/${agentId}/pendingactions/`)
-      .then(({ data }) => {
-        agentPendingActions.value = data;
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      const { data } = await axios.get<PendingAction[]>(`/agents/${agentId}/pendingactions/`);
+      agentPendingActions.value = data;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  function deletePendingAction(id: number) {
+  async function deletePendingAction(id: number) {
     isLoading.value = true;
     isError.value = false;
-    axios
-      .delete(`/logs/pendingactions/${id}/`)
-      .then(() => {
-        const index = pendingActions.value.findIndex((action) => action.id === id);
-        if (index !== -1) {
-          pendingActions.value.splice(index, 1);
-        }
-      })
-      .catch(() => {
-        isError.value = true;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+    try {
+      await axios.delete(`/logs/pendingactions/${id}/`);
+      const index = pendingActions.value.findIndex((action) => action.id === id);
+      if (index !== -1) {
+        pendingActions.value.splice(index, 1);
+      }
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   return {
@@ -77,14 +76,14 @@ export const usePendingActionStore = defineStore("pendingActions", () => {
     getAgentPendingActions,
     deletePendingAction,
   };
-});
+}
 
 export interface AuditLogResponse {
   audit_logs: AuditLog[];
   total: number;
 }
 
-export const useAuditLogStore = defineStore("auditLogs", () => {
+export function useAuditLogStore() {
   const auditLog = ref<AuditLog[]>([]);
   const rowsNumber = ref(0);
   const isLoading = ref(false);
@@ -122,9 +121,9 @@ export const useAuditLogStore = defineStore("auditLogs", () => {
     getAuditLog,
     $reset,
   };
-});
+}
 
-export const useDebugLogStore = defineStore("debugLogs", () => {
+export function useDebugLogStore() {
   const debugLog = ref<DebugLog[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -159,4 +158,4 @@ export const useDebugLogStore = defineStore("debugLogs", () => {
     getDebugLog,
     $reset,
   };
-});
+}

@@ -82,7 +82,7 @@ import { ref, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useSiteDropdown, useClientDropdown } from "src/core/clients/composables";
-import { runTestURLAction } from "../api";
+import { runTestURLAction } from "src/stores/api";
 
 // type imports
 import type { URLAction } from "src/core/settings/types";
@@ -120,7 +120,6 @@ const state = reactive({
 });
 
 const loading = ref(false);
-
 const result = reactive({
   url: "",
   result: "",

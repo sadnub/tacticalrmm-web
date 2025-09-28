@@ -1,6 +1,5 @@
 import { computed, onMounted } from "vue";
-import { customFieldStore } from "src/stores/api";
-import { useURLActionStore } from "./api";
+import { customFieldStore, urlActionStore } from "src/stores/api";
 import type { CustomField, URLActionType } from "./types";
 import { type SelectableOption, type Option } from "../dashboard/types";
 
@@ -50,12 +49,10 @@ export interface URLActionOption extends SelectableOption {
 }
 
 export function useURLActionDropdown() {
-  const actionStore = useURLActionStore();
-
-  const isLoading = computed(() => actionStore.isLoading);
+  const { urlActions, isLoading } = urlActionStore;
 
   const urlActionOptions = computed(() => {
-    return actionStore.urlActions.map(
+    return urlActions.value.map(
       (action) =>
         ({
           type: "option",
@@ -74,7 +71,7 @@ export function useURLActionDropdown() {
     urlActionOptions.value.filter((action) => action.action_type === "rest"),
   );
 
-  onMounted(actionStore.getURLActions);
+  onMounted(urlActionStore.getURLActions);
 
   return {
     urlActionOptions,

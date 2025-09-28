@@ -105,14 +105,7 @@
 
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn
-            :loading="scriptStore.isLoading"
-            dense
-            flat
-            label="Add"
-            color="primary"
-            type="submit"
-          />
+          <q-btn :loading="isLoading" dense flat label="Add" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -123,13 +116,12 @@
 // composition imports
 import { reactive, ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useScriptStore } from "../api";
+import { scriptStore } from "src/stores/api";
 import { agentPlatformOptions } from "src/core/agents/composables";
 import { shellOptions } from "../composables";
 
 // import types
 import type { Script } from "../types";
-import { until } from "@vueuse/shared";
 
 defineEmits(useDialogPluginComponent.emits);
 
@@ -141,7 +133,7 @@ defineProps<{
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const scriptStore = useScriptStore();
+const { isLoading } = scriptStore;
 
 // script upload logic
 const script = reactive<Script>({
@@ -176,11 +168,11 @@ watch(file, (newValue) => {
 });
 
 async function submit() {
-  scriptStore.addScript(script);
-
-  await until(() => scriptStore.isLoading).toBe(false);
-
-  if (scriptStore.isError) return;
-  onDialogOK();
+  try {
+    await scriptStore.addScript(script);
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 </script>

@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted, computed } from "vue";
 import { useQuasar } from "quasar";
 import { useInterval } from "@vueuse/core";
 import AlertsOverview from "src/core/alerts/components/AlertsOverview.vue";
@@ -68,8 +68,15 @@ import type { Alert } from "src/core/alerts/types";
 const $q = useQuasar();
 const dashboardStore = useDashboardStore();
 
-const alertsCount = ref(0);
-const topAlerts = ref<Alert[]>([]);
+const { alerts } = alertsStore;
+
+const activeAlerts = computed(() =>
+  alerts.value.filter((alert) => !alert.snoozed && !alert.resolved),
+);
+
+const topAlerts = computed(() => activeAlerts.value.slice(0, 10));
+
+const alertsCount = computed(() => activeAlerts.value.length);
 
 const badgeColor = computed(() => {
   const severities = topAlerts.value.map((a) => a.severity);
@@ -79,16 +86,11 @@ const badgeColor = computed(() => {
 });
 
 function getAlerts() {
-  void alertsStore.getTopAlerts(10).then((data) => {
-    alertsCount.value = data.alerts_count;
-    topAlerts.value = data.alerts;
-  });
+  void alertsStore.searchAlerts({});
 }
 
 function showOverview() {
-  $q.dialog({ component: AlertsOverview }).onDismiss(() => {
-    getAlerts();
-  });
+  $q.dialog({ component: AlertsOverview });
 }
 
 function snoozeAlert(alert: Alert) {
@@ -102,20 +104,12 @@ function snoozeAlert(alert: Alert) {
     },
     cancel: true,
   }).onOk((days: number) => {
-    $q.loading.show();
-    void alertsStore
-      .snoozeAlert(alert.id, days)
-      .then(() => getAlerts())
-      .finally(() => $q.loading.hide());
+    void alertsStore.snoozeAlert(alert.id, days);
   });
 }
 
 function resolveAlert(alert: Alert) {
-  $q.loading.show();
-  void alertsStore
-    .resolveAlert(alert.id)
-    .then(() => getAlerts())
-    .finally(() => $q.loading.hide());
+  void alertsStore.resolveAlert(alert.id);
 }
 
 function alertIconColor(severity: string) {

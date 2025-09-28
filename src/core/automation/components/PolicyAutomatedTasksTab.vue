@@ -2,16 +2,16 @@
   <div class="row">
     <div class="col-12">
       <q-btn
-        v-if="!!selectedPolicy"
+        v-if="selectedPolicy"
         class="q-mr-sm"
         dense
         flat
         push
         icon="refresh"
-        @click="getTasks"
+        @click="policyTasksStore.getPolicyTasks(selectedPolicy)"
       />
       <q-btn
-        v-if="!!selectedPolicy"
+        v-if="selectedPolicy"
         icon="add"
         label="Add Task"
         no-caps
@@ -20,13 +20,8 @@
         push
         @click="showAddTask"
       />
-      <q-table
+      <tactical-table
         v-model:pagination="pagination"
-        :table-class="{
-          'table-bgcolor': !$q.dark.isActive,
-          'table-bgcolor-dark': $q.dark.isActive,
-        }"
-        class="tabs-tbl-sticky"
         :rows="tasks"
         :columns="columns"
         :rows-per-page-options="[0]"
@@ -35,6 +30,7 @@
         binary-state-sort
         hide-pagination
         virtual-scroll
+        storage-key="policy-automated-tasks"
       >
         <!-- No data Slot -->
         <template #no-data>
@@ -44,37 +40,37 @@
           </div>
         </template>
         <!-- header slots -->
-        <template #header-cell-enabled="props">
-          <q-th auto-width :props="props">
+        <template #header-cell-enabled="headerProps">
+          <q-th auto-width :props="headerProps">
             <small>Enabled</small>
           </q-th>
         </template>
 
-        <template #header-cell-smsalert="props">
-          <q-th auto-width :props="props">
+        <template #header-cell-smsalert="headerProps">
+          <q-th auto-width :props="headerProps">
             <q-icon name="phone_android" size="1.5em">
               <q-tooltip>SMS Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
 
-        <template #header-cell-emailalert="props">
-          <q-th auto-width :props="props">
+        <template #header-cell-emailalert="headerProps">
+          <q-th auto-width :props="headerProps">
             <q-icon name="email" size="1.5em">
               <q-tooltip>Email Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
-        <template #header-cell-dashboardalert="props">
-          <q-th auto-width :props="props">
+        <template #header-cell-dashboardalert="headerProps">
+          <q-th auto-width :props="headerProps">
             <q-icon name="notifications" size="1.5em">
               <q-tooltip>Dashboard Alert</q-tooltip>
             </q-icon>
           </q-th>
         </template>
 
-        <template #header-cell-collector="props">
-          <q-th auto-width :props="props">
+        <template #header-cell-collector="headerProps">
+          <q-th auto-width :props="headerProps">
             <q-icon name="mdi-database-arrow-up" size="1.5em">
               <q-tooltip>Collector Task</q-tooltip>
             </q-icon>
@@ -82,31 +78,31 @@
         </template>
 
         <!-- body slots -->
-        <template #body="props">
-          <q-tr class="cursor-pointer" @dblclick="showEditTask(props.row)">
+        <template #body="bodyProps">
+          <q-tr class="cursor-pointer" @dblclick="showEditTask(bodyProps.row)">
             <!-- context menu -->
             <q-menu context-menu>
               <q-list dense style="min-width: 200px">
-                <q-item v-close-popup clickable @click="runTask(props.row)">
+                <q-item v-close-popup clickable @click="runTask(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="play_arrow" />
                   </q-item-section>
                   <q-item-section>Run task now</q-item-section>
                 </q-item>
-                <q-item v-close-popup clickable @click="showEditTask(props.row)">
+                <q-item v-close-popup clickable @click="showEditTask(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="edit" />
                   </q-item-section>
                   <q-item-section>Edit</q-item-section>
                 </q-item>
-                <q-item v-close-popup clickable @click="deleteTask(props.row)">
+                <q-item v-close-popup clickable @click="deleteTask(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="delete" />
                   </q-item-section>
                   <q-item-section>Delete</q-item-section>
                 </q-item>
                 <q-separator />
-                <q-item v-close-popup clickable @click="showStatus(props.row)">
+                <q-item v-close-popup clickable @click="showStatus(bodyProps.row)">
                   <q-item-section side>
                     <q-icon name="sync" />
                   </q-item-section>
@@ -118,237 +114,233 @@
                 </q-item>
               </q-list>
             </q-menu>
-            <!-- tds -->
-            <q-td>
-              <q-checkbox
-                v-model="props.row.enabled"
-                dense
-                @update:model-value="editTask(props.row, { enabled: !props.row.enabled })"
-              />
-            </q-td>
 
-            <q-td>
-              <q-checkbox
-                v-model="props.row.text_alert"
-                dense
-                @update:model-value="editTask(props.row, { text_alert: !props.row.text_alert })"
-              />
+            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+              <!-- enabled -->
+              <template v-if="col.name === 'enabled'">
+                <q-checkbox
+                  v-model="bodyProps.row.enabled"
+                  dense
+                  @update:model-value="
+                    editTask(bodyProps.row.id, { enabled: !bodyProps.row.enabled })
+                  "
+                />
+              </template>
+
+              <!-- sms alert -->
+              <template v-else-if="col.name === 'smsalert'">
+                <q-checkbox
+                  v-model="bodyProps.row.text_alert"
+                  dense
+                  @update:model-value="
+                    editTask(bodyProps.row.id, { text_alert: !bodyProps.row.text_alert })
+                  "
+                />
+              </template>
+
+              <!-- email alert -->
+              <template v-else-if="col.name === 'emailalert'">
+                <q-checkbox
+                  v-model="bodyProps.row.email_alert"
+                  dense
+                  @update:model-value="
+                    editTask(bodyProps.row.id, { email_alert: !bodyProps.row.email_alert })
+                  "
+                />
+              </template>
+
+              <!-- dashboard alert -->
+              <template v-else-if="col.name === 'dashboardalert'">
+                <q-checkbox
+                  v-model="bodyProps.row.dashboard_alert"
+                  dense
+                  @update:model-value="
+                    editTask(bodyProps.row.id, { dashboard_alert: !bodyProps.row.dashboard_alert })
+                  "
+                />
+              </template>
+
+              <!-- collector -->
+              <template v-else-if="col.name === 'collector'">
+                <q-icon v-if="!!bodyProps.row.custom_field" style="font-size: 1.3rem" name="check">
+                  <q-tooltip>The task updates a custom field on the agent</q-tooltip>
+                </q-icon>
+              </template>
+
+              <!-- name -->
+              <template v-else-if="col.name === 'name'">
+                {{ bodyProps.row.name }}
+              </template>
+
+              <!-- schedule -->
+              <template v-else-if="col.name === 'schedule'">
+                {{ bodyProps.row.schedule }}
+              </template>
+
+              <!-- status -->
+              <template v-else-if="col.name === 'status'">
+                <span class="status-cell text-primary" @click="showStatus(bodyProps.row)"
+                  >See Status</span
+                >
+              </template>
+
+              <!-- check_name -->
+              <template v-else-if="col.name === 'check_name'">
+                {{ bodyProps.row.check_name }}
+              </template>
+
+              <!-- default fallback -->
+              <template v-else>
+                {{ col.value }}
+              </template>
             </q-td>
-            <!-- email alert -->
-            <q-td>
-              <q-checkbox
-                v-model="props.row.email_alert"
-                dense
-                @update:model-value="editTask(props.row, { email_alert: !props.row.email_alert })"
-              />
-            </q-td>
-            <!-- dashboard alert -->
-            <q-td>
-              <q-checkbox
-                v-model="props.row.dashboard_alert"
-                dense
-                @update:model-value="
-                  editTask(props.row, {
-                    dashboard_alert: !props.row.dashboard_alert,
-                  })
-                "
-              />
-            </q-td>
-            <!-- is collector task -->
-            <q-td>
-              <q-icon v-if="!!props.row.custom_field" style="font-size: 1.3rem" name="check">
-                <q-tooltip>The task updates a custom field on the agent</q-tooltip>
-              </q-icon>
-            </q-td>
-            <q-td>{{ props.row.name }}</q-td>
-            <q-td>{{ props.row.schedule }}</q-td>
-            <q-td>
-              <span
-                style="cursor: pointer; text-decoration: underline"
-                class="status-cell text-primary"
-                @click="showStatus(props.row)"
-                >See Status</span
-              >
-            </q-td>
-            <q-td>{{ props.row.check_name }}</q-td>
           </q-tr>
         </template>
-      </q-table>
+      </tactical-table>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
+import { reactive, watch, onMounted } from "vue";
+import { useQuasar } from "quasar";
+import { notifyError } from "src/utils/notify";
 import AutomatedTaskForm from "src/core/tasks/components/AutomatedTaskForm.vue";
 import PolicyStatus from "./PolicyStatus.vue";
+import { policyTasksStore } from "src/stores/api";
 
-export default {
-  name: "PolicyAutomatedTasksTab",
-  props: {
-    selectedPolicy: !Number,
-  },
-  data() {
-    return {
-      tasks: [],
-      columns: [
-        { name: "enabled", align: "left", field: "enabled" },
-        { name: "smsalert", field: "text_alert", align: "left" },
-        { name: "emailalert", field: "email_alert", align: "left" },
-        { name: "dashboardalert", field: "dashboard_alert", align: "left" },
-        {
-          name: "collector",
-          label: "Collector",
-          field: "custom_field",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "name",
-          label: "Name",
-          field: "name",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "schedule",
-          label: "Schedule",
-          field: "schedule",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "status",
-          label: "More Info",
-          field: "more_info",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "check_name",
-          label: "Assigned Check",
-          field: "check_name",
-          align: "left",
-          sortable: true,
-        },
-      ],
-      pagination: {
-        rowsPerPage: 0,
-        sortBy: "name",
-        descending: false,
-      },
-    };
-  },
-  watch: {
-    selectedPolicy: function (newValue, oldValue) {
-      if (newValue !== oldValue) this.getTasks();
-    },
-  },
-  created() {
-    this.getTasks();
-  },
-  methods: {
-    getTasks() {
-      this.$q.loading.show();
-      this.$axios
-        .get(`/automation/policies/${this.selectedPolicy}/tasks/`)
-        .then((r) => {
-          this.tasks = r.data;
-          this.$q.loading.hide();
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    editTask(task, data) {
-      this.$axios
-        .put(`/tasks/${task.id}/`, data)
-        .then((r) => {
-          this.$q.loading.hide();
-          this.notifySuccess(r.data);
-          this.getTasks();
-        })
-        .catch(() => {
-          this.$q.loading.hide();
-        });
-    },
-    showAddTask() {
-      this.$q
-        .dialog({
-          component: AutomatedTaskForm,
-          componentProps: {
-            parent: { policy: this.selectedPolicy },
-          },
-        })
-        .onOk(this.getTasks);
-    },
-    showEditTask(task) {
-      this.$q
-        .dialog({
-          component: AutomatedTaskForm,
-          componentProps: {
-            task: task,
-            parent: { policy: this.selectedPolicy },
-          },
-        })
-        .onOk(this.getTasks);
-    },
-    showStatus(task) {
-      this.$q.dialog({
-        component: PolicyStatus,
-        componentProps: {
-          type: "task",
-          item: task,
-        },
-      });
-    },
-    runTask(task) {
-      if (!task.enabled) {
-        this.notifyError("Task cannot be run when it's disabled. Enable it first.");
-        return;
-      }
+// types
+import type { AutomatedTaskUI } from "src/core/tasks/types";
 
-      this.$q
-        .dialog({
-          title: "Are you sure?",
-          message: `Run ${task.name} task`,
-          cancel: true,
-          noBackdropDismiss: true,
-        })
-        .onOk(() => {
-          this.$q.loading.show();
-          this.$axios
-            .post(`/automation/tasks/${task.id}/run/`)
-            .then(() => {
-              this.$q.loading.hide();
-              this.notifySuccess("The task was initiated on all affected agents");
-            })
-            .catch(() => {
-              this.$q.loading.hide();
-            });
-        });
-    },
-    deleteTask(task) {
-      this.$q
-        .dialog({
-          title: "Are you sure?",
-          message: `Delete ${task.name} task`,
-          cancel: true,
-          noBackdropDismiss: true,
-        })
-        .onOk(() => {
-          this.$q.loading.show();
-          this.$axios
-            .delete(`/tasks/${task.id}/`)
-            .then(() => {
-              this.getTasks();
-              this.$q.loading.hide();
-              this.notifySuccess("Task was deleted successfully");
-            })
-            .catch(() => {
-              this.$q.loading.hide();
-            });
-        });
-    },
+const props = defineProps<{
+  selectedPolicy: number;
+}>();
+
+const $q = useQuasar();
+
+// state - use policy tasks store's tasks array
+const { policyTasks: tasks } = policyTasksStore;
+const columns = [
+  { name: "enabled", align: "left" as const, field: "enabled" },
+  { name: "smsalert", field: "text_alert", align: "left" as const },
+  { name: "emailalert", field: "email_alert", align: "left" as const },
+  { name: "dashboardalert", field: "dashboard_alert", align: "left" as const },
+  {
+    name: "collector",
+    label: "Collector",
+    field: "custom_field",
+    align: "left" as const,
+    sortable: true,
   },
-};
+  {
+    name: "name",
+    label: "Name",
+    field: "name",
+    align: "left" as const,
+    sortable: true,
+  },
+  {
+    name: "schedule",
+    label: "Schedule",
+    field: "schedule",
+    align: "left" as const,
+    sortable: true,
+  },
+  {
+    name: "status",
+    label: "More Info",
+    field: "more_info",
+    align: "left" as const,
+    sortable: true,
+  },
+  {
+    name: "check_name",
+    label: "Assigned Check",
+    field: "check_name",
+    align: "left" as const,
+    sortable: true,
+  },
+];
+const pagination = reactive({
+  rowsPerPage: 0,
+  sortBy: "name",
+  descending: false,
+});
+
+async function editTask(id: number, task: Partial<AutomatedTaskUI>) {
+  try {
+    if (!task.id) return;
+    await policyTasksStore.updateTaskPartial(task.id, task);
+  } catch {
+    // Error handling is done in the store
+  }
+}
+
+function showAddTask() {
+  $q.dialog({
+    component: AutomatedTaskForm,
+    componentProps: {
+      parent: { policy: props.selectedPolicy },
+    },
+  });
+}
+
+function showEditTask(task: AutomatedTaskUI) {
+  $q.dialog({
+    component: AutomatedTaskForm,
+    componentProps: {
+      task: task,
+      parent: { policy: props.selectedPolicy },
+    },
+  });
+}
+
+function showStatus(task: AutomatedTaskUI) {
+  $q.dialog({
+    component: PolicyStatus,
+    componentProps: {
+      type: "task",
+      item: task,
+    },
+  });
+}
+
+function runTask(task: AutomatedTaskUI) {
+  if (!task.enabled) {
+    notifyError("Task cannot be run when it's disabled. Enable it first.");
+    return;
+  }
+
+  $q.dialog({
+    title: "Are you sure?",
+    message: `Run ${task.name} task`,
+    cancel: true,
+    noBackdropDismiss: true,
+  }).onOk(() => {
+    if (!task.id) return;
+    policyTasksStore.runTask(task.id);
+  });
+}
+
+function deleteTask(task: AutomatedTaskUI) {
+  $q.dialog({
+    title: "Are you sure?",
+    message: `Delete ${task.name} task`,
+    cancel: true,
+    noBackdropDismiss: true,
+  }).onOk(() => {
+    if (!task.id) return;
+    void policyTasksStore.removeTask(task.id);
+  });
+}
+
+// watchers
+watch(
+  () => props.selectedPolicy,
+  (newValue) => {
+    if (newValue) policyTasksStore.getPolicyTasks(newValue);
+  },
+);
+
+onMounted(() => policyTasksStore.getPolicyTasks(props.selectedPolicy));
 </script>

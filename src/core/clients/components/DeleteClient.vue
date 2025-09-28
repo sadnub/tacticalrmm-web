@@ -46,10 +46,9 @@
 // composition imports
 import { computed, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useClientStore, useSiteStore } from "../api";
+import { clientStore, siteStore } from "src/stores/api";
 import { useSiteDropdown } from "../composables";
 import { isHeaderOption } from "src/core/dashboard/types";
-import { until } from "@vueuse/shared";
 
 // type imports
 import type { Client, Site } from "../types";
@@ -62,8 +61,6 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
 
 // setup dropdowns
 const { siteOptions, isLoading } = useSiteDropdown();
@@ -96,27 +93,23 @@ function submit() {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
     if (props.type === "client") {
-      clientStore.removeClient(props.object.id, site.value);
-
-      // so the dialog doesn't close on errors
-      until(() => clientStore.isLoading)
-        .toBe(false)
+      clientStore
+        .removeClient(props.object.id, site.value)
         .then(() => {
-          if (clientStore.isError) return;
           onDialogOK();
         })
-        .catch(() => {});
+        .catch(() => {
+          //
+        });
     } else {
-      siteStore.removeSite(props.object.id, site.value);
-
-      // so the dialog doesn't close on errors
-      until(() => siteStore.isLoading)
-        .toBe(false)
+      siteStore
+        .removeSite(props.object.id, site.value)
         .then(() => {
-          if (siteStore.isError) return;
           onDialogOK();
         })
-        .catch(() => {});
+        .catch(() => {
+          //
+        });
     }
   });
 }

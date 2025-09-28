@@ -45,14 +45,7 @@
 
       <q-card-actions align="right">
         <q-btn v-close-popup dense flat label="Cancel" />
-        <q-btn
-          :loading="snippetStore.isLoading"
-          dense
-          flat
-          label="Save"
-          color="primary"
-          @click="submit"
-        />
+        <q-btn :loading="isLoading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -62,7 +55,7 @@
 // composable imports
 import { ref, watch, reactive, computed } from "vue";
 import { useQuasar } from "quasar";
-import { useScriptSnippetStore } from "../api";
+import { scriptSnippetStore } from "src/stores/api";
 import { useDialogPluginComponent } from "quasar";
 import { shellOptions } from "../composables";
 
@@ -77,7 +70,6 @@ import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import jsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import { until } from "@vueuse/shared";
 
 // https://github.com/microsoft/monaco-editor/issues/4045#issuecomment-1723787448
 self.MonacoEnvironment = {
@@ -115,7 +107,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const snippetStore = useScriptSnippetStore();
+const { isLoading } = scriptSnippetStore;
 
 // snippet form logic
 const localSnippet = props.snippet
@@ -150,13 +142,14 @@ const lang = computed(() => {
 });
 
 async function submit() {
-  if (props.snippet) snippetStore.updateScriptSnippet(localSnippet);
-  else snippetStore.addScriptSnippet(localSnippet);
+  try {
+    if (props.snippet) await scriptSnippetStore.updateScriptSnippet(localSnippet);
+    else await scriptSnippetStore.addScriptSnippet(localSnippet);
 
-  await until(() => snippetStore.isLoading).toBe(false);
-
-  if (snippetStore.isError) return;
-  onDialogOK();
+    onDialogOK();
+  } catch {
+    //
+  }
 }
 
 const snippetEditor = ref<HTMLElement | null>(null);
@@ -186,6 +179,6 @@ function loadEditor() {
 function unloadEditor() {
   editor.getModel()?.dispose();
   editor.dispose();
-  onDialogHide();
+  onDialogOK();
 }
 </script>

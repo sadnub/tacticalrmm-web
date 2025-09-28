@@ -6,26 +6,26 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-card-section v-if="ret" style="height: 70vh" class="scroll">
+      <q-card-section v-if="scriptTestResult" style="height: 70vh" class="scroll">
         <div>
           Run Time:
-          <code>{{ ret.execution_time }} seconds</code>
+          <code>{{ scriptTestResult.execution_time }} seconds</code>
           <br />Return Code:
-          <code>{{ ret.retcode }}</code>
+          <code>{{ scriptTestResult.retcode }}</code>
           <br />
         </div>
         <br />
-        <div v-if="ret.stdout">
-          <script-output-copy-clip label="Standard Output" :data="ret.stdout" />
+        <div v-if="scriptTestResult.stdout">
+          <script-output-copy-clip label="Standard Output" :data="scriptTestResult.stdout" />
           <q-separator />
-          <pre>{{ ret.stdout }}</pre>
+          <pre>{{ scriptTestResult.stdout }}</pre>
         </div>
-        <div v-if="ret.stderr">
-          <script-output-copy-clip label="Standard Error" :data="ret.stderr" />
+        <div v-if="scriptTestResult.stderr">
+          <script-output-copy-clip label="Standard Error" :data="scriptTestResult.stderr" />
           <q-separator />
-          <pre>{{ ret.stderr }}</pre>
+          <pre>{{ scriptTestResult.stderr }}</pre>
         </div>
-        <q-inner-loading :showing="scriptStore.isLoading" />
+        <q-inner-loading :showing="isLoading" />
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -33,12 +33,12 @@
 
 <script lang="ts" setup>
 // composition imports
-import { computed, onMounted } from "vue";
-import { useScriptStore } from "../api";
+import { onMounted, ref } from "vue";
+import { scriptStore } from "src/stores/api";
 
 import { useDialogPluginComponent } from "quasar";
 import ScriptOutputCopyClip from "./ScriptOutputCopyClip.vue";
-import type { Script } from "../types";
+import type { Script, ScriptResult } from "../types";
 
 defineEmits(useDialogPluginComponent.emits);
 
@@ -52,10 +52,11 @@ const props = defineProps<{
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // setup stores
-const scriptStore = useScriptStore();
+const { isLoading } = scriptStore;
 
-const ret = computed(() => scriptStore.scriptTestResult);
-function runTestScript() {
+const scriptTestResult = ref<ScriptResult | null>(null);
+
+async function runTestScript() {
   const data = {
     code: props.script.script_body,
     timeout: props.script.default_timeout,
@@ -65,10 +66,12 @@ function runTestScript() {
     env_vars: props.script.env_vars,
   };
 
-  if (props.ctx === "server") {
-    void scriptStore.testScriptOnServer(data);
-  } else {
-    void scriptStore.testScript(props.agent, data);
+  const result =
+    props.ctx === "server"
+      ? await scriptStore.testScriptOnServer(data)
+      : await scriptStore.testScript(props.agent, data);
+  if (result) {
+    scriptTestResult.value = result;
   }
 }
 

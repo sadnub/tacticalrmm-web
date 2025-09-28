@@ -1,26 +1,22 @@
 <template>
-  <q-dialog ref="dialog" @hide="onHide">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="width: 60vw">
       <q-bar>
         {{ policy.name }} Relations
         <q-space />
-        <q-btn v-close-popup dense flat icon="close">
-          <q-tooltip class="bg-white text-primary">Close</q-tooltip>
-        </q-btn>
+        <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-card-section
-        v-if="
-          related.default_server_policy || related.default_workstation_policy
-        "
+        v-if="related.default_server_policy || related.default_workstation_policy"
         class="row items-center"
       >
         <div v-if="related.default_server_policy" class="text-body">
-          <q-icon name="error_outline" color="info" size="1.5em" />This policy
-          is set as the Default Server Policy.
+          <q-icon name="error_outline" color="info" size="1.5em" />This policy is set as the Default
+          Server Policy.
         </div>
         <div v-if="related.default_workstation_policy" class="text-body">
-          <q-icon name="error_outline" color="info" size="1.5em" />This policy
-          is set as the Default Workstation Policy.
+          <q-icon name="error_outline" color="info" size="1.5em" />This policy is set as the Default
+          Workstation Policy.
         </div>
       </q-card-section>
       <q-card-section>
@@ -45,10 +41,7 @@
           <q-tab-panels v-model="tab" :animated="false">
             <q-tab-panel name="clients">
               <q-list separator padding>
-                <q-item
-                  v-for="item in related.server_clients"
-                  :key="item.id + 'servers'"
-                >
+                <q-item v-for="item in related.server_clients" :key="item.id + 'servers'">
                   <q-item-section>
                     <q-item-label>{{ item.name }}</q-item-label>
                   </q-item-section>
@@ -58,10 +51,7 @@
                     </q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item
-                  v-for="item in related.workstation_clients"
-                  :key="item.id + 'workstations'"
-                >
+                <q-item v-for="item in related.workstation_clients" :key="item.id + 'workstations'">
                   <q-item-section>
                     <q-item-label>{{ item.name }}</q-item-label>
                   </q-item-section>
@@ -76,10 +66,7 @@
 
             <q-tab-panel name="sites">
               <q-list separator padding>
-                <q-item
-                  v-for="item in related.server_sites"
-                  :key="item.id + 'servers'"
-                >
+                <q-item v-for="item in related.server_sites" :key="item.id + 'servers'">
                   <q-item-section>
                     <q-item-label>{{ item.name }}</q-item-label>
                     <q-item-label caption>{{ item.client_name }}</q-item-label>
@@ -90,10 +77,7 @@
                     </q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item
-                  v-for="item in related.workstation_sites"
-                  :key="item.id + 'workstations'"
-                >
+                <q-item v-for="item in related.workstation_sites" :key="item.id + 'workstations'">
                   <q-item-section>
                     <q-item-label>{{ item.name }}</q-item-label>
                     <q-item-label caption>{{ item.client_name }}</q-item-label>
@@ -127,52 +111,42 @@
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: "RelationsView",
-  props: {
-    policy: {
-      type: Object,
-      required: true,
-    },
-  },
-  emits: ["hide", "ok", "cancel"],
-  data() {
-    return {
-      tab: "clients",
-      related: {},
-      thumbStyle: {
-        right: "2px",
-        borderRadius: "5px",
-        backgroundColor: "#027be3",
-        width: "5px",
-        opacity: 0.75,
-      },
-    };
-  },
-  mounted() {
-    this.$q.loading.show();
+<script lang="ts" setup>
+import { ref, onMounted } from "vue";
+import { useDialogPluginComponent } from "quasar";
+import { policyStore } from "src/stores/api";
+import type { Policy, PolicyRelated } from "src/core/automation/types";
 
-    this.$axios
-      .get(`/automation/policies/${this.policy.id}/related/`)
-      .then((r) => {
-        this.$q.loading.hide();
-        this.related = r.data;
-      })
-      .catch(() => {
-        this.$q.loading.hide();
-      });
-  },
-  methods: {
-    show() {
-      this.$refs.dialog.show();
-    },
-    hide() {
-      this.$refs.dialog.hide();
-    },
-    onHide() {
-      this.$emit("hide");
-    },
-  },
+const props = defineProps<{ policy: Policy }>();
+defineEmits([...useDialogPluginComponent.emits]);
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
+
+const tab = ref("clients");
+const related = ref<PolicyRelated>({
+  default_server_policy: false,
+  default_workstation_policy: false,
+  server_clients: [],
+  workstation_clients: [],
+  server_sites: [],
+  workstation_sites: [],
+  agents: [],
+});
+
+const thumbStyle = {
+  right: "2px",
+  borderRadius: "5px",
+  backgroundColor: "#027be3",
+  width: "5px",
+  opacity: "0.75",
 };
+
+async function loadRelated() {
+  try {
+    related.value = await policyStore.getPolicyRelated(props.policy.id);
+  } catch {
+    //
+  }
+}
+
+onMounted(loadRelated);
 </script>

@@ -6,11 +6,11 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-form ref="form" @submit.prevent="submit">
-        <q-card-section v-if="options.length > 0">
+      <q-form @submit.prevent="submit">
+        <q-card-section v-if="alertTemplateOptions.length > 0">
           <q-select
             v-model="selectedTemplate"
-            :options="options"
+            :options="alertTemplateOptions"
             filled
             dense
             clearable
@@ -25,7 +25,13 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn v-if="options.length > 0" flat label="Submit" color="primary" type="submit" />
+          <q-btn
+            v-if="alertTemplateOptions.length > 0"
+            flat
+            label="Submit"
+            color="primary"
+            type="submit"
+          />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -34,73 +40,50 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { useQuasar, useDialogPluginComponent } from "quasar";
-import { alertTemplateStore } from "src/stores/api";
+import { useDialogPluginComponent } from "quasar";
+import { clientStore, siteStore, policyStore } from "src/stores/api";
+import { useAlertTemplateDropdown } from "src/core/alerts/composables";
 import { capitalize } from "src/utils/format";
-import { notifySuccess } from "src/utils/notify";
 
 type AlertAssignType = "site" | "client" | "policy";
 
-const props = defineProps<{ object: any; type: AlertAssignType }>();
+const props = defineProps<{
+  object: {
+    id: number;
+    alert_template?: number | null;
+  };
+  type: AlertAssignType;
+}>();
 defineEmits(["hide", "ok", "cancel", ...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-const $q = useQuasar();
 
-const form = ref();
+// Use alert template dropdown composable
+const { alertTemplateOptions } = useAlertTemplateDropdown();
+
 const selectedTemplate = ref<number | null>(null);
-const options = ref<{ label: string; value: number }[]>([]);
 
-function submit() {
-  if (props.object.alert_template === selectedTemplate.value) {
-    hide();
+async function submit() {
+  if (props.object.alert_template === selectedTemplate.value || !selectedTemplate.value) {
+    onDialogOK();
     return;
   }
 
-  $q.loading.show();
-
-  let url = "";
-  let data: Record<string, unknown> = {};
-  if (props.type === "client") {
-    url = `/clients/${props.object.id}/`;
-    data = { client: { id: props.object.id, alert_template: selectedTemplate.value } };
-  } else if (props.type === "site") {
-    url = `/clients/sites/${props.object.id}/`;
-    data = { site: { id: props.object.id, alert_template: selectedTemplate.value } };
-  } else if (props.type === "policy") {
-    url = `/automation/policies/${props.object.id}/`;
-    data = { id: props.object.id, alert_template: selectedTemplate.value };
+  try {
+    const payload = { alert_template: selectedTemplate.value };
+    if (props.type === "client") {
+      await clientStore.updateClient(props.object.id, payload);
+    } else if (props.type === "site") {
+      await siteStore.updateSite(props.object.id, payload);
+    } else if (props.type === "policy") {
+      await policyStore.updatePolicy(props.object.id, payload);
+    }
+    onDialogOK();
+  } catch {
+    // Error handling is done in the store
   }
-
-  const text = selectedTemplate.value ? "assigned" : "removed";
-  axios
-    .put(url, data)
-    .then(() => {
-      $q.loading.hide();
-      onDialogOK();
-      notifySuccess(`Alert Template ${text} successfully!`);
-    })
-    .catch(() => {
-      $q.loading.hide();
-    });
-}
-
-function getAlertTemplates() {
-  alertTemplateStore.getAlertTemplates();
-  options.value = alertTemplateStore.alertTemplates.map((template) => ({
-    label: template.name,
-    value: template.id,
-  }));
-}
-
-function show() {
-  (dialogRef as any).value.show();
-}
-function hide() {
-  (dialogRef as any).value.hide();
 }
 
 onMounted(() => {
-  getAlertTemplates();
   selectedTemplate.value = props.object.alert_template ?? null;
 });
 </script>

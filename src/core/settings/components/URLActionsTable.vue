@@ -17,7 +17,7 @@
     <q-separator />
     <q-table
       dense
-      :rows="actionStore.urlActions"
+      :rows="urlActions"
       :columns="columns"
       :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: true }"
       row-key="id"
@@ -26,7 +26,7 @@
       virtual-scroll
       :rows-per-page-options="[0]"
       :no-data-label="`No ${props.type === 'web' ? 'URL Actions' : 'Web Hooks'} added yet`"
-      :loading="actionStore.isLoading"
+      :loading="isLoading"
     >
       <!-- body slots -->
       <template #body="bodyProps">
@@ -74,7 +74,7 @@
 // composition imports
 import { onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useURLActionStore } from "../api";
+import { urlActionStore } from "src/stores/api";
 
 // ui imports
 import URLActionsForm from "./URLActionsForm.vue";
@@ -90,7 +90,7 @@ const props = defineProps<{ type: URLActionType }>();
 const $q = useQuasar();
 
 // setup stores
-const actionStore = useURLActionStore();
+const { urlActions, isLoading } = urlActionStore;
 
 const columns: TacticalColumn[] = [
   {
@@ -140,7 +140,7 @@ function deleteURLAction(action: URLAction) {
     title: `Delete URL Action: ${action.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(() => actionStore.removeURLAction(action.id));
+  }).onOk(() => void urlActionStore.removeURLAction(action.id));
 }
-onMounted(actionStore.getURLActions);
+onMounted(() => urlActionStore.getURLActions());
 </script>
