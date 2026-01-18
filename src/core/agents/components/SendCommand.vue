@@ -1,6 +1,9 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide" @keydown.esc="onDialogHide">
-    <q-card class="q-dialog-plugin" :style="{ 'min-width': !ret ? '40vw' : '70vw' }">
+    <q-card
+      class="q-dialog-plugin"
+      :style="{ 'min-width': ret || streamOutput ? '70vw' : '40vw' }"
+    >
       <q-bar>
         Send command on {{ agent.hostname }}
         <q-space />
@@ -72,7 +75,7 @@
             ]"
           />
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="q-pb-xs">
           <q-input
             v-model="state.cmd"
             filled
@@ -82,9 +85,12 @@
             :rules="[(val) => !!val || '*Required']"
           />
         </q-card-section>
-        <q-card-actions align="right">
-          <q-btn v-close-popup flat dense push label="Cancel" />
-          <q-btn :loading="isLoading" flat dense push label="Send" color="primary" type="submit" />
+        <q-card-actions align="between">
+          <q-toggle v-model="useStreaming" label="Stream Output" />
+          <div>
+            <q-btn v-close-popup flat dense push label="Cancel" />
+            <q-btn :loading="loading" flat dense push label="Send" color="primary" type="submit" />
+          </div>
         </q-card-actions>
         <q-card-section v-if="ret"
           ><script-output-copy-clip label="Output" :data="ret" /> <q-separator
@@ -96,6 +102,19 @@
         >
           <pre>{{ ret }}</pre>
         </q-card-section>
+        <q-card-section v-if="showStream" class="q-py-xs">
+          <command-stream
+            :key="`${runId}`"
+            :agent-id="agent.agent_id"
+            :cmd="streamCmd"
+            :shell="state.shell"
+            :custom-shell="state.custom_shell"
+            :timeout="state.timeout"
+            @update-output="(val) => (streamOutput = val)"
+            @stream-loaded="loading = false"
+            @stream-closed="loading = false"
+          />
+        </q-card-section>
       </q-form>
     </q-card>
   </q-dialog>
@@ -103,7 +122,7 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref } from "vue";
+import { ref, nextTick } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
@@ -112,8 +131,9 @@ import { cmdPlaceholder } from "src/core/agents/composables";
 import { runAsUserToolTip } from "src/constants/constants";
 
 import ScriptOutputCopyClip from "src/core/scripts/components/ScriptOutputCopyClip.vue";
+import CommandStream from "./CommandStream.vue";
 
-// import typese
+// import types
 import type { Agent, AgentCommandRequest } from "../types";
 
 const props = defineProps<{
@@ -125,9 +145,6 @@ defineEmits(useDialogPluginComponent.emits);
 // setup quasar dialog plugin
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
-// setup stores
-const { isLoading } = agentStore;
-
 // run command logic
 const state = ref<AgentCommandRequest>({
   shell: props.agent.plat === "windows" ? "cmd" : "/bin/bash",
@@ -138,13 +155,34 @@ const state = ref<AgentCommandRequest>({
 });
 
 const ret = ref<string | undefined>(undefined);
+const loading = ref(false);
+const useStreaming = ref(false);
+const showStream = ref(false);
+const streamCmd = ref("");
+const streamOutput = ref("");
+const runId = ref(0);
 
 async function submit() {
   ret.value = undefined;
-  try {
-    ret.value = await agentStore.sendAgentCommand(props.agent.agent_id, state.value);
-  } catch {
-    //
+  streamOutput.value = "";
+  loading.value = true;
+
+  if (useStreaming.value) {
+    // Streaming mode - use websocket
+    showStream.value = false;
+    streamCmd.value = state.value.cmd;
+    runId.value++;
+    await nextTick();
+    showStream.value = true;
+  } else {
+    // Traditional mode - use REST API
+    try {
+      ret.value = await agentStore.sendAgentCommand(props.agent.agent_id, state.value);
+    } catch {
+      //
+    } finally {
+      loading.value = false;
+    }
   }
 }
 </script>

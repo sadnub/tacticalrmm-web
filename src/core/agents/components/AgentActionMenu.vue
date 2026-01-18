@@ -32,7 +32,7 @@
       <q-item-section>VNC</q-item-section>
     </q-item>
 
-    <q-item v-ripple clickable>
+    <q-item v-ripple clickable :disable="webActions.length === 0">
       <q-item-section side>
         <q-icon size="xs" name="open_in_new" />
       </q-item-section>
@@ -50,7 +50,7 @@
             clickable
             @click="runURLAction(action.id, 'agent', agent.agent_id)"
           >
-            {{ action.name }}
+            <q-item-section>{{ action.name }}</q-item-section>
           </q-item>
         </q-list>
       </q-menu>
@@ -70,7 +70,7 @@
       <q-item-section>Run Script</q-item-section>
     </q-item>
 
-    <q-item v-ripple clickable>
+    <q-item v-ripple clickable :disable="favoriteScriptOptions.length === 0">
       <q-item-section side>
         <q-icon size="xs" name="star" />
       </q-item-section>
@@ -88,7 +88,7 @@
             clickable
             @click="showRunScript(agent, script)"
           >
-            {{ script.label }}
+            <q-item-section>{{ script.label }}</q-item-section>
           </q-item>
         </q-list>
       </q-menu>
@@ -248,8 +248,8 @@ import EditAgent from "./EditAgent.vue";
 import SendCommand from "./SendCommand.vue";
 import RunScript from "./RunScript.vue";
 import IntegrationsContextMenu from "src/core/dashboard/ui/IntegrationsContextMenu.vue";
+import ConfirmYesDialog from "./ConfirmYesDialog.vue";
 
-import DOMPurify from "dompurify";
 import type { Agent } from "../types";
 import type { Script } from "src/core/scripts/types";
 
@@ -365,18 +365,15 @@ function rebootNow(agent: Agent) {
 }
 
 function shutdown(agent: Agent) {
-  const clean = DOMPurify.sanitize(agent.hostname);
   $q.dialog({
-    title: `Please type <code style="color:red">yes</code> in the box below to confirm shutdown of <span style="color:red">${clean}</span>.`,
-    prompt: {
-      model: "",
-      type: "text",
-      isValid: (val) => val === "yes",
+    component: ConfirmYesDialog,
+    componentProps: {
+      hostname: agent.hostname,
+      actionVerb: "shutdown",
+      title: "Confirm Shutdown",
+      okLabel: "Shutdown",
+      okColor: "negative",
     },
-    cancel: true,
-    ok: { label: "Shutdown", color: "negative" },
-    noBackdropDismiss: true,
-    html: true,
   }).onOk(() => {
     void agentStore.agentShutdown(agent.agent_id);
   });
@@ -423,18 +420,15 @@ async function pingAgent(agent: Agent) {
 }
 
 function deleteAgent(agent: Agent) {
-  const clean = DOMPurify.sanitize(agent.hostname);
   $q.dialog({
-    title: `Please type <code style="color:red">yes</code> in the box below to confirm deletion of <span style="color:red">${clean}</span>.`,
-    prompt: {
-      model: "",
-      type: "text",
-      isValid: (val) => val === "yes",
+    component: ConfirmYesDialog,
+    componentProps: {
+      hostname: agent.hostname,
+      actionVerb: "deletion",
+      title: "Confirm Deletion",
+      okLabel: "Uninstall",
+      okColor: "negative",
     },
-    cancel: true,
-    ok: { label: "Uninstall", color: "negative" },
-    noBackdropDismiss: true,
-    html: true,
   }).onOk(() => {
     void agentStore.removeAgent(agent.agent_id);
   });

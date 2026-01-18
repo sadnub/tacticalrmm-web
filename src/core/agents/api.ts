@@ -894,3 +894,89 @@ function createWindowsUpdateStore() {
     updateAgentUpdate,
   };
 }
+
+// Registry API functions (standalone, not store-based)
+export async function fetchAgentRegistry(
+  agent_id: string,
+  path: string,
+  page = 1,
+  hiveSearch = false,
+) {
+  const { data } = await axios.get(`/agents/${agent_id}/registry/`, {
+    params: { path: `${path}`, page, page_size: hiveSearch ? 100000 : 400 },
+  });
+  return data;
+}
+
+export async function deleteRegistryKey(agent_id: string, path: string) {
+  const { data } = await axios.delete(`/agents/${agent_id}/registry/delete-key/`, {
+    params: { path: `${path}` },
+  });
+  return data;
+}
+
+export async function createRegistryKey(agent_id: string, path: string) {
+  const { data } = await axios.post(`/agents/${agent_id}/registry/create-key/`, { path });
+  return data;
+}
+
+export async function renameRegistryKey(agent_id: string, old_path: string, new_path: string) {
+  const { data } = await axios.post(`/agents/${agent_id}/registry/rename-key/`, {
+    old_path,
+    new_path,
+  });
+  return data;
+}
+
+export async function deleteRegistryValue(agent_id: string, path: string, name: string) {
+  const { data } = await axios.delete(`/agents/${agent_id}/registry/delete-value/`, {
+    params: { path, name },
+  });
+  return data;
+}
+
+export async function renameRegistryValue(
+  agentId: string,
+  path: string,
+  oldName: string,
+  newName: string,
+) {
+  const { data } = await axios.post(`/agents/${agentId}/registry/rename-value/`, {
+    path,
+    old_name: oldName,
+    new_name: newName,
+  });
+  return data;
+}
+
+export async function modifyRegistryValue(
+  agentId: string,
+  path: string,
+  name: string,
+  type: string,
+  dataValue: string,
+) {
+  const { data } = await axios.post(`/agents/${agentId}/registry/modify-value/`, {
+    path,
+    name,
+    type,
+    data: dataValue,
+  });
+  return data;
+}
+
+export async function createRegistryValue(
+  agentId: string,
+  path: string,
+  name: string,
+  type: string,
+  dataValue: string,
+) {
+  const formData = new FormData();
+  formData.append("path", path);
+  formData.append("name", name);
+  formData.append("type", type);
+  formData.append("data", dataValue);
+  const { data } = await axios.post(`/agents/${agentId}/registry/create-value/`, formData);
+  return data;
+}

@@ -25,6 +25,10 @@
         icon="fas fa-clipboard-list"
         label="Event Log"
       />
+      <q-tab v-if="agentPlatform === 'windows'" name="registry">
+        <q-icon :name="`img:${registryIcon}`" size="20px" class="q-mr-xs" />
+        Registry
+      </q-tab>
     </q-tabs>
     <q-separator />
     <q-tab-panels v-model="tab">
@@ -59,6 +63,9 @@
           }"
         ></iframe>
       </q-tab-panel>
+      <q-tab-panel v-if="agentPlatform === 'windows'" name="registry" class="q-pa-none">
+        <RegistryManager :agent-id="agentId" />
+      </q-tab-panel>
     </q-tab-panels>
   </div>
 </template>
@@ -76,6 +83,8 @@ const agentStore = useAgentStore();
 import ProcessManager from "src/core/agents/components/remotebg/ProcessManager.vue";
 import ServicesManager from "src/core/agents/components/remotebg/ServicesManager.vue";
 import EventLogManager from "src/core/agents/components/remotebg/EventLogManager.vue";
+import RegistryManager from "src/core/agents/components/remotebg/RegistryManager.vue";
+import registryIcon from "src/assets/windows-registry.png";
 
 // type imports
 import type { MeshUrls } from "src/core/agents/types";
