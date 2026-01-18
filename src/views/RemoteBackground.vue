@@ -68,8 +68,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 
 // ui imports
 import ProcessManager from "src/core/agents/components/remotebg/ProcessManager.vue";
@@ -108,8 +109,6 @@ useMeta(() => ({
 }));
 
 onMounted(async () => {
-  useDashboardStore();
-
   if (agentId.value && typeof agentId.value === "string") {
     $q.loadingBar.setDefaults({ size: "0px" });
     const result = await getAgentMeshCentralUrls(agentId.value);

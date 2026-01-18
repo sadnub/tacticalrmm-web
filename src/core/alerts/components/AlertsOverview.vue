@@ -178,10 +178,12 @@
 import { computed, reactive, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
-import { useDashboardStore } from "src/stores/dashboard";
 import { useClientDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
-import { alertsStore } from "src/stores/api";
+import { useAlertsStore, useDashboardStore } from "src/stores/api";
+
+const alertsStore = useAlertsStore();
+const dashboardStore = useDashboardStore();
 import type { Alert, AlertSearchParams, AlertSeverity } from "src/core/alerts/types";
 
 // emits
@@ -190,7 +192,6 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // stores
-const dashboardStore = useDashboardStore();
 const { alerts, isLoading } = alertsStore;
 
 // composables

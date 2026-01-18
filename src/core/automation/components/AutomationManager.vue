@@ -277,8 +277,10 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { policyStore } from "src/stores/api";
+import { usePolicyStore, useDashboardStore } from "src/stores/api";
+
+const policyStore = usePolicyStore();
+const dashboardStore = useDashboardStore();
 import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
 import PolicyForm from "./PolicyForm.vue";
 import PolicyOverview from "./PolicyOverview.vue";
@@ -293,7 +295,6 @@ import type { Policy } from "src/core/automation/types";
 defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
-const dashboardStore = useDashboardStore();
 
 // state
 const subtab = ref("checks");

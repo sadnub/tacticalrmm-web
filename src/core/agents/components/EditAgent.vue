@@ -329,9 +329,11 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { agentStore } from "src/stores/api";
-import { customFieldStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const customFieldStore = useCustomFieldStore();
+const dashboardStore = useDashboardStore();
 import { useSiteDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
 import { formatCustomFields } from "src/utils/format";
@@ -352,7 +354,6 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { agentCustomFields } = customFieldStore;
 const splitterModel = ref(25);
 const tab = ref("general");

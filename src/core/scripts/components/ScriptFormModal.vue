@@ -220,8 +220,10 @@ import { ref, reactive, watch, computed } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAgentDropdown, agentPlatformOptions } from "src/core/agents/composables";
 import { notifyError } from "src/utils/notify";
-import { scriptStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useScriptStore, useDashboardStore } from "src/stores/api";
+
+const scriptStore = useScriptStore();
+const dashboardStore = useDashboardStore();
 import { shellOptions } from "../composables";
 import { envVarsLabel } from "src/constants/constants";
 // ui imports
@@ -275,7 +277,6 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { isLoading } = scriptStore;
 
 // setup agent dropdown

@@ -59,8 +59,10 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar, Notify } from "quasar";
 import { formatTableColumnText, truncateText } from "src/utils/format";
-import { agentStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 
 // ui imports
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
@@ -68,9 +70,6 @@ import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 
 // type imports
 import type { TacticalColumn } from "src/core/dashboard/types";
-
-// setup stores
-const dashboardStore = useDashboardStore();
 
 // static data
 const columns: TacticalColumn[] = [

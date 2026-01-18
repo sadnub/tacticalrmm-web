@@ -96,7 +96,9 @@
 // composition imports
 import { ref, computed, reactive, watch } from "vue";
 import { useDialogPluginComponent, useQuasar, extend } from "quasar";
-import { urlActionStore } from "src/stores/api";
+import { useURLActionStore } from "src/stores/api";
+
+const urlActionStore = useURLActionStore();
 
 // ui imports
 import TestURLAction from "./TestURLAction.vue";

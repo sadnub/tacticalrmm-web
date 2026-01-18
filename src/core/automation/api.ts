@@ -7,8 +7,41 @@ import { useCachedAction } from "../dashboard/composables";
 import { processTaskDatafromDB, processTaskDataforDB } from "../tasks/api";
 import type { AutomatedTask, AutomatedTaskUI } from "../tasks/types";
 
-// Policy store (plain composable, mirrors checks api style)
+// Lazy singletons
+let policyStoreInstance: ReturnType<typeof createPolicyStore> | null = null;
+let policyChecksStoreInstance: ReturnType<typeof createPolicyChecksStore> | null = null;
+let policyTasksStoreInstance: ReturnType<typeof createPolicyTasksStore> | null = null;
+let patchPolicyStoreInstance: ReturnType<typeof createPatchPolicyStore> | null = null;
+
 export function usePolicyStore() {
+  if (!policyStoreInstance) {
+    policyStoreInstance = createPolicyStore();
+  }
+  return policyStoreInstance;
+}
+
+export function usePolicyChecksStore() {
+  if (!policyChecksStoreInstance) {
+    policyChecksStoreInstance = createPolicyChecksStore();
+  }
+  return policyChecksStoreInstance;
+}
+
+export function usePolicyTasksStore() {
+  if (!policyTasksStoreInstance) {
+    policyTasksStoreInstance = createPolicyTasksStore();
+  }
+  return policyTasksStoreInstance;
+}
+
+export function usePatchPolicyStore() {
+  if (!patchPolicyStoreInstance) {
+    patchPolicyStoreInstance = createPatchPolicyStore();
+  }
+  return patchPolicyStoreInstance;
+}
+
+function createPolicyStore() {
   const policies = ref<Policy[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -158,8 +191,7 @@ export function usePolicyStore() {
   };
 }
 
-// Policy Checks store (plain composable)
-export function usePolicyChecksStore() {
+function createPolicyChecksStore() {
   const policyChecks = ref<Check[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -243,8 +275,7 @@ export function usePolicyChecksStore() {
   };
 }
 
-// Policy Tasks store (plain composable)
-export function usePolicyTasksStore() {
+function createPolicyTasksStore() {
   const policyTasks = ref<AutomatedTaskUI[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -373,8 +404,7 @@ export function usePolicyTasksStore() {
   };
 }
 
-// Patch Policy store (plain composable, mirrors checks api style)
-export function usePatchPolicyStore() {
+function createPatchPolicyStore() {
   const isLoading = ref(false);
   const isError = ref(false);
 

@@ -1,10 +1,12 @@
 import { onMounted, computed, ref } from "vue";
 
-import { agentStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore, useDashboardStore } from "src/stores/api";
 import type { Option, SelectableOption } from "../dashboard/types";
 
 import type { Agent } from "./types";
+
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 
 // TODO: Apply remove extra categories when filtering or test to make sure it is working
 export function useAgentDropdown() {
@@ -93,8 +95,7 @@ export function useAgentServiceDropdown(agentId: string | null) {
 }
 
 export function cmdPlaceholder(shell: string) {
-  const store = useDashboardStore();
-  const placeholders = computed(() => store.dashboardSettings.runCmdPlaceholderText);
+  const placeholders = computed(() => dashboardStore.dashboardSettings.runCmdPlaceholderText);
 
   if (shell === "cmd") return placeholders.value.cmd;
   else if (shell === "powershell") return placeholders.value.powershell;

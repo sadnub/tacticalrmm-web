@@ -46,7 +46,10 @@
 // composition imports
 import { computed, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { clientStore, siteStore } from "src/stores/api";
+import { useClientStore, useSiteStore } from "src/stores/api";
+
+const clientStore = useClientStore();
+const siteStore = useSiteStore();
 import { useSiteDropdown } from "../composables";
 import { isHeaderOption } from "src/core/dashboard/types";
 

@@ -194,8 +194,10 @@ import { computed, reactive, ref, watch } from "vue";
 import { useDialogPluginComponent, openURL } from "quasar";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
-import { agentStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 
 //ui imports
@@ -208,7 +210,6 @@ import type { Script, ScriptResult } from "src/core/scripts/types";
 import { isScriptResult } from "src/core/scripts/types";
 
 // store
-const dashboardStore = useDashboardStore();
 const { isLoading } = agentStore;
 const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
 const serverScriptsEnabled = computed(() => dashboardStore.dashboardSettings.serverScriptsEnabled);

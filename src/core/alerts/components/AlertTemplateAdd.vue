@@ -41,7 +41,11 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { clientStore, siteStore, policyStore } from "src/stores/api";
+import { useClientStore, useSiteStore, usePolicyStore } from "src/stores/api";
+
+const clientStore = useClientStore();
+const siteStore = useSiteStore();
+const policyStore = usePolicyStore();
 import { useAlertTemplateDropdown } from "src/core/alerts/composables";
 import { capitalize } from "src/utils/format";
 

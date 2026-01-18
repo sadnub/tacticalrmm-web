@@ -15,7 +15,9 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
 
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 
 // type imports
 import type { WebVNCUrl } from "src/core/agents/types";

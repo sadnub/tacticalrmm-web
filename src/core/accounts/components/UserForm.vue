@@ -109,8 +109,9 @@
 <script lang="ts" setup>
 import { ref, reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useAuthStore } from "src/stores/auth";
-import { userStore } from "src/stores/api";
+import { useAuthStore, useUserStore } from "src/stores/api";
+
+const userStore = useUserStore();
 import { useRoleDropdown } from "../composables";
 import { isValidEmail } from "src/utils/validation";
 
@@ -126,9 +127,9 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 // setup stores
-const auth = useAuthStore();
+const { username } = useAuthStore();
 
-const loggedInUser = computed(() => auth.username);
+const loggedInUser = computed(() => username.value);
 
 const { roleOptions } = useRoleDropdown();
 

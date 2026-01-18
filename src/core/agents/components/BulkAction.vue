@@ -246,7 +246,9 @@ import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 import { cmdPlaceholder } from "src/core/agents/composables";
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 

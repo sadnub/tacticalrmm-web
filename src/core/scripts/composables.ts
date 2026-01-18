@@ -3,8 +3,10 @@ import { computed, onMounted, unref } from "vue";
 import { removeEmptyCategories } from "src/utils/format";
 import trmmLogo from "src/assets/trmm_256.png";
 
-import { scriptStore } from "src/stores/api";
+import { useScriptStore } from "src/stores/api";
 import type { Script } from "./types";
+
+const scriptStore = useScriptStore();
 import type { AgentPlat } from "src/core/agents/types";
 import { type SelectableOption, type HeaderOption, isHeaderOption } from "../dashboard/types";
 

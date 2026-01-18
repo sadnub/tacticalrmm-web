@@ -7,7 +7,21 @@
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:install": "playwright install",
+    "test:install-deps": "playwright install-deps",
+    "test:auth": "playwright test auth.spec.ts",
+    "test:clients": "playwright test clients.spec.ts",
+    "test:agents": "playwright test agents.spec.ts",
+    "test:features": "playwright test features.spec.ts",
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:safari": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project='Mobile Chrome' --project='Mobile Safari'",
     "dev": "quasar dev",
     "build": "quasar build",
     "postinstall": "quasar prepare"
@@ -23,7 +37,6 @@
     "axios": "1.8.4",
     "dompurify": "3.2.5",
     "monaco-editor": "0.50.0",
-    "pinia": "2.2.6",
     "qrcode": "1.5.4",
     "quasar": "2.18.1",
     "vue": "3.5.13",
@@ -31,7 +44,6 @@
     "vue-router": "4.4.5",
     "vue3-apexcharts": "1.7.0",
     "vuedraggable": "4.1.0",
-    "vuex": "^4.1.0",
     "yaml": "2.6.0"
   },
   "devDependencies": {
@@ -58,5 +70,8 @@
     "node": "^28 || ^26 || ^24 || ^22 || ^20 || ^18",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
+  },
+  "overrides": {
+    "@vitejs/plugin-vue": "^5.2.4"
   }
 }

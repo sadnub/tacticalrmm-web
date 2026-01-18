@@ -92,8 +92,10 @@
 <script lang="ts" setup>
 // composition api
 import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
-import { debugLogStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useDebugLogStore, useDashboardStore } from "src/stores/api";
+
+const debugLogStore = useDebugLogStore();
+const dashboardStore = useDashboardStore();
 import { useAgentDropdown } from "src/core/agents/composables";
 import { formatTableColumnText } from "src/utils/format";
 
@@ -163,7 +165,6 @@ const props = defineProps<{
 }>();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { debugLog, isLoading } = debugLogStore;
 
 const tabHeight = computed(() => dashboardStore.tabHeight);

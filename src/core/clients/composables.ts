@@ -1,7 +1,9 @@
 import { onMounted, computed } from "vue";
-import { clientStore } from "src/stores/api";
+import { useClientStore } from "src/stores/api";
 
 import type { Client } from "./types";
+
+const clientStore = useClientStore();
 import { type SelectableOption, type Option, type HeaderOption } from "../dashboard/types";
 
 export function useClientDropdown() {

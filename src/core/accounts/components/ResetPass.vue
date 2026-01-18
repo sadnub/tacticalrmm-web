@@ -57,7 +57,9 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { userStore } from "src/stores/api";
+import { useUserStore } from "src/stores/api";
+
+const userStore = useUserStore();
 
 const pass = ref("");
 const pass2 = ref("");

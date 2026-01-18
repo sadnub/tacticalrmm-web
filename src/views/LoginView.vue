@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { type QForm, useQuasar } from "quasar";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/stores/api";
 import { useRouter } from "vue-router";
 import { openSSOProviderRedirect, getSSOConfig, type SSOProviderConfig } from "src/ee/sso/api/sso";
 
@@ -102,7 +102,7 @@ const $q = useQuasar();
 $q.dark.set(true);
 
 // setup auth store
-const auth = useAuthStore();
+const { checkCredentials, login, next } = useAuthStore();
 
 // setup router
 const router = useRouter();
@@ -119,7 +119,7 @@ const ssoProviders = ref([] as SSOProviderConfig[]);
 
 async function checkCreds() {
   try {
-    const { totp } = await auth.checkCredentials(credentials);
+    const { totp } = await checkCredentials(credentials);
 
     if (!totp) {
       void router.push({ name: "TOTPSetup" });
@@ -134,10 +134,10 @@ async function checkCreds() {
 
 async function onSubmit() {
   try {
-    await auth.login({ ...credentials, twofactor: twofactor.value });
-    if (auth.next) {
-      void router.push(auth.next);
-      auth.next = null;
+    await login({ ...credentials, twofactor: twofactor.value });
+    if (next.value) {
+      void router.push(next.value);
+      next.value = null;
     } else {
       void router.push({ name: "Dashboard" });
     }

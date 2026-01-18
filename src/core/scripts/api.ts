@@ -6,7 +6,25 @@ import { notifySuccess } from "src/utils/notify";
 import type { Script, ScriptSnippet, ScriptResult } from "./types";
 import { exportFile } from "quasar";
 
+// Lazy singletons
+let scriptStoreInstance: ReturnType<typeof createScriptStore> | null = null;
+let scriptSnippetStoreInstance: ReturnType<typeof createScriptSnippetStore> | null = null;
+
 export function useScriptStore() {
+  if (!scriptStoreInstance) {
+    scriptStoreInstance = createScriptStore();
+  }
+  return scriptStoreInstance;
+}
+
+export function useScriptSnippetStore() {
+  if (!scriptSnippetStoreInstance) {
+    scriptSnippetStoreInstance = createScriptSnippetStore();
+  }
+  return scriptSnippetStoreInstance;
+}
+
+function createScriptStore() {
   const scripts = ref<Script[]>([]);
   const scriptTestResult = ref<ScriptResult | null>(null);
   const isLoading = ref(false);
@@ -170,7 +188,7 @@ export function useScriptStore() {
   };
 }
 
-export function useScriptSnippetStore() {
+function createScriptSnippetStore() {
   const snippets = ref<ScriptSnippet[]>([]);
   const selectedSnippet = ref<ScriptSnippet | null>(null);
   const isLoading = ref(false);

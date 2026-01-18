@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineModel } from "vue";
+import { computed } from "vue";
 import type { CustomField } from "src/core/settings/types";
 import { truncateText } from "src/utils/format";
 

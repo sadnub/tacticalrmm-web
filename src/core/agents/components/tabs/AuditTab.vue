@@ -7,7 +7,9 @@
 
 <script lang="ts" setup>
 // composition imports
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 
 // ui imports
 import AuditManager from "src/core/logs/components/AuditManager.vue";

@@ -61,12 +61,13 @@ import { useQuasar } from "quasar";
 import { useInterval } from "@vueuse/core";
 import AlertsOverview from "src/core/alerts/components/AlertsOverview.vue";
 import { getTimeLapse } from "src/utils/format";
-import { useDashboardStore } from "src/stores/dashboard";
-import { alertsStore } from "src/stores/api";
+import { useAlertsStore, useDashboardStore } from "src/stores/api";
+
+const alertsStore = useAlertsStore();
+const dashboardStore = useDashboardStore();
 import type { Alert } from "src/core/alerts/types";
 
 const $q = useQuasar();
-const dashboardStore = useDashboardStore();
 
 const { alerts } = alertsStore;
 

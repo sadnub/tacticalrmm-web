@@ -2,9 +2,9 @@
   <q-page>
     <FileBar />
     <q-splitter
-      :model-value="dashboardStore.dashboardSettings.clientTreeSplitter"
+      :model-value="dashboardSettings.clientTreeSplitter"
       :style="{ height: `${$q.screen.height - 50 - 40}px` }"
-      @update:model-value="(val: number) => dashboardStore.setClientTreeSplitter(Math.floor(val))"
+      @update:model-value="(val: number) => setClientTreeSplitter(Math.floor(val))"
     >
       <template #before>
         <div v-if="!clientTree" class="q-pa-sm q-gutter-sm text-center" style="height: 30vh">
@@ -15,8 +15,8 @@
             <q-item
               v-ripple
               clickable
-              :active="dashboardStore.selectedClientSiteNode === null"
-              @click="dashboardStore.selectedClientSiteNode = null"
+              :active="selectedClientSiteNode === null"
+              @click="selectedClientSiteNode = null"
             >
               <q-item-section avatar>
                 <q-icon name="fas fa-home" />
@@ -25,7 +25,7 @@
             </q-item>
             <q-tree
               ref="tree"
-              v-model:selected="dashboardStore.selectedClientSiteNode"
+              v-model:selected="selectedClientSiteNode"
               :nodes="clientTree"
               node-key="raw"
               no-nodes-label="No Clients"
@@ -196,7 +196,7 @@
           after-class="hide-scrollbar"
           before-class="hide-scrollbar"
           emit-immediately
-          @update:model-value="dashboardStore.setTableHeight(innerModel)"
+          @update:model-value="setTableHeight(innerModel)"
         >
           <template #before>
             <AgentTable />
@@ -216,8 +216,11 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useQuasar, QTree } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { clientStore, siteStore, urlActionStore, runURLAction } from "src/stores/api";
+import { useDashboardStore, useClientStore, useSiteStore, useURLActionStore, runURLAction } from "src/stores/api";
+
+const clientStore = useClientStore();
+const siteStore = useSiteStore();
+const urlActionStore = useURLActionStore();
 import axios from "axios";
 
 // import ui
@@ -239,8 +242,13 @@ import type { ClientTreeNode } from "src/core/dashboard/types";
 // setup stores
 const { clients } = clientStore;
 const { webActions } = urlActionStore;
-
-const dashboardStore = useDashboardStore();
+const {
+  selectedClientSiteNode,
+  dashboardSettings,
+  setClientTreeSplitter,
+  setTableHeight,
+  refreshDashboard,
+} = useDashboardStore();
 
 const $q = useQuasar();
 
@@ -297,7 +305,7 @@ const clientTree = computed((): ClientTreeNode[] => {
 
   const sorted = output.sort((a, b) => a.label.localeCompare(b.label));
 
-  if (dashboardStore.dashboardSettings.clientTreeSort === "alphafail") {
+  if (dashboardSettings.clientTreeSort === "alphafail") {
     const failing = sorted.filter((i) => i.color === "negative" || i.color === "warning");
     const ok = sorted.filter((i) => i.color !== "negative" && i.color !== "warning");
     return [...failing, ...ok];
@@ -343,7 +351,7 @@ function showDeleteModal(node: ClientTreeNode) {
         object: node.children ? node.client : node.site,
         type: node.children ? "client" : "site",
       },
-    }).onOk(() => (dashboardStore.selectedClientSiteNode = null));
+    }).onOk(() => (selectedClientSiteNode.value = null));
   } else {
     $q.dialog({
       title: "Are you sure?",
@@ -353,7 +361,7 @@ function showDeleteModal(node: ClientTreeNode) {
     }).onOk(() => {
       if (node.children) void clientStore.removeClient(node.id);
       else void siteStore.removeSite(node.id);
-      dashboardStore.selectedClientSiteNode = null;
+      selectedClientSiteNode.value = null;
     });
   }
 }
@@ -398,7 +406,7 @@ function showToggleMaintenance(node: ClientTreeNode) {
     .post("/agents/maintenance/bulk/", data)
     .then((r) => {
       notifySuccess(r.data);
-      dashboardStore.refreshDashboard();
+      refreshDashboard();
     })
     .catch((e) => console.error(e));
 }
@@ -419,7 +427,7 @@ const urlActions = computed(() => {
 onMounted(() => {
   clientStore.getClients();
   urlActionStore.getURLActions();
-  dashboardStore.setTableHeight(innerModel.value);
+  setTableHeight(innerModel.value);
 });
 </script>
 

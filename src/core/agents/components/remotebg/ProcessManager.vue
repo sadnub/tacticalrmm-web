@@ -109,7 +109,9 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useIntervalFn } from "@vueuse/core";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 import { bytes2Human } from "src/utils/format";
 import type { TacticalColumn } from "src/core/dashboard/types";
 

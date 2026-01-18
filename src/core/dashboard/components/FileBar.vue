@@ -202,9 +202,11 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import { useQuasar } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore } from "src/stores/api";
-import { coreStore } from "src/stores/api";
+import { useAgentStore, useCoreStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const coreStore = useCoreStore();
+const dashboardStore = useDashboardStore();
 import { notifyWarning } from "src/utils/notify";
 
 // ui imports
@@ -235,7 +237,6 @@ const $q = useQuasar();
 
 // setup stores
 const { bulkAgentRecovery } = agentStore;
-const dashboardStore = useDashboardStore();
 const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
 
 function clearCache() {

@@ -55,7 +55,9 @@
 // composable imports
 import { ref, watch, reactive, computed } from "vue";
 import { useQuasar } from "quasar";
-import { scriptSnippetStore } from "src/stores/api";
+import { useScriptSnippetStore } from "src/stores/api";
+
+const scriptSnippetStore = useScriptSnippetStore();
 import { useDialogPluginComponent } from "quasar";
 import { shellOptions } from "../composables";
 

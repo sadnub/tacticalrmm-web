@@ -151,7 +151,9 @@
 // composition imports
 import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { scriptSnippetStore } from "src/stores/api";
+import { useScriptSnippetStore } from "src/stores/api";
+
+const scriptSnippetStore = useScriptSnippetStore();
 
 // ui imports
 import ScriptSnippetFormModal from "./ScriptSnippetFormModal.vue";

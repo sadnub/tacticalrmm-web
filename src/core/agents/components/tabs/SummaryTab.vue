@@ -200,9 +200,11 @@
 <script lang="ts" setup>
 // composition imports
 import { computed, watch, onMounted } from "vue";
-import { agentStore } from "src/stores/api";
-import { customFieldStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const customFieldStore = useCustomFieldStore();
+const dashboardStore = useDashboardStore();
 
 // ui imports
 import AgentActionMenu from "../AgentActionMenu.vue";
@@ -217,7 +219,6 @@ const {
   openAgentWindow,
   runTakeControl,
 } = agentStore;
-const dashboardStore = useDashboardStore();
 const { agentCustomFields } = customFieldStore;
 const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
 const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);

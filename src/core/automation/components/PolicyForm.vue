@@ -54,7 +54,9 @@
 <script lang="ts" setup>
 import { reactive } from "vue";
 import { useDialogPluginComponent, extend } from "quasar";
-import { policyStore } from "src/stores/api";
+import { usePolicyStore } from "src/stores/api";
+
+const policyStore = usePolicyStore();
 import type { Policy } from "src/core/automation/types";
 
 const props = defineProps<{

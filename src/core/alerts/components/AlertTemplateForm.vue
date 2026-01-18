@@ -692,8 +692,10 @@
 <script setup lang="ts">
 import { computed, ref, reactive, watch } from "vue";
 import { useQuasar, useDialogPluginComponent, type QStepper } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { alertTemplateStore } from "src/stores/api";
+import { useAlertTemplateStore, useDashboardStore } from "src/stores/api";
+
+const alertTemplateStore = useAlertTemplateStore();
+const dashboardStore = useDashboardStore();
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useURLActionDropdown } from "src/core/settings/composables";
 import { isValidEmail } from "src/utils/validation";
@@ -702,7 +704,6 @@ import { isValidEmail } from "src/utils/validation";
 import type { AlertTemplate, AlertSeverity } from "src/core/alerts/types";
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { isLoading } = alertTemplateStore;
 
 const hosted = computed(() => dashboardStore.dashboardSettings.hosted);

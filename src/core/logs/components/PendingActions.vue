@@ -110,8 +110,10 @@
 // composition imports
 import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { pendingActionStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { usePendingActionStore, useDashboardStore } from "src/stores/api";
+
+const pendingActionStore = usePendingActionStore();
+const dashboardStore = useDashboardStore();
 import { getNextAgentUpdateTime } from "src/utils/format";
 
 // ui imports
@@ -188,7 +190,6 @@ const $q = useQuasar();
 
 // setup stores
 const { pendingActions, isLoading } = pendingActionStore;
-const dashboardStore = useDashboardStore();
 
 // pending actions logic
 const showCompleted = ref(false);

@@ -1,6 +1,6 @@
 import { defineBoot } from "#q-app/wrappers";
 import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/core/dashboard/api";
 import { Notify } from "quasar";
 
 interface ApiErrorDetail {
@@ -20,8 +20,8 @@ export const getBaseUrl = (): string => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (window as any)._env_.PROD_URL;
   } else {
-    // TODO: get process.env working
-    return "https://api.simplermm.com";
+    // Use local backend for development
+    return "http://localhost:8000";
   }
 };
 
@@ -35,13 +35,12 @@ export default defineBoot(({ app, router }) => {
 
   axios.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      const auth = useAuthStore();
+      const { token } = useAuthStore();
       config.baseURL = getBaseUrl();
-      const token = auth.token;
 
-      if (token) {
+      if (token.value) {
         config.headers = config.headers ?? {};
-        config.headers.Authorization = `Token ${token}`;
+        config.headers.Authorization = `Token ${token.value}`;
       }
       return config;
     },

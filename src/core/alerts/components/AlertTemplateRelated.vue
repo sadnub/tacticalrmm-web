@@ -65,7 +65,9 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { alertTemplateStore } from "src/stores/api";
+import { useAlertTemplateStore } from "src/stores/api";
+
+const alertTemplateStore = useAlertTemplateStore();
 
 // types
 import type { AlertTemplate, AlertTemplateRelated } from "src/core/alerts/types";

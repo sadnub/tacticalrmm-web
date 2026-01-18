@@ -191,9 +191,10 @@
 <script lang="ts" setup>
 import { ref, computed, reactive, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useAuthStore } from "src/stores/auth";
-import { userStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAuthStore, useUserStore, useDashboardStore } from "src/stores/api";
+
+const userStore = useUserStore();
+const dashboardStore = useDashboardStore();
 
 // ui imports
 import UserForm from "./UserForm.vue";
@@ -263,11 +264,10 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { users, userCount } = userStore;
-const auth = useAuthStore();
+const { username } = useAuthStore();
 
-const loggedInUser = computed(() => auth.username);
+const loggedInUser = computed(() => username.value);
 
 const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();

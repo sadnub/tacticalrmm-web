@@ -207,7 +207,9 @@ import { useQuasar } from "quasar";
 import { notifyError } from "src/utils/notify";
 import AutomatedTaskForm from "src/core/tasks/components/AutomatedTaskForm.vue";
 import PolicyStatus from "./PolicyStatus.vue";
-import { policyTasksStore } from "src/stores/api";
+import { usePolicyTasksStore } from "src/stores/api";
+
+const policyTasksStore = usePolicyTasksStore();
 
 // types
 import type { AutomatedTaskUI } from "src/core/tasks/types";

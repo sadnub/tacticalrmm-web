@@ -1,6 +1,9 @@
 import { onMounted, computed } from "vue";
-import { userStore, roleStore } from "src/stores/api";
+import { useUserStore, useRoleStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
+
+const userStore = useUserStore();
+const roleStore = useRoleStore();
 
 export function useUserDropdown() {
   const { users } = userStore;

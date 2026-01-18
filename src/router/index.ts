@@ -6,7 +6,7 @@ import {
   createWebHashHistory,
 } from "vue-router";
 
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/core/dashboard/api";
 import routes from "./routes";
 
 // useful for importing router outside of vue components
@@ -16,7 +16,7 @@ export const router = createRouter({
   history: createWebHistory(process.env.VUE_ROUTER_BASE),
 });
 
-export default defineRouter(function ({ store }) {
+export default defineRouter(function () {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === "history"
@@ -30,11 +30,11 @@ export default defineRouter(function ({ store }) {
   });
 
   Router.beforeEach((to, from, next) => {
-    const auth = useAuthStore(store);
+    const { loggedIn, next: authNext } = useAuthStore();
 
     if (to.meta.requireAuth) {
-      if (!auth.loggedIn) {
-        auth.next = to.fullPath;
+      if (!loggedIn.value) {
+        authNext.value = to.fullPath;
         next({
           name: "Login",
         });
@@ -42,7 +42,7 @@ export default defineRouter(function ({ store }) {
         next();
       }
     } else if (to.meta.requiresVisitor) {
-      if (auth.loggedIn) {
+      if (loggedIn.value) {
         next({
           name: "Dashboard",
         });

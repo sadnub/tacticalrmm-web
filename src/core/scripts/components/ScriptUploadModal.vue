@@ -116,7 +116,9 @@
 // composition imports
 import { reactive, ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { scriptStore } from "src/stores/api";
+import { useScriptStore } from "src/stores/api";
+
+const scriptStore = useScriptStore();
 import { agentPlatformOptions } from "src/core/agents/composables";
 import { shellOptions } from "../composables";
 

@@ -74,7 +74,9 @@
 // composition imports
 import { onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { urlActionStore } from "src/stores/api";
+import { useURLActionStore } from "src/stores/api";
+
+const urlActionStore = useURLActionStore();
 
 // ui imports
 import URLActionsForm from "./URLActionsForm.vue";

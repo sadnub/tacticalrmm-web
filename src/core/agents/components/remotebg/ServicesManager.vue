@@ -86,7 +86,9 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 
 // ui imports
 import ServiceDetail from "src/core/agents/components/remotebg/ServiceDetail.vue";

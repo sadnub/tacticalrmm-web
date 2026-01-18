@@ -742,7 +742,9 @@
 import { computed, ref, watch, reactive, useTemplateRef, toRaw } from "vue";
 import { QForm, QStepper, useDialogPluginComponent, extend } from "quasar";
 import draggable from "vuedraggable";
-import { taskStore } from "src/stores/api";
+import { useTaskStore } from "src/stores/api";
+
+const taskStore = useTaskStore();
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentCheckDropdown, usePolicyCheckDropdown } from "src/core/checks/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";

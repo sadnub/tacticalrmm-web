@@ -25,7 +25,41 @@ import type {
 } from "./types";
 import type { ScriptResult } from "../scripts/types";
 
+// Lazy singleton instances
+let agentStoreInstance: ReturnType<typeof createAgentStore> | null = null;
+let agentSoftwareStoreInstance: ReturnType<typeof createAgentSoftwareStore> | null = null;
+let agentNoteStoreInstance: ReturnType<typeof createAgentNoteStore> | null = null;
+let windowsUpdateStoreInstance: ReturnType<typeof createWindowsUpdateStore> | null = null;
+
 export function useAgentStore() {
+  if (!agentStoreInstance) {
+    agentStoreInstance = createAgentStore();
+  }
+  return agentStoreInstance;
+}
+
+export function useAgentSoftwareStore() {
+  if (!agentSoftwareStoreInstance) {
+    agentSoftwareStoreInstance = createAgentSoftwareStore();
+  }
+  return agentSoftwareStoreInstance;
+}
+
+export function useAgentNoteStore() {
+  if (!agentNoteStoreInstance) {
+    agentNoteStoreInstance = createAgentNoteStore();
+  }
+  return agentNoteStoreInstance;
+}
+
+export function useWindowsUpdateStore() {
+  if (!windowsUpdateStoreInstance) {
+    windowsUpdateStoreInstance = createWindowsUpdateStore();
+  }
+  return windowsUpdateStoreInstance;
+}
+
+function createAgentStore() {
   const agents = ref<Agent[]>([]);
   const selectedAgent = ref<Agent | null>(null);
   const selectedAgentId = ref<string | null>(null);
@@ -608,7 +642,7 @@ export function useAgentStore() {
   };
 }
 
-export function useAgentSoftwareStore() {
+function createAgentSoftwareStore() {
   const isLoading = ref(true);
   const isError = ref(false);
 
@@ -660,6 +694,27 @@ export function useAgentSoftwareStore() {
     }
   }
 
+  interface UninstallSoftwareRequest {
+    name: string;
+    command: string;
+    run_as_user: boolean;
+    timeout: number;
+  }
+
+  async function uninstallAgentSoftware(agent_id: string, payload: UninstallSoftwareRequest) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      await axios.delete<string>(`/software/${agent_id}/`, { data: payload });
+      notifySuccess("Uninstall command was sent successfully");
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   return {
     agentSoftware,
     isLoading,
@@ -667,10 +722,11 @@ export function useAgentSoftwareStore() {
     getAgentSoftware,
     installAgentSoftware,
     refreshAgentSoftware,
+    uninstallAgentSoftware,
   };
 }
 
-export function useAgentNoteStore() {
+function createAgentNoteStore() {
   const isLoading = ref(true);
   const isError = ref(false);
 
@@ -757,7 +813,7 @@ export function useAgentNoteStore() {
   };
 }
 
-export function useWindowsUpdateStore() {
+function createWindowsUpdateStore() {
   const isLoading = ref(false);
   const isError = ref(false);
 

@@ -43,8 +43,10 @@
 // composition imports
 import { onMounted, reactive, computed, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { clientStore } from "src/stores/api";
-import { customFieldStore } from "src/stores/api";
+import { useClientStore, useCustomFieldStore } from "src/stores/api";
+
+const clientStore = useClientStore();
+const customFieldStore = useCustomFieldStore();
 import { formatCustomFields } from "src/utils/format";
 
 // ui imports

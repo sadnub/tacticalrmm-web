@@ -151,8 +151,10 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { policyStore } from "src/stores/api";
+import { usePolicyStore, useDashboardStore } from "src/stores/api";
+
+const policyStore = usePolicyStore();
+const dashboardStore = useDashboardStore();
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import EventLogCheckOutput from "src/core/checks/components/EventLogCheckOutput.vue";
 import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
@@ -186,7 +188,6 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // stores
-const dashboardStore = useDashboardStore();
 const { isLoading } = policyStore;
 
 // state

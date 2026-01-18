@@ -80,8 +80,10 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar, copyToClipboard } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { apiKeyStore } from "src/stores/api";
+import { useAPIKeyStore, useDashboardStore } from "src/stores/api";
+
+const apiKeyStore = useAPIKeyStore();
+const dashboardStore = useDashboardStore();
 import { notifySuccess, notifyError } from "src/utils/notify";
 import APIKeysForm from "src/core/settings/components/APIKeysForm.vue";
 import type { APIKey } from "../types";
@@ -131,7 +133,6 @@ const columns: TacticalColumn[] = [
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { apiKeys, isLoading } = apiKeyStore;
 
 // setup table

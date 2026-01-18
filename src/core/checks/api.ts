@@ -4,7 +4,17 @@ import { notifySuccess } from "src/utils/notify";
 import type { Check } from "./types";
 import { useCachedAction } from "../dashboard/composables";
 
+// Lazy singleton
+let checkStoreInstance: ReturnType<typeof createCheckStore> | null = null;
+
 export function useCheckStore() {
+  if (!checkStoreInstance) {
+    checkStoreInstance = createCheckStore();
+  }
+  return checkStoreInstance;
+}
+
+function createCheckStore() {
   const checks = ref<Check[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

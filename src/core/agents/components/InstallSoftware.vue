@@ -53,8 +53,10 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { chocosStore } from "src/stores/api";
-import { agentSoftwareStore } from "src/stores/api";
+import { useChocosStore, useAgentSoftwareStore } from "src/stores/api";
+
+const chocosStore = useChocosStore();
+const agentSoftwareStore = useAgentSoftwareStore();
 
 import type { TacticalColumn } from "src/core/dashboard/types";
 

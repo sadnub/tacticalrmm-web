@@ -207,8 +207,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { openURL, useDialogPluginComponent } from "quasar";
-import { userStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useUserStore, useDashboardStore } from "src/stores/api";
+
+const userStore = useUserStore();
+const dashboardStore = useDashboardStore();
 import { useURLActionDropdown } from "src/core/settings/composables";
 
 // type imports
@@ -238,9 +240,6 @@ const loadingBarColors = [
   "grey",
   "blue-grey",
 ];
-
-// setup stores
-const dashboardStore = useDashboardStore();
 
 // dropdowns
 const { webActionOptions } = useURLActionDropdown();

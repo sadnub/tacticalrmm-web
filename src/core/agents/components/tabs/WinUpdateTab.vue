@@ -172,8 +172,11 @@
 // composition imports
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore, updateStore } from "src/stores/api";
+import { useAgentStore, useWindowsUpdateStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const updateStore = useWindowsUpdateStore();
+const dashboardStore = useDashboardStore();
 
 // ui imports
 import WinUpdateDialog from "./WinUpdateDialog.vue";
@@ -230,7 +233,6 @@ const columns: TacticalColumn[] = [
 
 // setup stores
 const { updates, isLoading } = updateStore;
-const dashboardStore = useDashboardStore();
 
 const { selectedAgentPlatform, selectedAgentId } = agentStore;
 

@@ -638,8 +638,10 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted } from "vue";
 import { openURL, useDialogPluginComponent, useQuasar } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { coreStore } from "src/stores/api";
+import { useCoreStore, useDashboardStore } from "src/stores/api";
+
+const coreStore = useCoreStore();
+const dashboardStore = useDashboardStore();
 import { usePolicyDropdown } from "src/core/automation/composables";
 import { useAlertTemplateDropdown } from "src/core/alerts/composables";
 import { isValidEmail } from "src/utils/validation";
@@ -658,7 +660,6 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { coreSettings } = coreStore;
 
 // setup dropdowns

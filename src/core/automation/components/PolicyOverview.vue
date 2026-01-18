@@ -65,7 +65,9 @@ import { ref, onMounted, useTemplateRef } from "vue";
 import { useDialogPluginComponent, type QTree } from "quasar";
 import PolicyChecksTab from "./PolicyChecksTab.vue";
 import PolicyAutomatedTasksTab from "./PolicyAutomatedTasksTab.vue";
-import { policyStore } from "src/stores/api";
+import { usePolicyStore } from "src/stores/api";
+
+const policyStore = usePolicyStore();
 import type { PolicyTreeClient, PolicyTreeItem } from "src/core/automation/types";
 
 defineEmits([...useDialogPluginComponent.emits]);

@@ -1,7 +1,9 @@
 import { computed, onMounted } from "vue";
 
-import { alertTemplateStore } from "src/stores/api";
+import { useAlertTemplateStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
+
+const alertTemplateStore = useAlertTemplateStore();
 
 // dropdown options
 export function useAlertTemplateDropdown() {

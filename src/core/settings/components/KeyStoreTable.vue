@@ -81,7 +81,9 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { useQuasar } from "quasar";
-import { globalKeyStore } from "src/stores/api";
+import { useGlobalKeyStore } from "src/stores/api";
+
+const globalKeyStore = useGlobalKeyStore();
 
 // ui imports
 import KeyStoreForm from "./KeyStoreForm.vue";

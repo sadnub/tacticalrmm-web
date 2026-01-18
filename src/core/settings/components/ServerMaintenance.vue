@@ -46,7 +46,9 @@
 <script lang="ts" setup>
 import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { coreStore } from "src/stores/api";
+import { useCoreStore } from "src/stores/api";
+
+const coreStore = useCoreStore();
 
 const actions = [
   {

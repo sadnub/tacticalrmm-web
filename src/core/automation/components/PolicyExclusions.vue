@@ -56,7 +56,9 @@ import { useDialogPluginComponent, extend } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { useSiteDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
-import { policyStore } from "src/stores/api";
+import { usePolicyStore } from "src/stores/api";
+
+const policyStore = usePolicyStore();
 import type { Policy } from "src/core/automation/types";
 
 const props = defineProps<{ policy: Policy }>();

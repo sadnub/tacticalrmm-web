@@ -37,7 +37,9 @@
 // composition imports
 import { reactive, ref } from "vue";
 import { useQuasar, useDialogPluginComponent, date } from "quasar";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 import { formatDateInputField } from "src/utils/format";
 import type { Agent } from "../types";
 

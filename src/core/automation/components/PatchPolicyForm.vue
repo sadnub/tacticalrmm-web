@@ -188,7 +188,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useQuasar } from "quasar";
-import { patchPolicyStore } from "src/stores/api";
+import { usePatchPolicyStore } from "src/stores/api";
+
+const patchPolicyStore = usePatchPolicyStore();
 import type { WinPatchPolicy, Policy } from "../types";
 import type { Agent } from "src/core/agents/types";
 

@@ -130,7 +130,9 @@
 // composition imports
 import { reactive, watch, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { checkStore } from "src/stores/api";
+import { useCheckStore } from "src/stores/api";
+
+const checkStore = useCheckStore();
 import { failOptions } from "../composables";
 import type { ScriptSelectableOption } from "src/core/scripts/composables";
 import { useScriptDropdown } from "src/core/scripts/composables";

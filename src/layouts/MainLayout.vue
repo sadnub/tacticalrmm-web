@@ -2,12 +2,12 @@
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="bg-grey-9 text-white">
       <q-banner
-        v-if="dashboardStore.reloadNeeded"
+        v-if="reloadNeeded"
         inline-actions
         class="bg-red text-white text-center"
       >
         You are viewing an outdated version of this page.
-        <q-btn color="dark" icon="refresh" label="Refresh" @click="dashboardStore.reload" />
+        <q-btn color="dark" icon="refresh" label="Refresh" @click="reload" />
       </q-banner>
       <q-banner
         v-if="!hosted && tokenExpired"
@@ -29,7 +29,7 @@
             >https://support.amidaware.com</a
           ><br /><br
         /></span>
-        <q-btn color="dark" icon="refresh" label="Refresh" @click="dashboardStore.reload" />
+        <q-btn color="dark" icon="refresh" label="Refresh" @click="reload" />
       </q-banner>
       <q-toolbar>
         <q-btn
@@ -37,7 +37,7 @@
           dense
           flat
           icon="refresh"
-          @click="dashboardStore.refreshDashboard()"
+          @click="refreshDashboard()"
         />
         <q-btn v-else dense flat icon="dashboard" @click="$router.push({ name: 'Dashboard' })">
           <q-tooltip>Back to Dashboard</q-tooltip>
@@ -46,7 +46,7 @@
           Tactical RMM<span class="text-overline q-ml-sm">v{{ currentTRMMVersion }}</span>
           <!-- update check -->
           <q-chip
-            v-if="dashboardStore.updateAvailable"
+            v-if="updateAvailable"
             class="text-overline q-ml-sm"
             :color="dashWarningColor"
             icon="update"
@@ -67,7 +67,7 @@
         </q-toolbar-title>
         <!-- temp dark mode toggle -->
         <q-toggle
-          v-model="dashboardStore.dashboardSettings.darkMode"
+          v-model="dashboardSettings.darkMode"
           class="q-mr-sm"
           checked-icon="nights_stay"
           unchecked-icon="wb_sunny"
@@ -180,10 +180,8 @@
 import { computed } from "vue";
 import { useQuasar } from "quasar";
 import { useIntervalFn } from "@vueuse/shared";
-import { useDashboardStore } from "src/stores/dashboard";
-import { useAuthStore } from "src/stores/auth";
+import { useDashboardStore, useAuthStore } from "src/stores/api";
 import { useUserStore } from "src/core/accounts/api";
-import { storeToRefs } from "pinia";
 import { notifyError } from "src/utils/notify";
 
 // webtermn
@@ -197,7 +195,6 @@ import ResetPass from "src/core/accounts/components/ResetPass.vue";
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const userStore = useUserStore();
 
 const {
@@ -206,16 +203,23 @@ const {
   workstationCount,
   workstationOfflineCount,
   daysUntilCertExpires,
-} = storeToRefs(dashboardStore);
+  reloadNeeded,
+  updateAvailable,
+  dashboardSettings,
+  reload,
+  refreshDashboard,
+  checkRmmVersion,
+  getDashInfo,
+} = useDashboardStore();
 
-const { displayName } = storeToRefs(useAuthStore());
+const { displayName } = useAuthStore();
 
-const currentTRMMVersion = computed(() => dashboardStore.dashboardSettings.currentTRMMVersion);
-const latestTRMMVersion = computed(() => dashboardStore.dashboardSettings.latestTRMMVersion);
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
-const tokenExpired = computed(() => dashboardStore.dashboardSettings.tokenExpired);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
+const currentTRMMVersion = computed(() => dashboardSettings.currentTRMMVersion);
+const latestTRMMVersion = computed(() => dashboardSettings.latestTRMMVersion);
+const hosted = computed(() => dashboardSettings.hosted);
+const tokenExpired = computed(() => dashboardSettings.tokenExpired);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
 
 const latestReleaseURL = computed(() => {
   return latestTRMMVersion.value
@@ -259,8 +263,8 @@ async function openWebTerm() {
 
 useIntervalFn(
   () => {
-    dashboardStore.checkRmmVersion();
-    void dashboardStore.getDashInfo();
+    checkRmmVersion();
+    void getDashInfo();
   },
   60 * 4 * 1000,
   { immediate: true },

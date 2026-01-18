@@ -59,7 +59,9 @@
 <script lang="ts" setup>
 import { computed, reactive, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 
 // type imports
 import type { Agent } from "../types";

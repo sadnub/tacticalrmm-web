@@ -9,7 +9,33 @@ import type {
   GetDebugLogRequest,
 } from "./types";
 
+// Lazy singletons
+let pendingActionStoreInstance: ReturnType<typeof createPendingActionStore> | null = null;
+let auditLogStoreInstance: ReturnType<typeof createAuditLogStore> | null = null;
+let debugLogStoreInstance: ReturnType<typeof createDebugLogStore> | null = null;
+
 export function usePendingActionStore() {
+  if (!pendingActionStoreInstance) {
+    pendingActionStoreInstance = createPendingActionStore();
+  }
+  return pendingActionStoreInstance;
+}
+
+export function useAuditLogStore() {
+  if (!auditLogStoreInstance) {
+    auditLogStoreInstance = createAuditLogStore();
+  }
+  return auditLogStoreInstance;
+}
+
+export function useDebugLogStore() {
+  if (!debugLogStoreInstance) {
+    debugLogStoreInstance = createDebugLogStore();
+  }
+  return debugLogStoreInstance;
+}
+
+function createPendingActionStore() {
   const pendingActions = ref<PendingAction[]>([]);
   const agentPendingActions = ref<PendingAction[]>([]);
   const isLoading = ref(false);
@@ -83,7 +109,7 @@ export interface AuditLogResponse {
   total: number;
 }
 
-export function useAuditLogStore() {
+function createAuditLogStore() {
   const auditLog = ref<AuditLog[]>([]);
   const rowsNumber = ref(0);
   const isLoading = ref(false);
@@ -123,7 +149,7 @@ export function useAuditLogStore() {
   };
 }
 
-export function useDebugLogStore() {
+function createDebugLogStore() {
   const debugLog = ref<DebugLog[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

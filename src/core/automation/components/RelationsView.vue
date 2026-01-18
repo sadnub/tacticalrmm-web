@@ -114,7 +114,9 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { policyStore } from "src/stores/api";
+import { usePolicyStore } from "src/stores/api";
+
+const policyStore = usePolicyStore();
 import type { Policy, PolicyRelated } from "src/core/automation/types";
 
 const props = defineProps<{ policy: Policy }>();

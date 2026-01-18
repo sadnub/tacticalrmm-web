@@ -64,7 +64,9 @@ import { useDialogPluginComponent, extend } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { useSiteDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
-import { alertTemplateStore } from "src/stores/api";
+import { useAlertTemplateStore } from "src/stores/api";
+
+const alertTemplateStore = useAlertTemplateStore();
 import type { AlertTemplate } from "src/core/alerts/types";
 
 const props = defineProps<{ template: AlertTemplate }>();

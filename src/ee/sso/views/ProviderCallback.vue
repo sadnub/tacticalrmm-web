@@ -13,18 +13,18 @@ For details, see: https://license.tacticalrmm.com/ee
 
 <script lang="ts" setup>
 import { useRoute, useRouter } from "vue-router";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/stores/api";
 
 const route = useRoute();
 const error = route.query.error;
 
 const router = useRouter();
-const auth = useAuthStore();
+const { loggedIn, next } = useAuthStore();
 if (!error) {
-  if (auth.loggedIn) {
-    if (auth.next) {
-      void router.push(auth.next);
-      auth.next = null;
+  if (loggedIn.value) {
+    if (next.value) {
+      void router.push(next.value);
+      next.value = null;
     } else {
       void router.push({ name: "Dashboard" });
     }

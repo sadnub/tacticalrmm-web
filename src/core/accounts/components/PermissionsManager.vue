@@ -98,7 +98,9 @@
 // composition imports
 import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { roleStore } from "src/stores/api";
+import { useRoleStore } from "src/stores/api";
+
+const roleStore = useRoleStore();
 
 // type imports
 import type { Role } from "../types";

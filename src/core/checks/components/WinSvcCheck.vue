@@ -133,7 +133,9 @@
 // composition imports
 import { reactive, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { checkStore } from "src/stores/api";
+import { useCheckStore } from "src/stores/api";
+
+const checkStore = useCheckStore();
 import { failOptions, defaultServiceOptions, severityOptions } from "../composables";
 import { useAgentServiceDropdown } from "src/core/agents/composables";
 

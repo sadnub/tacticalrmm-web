@@ -151,7 +151,9 @@
 
 <script lang="ts" setup>
 import { reactive, computed } from "vue";
-import { customFieldStore } from "src/stores/api";
+import { useCustomFieldStore } from "src/stores/api";
+
+const customFieldStore = useCustomFieldStore();
 import { useDialogPluginComponent } from "quasar";
 
 // type imports

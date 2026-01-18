@@ -67,7 +67,9 @@
 import { reactive } from "vue";
 import { useDialogPluginComponent, date } from "quasar";
 import { useSiteDropdown } from "src/core/clients/composables";
-import { deploymentStore } from "src/stores/api";
+import { useDeploymentStore } from "src/stores/api";
+
+const deploymentStore = useDeploymentStore();
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
 import { GOARCH_AMD64, GOARCH_i386 } from "src/constants/constants";
 

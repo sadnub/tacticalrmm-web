@@ -1,6 +1,9 @@
 import { computed, onMounted } from "vue";
-import { customFieldStore, urlActionStore } from "src/stores/api";
+import { useCustomFieldStore, useURLActionStore } from "src/stores/api";
 import type { CustomField, URLActionType } from "./types";
+
+const customFieldStore = useCustomFieldStore();
+const urlActionStore = useURLActionStore();
 import { type SelectableOption, type Option } from "../dashboard/types";
 
 export function useCustomFieldDropdown() {

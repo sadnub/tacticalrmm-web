@@ -49,7 +49,9 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { globalKeyStore } from "src/stores/api";
+import { useGlobalKeyStore } from "src/stores/api";
+
+const globalKeyStore = useGlobalKeyStore();
 
 // type imports
 import type { GlobalKey } from "../types";

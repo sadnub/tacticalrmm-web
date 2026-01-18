@@ -59,7 +59,7 @@ import { ref } from "vue";
 import { useDialogPluginComponent, useQuasar, type QTableColumn } from "quasar";
 import { disconnectSSOAccount } from "src/ee/sso/api/sso";
 import { notifySuccess } from "src/utils/notify";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/stores/api";
 import { formatDate } from "src/utils/format";
 
 //types
@@ -113,7 +113,7 @@ const props = defineProps<{
 
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
-const auth = useAuthStore();
+const { username, ssoLoginProvider, logout } = useAuthStore();
 
 const loading = ref(false);
 
@@ -128,8 +128,8 @@ function removeSSOAccount(account: SSOAccount) {
     disconnectSSOAccount(account.provider, account.uid)
       .then(async () => {
         notifySuccess("Social account disconnected successfully");
-        if (auth.username === props.user.username && auth.ssoLoginProvider === account.provider) {
-          await auth.logout();
+        if (username.value === props.user.username && ssoLoginProvider.value === account.provider) {
+          await logout();
         }
       })
       .catch(() => {})

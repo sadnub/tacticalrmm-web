@@ -59,8 +59,10 @@
 // composition imports
 import { onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { userStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useUserStore, useDashboardStore } from "src/stores/api";
+
+const userStore = useUserStore();
+const dashboardStore = useDashboardStore();
 
 //types
 import type { User, UserSession } from "../types";
@@ -102,7 +104,6 @@ const props = defineProps<{
 
 // setup stores
 const { isLoading, userSessions } = userStore;
-const dashboardStore = useDashboardStore();
 
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();

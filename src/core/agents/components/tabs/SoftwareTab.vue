@@ -51,6 +51,19 @@
         </q-input>
         <tactical-table-export />
       </template>
+
+      <template #body-cell-uninstall="props">
+        <q-td :props="props">
+          <q-btn
+            v-if="props.row.uninstall"
+            label="Uninstall"
+            color="primary"
+            dense
+            size="sm"
+            @click="openUninstallSoftware(props.row)"
+          />
+        </q-td>
+      </template>
     </tactical-table>
   </div>
 </template>
@@ -59,14 +72,19 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { agentSoftwareStore, agentStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentSoftwareStore, useAgentStore, useDashboardStore } from "src/stores/api";
+
+const agentSoftwareStore = useAgentSoftwareStore();
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 
 // ui imports
 import InstallSoftware from "src/core/agents/components/InstallSoftware.vue";
+import UninstallSoftware from "src/core/agents/components/UninstallSoftware.vue";
 
 // type imports
 import type { TacticalColumn } from "src/core/dashboard/types";
+import type { Software } from "src/core/agents/types";
 
 // static data
 const columns: TacticalColumn[] = [
@@ -108,6 +126,13 @@ const columns: TacticalColumn[] = [
     field: "version",
     sortable: false,
   },
+  {
+    name: "uninstall",
+    align: "left",
+    label: "Uninstall",
+    field: "uninstall",
+    sortable: false,
+  },
 ];
 
 // setup quasar
@@ -116,7 +141,6 @@ const $q = useQuasar();
 // setup stores
 const { selectedAgentPlatform, selectedAgentId } = agentStore;
 const { agentSoftware, isLoading } = agentSoftwareStore;
-const dashboardStore = useDashboardStore();
 const tabHeight = computed(() => dashboardStore.tabHeight);
 
 // software tab logic
@@ -132,6 +156,24 @@ function showInstallSoftwareModal() {
     component: InstallSoftware,
     componentProps: {
       agentId: selectedAgentId.value,
+    },
+  });
+}
+
+function openUninstallSoftware(software: Software) {
+  if (!selectedAgentId.value) return;
+
+  // Auto-append silent flags for MSI-based uninstalls
+  const uninstallString =
+    software.uninstall +
+    (software.uninstall.toLowerCase().includes("msiexec") ? " /qn /norestart" : "");
+
+  $q.dialog({
+    component: UninstallSoftware,
+    componentProps: {
+      agentId: selectedAgentId.value,
+      softwareName: software.name,
+      initialUninstallString: uninstallString,
     },
   });
 }

@@ -88,7 +88,10 @@
 <script lang="ts" setup>
 import { onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { coreStore, clientStore } from "src/stores/api";
+import { useCoreStore, useClientStore } from "src/stores/api";
+
+const coreStore = useCoreStore();
+const clientStore = useClientStore();
 
 const router = useRouter();
 

@@ -1,12 +1,30 @@
 import { ref, computed } from "vue";
 import axios from "axios";
 import { notifySuccess } from "src/utils/notify";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useDashboardStore } from "src/core/dashboard/api";
 import { useCachedAction } from "../dashboard/composables";
 
 import type { User, UserSession, Role } from "./types";
 
+// Lazy singletons
+let userStoreInstance: ReturnType<typeof createUserStore> | null = null;
+let roleStoreInstance: ReturnType<typeof createRoleStore> | null = null;
+
 export function useUserStore() {
+  if (!userStoreInstance) {
+    userStoreInstance = createUserStore();
+  }
+  return userStoreInstance;
+}
+
+export function useRoleStore() {
+  if (!roleStoreInstance) {
+    roleStoreInstance = createRoleStore();
+  }
+  return roleStoreInstance;
+}
+
+function createUserStore() {
   const users = ref<User[]>([]);
   const userSessions = ref<UserSession[]>([]);
 
@@ -239,7 +257,7 @@ export function useUserStore() {
   };
 }
 
-export function useRoleStore() {
+function createRoleStore() {
   const roles = ref<Role[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

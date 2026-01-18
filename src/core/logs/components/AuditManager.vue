@@ -126,8 +126,10 @@ import { useQuasar } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useUserDropdown } from "src/core/accounts/composables";
-import { useDashboardStore } from "src/stores/dashboard";
-import { auditLogStore } from "src/stores/api";
+import { useAuditLogStore, useDashboardStore } from "src/stores/api";
+
+const auditLogStore = useAuditLogStore();
+const dashboardStore = useDashboardStore();
 import { formatDate, formatTableColumnText } from "src/utils/format";
 
 // ui imported
@@ -276,7 +278,6 @@ const props = defineProps<{
 
 // setup stores
 const { auditLog, rowsNumber } = auditLogStore;
-const dashboardStore = useDashboardStore();
 
 const tabHeight = computed(() => dashboardStore.tabHeight);
 

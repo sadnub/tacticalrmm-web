@@ -2,7 +2,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { notifySuccess } from "src/utils/notify";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useDashboardStore } from "src/core/dashboard/api";
 import { useCachedAction } from "../dashboard/composables";
 import type {
   Client,
@@ -12,17 +12,43 @@ import type {
   Deployment,
 } from "./types";
 
+// Lazy singletons
+let clientStoreInstance: ReturnType<typeof createClientStore> | null = null;
+let siteStoreInstance: ReturnType<typeof createSiteStore> | null = null;
+let deploymentStoreInstance: ReturnType<typeof createDeploymentStore> | null = null;
+
 export function useClientStore() {
+  if (!clientStoreInstance) {
+    clientStoreInstance = createClientStore();
+  }
+  return clientStoreInstance;
+}
+
+export function useSiteStore() {
+  if (!siteStoreInstance) {
+    siteStoreInstance = createSiteStore();
+  }
+  return siteStoreInstance;
+}
+
+export function useDeploymentStore() {
+  if (!deploymentStoreInstance) {
+    deploymentStoreInstance = createDeploymentStore();
+  }
+  return deploymentStoreInstance;
+}
+
+function createClientStore() {
   const clients = ref<Client[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
 
   const clientCount = computed(() => clients.value.length);
 
-  const router = useRouter();
   const dashboardStore = useDashboardStore();
 
   function _getClients() {
+    const router = useRouter();
     isLoading.value = true;
     isError.value = false;
     axios
@@ -132,7 +158,7 @@ export function useClientStore() {
   };
 }
 
-export function useSiteStore() {
+function createSiteStore() {
   const sites = ref<Site[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -240,7 +266,7 @@ export function useSiteStore() {
   };
 }
 
-export function useDeploymentStore() {
+function createDeploymentStore() {
   const deployments = ref<Deployment[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

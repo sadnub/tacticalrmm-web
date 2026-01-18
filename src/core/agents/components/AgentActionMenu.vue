@@ -231,10 +231,13 @@
 // composition imports
 import { onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { urlActionStore, runURLAction } from "src/stores/api";
-import { agentStore, checkStore } from "src/stores/api";
+import { useURLActionStore, runURLAction, useAgentStore, useCheckStore, useWindowsUpdateStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
-import { updateStore } from "src/stores/api";
+
+const urlActionStore = useURLActionStore();
+const agentStore = useAgentStore();
+const checkStore = useCheckStore();
+const updateStore = useWindowsUpdateStore();
 
 // ui imports
 import PendingActions from "src/core/logs/components/PendingActions.vue";

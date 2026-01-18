@@ -46,7 +46,9 @@
 <script lang="ts" setup>
 import { onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { codeSignStore } from "src/stores/api";
+import { useCodeSignStore } from "src/stores/api";
+
+const codeSignStore = useCodeSignStore();
 
 // setup quasar plugins
 defineEmits(useDialogPluginComponent.emits);

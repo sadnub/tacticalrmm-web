@@ -119,7 +119,9 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { useQuasar } from "quasar";
-import { customFieldStore } from "src/stores/api";
+import { useCustomFieldStore } from "src/stores/api";
+
+const customFieldStore = useCustomFieldStore();
 import { capitalize } from "src/utils/format";
 
 // ui imports

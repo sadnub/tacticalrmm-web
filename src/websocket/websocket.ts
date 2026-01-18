@@ -1,7 +1,7 @@
 import { ref, watch } from "vue";
 import { type UseWebSocketReturn, useWebSocket } from "@vueuse/core";
 import { getBaseUrl } from "src/boot/axios";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/core/dashboard/api";
 
 export function getWSUrl(path: string, token: string | null) {
   const url = getBaseUrl().split("://")[1];
@@ -17,10 +17,10 @@ interface WSReturn {
 
 let WSConnection: UseWebSocketReturn<string> | undefined = undefined;
 export function useDashWSConnection() {
-  const auth = useAuthStore();
+  const { token } = useAuthStore();
 
   if (WSConnection === undefined) {
-    const url = getWSUrl("dashinfo", auth.token);
+    const url = getWSUrl("dashinfo", token.value);
     WSConnection = useWebSocket(url, {
       autoReconnect: true,
     });
@@ -49,10 +49,10 @@ export function useDashWSConnection() {
 
 let WSCliConnection: UseWebSocketReturn<string> | undefined = undefined;
 export function useCliWSConnection() {
-  const auth = useAuthStore();
+  const { token } = useAuthStore();
 
   if (WSCliConnection === undefined) {
-    const url = getWSUrl("trmmcli", auth.token);
+    const url = getWSUrl("trmmcli", token.value);
     WSCliConnection = useWebSocket(url);
   }
 

@@ -68,7 +68,11 @@
 import { reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { usePolicyDropdown } from "src/core/automation/composables";
-import { clientStore, siteStore, agentStore } from "src/stores/api";
+import { useClientStore, useSiteStore, useAgentStore } from "src/stores/api";
+
+const clientStore = useClientStore();
+const siteStore = useSiteStore();
+const agentStore = useAgentStore();
 import type { Client } from "src/core/clients/types";
 import type { Site } from "src/core/clients/types";
 import type { Agent } from "src/core/agents/types";

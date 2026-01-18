@@ -20,7 +20,7 @@
     >
       <template #top>
         <q-tabs
-          v-model="dashboardStore.dashboardSettings.defaultAgentTblTab"
+          v-model="dashboardSettings.defaultAgentTblTab"
           dense
           no-caps
           inline-label
@@ -468,9 +468,18 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { type QTableColumn, useQuasar } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore } from "src/stores/api";
+import { useAgentStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 import { runURLAction } from "src/core/settings/api";
+
+// setup dashboard store
+const {
+  tableHeight,
+  selectedClientSiteNode,
+  dashboardSettings,
+  formatDate,
+} = useDashboardStore();
 import { date } from "quasar";
 import { capitalize, getTimeLapse } from "src/utils/format";
 
@@ -486,17 +495,15 @@ import type { TacticalColumn } from "src/core/dashboard/types";
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { agents, selectedAgentId, isLoading } = agentStore;
 
-const tab = computed(() => dashboardStore.dashboardSettings.defaultAgentTblTab);
-const tableHeight = computed(() => dashboardStore.tableHeight);
-const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
-const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
-const agentDblClickAction = computed(() => dashboardStore.dashboardSettings.agentDblClickAction);
-const agentUrlAction = computed(() => dashboardStore.dashboardSettings.agentUrlAction);
+const tab = computed(() => dashboardSettings.defaultAgentTblTab);
+const dashInfoColor = computed(() => dashboardSettings.dashInfoColor);
+const dashPositiveColor = computed(() => dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
+const agentDblClickAction = computed(() => dashboardSettings.agentDblClickAction);
+const agentUrlAction = computed(() => dashboardSettings.agentUrlAction);
 
 const route = useRoute();
 const search = ref(route.query.search ? String(route.query.search) : "");
@@ -576,7 +583,7 @@ const columns: TacticalColumn[] = [
     field: "last_seen",
     sortable: true,
     align: "left",
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   {
     name: "boot_time",
@@ -597,12 +604,9 @@ const isFilteringTable = computed(
     filterAvailability.value !== "all",
 );
 
-watch(
-  () => dashboardStore.selectedClientSiteNode,
-  () => {
-    agentStore.clearSelectedAgent();
-  },
-);
+watch(selectedClientSiteNode, () => {
+  agentStore.clearSelectedAgent();
+});
 
 watch(search, (newVal) => {
   if (newVal === "") clearFilter();
@@ -648,8 +652,6 @@ const applyFilter = () => {
   filterTextLength.value = filterText.length - 1;
 };
 
-const selectedClientSite = computed(() => dashboardStore.selectedClientSiteNode);
-
 const filteredAgents = computed(() => {
   // tab filter
   const tabFilteredAgents =
@@ -658,8 +660,8 @@ const filteredAgents = computed(() => {
       : agents.value.filter((k) => k.monitoring_type === tab.value);
 
   // client tree filter
-  if (selectedClientSite.value) {
-    const treeKey = selectedClientSite.value.split("|");
+  if (selectedClientSiteNode.value) {
+    const treeKey = selectedClientSiteNode.value.split("|");
     const model = treeKey[0];
     const id = parseInt(String(treeKey[1]));
     if (model === "site") return tabFilteredAgents.filter((agent) => agent.site === id);
@@ -669,7 +671,7 @@ const filteredAgents = computed(() => {
 });
 
 watch(tab, () => {
-  if (dashboardStore.dashboardSettings.clearSearchWhenSwitching) clearFilter();
+  if (dashboardSettings.clearSearchWhenSwitching) clearFilter();
 });
 onMounted(agentStore.getAgents);
 

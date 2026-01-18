@@ -63,7 +63,9 @@
 // composition imports
 import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { apiKeyStore } from "src/stores/api";
+import { useAPIKeyStore } from "src/stores/api";
+
+const apiKeyStore = useAPIKeyStore();
 import { useUserDropdown } from "src/core/accounts/composables";
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
 

@@ -1,4 +1,4 @@
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/core/dashboard/api";
 import type { RouteRecordRaw } from "vue-router";
 
 const routes: RouteRecordRaw[] = [
@@ -86,8 +86,8 @@ const routes: RouteRecordRaw[] = [
     name: "SessionExpired",
     component: () => import("src/views/SessionExpired.vue"),
     beforeEnter: (_, from) => {
-      const auth = useAuthStore();
-      auth.next = from.fullPath;
+      const { next } = useAuthStore();
+      next.value = from.fullPath;
     },
   },
   { path: "/:catchAll(.*)", component: () => import("src/views/NotFound.vue") },

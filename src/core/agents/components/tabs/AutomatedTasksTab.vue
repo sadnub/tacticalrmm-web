@@ -305,9 +305,11 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { taskStore } from "src/stores/api";
-import { agentStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useTaskStore, useAgentStore, useDashboardStore } from "src/stores/api";
+
+const taskStore = useTaskStore();
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 import { notifyError } from "src/utils/notify";
 
 // ui imports
@@ -373,7 +375,6 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { selectedAgentPlatform, selectedAgentId } = agentStore;
 const { tasks, getAgentTasks, isLoading, updateTaskPartial, removeTask, runTask } = taskStore;
 

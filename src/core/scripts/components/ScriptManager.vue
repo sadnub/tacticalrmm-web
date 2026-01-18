@@ -494,8 +494,10 @@ import { ref, computed, onMounted } from "vue";
 import type { QTreeNode } from "quasar";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useStorage } from "@vueuse/core";
-import { scriptStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useScriptStore, useDashboardStore } from "src/stores/api";
+
+const scriptStore = useScriptStore();
+const dashboardStore = useDashboardStore();
 import { capitalize } from "src/utils/format";
 
 // ui imports
@@ -578,7 +580,6 @@ const $q = useQuasar();
 
 // setup stores
 const { scripts, isLoading } = scriptStore;
-const dashboardStore = useDashboardStore();
 
 const showCommunityScripts = computed(() => dashboardStore.dashboardSettings.showCommunityScripts);
 

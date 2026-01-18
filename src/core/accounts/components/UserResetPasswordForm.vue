@@ -40,7 +40,9 @@
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 
-import { userStore } from "src/stores/api";
+import { useUserStore } from "src/stores/api";
+
+const userStore = useUserStore();
 import type { User } from "../types";
 
 const props = defineProps<{

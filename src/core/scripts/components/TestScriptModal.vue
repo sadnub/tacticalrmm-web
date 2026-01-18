@@ -34,7 +34,9 @@
 <script lang="ts" setup>
 // composition imports
 import { onMounted, ref } from "vue";
-import { scriptStore } from "src/stores/api";
+import { useScriptStore } from "src/stores/api";
+
+const scriptStore = useScriptStore();
 
 import { useDialogPluginComponent } from "quasar";
 import ScriptOutputCopyClip from "./ScriptOutputCopyClip.vue";

@@ -218,7 +218,9 @@
 <script lang="ts" setup>
 import { reactive, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { policyChecksStore } from "src/stores/api";
+import { usePolicyChecksStore } from "src/stores/api";
+
+const policyChecksStore = usePolicyChecksStore();
 import PolicyStatus from "./PolicyStatus.vue";
 import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
 import PingCheck from "src/core/checks/components/PingCheck.vue";

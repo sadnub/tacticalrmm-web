@@ -1,7 +1,10 @@
 import { computed, onMounted } from "vue";
 
-import { checkStore, policyChecksStore } from "src/stores/api";
+import { useCheckStore, usePolicyChecksStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
+
+const checkStore = useCheckStore();
+const policyChecksStore = usePolicyChecksStore();
 
 // dropdown options
 export function useAgentCheckDropdown(agentId: string | null) {

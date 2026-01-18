@@ -263,8 +263,10 @@
 // composition imports
 import { computed, reactive, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { roleStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useRoleStore, useDashboardStore } from "src/stores/api";
+
+const roleStore = useRoleStore();
+const dashboardStore = useDashboardStore();
 import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
 
 // type imports
@@ -278,7 +280,6 @@ defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
 const { isLoading } = roleStore;
-const dashboardStore = useDashboardStore();
 
 // quasar setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();

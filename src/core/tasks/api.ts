@@ -5,6 +5,16 @@ import { convertFromBitArray, convertToBitArray, formatDateInputField } from "sr
 import { notifySuccess } from "src/utils/notify";
 import { useCachedAction } from "../dashboard/composables";
 
+// Lazy singleton
+let taskStoreInstance: ReturnType<typeof createTaskStore> | null = null;
+
+export function useTaskStore() {
+  if (!taskStoreInstance) {
+    taskStoreInstance = createTaskStore();
+  }
+  return taskStoreInstance;
+}
+
 export function processTaskDatafromDB(task: AutomatedTask): AutomatedTaskUI {
   return {
     ...task,
@@ -41,7 +51,7 @@ export function processTaskDataforDB(task: AutomatedTaskUI): AutomatedTask {
   } as AutomatedTask;
 }
 
-export function useTaskStore() {
+function createTaskStore() {
   const tasks = ref<AutomatedTaskUI[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

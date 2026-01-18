@@ -145,7 +145,9 @@
 // composition imports
 import { ref, watch, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { checkStore } from "src/stores/api";
+import { useCheckStore } from "src/stores/api";
+
+const checkStore = useCheckStore();
 import { failOptions, severityOptions } from "../composables";
 import { validateEventID } from "src/utils/validation";
 

@@ -407,9 +407,11 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { agentStore } from "src/stores/api";
-import { checkStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentStore, useCheckStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const checkStore = useCheckStore();
+const dashboardStore = useDashboardStore();
 import { notifyWarning } from "src/utils/notify";
 
 // ui imports
@@ -476,7 +478,6 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { selectedAgentId, selectedAgentPlatform } = agentStore;
 const { checks, isLoading } = checkStore;
 

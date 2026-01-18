@@ -25,20 +25,16 @@
 
 <script lang="ts" setup>
 // composition imports
-import { computed } from "vue";
 import { copyToClipboard, uid } from "quasar";
 import { notifySuccess } from "src/utils/notify";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useDashboardStore } from "src/stores/api";
 
 defineProps<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   info: any[] | undefined;
 }>();
 
-// setup stores
-const dashboardStore = useDashboardStore();
-
-const tabHeight = computed(() => dashboardStore.tabHeight);
+const { tabHeight } = useDashboardStore();
 
 function copyValueToClip(val: string) {
   copyToClipboard(val)

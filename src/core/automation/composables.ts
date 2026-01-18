@@ -1,7 +1,9 @@
 import { computed, onMounted } from "vue";
 
-import { policyStore } from "src/stores/api";
+import { usePolicyStore } from "src/stores/api";
 import type { Option } from "../dashboard/types";
+
+const policyStore = usePolicyStore();
 
 // dropdown options
 export function usePolicyDropdown() {

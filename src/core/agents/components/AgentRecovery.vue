@@ -40,7 +40,9 @@
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 import type { Agent, AgentRecoveryMode } from "../types";
 
 const props = defineProps<{

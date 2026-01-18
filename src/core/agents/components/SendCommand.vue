@@ -105,7 +105,9 @@
 // composition imports
 import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 import { cmdPlaceholder } from "src/core/agents/composables";
 import { runAsUserToolTip } from "src/constants/constants";
 

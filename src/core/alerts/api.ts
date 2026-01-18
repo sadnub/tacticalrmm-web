@@ -11,8 +11,25 @@ import type {
 import { notifySuccess } from "src/utils/notify";
 import { useCachedAction } from "../dashboard/composables";
 
-// Alert Templates store (plain composable, mirrors checks api style)
+// Lazy singletons
+let alertTemplateStoreInstance: ReturnType<typeof createAlertTemplateStore> | null = null;
+let alertsStoreInstance: ReturnType<typeof createAlertsStore> | null = null;
+
 export function useAlertTemplateStore() {
+  if (!alertTemplateStoreInstance) {
+    alertTemplateStoreInstance = createAlertTemplateStore();
+  }
+  return alertTemplateStoreInstance;
+}
+
+export function useAlertsStore() {
+  if (!alertsStoreInstance) {
+    alertsStoreInstance = createAlertsStore();
+  }
+  return alertsStoreInstance;
+}
+
+function createAlertTemplateStore() {
   const alertTemplates = ref<AlertTemplate[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -112,8 +129,7 @@ export function useAlertTemplateStore() {
   };
 }
 
-// Alerts store (plain composable, mirrors checks api style)
-export function useAlertsStore() {
+function createAlertsStore() {
   const alerts = ref<Alert[]>([]);
   const selected = ref<Alert[]>([]);
   const isLoading = ref(false);

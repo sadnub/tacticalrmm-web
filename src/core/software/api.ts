@@ -7,7 +7,17 @@ export interface ChocoSoftware {
   name: string;
 }
 
+// Lazy singleton
+let chocosStoreInstance: ReturnType<typeof createChocosStore> | null = null;
+
 export function useChocosStore() {
+  if (!chocosStoreInstance) {
+    chocosStoreInstance = createChocosStore();
+  }
+  return chocosStoreInstance;
+}
+
+function createChocosStore() {
   const chocos = ref<readonly ChocoSoftware[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);

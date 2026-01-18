@@ -40,8 +40,10 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useMeta, useQuasar } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore } from "src/stores/api";
+import { useAgentStore, useDashboardStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 
 // type imports
 import type { MeshUrls } from "src/core/agents/types";
@@ -50,7 +52,6 @@ import type { MeshUrls } from "src/core/agents/types";
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { getAgentMeshCentralUrls, sendAgentRecoverMesh } = agentStore;
 
 const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);

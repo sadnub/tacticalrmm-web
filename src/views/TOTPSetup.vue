@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useQuasar } from "quasar";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/stores/api";
 import { useRouter } from "vue-router";
 
 import { useQRCode } from "@vueuse/integrations/useQRCode";
@@ -47,7 +47,7 @@ import { useQRCode } from "@vueuse/integrations/useQRCode";
 const $q = useQuasar();
 
 // setup auth store
-const auth = useAuthStore();
+const { setupTotp, logout: authLogout } = useAuthStore();
 
 // setup router
 const router = useRouter();
@@ -63,7 +63,7 @@ async function getQRCodeData() {
   loading.value = true;
 
   try {
-    const data = await auth.setupTotp();
+    const data = await setupTotp();
 
     if (!data) {
       //don't logout user if totp is already set
@@ -79,7 +79,7 @@ async function getQRCodeData() {
 }
 
 async function logout() {
-  await auth.logout();
+  await authLogout();
   clearToken.value = false;
   void router.push({ name: "Login" });
 }
@@ -91,7 +91,7 @@ onMounted(() => {
 
 onBeforeUnmount(async () => {
   if (clearToken.value) {
-    await auth.logout();
+    await authLogout();
   }
 });
 </script>

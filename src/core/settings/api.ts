@@ -16,7 +16,57 @@ import type {
 } from "./types";
 import { useCachedAction } from "../dashboard/composables";
 
+// Lazy singletons
+let coreStoreInstance: ReturnType<typeof createCoreStore> | null = null;
+let customFieldStoreInstance: ReturnType<typeof createCustomFieldStore> | null = null;
+let urlActionStoreInstance: ReturnType<typeof createURLActionStore> | null = null;
+let apiKeyStoreInstance: ReturnType<typeof createAPIKeyStore> | null = null;
+let globalKeyStoreInstance: ReturnType<typeof createGlobalKeyStore> | null = null;
+let codeSignStoreInstance: ReturnType<typeof createCodeSignStore> | null = null;
+
 export function useCoreStore() {
+  if (!coreStoreInstance) {
+    coreStoreInstance = createCoreStore();
+  }
+  return coreStoreInstance;
+}
+
+export function useCustomFieldStore() {
+  if (!customFieldStoreInstance) {
+    customFieldStoreInstance = createCustomFieldStore();
+  }
+  return customFieldStoreInstance;
+}
+
+export function useURLActionStore() {
+  if (!urlActionStoreInstance) {
+    urlActionStoreInstance = createURLActionStore();
+  }
+  return urlActionStoreInstance;
+}
+
+export function useAPIKeyStore() {
+  if (!apiKeyStoreInstance) {
+    apiKeyStoreInstance = createAPIKeyStore();
+  }
+  return apiKeyStoreInstance;
+}
+
+export function useGlobalKeyStore() {
+  if (!globalKeyStoreInstance) {
+    globalKeyStoreInstance = createGlobalKeyStore();
+  }
+  return globalKeyStoreInstance;
+}
+
+export function useCodeSignStore() {
+  if (!codeSignStoreInstance) {
+    codeSignStoreInstance = createCodeSignStore();
+  }
+  return codeSignStoreInstance;
+}
+
+function createCoreStore() {
   const coreSettings = ref<CoreSettings>();
   const isLoading = ref(false);
   const isError = ref(false);
@@ -148,7 +198,7 @@ export function openWebTerminal() {
   });
 }
 
-export function useCustomFieldStore() {
+function createCustomFieldStore() {
   const customFields = ref<CustomField[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -252,7 +302,7 @@ export function useCustomFieldStore() {
   };
 }
 
-export function useURLActionStore() {
+function createURLActionStore() {
   const urlActions = ref<URLAction[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -366,7 +416,7 @@ export async function runTestURLAction(payload: TestRunURLActionRequest) {
     });
 }
 
-export function useAPIKeyStore() {
+function createAPIKeyStore() {
   const apiKeys = ref<APIKey[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -451,7 +501,7 @@ export function useAPIKeyStore() {
   };
 }
 
-export function useGlobalKeyStore() {
+function createGlobalKeyStore() {
   const keys = ref<GlobalKey[]>([]);
   const isLoading = ref(false);
   const isError = ref(false);
@@ -538,7 +588,7 @@ export function useGlobalKeyStore() {
   };
 }
 
-export function useCodeSignStore() {
+function createCodeSignStore() {
   const token = ref<string | null>(null);
   const isLoading = ref(false);
   const isError = ref(false);

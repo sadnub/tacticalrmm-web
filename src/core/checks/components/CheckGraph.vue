@@ -36,7 +36,9 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
-import { checkStore } from "src/stores/api";
+import { useCheckStore } from "src/stores/api";
+
+const checkStore = useCheckStore();
 
 // ui imports
 import ApexChart from "vue3-apexcharts";

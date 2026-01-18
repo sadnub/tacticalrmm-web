@@ -105,7 +105,9 @@
 // composition imports
 import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { clientStore } from "src/stores/api";
+import { useClientStore } from "src/stores/api";
+
+const clientStore = useClientStore();
 
 // ui imports
 import ClientsForm from "./ClientsForm.vue";

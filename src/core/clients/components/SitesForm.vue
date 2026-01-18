@@ -47,8 +47,10 @@
 import { computed, onMounted, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
-import { customFieldStore } from "src/stores/api";
-import { siteStore } from "src/stores/api";
+import { useCustomFieldStore, useSiteStore } from "src/stores/api";
+
+const customFieldStore = useCustomFieldStore();
+const siteStore = useSiteStore();
 
 import { formatCustomFields } from "src/utils/format";
 

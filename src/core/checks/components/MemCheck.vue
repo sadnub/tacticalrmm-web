@@ -69,7 +69,9 @@
 import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { isValidThreshold } from "src/utils/validation";
-import { checkStore } from "src/stores/api";
+import { useCheckStore } from "src/stores/api";
+
+const checkStore = useCheckStore();
 import { failOptions } from "../composables";
 
 // import types

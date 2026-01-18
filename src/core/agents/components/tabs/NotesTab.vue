@@ -78,8 +78,11 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { agentNoteStore, agentStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAgentNoteStore, useAgentStore, useDashboardStore } from "src/stores/api";
+
+const agentNoteStore = useAgentNoteStore();
+const agentStore = useAgentStore();
+const dashboardStore = useDashboardStore();
 
 // type imports
 import type { AgentNote } from "../../types";
@@ -107,7 +110,6 @@ const columns: TacticalColumn[] = [
 // setup stores
 const { selectedAgentId, isLoading } = agentStore;
 const { agentNotes } = agentNoteStore;
-const dashboardStore = useDashboardStore();
 const tabHeight = computed(() => dashboardStore.tabHeight);
 
 // setup quasar

@@ -198,8 +198,10 @@
 <script lang="ts" setup>
 import { reactive, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
-import { alertTemplateStore } from "src/stores/api";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useAlertTemplateStore, useDashboardStore } from "src/stores/api";
+
+const alertTemplateStore = useAlertTemplateStore();
+const dashboardStore = useDashboardStore();
 import AlertTemplateForm from "src/core/alerts/components/AlertTemplateForm.vue";
 import AlertExclusions from "src/core/alerts/components/AlertExclusions.vue";
 import AlertTemplateRelated from "src/core/alerts/components/AlertTemplateRelated.vue";
@@ -209,9 +211,6 @@ import type { AlertTemplate } from "src/core/alerts/types";
 defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
-
-// stores
-const dashboardStore = useDashboardStore();
 
 // state
 const { alertTemplates: templates } = alertTemplateStore;

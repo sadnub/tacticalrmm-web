@@ -7,17 +7,17 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { useAuthStore } from "src/stores/auth";
+import { useAuthStore } from "src/stores/api";
 import { useDashWSConnection } from "src/websocket/websocket";
 
 // setup store
-const auth = useAuthStore();
+const { logout } = useAuthStore();
 
 // setup websocket
 const { close } = useDashWSConnection();
 
 onMounted(async () => {
-  await auth.logout();
+  await logout();
   close();
 });
 </script>

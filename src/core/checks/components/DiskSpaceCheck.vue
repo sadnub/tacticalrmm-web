@@ -80,7 +80,9 @@
 // composition imports
 import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { checkStore } from "src/stores/api";
+import { useCheckStore } from "src/stores/api";
+
+const checkStore = useCheckStore();
 import { isValidThreshold } from "src/utils/validation";
 import { useAgentDiskDropdown } from "src/core/agents/composables";
 import { failOptions, defaultDiskOptions } from "../composables";

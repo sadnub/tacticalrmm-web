@@ -93,8 +93,10 @@
 // composition imports
 import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent, copyToClipboard } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { deploymentStore } from "src/stores/api";
+import { useDeploymentStore, useDashboardStore } from "src/stores/api";
+
+const deploymentStore = useDeploymentStore();
+const dashboardStore = useDashboardStore();
 import { notifySuccess } from "src/utils/notify";
 import { getBaseUrl } from "src/boot/axios";
 
@@ -157,7 +159,6 @@ const columns = [
 defineEmits(useDialogPluginComponent.emits);
 
 // setup stores
-const dashboardStore = useDashboardStore();
 const { deployments, isLoading } = deploymentStore;
 
 // quasar dialog setup

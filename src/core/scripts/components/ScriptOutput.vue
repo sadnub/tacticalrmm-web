@@ -38,7 +38,9 @@
 <script lang="ts" setup>
 // composition imports
 import { useDialogPluginComponent } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useDashboardStore } from "src/stores/api";
+
+const dashboardStore = useDashboardStore();
 import ScriptOutputCopyClip from "./ScriptOutputCopyClip.vue";
 import type { CheckResult } from "src/core/checks/types";
 
@@ -47,8 +49,6 @@ defineEmits(useDialogPluginComponent.emits);
 defineProps<{
   scriptInfo: CheckResult;
 }>();
-
-const dashboardStore = useDashboardStore();
 
 // quasar dialog setup
 const { dialogRef, onDialogHide } = useDialogPluginComponent();

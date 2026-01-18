@@ -120,7 +120,9 @@ For details, see: https://license.tacticalrmm.com/ee
 import { computed, ref, onMounted } from "vue";
 import type { QTableColumn } from "quasar";
 import { useQuasar, copyToClipboard } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
+import { useDashboardStore } from "src/stores/api";
+
+const dashboardStore = useDashboardStore();
 import { fetchSSOProviders, removeSSOProvider, fetchSSOSettings } from "src/ee/sso/api/sso";
 import { notifySuccess } from "src/utils/notify";
 import { truncateText } from "src/utils/format";
@@ -135,9 +137,6 @@ import SSOSettings from "src/ee/sso/components/SSOSettings.vue";
 
 // setup quasar
 const $q = useQuasar();
-
-// setup stores
-const dashboardStore = useDashboardStore();
 
 const loading = ref(false);
 const providers = ref([] as SSOProvider[]);

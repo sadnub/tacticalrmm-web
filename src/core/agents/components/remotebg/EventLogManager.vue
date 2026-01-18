@@ -83,7 +83,9 @@
 // composition imports
 import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { agentStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
+
+const agentStore = useAgentStore();
 
 // ui imports
 import PreDialog from "src/core/dashboard/ui/PreDialog.vue";

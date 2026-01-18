@@ -3,7 +3,7 @@
     <SummaryTab />
     <q-separator />
     <SubTableTabs
-      :style="{ height: `${dashboardStore.tabHeight + 38}px` }"
+      :style="{ height: `${tabHeight + 38}px` }"
       :disable-tabs="['summary']"
     />
   </q-page>
@@ -14,8 +14,7 @@
 import { watch } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
-import { useDashboardStore } from "src/stores/dashboard";
-import { agentStore } from "src/stores/api";
+import { useAgentStore, useDashboardStore } from "src/stores/api";
 
 // ui imports
 import SummaryTab from "src/core/agents/components/tabs/SummaryTab.vue";
@@ -25,10 +24,10 @@ const route = useRoute();
 const $q = useQuasar();
 
 // setup stores
-const dashboardStore = useDashboardStore();
-const { selectedAgentId } = agentStore;
+const { selectedAgentId } = useAgentStore();
+const { tabHeight } = useDashboardStore();
 
-dashboardStore.tabHeight = $q.screen.height - 309 - 50 - 36;
+tabHeight.value = $q.screen.height - 309 - 50 - 36;
 
 selectedAgentId.value = typeof route.params.agent_id === "string" ? route.params.agent_id : null;
 
