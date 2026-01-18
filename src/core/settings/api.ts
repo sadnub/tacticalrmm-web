@@ -13,6 +13,7 @@ import type {
   CustomFieldModel,
   GlobalKey,
   ServerMaintenanceRequest,
+  Schedule,
 } from "./types";
 import { useCachedAction } from "../dashboard/composables";
 
@@ -663,3 +664,105 @@ function createCodeSignStore() {
     updateToken,
   };
 }
+
+// Schedule Store
+let scheduleStoreInstance: ReturnType<typeof createScheduleStore> | null = null;
+
+export function useScheduleStore() {
+  if (!scheduleStoreInstance) {
+    scheduleStoreInstance = createScheduleStore();
+  }
+  return scheduleStoreInstance;
+}
+
+function createScheduleStore() {
+  const schedules = ref<Schedule[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function getSchedules() {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .get<Schedule[]>("/core/schedules/")
+      .then(({ data }) => {
+        schedules.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function addSchedule(schedule: Schedule) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .post<Schedule>("/core/schedules/", schedule)
+      .then(({ data }) => {
+        schedules.value.push(data);
+        notifySuccess("Schedule was added successfully.");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function editSchedule(id: number, schedule: Schedule) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .put<Schedule>(`/core/schedules/${id}/`, schedule)
+      .then(({ data }) => {
+        const index = schedules.value.findIndex((s) => s.id === data.id);
+        if (index !== -1) {
+          schedules.value[index] = data;
+        }
+        notifySuccess("Schedule was modified successfully.");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function deleteSchedule(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .delete(`/core/schedules/${id}/`)
+      .then(() => {
+        schedules.value = schedules.value.filter((s) => s.id !== id);
+        notifySuccess("Schedule successfully deleted.");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  return {
+    schedules,
+    isLoading,
+    isError,
+    getSchedules,
+    addSchedule,
+    editSchedule,
+    deleteSchedule,
+  };
+}
+
+export const useScheduleShared = useScheduleStore();

@@ -13,11 +13,14 @@ import type {
   ReportTemplate,
   ReportHTMLTemplate,
   ReportDataQuery,
+  ReportSchedule,
+  ReportHistory,
   UploadAssetsResponse,
   RunReportPreviewRequest,
   RunReportRequest,
   VariableAnalysis,
   SharedTemplate,
+  EmailSettings,
 } from "../types/reporting";
 import type { QTreeFileNode } from "src/core/dashboard/types";
 import { notifySuccess } from "src/utils/notify";
@@ -292,7 +295,7 @@ export function useReportTemplates() {
 
   function getAllowedValues(payload: {
     variables: string;
-    dependencies?: ReportDependencies | undefined;
+    dependencies: ReportDependencies;
   }) {
     isLoading.value = true;
     isError.value = false;
@@ -303,6 +306,30 @@ export function useReportTemplates() {
       })
       .catch(() => (isError.value = true))
       .finally(() => (isLoading.value = false));
+  }
+
+  interface EmailReportRequest {
+    format: ReportFormat;
+    email_recipients: string[];
+    dependencies: ReportDependencies;
+    email_settings: EmailSettings;
+  }
+
+  function emailReport(id: number, payload: EmailReportRequest) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .post(`${baseUrl}/templates/${id}/email/`, payload)
+      .then(() => {
+        notifySuccess("Report was generated and the email is queued for delivery");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
   }
 
   return {
@@ -328,6 +355,7 @@ export function useReportTemplates() {
     importSharedTemplates,
     variableAnalysis,
     getAllowedValues,
+    emailReport,
   };
 }
 
@@ -536,3 +564,239 @@ export function useReportingDataQueries(): useReportingDataQueries {
 
 // Use if you want the state to be consistent across components
 export const useSharedReportDataQueries = useReportingDataQueries();
+
+export function useReportingSchedules() {
+  const reportSchedules = ref<ReportSchedule[]>([]);
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function getReportSchedules() {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .get<ReportSchedule[]>(`${baseUrl}/schedules/`)
+      .then(({ data }) => {
+        reportSchedules.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function addReportSchedule(payload: ReportSchedule) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .post<ReportSchedule>(`${baseUrl}/schedules/`, payload)
+      .then(({ data }) => {
+        reportSchedules.value.push(data);
+        notifySuccess("Report Schedule was added successfully");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function editReportSchedule(id: number, payload: ReportSchedule) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .put<ReportSchedule>(`${baseUrl}/schedules/${id}/`, payload)
+      .then(({ data }) => {
+        const idx = reportSchedules.value.findIndex((r) => r.id === id);
+        if (idx !== -1) {
+          reportSchedules.value[idx] = data;
+        }
+        notifySuccess("Report Schedule was updated successfully");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function deleteReportSchedule(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .delete(`${baseUrl}/schedules/${id}/`)
+      .then(() => {
+        reportSchedules.value = reportSchedules.value.filter((r) => r.id !== id);
+        notifySuccess("Report Schedule was deleted successfully");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function runReportSchedule(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .post(`${baseUrl}/schedules/${id}/run/`)
+      .then(() => {
+        notifySuccess("Report Schedule was run. Check the Report History for the status.");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  return {
+    reportSchedules,
+    isLoading,
+    isError,
+    getReportSchedules,
+    addReportSchedule,
+    editReportSchedule,
+    deleteReportSchedule,
+    runReportSchedule,
+  };
+}
+
+export const useSharedReportSchedules = useReportingSchedules();
+
+export function useReportingHistory() {
+  const reportHistory = ref<ReportHistory[]>([]);
+  const reportData = ref<string>("");
+  const isLoading = ref(false);
+  const isError = ref(false);
+
+  function getReportHistory() {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .get<ReportHistory[]>(`${baseUrl}/history/`)
+      .then(({ data }) => {
+        reportHistory.value = data;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function deleteReportHistory(id: number) {
+    isLoading.value = true;
+    isError.value = false;
+
+    axios
+      .delete(`${baseUrl}/history/${id}/`)
+      .then(() => {
+        reportHistory.value = reportHistory.value.filter((r) => r.id !== id);
+        notifySuccess("Report History entry was deleted successfully");
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function runReportHistory(id: number, format: ReportFormat, forDownload?: boolean) {
+    isLoading.value = true;
+    isError.value = false;
+    reportData.value = "";
+
+    axios
+      .post(
+        `${baseUrl}/history/${id}/run/`,
+        { format },
+        {
+          responseType: format !== "pdf" ? "json" : "blob",
+        },
+      )
+      .then(({ data }) => {
+        if (format === "html" || forDownload) reportData.value = data;
+        else if (format === "pdf") reportData.value = URL.createObjectURL(data);
+        else reportData.value = `<pre>${data}</pre>`;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function downloadReportHistory(id: number, template_name: string, format: ReportFormat) {
+    isLoading.value = true;
+    isError.value = false;
+    reportData.value = "";
+
+    let extension;
+    if (format === "plaintext") extension = "csv";
+    else extension = format;
+
+    // get filename
+    Dialog.create({
+      title: "Confirm File Name",
+      prompt: {
+        model: `${template_name}-${Date.now()}.${extension}`,
+        isValid: (val) => !!val,
+        type: "text",
+      },
+      cancel: true,
+      persistent: true,
+    }).onOk((name: string) => {
+      runReportHistory(id, format, true);
+
+      void until(isLoading)
+        .not.toBeTruthy()
+        .then(() => {
+          if (!isError.value) {
+            exportFile(name, reportData.value);
+          }
+        });
+    });
+  }
+
+  function openReportHistory(id: number, format: ReportFormat, newWindow?: boolean) {
+    const params = `format=${format}`;
+
+    const url = router.resolve(`/reports/history/${id}?${params}`).href;
+
+    if (newWindow === undefined || newWindow) {
+      window.open(url, "_blank");
+    } else {
+      void router.push(url);
+    }
+  }
+
+  return {
+    reportHistory,
+    reportData,
+    openReportHistory,
+    isLoading,
+    isError,
+    getReportHistory,
+    deleteReportHistory,
+    downloadReportHistory,
+    runReportHistory,
+  };
+}
+
+export const useSharedReportHistory = useReportingHistory();

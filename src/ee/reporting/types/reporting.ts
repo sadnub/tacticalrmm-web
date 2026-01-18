@@ -12,7 +12,7 @@ export interface ReportDependencies {
   client?: number;
   site?: number;
   agent?: string;
-  [x: string]: string | number;
+  [x: string]: string | number | undefined;
 }
 
 export interface VariableAnalysis {
@@ -70,4 +70,38 @@ export interface OpenReportParams {
 export interface SharedTemplate {
   name: string;
   url: string;
+}
+
+export interface ReportSchedule {
+  id: number;
+  name: string;
+  enabled: boolean;
+  report_template?: number | undefined;
+  report_template_name?: string | undefined;
+  format: ReportFormat;
+  schedule?: number | undefined;
+  email_recipients: string[];
+  send_report_email: boolean;
+  last_run?: string | undefined;
+  dependencies: ReportDependencies;
+  email_settings: EmailSettings;
+  timezone: string | null;
+}
+
+export interface ReportHistory {
+  id: number;
+  run_by: string;
+  report_template: number;
+  report_template_name: string;
+  report_template_type: ReportTemplateType;
+  error_data?: string;
+  date_created: string;
+}
+
+export interface EmailSettings {
+  subject?: string;
+  body?: string;
+  attachment_name?: string;
+  attachment_extension?: string;
+  include_report_link?: boolean;
 }

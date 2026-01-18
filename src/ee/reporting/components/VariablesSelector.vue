@@ -136,7 +136,7 @@ async function getVariables() {
 
   getAllowedValues({
     variables: props.variables,
-    dependencies: props?.dependencies,
+    dependencies: props?.dependencies ?? {},
   });
 
   await until(isLoading).not.toBeTruthy();

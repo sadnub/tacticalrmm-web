@@ -126,6 +126,14 @@
               :rules="[(val) => val >= 5 || 'Minimum is 5']"
               hide-bottom-space
             />
+            <q-input
+              v-model="script.syntax"
+              label="Syntax"
+              dense
+              filled
+              autogrow
+              :readonly="readonly"
+            />
             <q-checkbox v-model="script.run_as_user" label="Run As User (Windows only)">
               <q-tooltip
                 >Setting this value on the script model will always override any 'Run As User'
@@ -133,15 +141,6 @@
                 logged in user. If no user is logged in, the script will run as SYSTEM.
               </q-tooltip>
             </q-checkbox>
-            <q-input
-              v-model="script.syntax"
-              label="Syntax"
-              type="textarea"
-              style="height: 150px; overflow-y: auto; resize: none"
-              dense
-              filled
-              :readonly="readonly"
-            />
           </div>
         </q-scroll-area>
         <div

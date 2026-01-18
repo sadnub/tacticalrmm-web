@@ -110,6 +110,24 @@ For details, see: https://license.tacticalrmm.com/ee
           />
           <q-btn
             class="q-ml-sm"
+            label="Report Schedules"
+            icon="fa-solid fa-clock"
+            no-caps
+            dense
+            flat
+            @click="openReportSchedules"
+          />
+          <q-btn
+            class="q-ml-sm"
+            label="Report Run History"
+            icon="fa-solid fa-history"
+            no-caps
+            dense
+            flat
+            @click="openReportHistory"
+          />
+          <q-btn
+            class="q-ml-sm"
             label="Shared Templates"
             icon="fa-solid fa-share"
             no-caps
@@ -223,6 +241,24 @@ For details, see: https://license.tacticalrmm.com/ee
 
                 <q-separator />
 
+                <q-separator />
+
+                <q-item v-close-popup clickable @click="scheduleReport(props.row)">
+                  <q-item-section side>
+                    <q-icon name="schedule" />
+                  </q-item-section>
+                  <q-item-section>Schedule Report</q-item-section>
+                </q-item>
+
+                <q-item v-close-popup clickable @click="emailReport(props.row)">
+                  <q-item-section side>
+                    <q-icon name="email" />
+                  </q-item-section>
+                  <q-item-section>Email Report</q-item-section>
+                </q-item>
+
+                <q-separator />
+
                 <q-item v-close-popup clickable @click="exportReport(props.row.id)">
                   <q-item-section side>
                     <q-icon name="mdi-export" />
@@ -273,6 +309,9 @@ import ReportHTMLTemplateTable from "./ReportHTMLTemplateTable.vue";
 import ReportDataQueryTable from "./ReportDataQueryTable.vue";
 import ReportTemplateImport from "./ReportTemplateImport.vue";
 import SharedTemplatesImport from "./SharedTemplatesImport.vue";
+import ReportScheduleTable from "./ReportScheduleTable.vue";
+import ReportHistoryTable from "./ReportHistoryTable.vue";
+import ReportScheduleForm from "./ReportScheduleForm.vue";
 
 // type imports
 import type { ReportTemplate } from "../types/reporting";
@@ -381,6 +420,37 @@ function cloneTemplate(template: ReportTemplate) {
 function importReportTemplate() {
   $q.dialog({
     component: ReportTemplateImport,
+  });
+}
+
+function openReportSchedules() {
+  $q.dialog({
+    component: ReportScheduleTable,
+  });
+}
+
+function openReportHistory() {
+  $q.dialog({
+    component: ReportHistoryTable,
+  });
+}
+
+function scheduleReport(template: ReportTemplate) {
+  $q.dialog({
+    component: ReportScheduleForm,
+    componentProps: {
+      reportTemplate: template.id,
+    },
+  });
+}
+
+function emailReport(template: ReportTemplate) {
+  $q.dialog({
+    component: ReportScheduleForm,
+    componentProps: {
+      reportTemplate: template.id,
+      emailOnly: true,
+    },
   });
 }
 

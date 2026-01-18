@@ -70,6 +70,7 @@ import { notifyError } from "src/utils/notify";
 import { capitalize } from "src/utils/format";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
+import type { ReportDependencies } from "../types/reporting";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -77,6 +78,7 @@ defineEmits([...useDialogPluginComponent.emits]);
 // props
 const props = defineProps<{
   dependsOn: string[];
+  values?: ReportDependencies;
 }>();
 
 // quasar dialog setup
@@ -88,8 +90,13 @@ const { clientOptions } = useClientDropdown();
 const { siteOptions } = useSiteDropdown();
 
 // logic
-const dependencies = reactive<{ [x: string]: string | number | null }>({});
-props.dependsOn.forEach((dep) => (dependencies[dep] = null));
+const dependencies = props.values
+  ? reactive(props.values)
+  : reactive<{ [x: string]: string | number | null }>({});
+
+props.dependsOn.forEach((dep) => {
+  if (!dependencies[dep]) dependencies[dep] = null;
+});
 
 const loading = ref(false);
 
