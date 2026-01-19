@@ -177,7 +177,7 @@
 </template>
 <script setup lang="ts">
 // composition imports
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useIntervalFn } from "@vueuse/shared";
 import { useDashboardStore, useAuthStore } from "src/stores/api";
@@ -260,6 +260,11 @@ async function openWebTerm() {
     console.error(e);
   }
 }
+
+onMounted(() => {
+  checkRmmVersion();
+  void getDashInfo();
+});
 
 useIntervalFn(
   () => {

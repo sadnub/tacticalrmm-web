@@ -24,7 +24,7 @@
           </q-item-section>
 
           <q-item-section side top>
-            <q-item-label caption>{{ getTimeLapse(Number(alert.alert_time)) }}</q-item-label>
+            <q-item-label caption>{{ getTimeLapse(Number(date.formatDate(alert.alert_time, "X"))) }}</q-item-label>
             <q-item-label>
               <q-icon
                 v-close-popup
@@ -57,7 +57,7 @@
 
 <script lang="ts" setup>
 import { onMounted, computed } from "vue";
-import { useQuasar } from "quasar";
+import { useQuasar, date } from "quasar";
 import { useInterval } from "@vueuse/core";
 import AlertsOverview from "src/core/alerts/components/AlertsOverview.vue";
 import { getTimeLapse } from "src/utils/format";
