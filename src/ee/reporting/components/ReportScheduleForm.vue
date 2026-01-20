@@ -210,7 +210,6 @@ import { notifyWarning } from "src/utils/notify";
 // ui imports
 import ReportDependencyPrompt from "./ReportDependencyPrompt.vue";
 import ScheduleForm from "src/core/settings/components/ScheduleForm.vue";
-import TacticalDropdown from "src/components/ui/TacticalDropdown.vue";
 
 import type {
   ReportSchedule,

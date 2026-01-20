@@ -116,7 +116,7 @@ import {
 import { useQuasar, useDialogPluginComponent, exportFile } from "quasar";
 
 // ui imports
-import FileBrowser from "src/components/FileBrowser.vue";
+import FileBrowser from "src/core/dashboard/ui/FileBrowser.vue";
 import AssetFileUpload from "./AssetFileUpload.vue";
 
 // type imports
