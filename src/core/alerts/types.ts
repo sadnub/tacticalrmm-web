@@ -103,6 +103,7 @@ export interface AlertSearchParams {
   timeFilter?: number; // days or 0 for all
   snoozedFilter?: boolean;
   resolvedFilter?: boolean;
+  top?: number;
 }
 
 // API request/response types

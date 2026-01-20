@@ -1,12 +1,12 @@
 <template>
   <q-btn dense flat icon="notifications">
-    <q-badge v-if="alertsCount > 0" :color="badgeColor" floating transparent>{{
+    <q-badge v-if="trayAlertsCount > 0" :color="badgeColor" floating transparent>{{
       alertsCountText()
     }}</q-badge>
     <q-menu :style="{ 'max-height': `${$q.screen.height - 100}px` }">
       <q-list separator>
-        <q-item v-if="alertsCount === 0">No New Alerts</q-item>
-        <q-item v-for="alert in topAlerts" :key="alert.id">
+        <q-item v-if="trayAlertsCount === 0">No New Alerts</q-item>
+        <q-item v-for="alert in trayAlerts" :key="alert.id">
           <q-item-section>
             <q-item-label overline
               ><router-link :to="`/agents/${alert.agent_id}`"
@@ -48,7 +48,7 @@
           </q-item-section>
         </q-item>
         <q-item v-close-popup clickable @click="showOverview"
-          >View All Alerts ({{ alertsCount }})</q-item
+          >View All Alerts ({{ trayAlertsCount }})</q-item
         >
       </q-list>
     </q-menu>
@@ -69,25 +69,17 @@ import type { Alert } from "src/core/alerts/types";
 
 const $q = useQuasar();
 
-const { alerts } = alertsStore;
-
-const activeAlerts = computed(() =>
-  alerts.value.filter((alert) => !alert.snoozed && !alert.resolved),
-);
-
-const topAlerts = computed(() => activeAlerts.value.slice(0, 10));
-
-const alertsCount = computed(() => activeAlerts.value.length);
+const { trayAlerts, trayAlertsCount } = alertsStore;
 
 const badgeColor = computed(() => {
-  const severities = topAlerts.value.map((a) => a.severity);
+  const severities = trayAlerts.value.map((a) => a.severity);
   if (severities.includes("error")) return dashboardStore.dashboardSettings.dashNegativeColor;
   else if (severities.includes("warning")) return dashboardStore.dashboardSettings.dashWarningColor;
   else return dashboardStore.dashboardSettings.dashInfoColor;
 });
 
 function getAlerts() {
-  void alertsStore.searchAlerts({});
+  void alertsStore.getTrayAlerts();
 }
 
 function showOverview() {
@@ -120,11 +112,10 @@ function alertIconColor(severity: string) {
 }
 
 function alertsCountText() {
-  if (alertsCount.value > 99) return "99+";
-  else return alertsCount.value;
+  if (trayAlertsCount.value > 99) return "99+";
+  else return trayAlertsCount.value;
 }
 
-// Use VueUse interval for automatic cleanup
 useInterval(60 * 1000, {
   callback: () => {
     getAlerts();

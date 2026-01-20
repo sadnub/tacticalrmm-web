@@ -7,6 +7,7 @@ import type {
   BulkActionRequest,
   AlertActionRequest,
   AlertTemplateRelated,
+  TopAlertsResponse,
 } from "./types";
 import { notifySuccess } from "src/utils/notify";
 import { useCachedAction } from "../dashboard/composables";
@@ -137,6 +138,10 @@ function createAlertsStore() {
   const alertsCount = ref(0);
   const lastSearchParams = ref<AlertSearchParams>({});
 
+  // Tray alerts for the notification icon (separate from main alerts list)
+  const trayAlerts = ref<Alert[]>([]);
+  const trayAlertsCount = ref(0);
+
   function _searchAlerts(params: AlertSearchParams) {
     isLoading.value = true;
     isError.value = false;
@@ -162,6 +167,18 @@ function createAlertsStore() {
 
   function refreshSearch() {
     searchAlerts(lastSearchParams.value);
+  }
+
+  function getTrayAlerts() {
+    axios
+      .patch<TopAlertsResponse>("/alerts/", { top: 10 })
+      .then(({ data }) => {
+        trayAlerts.value = data.alerts;
+        trayAlertsCount.value = data.alerts_count;
+      })
+      .catch(() => {
+        //
+      });
   }
 
   async function snoozeAlert(id: number, days: number) {
@@ -295,8 +312,11 @@ function createAlertsStore() {
     alertsCount,
     isLoading,
     isError,
+    trayAlerts,
+    trayAlertsCount,
     searchAlerts,
     refreshSearch,
+    getTrayAlerts,
     snoozeAlert,
     unsnoozeAlert,
     resolveAlert,
