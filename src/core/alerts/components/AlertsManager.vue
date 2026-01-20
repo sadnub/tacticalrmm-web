@@ -196,7 +196,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAlertTemplateStore, useDashboardStore } from "src/stores/api";
 
@@ -232,7 +232,7 @@ const columns = [
   },
 ];
 
-const pagination = reactive({ rowsPerPage: 0, sortBy: "name", descending: true });
+const pagination = ref({ rowsPerPage: 0, sortBy: "name", descending: true });
 
 function deleteTemplate(template: AlertTemplate) {
   $q.dialog({

@@ -216,7 +216,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { usePolicyChecksStore } from "src/stores/api";
 
@@ -261,7 +261,7 @@ const columns = [
     sortable: true,
   },
 ];
-const pagination = reactive({
+const pagination = ref({
   rowsPerPage: 0,
   sortBy: "status",
   descending: true,

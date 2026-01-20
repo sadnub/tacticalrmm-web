@@ -175,7 +175,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import { useClientDropdown } from "src/core/clients/composables";
@@ -269,7 +269,7 @@ const columns = [
   { name: "actions", label: "Actions", field: "actions", align: "left" as const },
 ];
 
-const pagination = reactive({ rowsPerPage: 50, sortBy: "alert_time", descending: true });
+const pagination = ref({ rowsPerPage: 50, sortBy: "alert_time", descending: true });
 
 const noDataText = computed(() =>
   searched.value ? "No data found. Try to refine you search" : "Click search to find alerts",

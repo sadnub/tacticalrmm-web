@@ -170,7 +170,7 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, reactive, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore, useWindowsUpdateStore, useDashboardStore } from "src/stores/api";
 
@@ -246,7 +246,7 @@ const $q = useQuasar();
 
 // setup win update tab component
 const filter = ref("");
-const pagination = reactive({
+const pagination = ref({
   rowsPerPage: 0,
   sortBy: "installed",
   descending: false,

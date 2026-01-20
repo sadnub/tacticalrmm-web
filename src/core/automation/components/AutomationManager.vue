@@ -275,7 +275,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 
@@ -352,7 +352,7 @@ const columns = [
     align: "left" as const,
   },
 ];
-const pagination = reactive({
+const pagination = ref({
   rowsPerPage: 0,
   sortBy: "name",
   descending: true,

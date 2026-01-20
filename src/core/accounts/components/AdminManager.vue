@@ -189,7 +189,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAuthStore, useUserStore, useDashboardStore } from "src/stores/api";
 
@@ -274,7 +274,7 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 defineEmits(useDialogPluginComponent.emits);
 
 const search = ref("");
-const pagination = reactive({
+const pagination = ref({
   rowsPerPage: 0,
   sortBy: "username",
   descending: true,
