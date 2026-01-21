@@ -66,7 +66,7 @@ import { useSiteDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { useAlertTemplateStore } from "src/stores/api";
 
-const alertTemplateStore = useAlertTemplateStore();
+const { isLoading, updateAlertTemplate } = useAlertTemplateStore();
 import type { AlertTemplate } from "src/core/alerts/types";
 
 const props = defineProps<{ template: AlertTemplate }>();
@@ -81,11 +81,9 @@ const { agentOptions } = useAgentDropdown();
 
 const localTemplate = reactive<AlertTemplate>(extend(true, {}, props.template));
 
-const { isLoading } = alertTemplateStore;
-
 async function submit() {
   try {
-    await alertTemplateStore.updateAlertTemplate(props.template.id, localTemplate);
+    await updateAlertTemplate(props.template.id, localTemplate);
     onDialogOK();
   } catch {
     //

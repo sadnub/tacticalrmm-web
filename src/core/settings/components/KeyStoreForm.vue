@@ -51,7 +51,7 @@ import { ref, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useGlobalKeyStore } from "src/stores/api";
 
-const globalKeyStore = useGlobalKeyStore();
+const { isLoading, updateKey, addKey } = useGlobalKeyStore();
 
 // type imports
 import type { GlobalKey } from "../types";
@@ -62,9 +62,6 @@ const props = defineProps<{ globalKey?: GlobalKey }>();
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-// setup stores
-const { isLoading } = globalKeyStore;
-
 const isPwd = ref(true);
 
 const localKey = reactive<GlobalKey>(
@@ -73,8 +70,8 @@ const localKey = reactive<GlobalKey>(
 
 async function submit() {
   try {
-    if (props.globalKey) await globalKeyStore.updateKey(localKey.id, localKey);
-    else await globalKeyStore.addKey(localKey);
+    if (props.globalKey) await updateKey(localKey.id, localKey);
+    else await addKey(localKey);
     onDialogOK();
   } catch {
     //

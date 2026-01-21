@@ -12,6 +12,7 @@
       virtual-scroll
       :loading="isLoading"
       :rows-per-page-options="[0]"
+      :filter="search"
       no-data-label="No tasks"
       column-select
       storage-key="agent-tasks-tab"
@@ -29,7 +30,7 @@
 
         <q-space />
 
-        <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
           <template #prepend>
             <q-icon name="search" />
           </template>
@@ -307,9 +308,9 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useTaskStore, useAgentStore, useDashboardStore } from "src/stores/api";
 
-const taskStore = useTaskStore();
-const agentStore = useAgentStore();
-const dashboardStore = useDashboardStore();
+const { selectedAgentPlatform, selectedAgentId } = useAgentStore();
+const { tasks, getAgentTasks, isLoading, updateTaskPartial, removeTask, runTask } = useTaskStore();
+const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 import { notifyError } from "src/utils/notify";
 
 // ui imports
@@ -356,7 +357,7 @@ const columns: TacticalColumn[] = [
     field: (row) => row.task_result.last_run,
     align: "left",
     sortable: true,
-    format: (val: string) => (val ? dashboardStore.formatDate(val) : "Has not run yet"),
+    format: (val: string) => (val ? formatDate(val) : "Has not run yet"),
   },
   {
     name: "schedule",
@@ -374,16 +375,10 @@ const columns: TacticalColumn[] = [
   },
 ];
 
-// setup stores
-const { selectedAgentPlatform, selectedAgentId } = agentStore;
-const { tasks, getAgentTasks, isLoading, updateTaskPartial, removeTask, runTask } = taskStore;
-
-const tabHeight = computed(() => dashboardStore.tabHeight);
-
-const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
-const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const dashInfoColor = computed(() => dashboardSettings.dashInfoColor);
+const dashPositiveColor = computed(() => dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
 
 // setup quasar
 const $q = useQuasar();

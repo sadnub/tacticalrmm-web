@@ -18,7 +18,7 @@
     storage-key="services-manager"
   >
     <template #top>
-      <q-btn dense flat push icon="refresh" @click="agentStore.getAgentServices(agentId)" />
+      <q-btn dense flat push icon="refresh" @click="getAgentServices(agentId)" />
       <q-space />
       <q-input v-model="filter" filled label="Search" dense clearable>
         <template #prepend>
@@ -37,21 +37,21 @@
                 bodyProps.row.start_type.toLowerCase() === 'disabled' ||
                 bodyProps.row.status === 'running'
               "
-              @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'start')"
+              @click="sendAgentServiceAction(agentId, bodyProps.row.name, 'start')"
             >
               <q-item-section>Start</q-item-section>
             </q-item>
             <q-item
               clickable
               :disable="bodyProps.row.status !== 'running'"
-              @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'stop')"
+              @click="sendAgentServiceAction(agentId, bodyProps.row.name, 'stop')"
             >
               <q-item-section>Stop</q-item-section>
             </q-item>
             <q-item
               clickable
               :disable="bodyProps.row.status !== 'running'"
-              @click="agentStore.sendAgentServiceAction(agentId, bodyProps.row.name, 'restart')"
+              @click="sendAgentServiceAction(agentId, bodyProps.row.name, 'restart')"
             >
               <q-item-section>Restart</q-item-section>
             </q-item>
@@ -88,7 +88,7 @@ import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { agentServices, isLoading, getAgentServices, sendAgentServiceAction } = useAgentStore();
 
 // ui imports
 import ServiceDetail from "src/core/agents/components/remotebg/ServiceDetail.vue";
@@ -158,9 +158,6 @@ const props = defineProps<{
 // quasar setup
 const $q = useQuasar();
 
-// setup stores
-const { isLoading, agentServices } = agentStore;
-
 // services manager setup
 const filter = ref("");
 
@@ -176,6 +173,6 @@ function showServiceDetail(service: AgentService) {
 
 // vue lifecycle hooks
 onMounted(() => {
-  if (props.agentPlatform === "windows") agentStore.getAgentServices(props.agentId);
+  if (props.agentPlatform === "windows") getAgentServices(props.agentId);
 });
 </script>

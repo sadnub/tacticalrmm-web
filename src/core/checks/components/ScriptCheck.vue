@@ -132,7 +132,7 @@ import { reactive, watch, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useCheckStore } from "src/stores/api";
 
-const checkStore = useCheckStore();
+const { isLoading, addCheck, updateCheck } = useCheckStore();
 import { failOptions } from "../composables";
 import type { ScriptSelectableOption } from "src/core/scripts/composables";
 import { useScriptDropdown } from "src/core/scripts/composables";
@@ -151,9 +151,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = checkStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -197,8 +194,8 @@ watch(
 
 async function submit() {
   try {
-    if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
-    else await checkStore.addCheck(localCheck);
+    if (props.check) await updateCheck(localCheck.id, localCheck);
+    else await addCheck(localCheck);
 
     onDialogOK();
   } catch {

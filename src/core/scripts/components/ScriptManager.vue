@@ -17,7 +17,7 @@
           flat
           push
           icon="refresh"
-          @click="scriptStore.getScripts({ force: true })"
+          @click="getScripts({ force: true })"
         />Script Manager
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -68,7 +68,7 @@
           class="q-ml-sm"
           :label="showCommunityScripts ? 'Hide Community Scripts' : 'Show Community Scripts'"
           :icon="showCommunityScripts ? 'visibility_off' : 'visibility'"
-          @click="dashboardStore.setShowCommunityScripts(!showCommunityScripts)"
+          @click="setShowCommunityScripts(!showCommunityScripts)"
         />
 
         <q-btn
@@ -496,8 +496,8 @@ import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useStorage } from "@vueuse/core";
 import { useScriptStore, useDashboardStore } from "src/stores/api";
 
-const scriptStore = useScriptStore();
-const dashboardStore = useDashboardStore();
+const { scripts, isLoading, getScripts, updateScript, removeScript, downloadScript } = useScriptStore();
+const { dashboardSettings, setShowCommunityScripts } = useDashboardStore();
 import { capitalize } from "src/utils/format";
 
 // ui imports
@@ -579,23 +579,22 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup stores
-const { scripts, isLoading } = scriptStore;
 
-const showCommunityScripts = computed(() => dashboardStore.dashboardSettings.showCommunityScripts);
+const showCommunityScripts = computed(() => dashboardSettings.showCommunityScripts);
 
 // script manager logic
 const showHiddenScripts = ref(false);
 
 function favoriteScript(script: Script) {
   if (script.id)
-    void scriptStore.updateScript(script.id, {
+    void updateScript(script.id, {
       favorite: !script.favorite,
     });
 }
 
 function hideScript(script: Script) {
   if (script.id)
-    void scriptStore.updateScript(script.id, {
+    void updateScript(script.id, {
       hidden: !script.hidden,
     });
 }
@@ -606,12 +605,12 @@ function deleteScript(script: Script) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (script.id) void scriptStore.removeScript(script.id);
+    if (script.id) void removeScript(script.id);
   });
 }
 
 function exportScript(script: Script) {
-  if (script.id) scriptStore.downloadScript(script.id);
+  if (script.id) downloadScript(script.id);
 }
 
 // table and tree view setup
@@ -735,5 +734,5 @@ function ScriptSnippetModal() {
   });
 }
 
-onMounted(() => scriptStore.getScripts());
+onMounted(() => getScripts());
 </script>

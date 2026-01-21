@@ -34,7 +34,7 @@ import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentSoftwareStore } from "src/stores/api";
 
-const agentSoftwareStore = useAgentSoftwareStore();
+const { isLoading, uninstallAgentSoftware } = useAgentSoftwareStore();
 
 const props = defineProps<{
   agentId: string;
@@ -45,7 +45,6 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
-const { isLoading } = agentSoftwareStore;
 
 const uninstallString = ref(props.initialUninstallString);
 const runAsUser = ref(false);
@@ -53,7 +52,7 @@ const timeout = ref(1800);
 
 async function uninstall() {
   try {
-    await agentSoftwareStore.uninstallAgentSoftware(props.agentId, {
+    await uninstallAgentSoftware(props.agentId, {
       name: props.softwareName,
       command: uninstallString.value,
       run_as_user: runAsUser.value,

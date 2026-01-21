@@ -69,16 +69,13 @@ import { useDialogPluginComponent, date } from "quasar";
 import { useSiteDropdown } from "src/core/clients/composables";
 import { useDeploymentStore } from "src/stores/api";
 
-const deploymentStore = useDeploymentStore();
+const { isLoading, addDeployment } = useDeploymentStore();
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
 import { GOARCH_AMD64, GOARCH_i386 } from "src/constants/constants";
 
 import type { Deployment } from "../types";
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = deploymentStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -101,7 +98,7 @@ async function submit() {
   if (state.expires) state.expires = formatDateStringwithTimezone(state.expires);
 
   try {
-    await deploymentStore.addDeployment(state);
+    await addDeployment(state);
 
     onDialogOK();
   } catch {

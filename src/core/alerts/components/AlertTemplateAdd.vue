@@ -43,9 +43,9 @@ import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useClientStore, useSiteStore, usePolicyStore } from "src/stores/api";
 
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
-const policyStore = usePolicyStore();
+const { updateClient } = useClientStore();
+const { updateSite } = useSiteStore();
+const { updatePolicy } = usePolicyStore();
 import { useAlertTemplateDropdown } from "src/core/alerts/composables";
 import { capitalize } from "src/utils/format";
 
@@ -75,11 +75,11 @@ async function submit() {
   try {
     const payload = { alert_template: selectedTemplate.value };
     if (props.type === "client") {
-      await clientStore.updateClient(props.object.id, payload);
+      await updateClient(props.object.id, payload);
     } else if (props.type === "site") {
-      await siteStore.updateSite(props.object.id, payload);
+      await updateSite(props.object.id, payload);
     } else if (props.type === "policy") {
-      await policyStore.updatePolicy(props.object.id, payload);
+      await updatePolicy(props.object.id, payload);
     }
     onDialogOK();
   } catch {

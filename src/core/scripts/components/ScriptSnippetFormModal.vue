@@ -57,7 +57,7 @@ import { ref, watch, reactive, computed } from "vue";
 import { useQuasar } from "quasar";
 import { useScriptSnippetStore } from "src/stores/api";
 
-const scriptSnippetStore = useScriptSnippetStore();
+const { isLoading, updateScriptSnippet, addScriptSnippet } = useScriptSnippetStore();
 import { useDialogPluginComponent } from "quasar";
 import { shellOptions } from "../composables";
 
@@ -108,8 +108,6 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 // setup quasar
 const $q = useQuasar();
 
-// setup stores
-const { isLoading } = scriptSnippetStore;
 
 // snippet form logic
 const localSnippet = props.snippet
@@ -145,8 +143,8 @@ const lang = computed(() => {
 
 async function submit() {
   try {
-    if (props.snippet) await scriptSnippetStore.updateScriptSnippet(localSnippet);
-    else await scriptSnippetStore.addScriptSnippet(localSnippet);
+    if (props.snippet) await updateScriptSnippet(localSnippet);
+    else await addScriptSnippet(localSnippet);
 
     onDialogOK();
   } catch {

@@ -190,7 +190,7 @@ import { ref } from "vue";
 import { useQuasar } from "quasar";
 import { usePatchPolicyStore } from "src/stores/api";
 
-const patchPolicyStore = usePatchPolicyStore();
+const { updatePatchPolicy, addPatchPolicy, deletePatchPolicy } = usePatchPolicyStore();
 import type { WinPatchPolicy, Policy } from "../types";
 import type { Agent } from "src/core/agents/types";
 
@@ -265,9 +265,9 @@ if (props.agent) {
 async function submit() {
   try {
     if (editing.value) {
-      await patchPolicyStore.updatePatchPolicy(winupdatepolicy.value);
+      await updatePatchPolicy(winupdatepolicy.value);
     } else {
-      await patchPolicyStore.addPatchPolicy(winupdatepolicy.value);
+      await addPatchPolicy(winupdatepolicy.value);
     }
     emit("hide");
   } catch {
@@ -282,7 +282,7 @@ function deletePolicy(policy: WinPatchPolicy) {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
     if (!policy.id) return;
-    void patchPolicyStore.deletePatchPolicy(policy.id);
+    void deletePatchPolicy(policy.id);
   });
 }
 </script>

@@ -42,8 +42,8 @@ import { useRoute } from "vue-router";
 import { useMeta, useQuasar } from "quasar";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const dashboardStore = useDashboardStore();
+const { getAgentMeshCentralUrls, sendAgentRecoverMesh, sendAgentServiceAction } = useAgentStore();
+const { dashboardSettings } = useDashboardStore();
 
 // type imports
 import type { MeshUrls } from "src/core/agents/types";
@@ -51,12 +51,9 @@ import type { MeshUrls } from "src/core/agents/types";
 // quasar setup
 const $q = useQuasar();
 
-// setup stores
-const { getAgentMeshCentralUrls, sendAgentRecoverMesh } = agentStore;
-
-const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const dashPositiveColor = computed(() => dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
 
 // vue router
 const { params } = useRoute();
@@ -93,7 +90,7 @@ function restartMeshService() {
   $q.loading.show({ message: "Restarting Mesh Agent" });
 
   if (params.agent_id && typeof params.agent_id === "string")
-    void agentStore.sendAgentServiceAction(params.agent_id, "mesh agent", "restart");
+    void sendAgentServiceAction(params.agent_id, "mesh agent", "restart");
 
   $q.loading.hide();
 }

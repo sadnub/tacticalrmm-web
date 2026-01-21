@@ -31,7 +31,7 @@
                 name="snooze"
                 size="xs"
                 class="cursor-pointer"
-                @click="snoozeAlert(alert)"
+                @click="snoozeAlertDialog(alert)"
               >
                 <q-tooltip>Snooze alert</q-tooltip>
               </q-icon>
@@ -40,7 +40,7 @@
                 name="flag"
                 size="xs"
                 class="cursor-pointer"
-                @click="resolveAlert(alert)"
+                @click="resolveAlertDialog(alert)"
               >
                 <q-tooltip>Resolve alert</q-tooltip>
               </q-icon>
@@ -63,30 +63,28 @@ import AlertsOverview from "src/core/alerts/components/AlertsOverview.vue";
 import { getTimeLapse } from "src/utils/format";
 import { useAlertsStore, useDashboardStore } from "src/stores/api";
 
-const alertsStore = useAlertsStore();
-const dashboardStore = useDashboardStore();
+const { trayAlerts, trayAlertsCount, getTrayAlerts, snoozeAlert: snoozeAlertAction, resolveAlert: resolveAlertAction } = useAlertsStore();
+const { dashboardSettings } = useDashboardStore();
 import type { Alert } from "src/core/alerts/types";
 
 const $q = useQuasar();
 
-const { trayAlerts, trayAlertsCount } = alertsStore;
-
 const badgeColor = computed(() => {
   const severities = trayAlerts.value.map((a) => a.severity);
-  if (severities.includes("error")) return dashboardStore.dashboardSettings.dashNegativeColor;
-  else if (severities.includes("warning")) return dashboardStore.dashboardSettings.dashWarningColor;
-  else return dashboardStore.dashboardSettings.dashInfoColor;
+  if (severities.includes("error")) return dashboardSettings.dashNegativeColor;
+  else if (severities.includes("warning")) return dashboardSettings.dashWarningColor;
+  else return dashboardSettings.dashInfoColor;
 });
 
 function getAlerts() {
-  void alertsStore.getTrayAlerts();
+  void getTrayAlerts();
 }
 
 function showOverview() {
   $q.dialog({ component: AlertsOverview });
 }
 
-function snoozeAlert(alert: Alert) {
+function snoozeAlertDialog(alert: Alert) {
   $q.dialog({
     title: "Snooze Alert",
     message: "How many days to snooze alert?",
@@ -97,18 +95,18 @@ function snoozeAlert(alert: Alert) {
     },
     cancel: true,
   }).onOk((days: number) => {
-    void alertsStore.snoozeAlert(alert.id, days);
+    void snoozeAlertAction(alert.id, days);
   });
 }
 
-function resolveAlert(alert: Alert) {
-  void alertsStore.resolveAlert(alert.id);
+function resolveAlertDialog(alert: Alert) {
+  void resolveAlertAction(alert.id);
 }
 
 function alertIconColor(severity: string) {
-  if (severity === "error") return dashboardStore.dashboardSettings.dashNegativeColor;
-  else if (severity === "warning") return dashboardStore.dashboardSettings.dashWarningColor;
-  else return dashboardStore.dashboardSettings.dashInfoColor;
+  if (severity === "error") return dashboardSettings.dashNegativeColor;
+  else if (severity === "warning") return dashboardSettings.dashWarningColor;
+  else return dashboardSettings.dashInfoColor;
 }
 
 function alertsCountText() {

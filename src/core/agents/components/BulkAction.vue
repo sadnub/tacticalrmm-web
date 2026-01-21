@@ -248,7 +248,7 @@ import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables
 import { useCustomFieldDropdown } from "src/core/settings/composables";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { isLoading, runBulkAction } = useAgentStore();
 import { cmdPlaceholder } from "src/core/agents/composables";
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 
@@ -310,9 +310,6 @@ const filteredOsTypeOptions = computed(() => {
 
 // quasar dialog setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-// setup stores
-const { isLoading } = agentStore;
 
 function openScriptURL(link?: string) {
   if (link) openURL(link);
@@ -403,7 +400,7 @@ watch(
 
 async function submit() {
   try {
-    await agentStore.runBulkAction(state);
+    await runBulkAction(state);
     onDialogOK();
   } catch {
     //

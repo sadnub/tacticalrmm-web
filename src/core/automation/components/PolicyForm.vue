@@ -56,7 +56,7 @@ import { reactive } from "vue";
 import { useDialogPluginComponent, extend } from "quasar";
 import { usePolicyStore } from "src/stores/api";
 
-const policyStore = usePolicyStore();
+const { updatePolicy, addPolicy } = usePolicyStore();
 import type { Policy } from "src/core/automation/types";
 
 const props = defineProps<{
@@ -87,9 +87,9 @@ const localPolicy = reactive<Policy>(
 async function submit() {
   try {
     if (props.policy) {
-      await policyStore.updatePolicy(localPolicy.id, localPolicy);
+      await updatePolicy(localPolicy.id, localPolicy);
     } else {
-      await policyStore.addPolicy(localPolicy, props.copyPolicy?.id);
+      await addPolicy(localPolicy, props.copyPolicy?.id);
     }
     onDialogOK();
   } catch {

@@ -98,7 +98,7 @@ import { ref, computed, reactive, watch } from "vue";
 import { useDialogPluginComponent, useQuasar, extend } from "quasar";
 import { useURLActionStore } from "src/stores/api";
 
-const urlActionStore = useURLActionStore();
+const { isLoading, updateURLAction, addURLAction } = useURLActionStore();
 
 // ui imports
 import TestURLAction from "./TestURLAction.vue";
@@ -117,9 +117,6 @@ const props = defineProps<{ type: URLActionType; action?: URLAction }>();
 // setup quasar
 const $q = useQuasar();
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-// setup stores
-const { isLoading } = urlActionStore;
 
 // static data
 const URLActionMethods = [
@@ -155,8 +152,8 @@ watch(
 
 async function submit() {
   try {
-    if (props.action) await urlActionStore.updateURLAction(localAction.id, localAction);
-    else await urlActionStore.addURLAction(localAction);
+    if (props.action) await updateURLAction(localAction.id, localAction);
+    else await addURLAction(localAction);
 
     onDialogOK();
   } catch {

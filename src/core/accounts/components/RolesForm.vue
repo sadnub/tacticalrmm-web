@@ -265,8 +265,8 @@ import { computed, reactive, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useRoleStore, useDashboardStore } from "src/stores/api";
 
-const roleStore = useRoleStore();
-const dashboardStore = useDashboardStore();
+const { isLoading, updateRole, addRole } = useRoleStore();
+const { dashboardSettings } = useDashboardStore();
 import { useClientDropdown, useSiteDropdown } from "src/core/clients/composables";
 
 // type imports
@@ -278,13 +278,10 @@ const props = defineProps<{
 
 defineEmits(useDialogPluginComponent.emits);
 
-// setup stores
-const { isLoading } = roleStore;
-
 // quasar setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
+const hosted = computed(() => dashboardSettings.hosted);
 
 // dropdown setup
 const { clientOptions } = useClientDropdown();
@@ -382,8 +379,8 @@ const localRole = props.role
 
 async function onSubmit() {
   try {
-    if (props.role && props.role.id) await roleStore.updateRole(props.role.id, localRole);
-    else await roleStore.addRole(localRole);
+    if (props.role && props.role.id) await updateRole(props.role.id, localRole);
+    else await addRole(localRole);
     onDialogOK();
   } catch {
     // do nothing

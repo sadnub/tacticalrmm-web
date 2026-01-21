@@ -390,10 +390,9 @@ async function submit() {
   onDialogOK();
 }
 
-const coreStore = useCoreStore();
-const { coreSettings: settings } = coreStore;
+const { coreSettings: settings, getCoreSettings } = useCoreStore();
 
 onMounted(() => {
-  coreStore.getCoreSettings();
+  getCoreSettings();
 });
 </script>

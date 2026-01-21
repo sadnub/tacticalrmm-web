@@ -182,17 +182,14 @@ import { useClientDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
 import { useAlertsStore, useDashboardStore } from "src/stores/api";
 
-const alertsStore = useAlertsStore();
-const dashboardStore = useDashboardStore();
+const { alerts, isLoading, searchAlerts, snoozeAlert: snoozeAlertApi, unsnoozeAlert: unsnoozeAlertApi, resolveAlert: resolveAlertApi, bulkResolveAlerts, bulkSnoozeAlerts } = useAlertsStore();
+const { formatDate } = useDashboardStore();
 import type { Alert, AlertSearchParams, AlertSeverity } from "src/core/alerts/types";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
-
-// stores
-const { alerts, isLoading } = alertsStore;
 
 // composables
 const { clientOptions } = useClientDropdown();
@@ -229,7 +226,7 @@ const columns = [
     field: "alert_time",
     align: "left" as const,
     sortable: true,
-    format: (a: string) => dashboardStore.formatDate(a),
+    format: (a: string) => formatDate(a),
   },
   { name: "client", label: "Client", field: "client", align: "left" as const, sortable: true },
   { name: "site", label: "Site", field: "site", align: "left" as const, sortable: true },
@@ -256,7 +253,7 @@ const columns = [
     field: "resolved_on",
     align: "left" as const,
     sortable: true,
-    format: (a: string) => dashboardStore.formatDate(a),
+    format: (a: string) => formatDate(a),
   },
   {
     name: "snoozed_until",
@@ -264,7 +261,7 @@ const columns = [
     field: "snoozed_until",
     align: "left" as const,
     sortable: true,
-    format: (a: string) => dashboardStore.formatDate(a),
+    format: (a: string) => formatDate(a),
   },
   { name: "actions", label: "Actions", field: "actions", align: "left" as const },
 ];
@@ -300,7 +297,7 @@ function search() {
   if (timeFilter.value) params.timeFilter = timeFilter.value;
   if (severityFilter.value.length > 0) params.severityFilter = severityFilter.value;
 
-  void alertsStore.searchAlerts(params);
+  void searchAlerts(params);
 }
 
 function snoozeAlert(alert: Alert) {
@@ -317,27 +314,27 @@ function snoozeAlert(alert: Alert) {
     },
     cancel: true,
   }).onOk((days: number) => {
-    void alertsStore.snoozeAlert(alert.id, days).then(() => {
+    void snoozeAlertApi(alert.id, days).then(() => {
       search();
     });
   });
 }
 
 function unsnoozeAlert(alert: Alert) {
-  void alertsStore.unsnoozeAlert(alert.id).then(() => {
+  void unsnoozeAlertApi(alert.id).then(() => {
     search();
   });
 }
 
 function resolveAlert(alert: Alert) {
-  void alertsStore.resolveAlert(alert.id).then(() => {
+  void resolveAlertApi(alert.id).then(() => {
     search();
   });
 }
 
 function resolveAlertBulk(alertsParam: Alert[]) {
   const ids = alertsParam.map((a) => a.id);
-  void alertsStore.bulkResolveAlerts(ids).then(() => {
+  void bulkResolveAlerts(ids).then(() => {
     search();
   });
 }
@@ -357,7 +354,7 @@ function snoozeAlertBulk(alertsParam: Alert[]) {
     cancel: true,
   }).onOk((days: number) => {
     const ids = alertsParam.map((a) => a.id);
-    void alertsStore.bulkSnoozeAlerts(ids, days).then(() => {
+    void bulkSnoozeAlerts(ids, days).then(() => {
       search();
     });
   });

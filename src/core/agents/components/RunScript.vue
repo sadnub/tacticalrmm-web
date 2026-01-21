@@ -196,8 +196,8 @@ import { useScriptDropdown } from "src/core/scripts/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const dashboardStore = useDashboardStore();
+const { isLoading, runScript } = useAgentStore();
+const { dashboardSettings } = useDashboardStore();
 import { envVarsLabel, runAsUserToolTip } from "src/constants/constants";
 
 //ui imports
@@ -209,10 +209,8 @@ import type { RunScriptRequest } from "../types";
 import type { Script, ScriptResult } from "src/core/scripts/types";
 import { isScriptResult } from "src/core/scripts/types";
 
-// store
-const { isLoading } = agentStore;
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
-const serverScriptsEnabled = computed(() => dashboardStore.dashboardSettings.serverScriptsEnabled);
+const hosted = computed(() => dashboardSettings.hosted);
+const serverScriptsEnabled = computed(() => dashboardSettings.serverScriptsEnabled);
 
 // static data
 const outputOptions = [
@@ -284,7 +282,7 @@ watch(
 
 async function sendScript() {
   try {
-    const response = await agentStore.runScript(props.agent.agent_id, state);
+    const response = await runScript(props.agent.agent_id, state);
     if (response === undefined) return;
 
     if (isScriptResult(response)) {

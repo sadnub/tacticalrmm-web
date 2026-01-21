@@ -7,7 +7,7 @@
         flat
         push
         icon="refresh"
-        @click="debugLogStore.getDebugLog(requestData)"
+        @click="getDebugLog(requestData)"
       />Debug Log
       <q-space />
       <q-btn v-close-popup dense flat icon="close" />
@@ -37,7 +37,7 @@
           flat
           push
           icon="refresh"
-          @click="debugLogStore.getDebugLog(requestData)"
+          @click="getDebugLog(requestData)"
         />
         <tactical-dropdown
           v-if="!agent"
@@ -94,8 +94,6 @@
 import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
 import { useDebugLogStore, useDashboardStore } from "src/stores/api";
 
-const debugLogStore = useDebugLogStore();
-const dashboardStore = useDashboardStore();
 import { useAgentDropdown } from "src/core/agents/composables";
 import { formatTableColumnText } from "src/utils/format";
 
@@ -126,7 +124,7 @@ const columns: TacticalColumn[] = [
     field: "entry_time",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   {
     name: "log_level",
@@ -164,11 +162,10 @@ const props = defineProps<{
   modal: boolean;
 }>();
 
-// setup stores
-const { debugLog, isLoading } = debugLogStore;
 
-const tabHeight = computed(() => dashboardStore.tabHeight);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const { debugLog, isLoading, getDebugLog, $reset } = useDebugLogStore();
+const { tabHeight, dashboardSettings, formatDate } = useDashboardStore();
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
 
 // setup dropdowns
 const { agentOptions } = useAgentDropdown();
@@ -187,7 +184,7 @@ if (props.agent) {
     (newValue) => {
       if (newValue) {
         requestData.agentFilter = props.agent;
-        debugLogStore.getDebugLog(requestData);
+        getDebugLog(requestData);
       }
     },
   );
@@ -197,17 +194,17 @@ if (props.agent) {
 watch(
   requestData,
   () => {
-    debugLogStore.getDebugLog(requestData);
+    getDebugLog(requestData);
   },
   { deep: true },
 );
 
 // vue component hooks
 onMounted(() => {
-  debugLogStore.getDebugLog(requestData);
+  getDebugLog(requestData);
 });
 
 onUnmounted(() => {
-  debugLogStore.$reset();
+  $reset();
 });
 </script>

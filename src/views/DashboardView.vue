@@ -218,9 +218,9 @@ import { ref, computed, onMounted } from "vue";
 import { useQuasar, QTree } from "quasar";
 import { useDashboardStore, useClientStore, useSiteStore, useURLActionStore, runURLAction } from "src/stores/api";
 
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
-const urlActionStore = useURLActionStore();
+const { clients, removeClient, getClients } = useClientStore();
+const { removeSite } = useSiteStore();
+const { webActions, getURLActions } = useURLActionStore();
 import axios from "axios";
 
 // import ui
@@ -238,10 +238,6 @@ import IntegrationsContextMenu from "src/core/dashboard/ui/IntegrationsContextMe
 //types
 import { notifySuccess, notifyWarning } from "src/utils/notify";
 import type { ClientTreeNode } from "src/core/dashboard/types";
-
-// setup stores
-const { clients } = clientStore;
-const { webActions } = urlActionStore;
 const {
   selectedClientSiteNode,
   dashboardSettings,
@@ -359,8 +355,8 @@ function showDeleteModal(node: ClientTreeNode) {
       cancel: true,
       ok: { label: "Delete", color: "negative" },
     }).onOk(() => {
-      if (node.children) void clientStore.removeClient(node.id);
-      else void siteStore.removeSite(node.id);
+      if (node.children) void removeClient(node.id);
+      else void removeSite(node.id);
       selectedClientSiteNode.value = null;
     });
   }
@@ -425,8 +421,8 @@ const urlActions = computed(() => {
 });
 
 onMounted(() => {
-  clientStore.getClients();
-  urlActionStore.getURLActions();
+  getClients();
+  getURLActions();
   setTableHeight(innerModel.value);
 });
 </script>

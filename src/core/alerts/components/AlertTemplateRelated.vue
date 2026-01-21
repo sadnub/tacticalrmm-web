@@ -67,7 +67,7 @@ import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAlertTemplateStore } from "src/stores/api";
 
-const alertTemplateStore = useAlertTemplateStore();
+const { getAlertTemplateRelated } = useAlertTemplateStore();
 
 // types
 import type { AlertTemplate, AlertTemplateRelated } from "src/core/alerts/types";
@@ -92,7 +92,7 @@ const thumbStyle = {
 
 async function loadRelated() {
   try {
-    related.value = await alertTemplateStore.getAlertTemplateRelated(props.template.id);
+    related.value = await getAlertTemplateRelated(props.template.id);
   } catch {
     //
   }

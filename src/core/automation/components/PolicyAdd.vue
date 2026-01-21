@@ -70,9 +70,9 @@ import { useDialogPluginComponent } from "quasar";
 import { usePolicyDropdown } from "src/core/automation/composables";
 import { useClientStore, useSiteStore, useAgentStore } from "src/stores/api";
 
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
-const agentStore = useAgentStore();
+const { updateClient } = useClientStore();
+const { updateSite } = useSiteStore();
+const { updateAgent } = useAgentStore();
 import type { Client } from "src/core/clients/types";
 import type { Site } from "src/core/clients/types";
 import type { Agent } from "src/core/agents/types";
@@ -135,7 +135,7 @@ async function submit() {
       if (form.selectedWorkstationPolicy !== null) {
         payload.workstation_policy = form.selectedWorkstationPolicy;
       }
-      await clientStore.updateClient(props.object.id, payload);
+      await updateClient(props.object.id, payload);
     } else if (props.type === "site") {
       const payload: Partial<Site> = {
         block_policy_inheritance: form.blockInheritance,
@@ -146,7 +146,7 @@ async function submit() {
       if (form.selectedWorkstationPolicy !== null) {
         payload.workstation_policy = form.selectedWorkstationPolicy;
       }
-      await siteStore.updateSite(props.object.id, payload);
+      await updateSite(props.object.id, payload);
     } else if (props.type === "agent") {
       const payload: Partial<Agent> = {
         block_policy_inheritance: form.blockInheritance,
@@ -154,7 +154,7 @@ async function submit() {
       if (form.selectedAgentPolicy !== null) {
         payload.policy = form.selectedAgentPolicy;
       }
-      await agentStore.updateAgent(props.object.agent_id!, payload);
+      await updateAgent(props.object.agent_id!, payload);
     }
     onDialogOK();
   } catch {

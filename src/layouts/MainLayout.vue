@@ -195,7 +195,7 @@ import ResetPass from "src/core/accounts/components/ResetPass.vue";
 const $q = useQuasar();
 
 // setup stores
-const userStore = useUserStore();
+const { userResetMFA } = useUserStore();
 
 const {
   serverCount,
@@ -245,7 +245,7 @@ function reset2FA() {
     message: "Are you sure you would like to reset your 2FA token?",
     cancel: true,
     persistent: true,
-  }).onOk(() => void userStore.userResetMFA());
+  }).onOk(() => void userResetMFA());
 }
 
 async function openWebTerm() {

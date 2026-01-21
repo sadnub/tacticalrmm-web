@@ -118,7 +118,7 @@ import { reactive, ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useScriptStore } from "src/stores/api";
 
-const scriptStore = useScriptStore();
+const { isLoading, addScript } = useScriptStore();
 import { agentPlatformOptions } from "src/core/agents/composables";
 import { shellOptions } from "../composables";
 
@@ -133,9 +133,6 @@ defineProps<{
 
 // setup quasar plugins
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-// setup stores
-const { isLoading } = scriptStore;
 
 // script upload logic
 const script = reactive<Script>({
@@ -171,7 +168,7 @@ watch(file, (newValue) => {
 
 async function submit() {
   try {
-    await scriptStore.addScript(script);
+    await addScript(script);
     onDialogOK();
   } catch {
     //

@@ -48,7 +48,7 @@ import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useCoreStore } from "src/stores/api";
 
-const coreStore = useCoreStore();
+const { runServerMaintenace } = useCoreStore();
 
 const actions = [
   {
@@ -80,7 +80,7 @@ function clear() {
 
 async function submit() {
   try {
-    await coreStore.runServerMaintenace(state);
+    await runServerMaintenace(state);
     onDialogOK();
   } catch {
     //

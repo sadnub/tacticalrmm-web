@@ -42,7 +42,7 @@ import { useDialogPluginComponent } from "quasar";
 
 import { useUserStore } from "src/stores/api";
 
-const userStore = useUserStore();
+const { adminPasswordReset } = useUserStore();
 import type { User } from "../types";
 
 const props = defineProps<{
@@ -52,15 +52,13 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-// setup stores
-
 const hidePassword = ref(true);
 
 const password = ref("");
 
 async function onSubmit() {
   try {
-    await userStore.adminPasswordReset(props.user.id, password.value);
+    await adminPasswordReset(props.user.id, password.value);
     onDialogOK();
   } catch {
     // do nothing

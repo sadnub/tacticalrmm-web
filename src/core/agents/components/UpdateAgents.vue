@@ -61,7 +61,7 @@ import { computed, reactive, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { updateAgentVersions, getAgentVersions } = useAgentStore();
 
 // type imports
 import type { Agent } from "../types";
@@ -97,7 +97,7 @@ function selectAllAction() {
 
 async function sendAgentUpdate() {
   try {
-    await agentStore.updateAgentVersions(state.group);
+    await updateAgentVersions(state.group);
     onDialogOK();
   } catch {
     //
@@ -105,7 +105,7 @@ async function sendAgentUpdate() {
 }
 
 onMounted(async () => {
-  const result = await agentStore.getAgentVersions();
+  const result = await getAgentVersions();
 
   if (result) {
     state.version = result.version;

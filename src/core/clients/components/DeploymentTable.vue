@@ -8,7 +8,7 @@
           flat
           push
           icon="refresh"
-          @click="deploymentStore.getDeployments({ force: true })"
+          @click="getDeployments({ force: true })"
         />
         Manage Deployments
         <q-space />
@@ -95,8 +95,8 @@ import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent, copyToClipboard } from "quasar";
 import { useDeploymentStore, useDashboardStore } from "src/stores/api";
 
-const deploymentStore = useDeploymentStore();
-const dashboardStore = useDashboardStore();
+const { deployments, isLoading, getDeployments, removeDeployment } = useDeploymentStore();
+const { formatDate } = useDashboardStore();
 import { notifySuccess } from "src/utils/notify";
 import { getBaseUrl } from "src/boot/axios";
 
@@ -142,7 +142,7 @@ const columns = [
     field: "expiry",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   {
     name: "created",
@@ -150,7 +150,7 @@ const columns = [
     field: "created",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   { name: "flags", label: "Flags", field: "install_flags", align: "left" },
   { name: "link", label: "Download Link", align: "left" },
@@ -158,8 +158,6 @@ const columns = [
 
 defineEmits(useDialogPluginComponent.emits);
 
-// setup stores
-const { deployments, isLoading } = deploymentStore;
 
 // quasar dialog setup
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
@@ -175,7 +173,7 @@ function deleteDeployment(deployment: Deployment) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (deployment.id) void deploymentStore.removeDeployment(deployment.id);
+    if (deployment.id) void removeDeployment(deployment.id);
   });
 }
 
@@ -192,5 +190,5 @@ function showAddDeployment() {
   });
 }
 
-onMounted(deploymentStore.getDeployments);
+onMounted(getDeployments);
 </script>

@@ -90,13 +90,10 @@ import { onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useCoreStore, useClientStore } from "src/stores/api";
 
-const coreStore = useCoreStore();
-const clientStore = useClientStore();
+const { coreSettings, getCoreSettings } = useCoreStore();
+const { addClient } = useClientStore();
 
 const router = useRouter();
-
-// setup stores
-const { coreSettings } = coreStore;
 
 const form = reactive({
   client: {
@@ -112,12 +109,12 @@ const form = reactive({
 
 async function submit() {
   try {
-    await clientStore.addClient(form);
+    await addClient(form);
     await router.push({ name: "Dashboard" });
   } catch {
     //
   }
 }
 
-onMounted(coreStore.getCoreSettings);
+onMounted(getCoreSettings);
 </script>

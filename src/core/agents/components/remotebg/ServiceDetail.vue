@@ -96,7 +96,7 @@ import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { isLoading, updateAgentService, sendAgentServiceAction } = useAgentStore();
 import type { AgentService, AgentServiceStartType } from "../../types";
 
 // static data
@@ -124,9 +124,6 @@ const props = defineProps<{
   agentId: string;
 }>();
 
-// setup stores
-const { isLoading } = agentStore;
-
 // setup quasar dialog plugin
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
@@ -138,7 +135,7 @@ const startupType = ref<AgentServiceStartType>("disabled");
 
 async function submit() {
   try {
-    await agentStore.updateAgentService(
+    await updateAgentService(
       props.agentId,
       props.service.name,
       startupType.value === "automatic" ? "auto" : startupType.value,
@@ -151,7 +148,7 @@ async function submit() {
 
 async function sendServiceAction(action: "start" | "stop" | "restart") {
   try {
-    const service = await agentStore.sendAgentServiceAction(
+    const service = await sendAgentServiceAction(
       props.agentId,
       props.service.name,
       action,

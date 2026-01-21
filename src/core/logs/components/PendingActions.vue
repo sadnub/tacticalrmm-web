@@ -8,7 +8,7 @@
           flat
           push
           icon="refresh"
-          @click="pendingActionStore.getPendingActions()"
+          @click="getPendingActions()"
         />
         {{ agent ? `Pending Actions for ${agent.hostname}` : "All Pending Actions" }}
         <q-space />
@@ -112,8 +112,8 @@ import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePendingActionStore, useDashboardStore } from "src/stores/api";
 
-const pendingActionStore = usePendingActionStore();
-const dashboardStore = useDashboardStore();
+const { pendingActions, isLoading, getPendingActions, deletePendingAction } = usePendingActionStore();
+const { formatDate } = useDashboardStore();
 import { getNextAgentUpdateTime } from "src/utils/format";
 
 // ui imports
@@ -143,7 +143,7 @@ const columns: TacticalColumn[] = [
       if (row.status !== "completed")
         if (row.action_type === "agentupdate") return getNextAgentUpdateTime();
         else
-          return row.action_type === "schedreboot" ? dashboardStore.formatDate(row.due) : row.due;
+          return row.action_type === "schedreboot" ? formatDate(row.due) : row.due;
       else return "Completed";
     },
   },
@@ -188,8 +188,6 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// setup stores
-const { pendingActions, isLoading } = pendingActionStore;
 
 // pending actions logic
 const showCompleted = ref(false);
@@ -229,12 +227,12 @@ function cancelPendingAction(action: PendingAction) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    void pendingActionStore.deletePendingAction(action.id);
+    void deletePendingAction(action.id);
 
     // TODO: Only update the agent and not pull every single agent
     // store.dispatch("refreshDashboard");
   });
 }
 
-onMounted(() => pendingActionStore.getPendingActions());
+onMounted(() => getPendingActions());
 </script>

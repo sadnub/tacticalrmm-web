@@ -27,7 +27,7 @@
           push
           icon="refresh"
           class="q-mr-sm"
-          @click="selectedAgentId && updateStore.getAgentUpdates(selectedAgentId)"
+          @click="selectedAgentId && getAgentUpdates(selectedAgentId, { force: true })"
         />
         <q-btn
           label="Run Update Scan"
@@ -36,7 +36,7 @@
           push
           no-caps
           class="q-mr-sm"
-          @click="selectedAgentId && updateStore.runAgentUpdateScan(selectedAgentId)"
+          @click="selectedAgentId && runAgentUpdateScan(selectedAgentId)"
         />
         <q-btn
           label="Install Approved Updates"
@@ -45,11 +45,11 @@
           push
           no-caps
           class="q-mr-sm"
-          @click="selectedAgentId && updateStore.runAgentUpdateInstall(selectedAgentId)"
+          @click="selectedAgentId && runAgentUpdateInstall(selectedAgentId)"
         />
         <q-space />
 
-        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -174,9 +174,9 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore, useWindowsUpdateStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const updateStore = useWindowsUpdateStore();
-const dashboardStore = useDashboardStore();
+const { selectedAgentPlatform, selectedAgentId } = useAgentStore();
+const { updates, isLoading, getAgentUpdates, runAgentUpdateScan, runAgentUpdateInstall, updateAgentUpdate } = useWindowsUpdateStore();
+const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 
 // ui imports
 import WinUpdateDialog from "./WinUpdateDialog.vue";
@@ -227,19 +227,13 @@ const columns: TacticalColumn[] = [
     field: "date_installed",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
 ];
 
-// setup stores
-const { updates, isLoading } = updateStore;
-
-const { selectedAgentPlatform, selectedAgentId } = agentStore;
-
-const tabHeight = computed(() => dashboardStore.tabHeight);
-const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const dashPositiveColor = computed(() => dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
 
 // setup quasar
 const $q = useQuasar();
@@ -253,7 +247,7 @@ const pagination = ref({
 });
 
 async function editWinUpdate(id: number, action: PatchAction) {
-  await updateStore.updateAgentUpdate(id, { action });
+  await updateAgentUpdate(id, { action });
 
   // TODO: Make sure to only isoloate updates to this one agent
   //refreshDashboard();
@@ -273,12 +267,12 @@ function showUpdateDetails(update: WindowsUpdate) {
 
 watch(selectedAgentId, (newValue) => {
   if (newValue) {
-    updateStore.getAgentUpdates(newValue);
+    getAgentUpdates(newValue);
   }
 });
 
 // vue lifecycle hooks
 onMounted(() => {
-  if (selectedAgentId.value) updateStore.getAgentUpdates(selectedAgentId.value);
+  if (selectedAgentId.value) getAgentUpdates(selectedAgentId.value);
 });
 </script>

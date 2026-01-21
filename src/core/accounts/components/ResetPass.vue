@@ -59,7 +59,7 @@ import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useUserStore } from "src/stores/api";
 
-const userStore = useUserStore();
+const { resetUserPassword } = useUserStore();
 
 const pass = ref("");
 const pass2 = ref("");
@@ -71,7 +71,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 async function submit() {
   try {
-    await userStore.resetUserPassword(pass.value);
+    await resetUserPassword(pass.value);
     onDialogOK();
   } catch {
     // do nothing

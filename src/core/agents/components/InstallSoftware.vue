@@ -55,8 +55,8 @@ import { ref, onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
 import { useChocosStore, useAgentSoftwareStore } from "src/stores/api";
 
-const chocosStore = useChocosStore();
-const agentSoftwareStore = useAgentSoftwareStore();
+const { chocos, isLoading, getChocosSoftware } = useChocosStore();
+const { installAgentSoftware } = useAgentSoftwareStore();
 
 import type { TacticalColumn } from "src/core/dashboard/types";
 
@@ -77,9 +77,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { chocos, isLoading } = chocosStore;
 
 // quasar setup
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -106,8 +103,7 @@ function installSoftware(name: string) {
     cancel: true,
     noBackdropDismiss: true,
   }).onOk(() => {
-    agentSoftwareStore
-      .installAgentSoftware(props.agentId, data)
+    installAgentSoftware(props.agentId, data)
       .then(() => {
         onDialogOK();
       })
@@ -115,5 +111,5 @@ function installSoftware(name: string) {
   });
 }
 
-onMounted(chocosStore.getChocosSoftware);
+onMounted(getChocosSoftware);
 </script>

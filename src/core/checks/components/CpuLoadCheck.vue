@@ -71,7 +71,7 @@ import { useDialogPluginComponent } from "quasar";
 import { isValidThreshold } from "src/utils/validation";
 import { useCheckStore } from "src/stores/api";
 
-const checkStore = useCheckStore();
+const { isLoading, addCheck, updateCheck } = useCheckStore();
 import { failOptions } from "../composables";
 
 // import types
@@ -83,9 +83,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = checkStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -108,8 +105,8 @@ async function submit() {
     if (!isValidThreshold(localCheck.warning_threshold, localCheck.error_threshold)) return;
 
     try {
-      if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
-      else await checkStore.addCheck(localCheck);
+      if (props.check) await updateCheck(localCheck.id, localCheck);
+      else await addCheck(localCheck);
 
       onDialogOK();
     } catch {

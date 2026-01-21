@@ -76,7 +76,7 @@ import { onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useURLActionStore } from "src/stores/api";
 
-const urlActionStore = useURLActionStore();
+const { urlActions, isLoading, getURLActions, removeURLAction } = useURLActionStore();
 
 // ui imports
 import URLActionsForm from "./URLActionsForm.vue";
@@ -90,9 +90,6 @@ const props = defineProps<{ type: URLActionType }>();
 
 // setup quasar
 const $q = useQuasar();
-
-// setup stores
-const { urlActions, isLoading } = urlActionStore;
 
 const columns: TacticalColumn[] = [
   {
@@ -142,7 +139,7 @@ function deleteURLAction(action: URLAction) {
     title: `Delete URL Action: ${action.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(() => void urlActionStore.removeURLAction(action.id));
+  }).onOk(() => void removeURLAction(action.id));
 }
-onMounted(() => urlActionStore.getURLActions());
+onMounted(() => getURLActions());
 </script>

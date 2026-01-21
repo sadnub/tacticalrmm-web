@@ -726,7 +726,7 @@
           v-else
           label="Save"
           color="primary"
-          :loading="isLoading"
+          :loading="taskIsLoading"
           flat
           dense
           push
@@ -744,7 +744,7 @@ import { QForm, QStepper, useDialogPluginComponent, extend } from "quasar";
 import draggable from "vuedraggable";
 import { useTaskStore } from "src/stores/api";
 
-const taskStore = useTaskStore();
+const { isLoading: taskIsLoading, addTask: submitAddTask, updateTask: submitUpdateTask } = useTaskStore();
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentCheckDropdown, usePolicyCheckDropdown } from "src/core/checks/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
@@ -870,8 +870,6 @@ const checkOptions = computed(() => {
   return [];
 });
 
-// setup stores
-const { addTask, updateTask, isLoading } = taskStore;
 
 const { customFieldOptions } = useCustomFieldDropdown();
 
@@ -1049,8 +1047,8 @@ async function submit() {
   // mainly the date fields
   try {
     const apiTask = { ...toRaw(localTask) };
-    if (props.task && localTask.id) await updateTask(localTask.id, apiTask);
-    else await addTask(apiTask);
+    if (props.task && localTask.id) await submitUpdateTask(localTask.id, apiTask);
+    else await submitAddTask(apiTask);
   } catch {
     return;
   }

@@ -41,7 +41,7 @@
                   <q-icon
                     v-if="bodyProps.row.status === 'passing'"
                     style="font-size: 1.3rem"
-                    :color="dashboardStore.dashboardSettings.dashPositiveColor"
+                    :color="dashboardSettings.dashPositiveColor"
                     name="check_circle"
                   >
                     <q-tooltip>Passing</q-tooltip>
@@ -51,7 +51,7 @@
                       bodyProps.row.status === 'failing' && bodyProps.row.alert_severity === 'info'
                     "
                     style="font-size: 1.3rem"
-                    :color="dashboardStore.dashboardSettings.dashInfoColor"
+                    :color="dashboardSettings.dashInfoColor"
                     name="info"
                   >
                     <q-tooltip>Informational</q-tooltip>
@@ -62,7 +62,7 @@
                       bodyProps.row.alert_severity === 'warning'
                     "
                     style="font-size: 1.3rem"
-                    :color="dashboardStore.dashboardSettings.dashWarningColor"
+                    :color="dashboardSettings.dashWarningColor"
                     name="warning"
                   >
                     <q-tooltip>Warning</q-tooltip>
@@ -70,7 +70,7 @@
                   <q-icon
                     v-else-if="bodyProps.row.status === 'failing'"
                     style="font-size: 1.3rem"
-                    :color="dashboardStore.dashboardSettings.dashNegativeColor"
+                    :color="dashboardSettings.dashNegativeColor"
                     name="error"
                   >
                     <q-tooltip>Error</q-tooltip>
@@ -153,8 +153,8 @@ import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 
-const policyStore = usePolicyStore();
-const dashboardStore = useDashboardStore();
+const { isLoading, getCheckStatus, getTaskStatus } = usePolicyStore();
+const { dashboardSettings, formatDate: formatDateFn } = useDashboardStore();
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import EventLogCheckOutput from "src/core/checks/components/EventLogCheckOutput.vue";
 import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
@@ -188,7 +188,6 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 // stores
-const { isLoading } = policyStore;
 
 // state
 const data = ref<PolicyStatusItem[]>([]);
@@ -238,12 +237,12 @@ const title = computed(() => {
     : props.item.name + " Status";
 });
 
-const formatDate = computed(() => dashboardStore.formatDate);
+const formatDate = computed(() => formatDateFn);
 
 // Methods
 async function getCheckData() {
   try {
-    data.value = await policyStore.getCheckStatus(props.item.id);
+    data.value = await getCheckStatus(props.item.id);
   } catch {
     //
   }
@@ -251,7 +250,7 @@ async function getCheckData() {
 
 async function getTaskData() {
   try {
-    data.value = await policyStore.getTaskStatus(props.item.id);
+    data.value = await getTaskStatus(props.item.id);
   } catch {
     //
   }

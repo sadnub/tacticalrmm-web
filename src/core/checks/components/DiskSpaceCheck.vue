@@ -82,7 +82,7 @@ import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useCheckStore } from "src/stores/api";
 
-const checkStore = useCheckStore();
+const { isLoading, addCheck, updateCheck } = useCheckStore();
 import { isValidThreshold } from "src/utils/validation";
 import { useAgentDiskDropdown } from "src/core/agents/composables";
 import { failOptions, defaultDiskOptions } from "../composables";
@@ -96,9 +96,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = checkStore;
 const { agentDiskOptions } = useAgentDiskDropdown(
   isAgent(props.parent) ? props.parent.agent : null,
 );
@@ -127,8 +124,8 @@ async function submit() {
     if (!isValidThreshold(localCheck.warning_threshold, localCheck.error_threshold, true)) return;
 
     try {
-      if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
-      else await checkStore.addCheck(localCheck);
+      if (props.check) await updateCheck(localCheck.id, localCheck);
+      else await addCheck(localCheck);
 
       onDialogOK();
     } catch {

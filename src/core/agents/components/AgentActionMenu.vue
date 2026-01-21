@@ -15,7 +15,7 @@
       <q-item-section>Pending Agent Actions</q-item-section>
     </q-item>
     <!-- take control -->
-    <q-item v-ripple v-close-popup clickable @click="agentStore.runTakeControl(agent.agent_id)">
+    <q-item v-ripple v-close-popup clickable @click="runTakeControl(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-desktop" />
       </q-item-section>
@@ -97,7 +97,7 @@
     <q-item
       v-close-popup
       clickable
-      @click="agentStore.runRemoteBackground(agent.agent_id, agent.plat)"
+      @click="runRemoteBackground(agent.agent_id, agent.plat)"
     >
       <q-item-section side>
         <q-icon size="xs" name="terminal" />
@@ -234,10 +234,10 @@ import { useQuasar } from "quasar";
 import { useURLActionStore, runURLAction, useAgentStore, useCheckStore, useWindowsUpdateStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
 
-const urlActionStore = useURLActionStore();
-const agentStore = useAgentStore();
-const checkStore = useCheckStore();
-const updateStore = useWindowsUpdateStore();
+const { webActions, getURLActions } = useURLActionStore();
+const { selectedAgent, updateAgent, wakeUpWOL, runTakeControl, runRemoteBackground, runWebVNC, agentRebootNow, agentShutdown, sendAgentPing, removeAgent } = useAgentStore();
+const { runAgentChecks } = useCheckStore();
+const { runAgentUpdateScan, runAgentUpdateInstall } = useWindowsUpdateStore();
 
 // ui imports
 import PendingActions from "src/core/logs/components/PendingActions.vue";
@@ -256,11 +256,6 @@ import type { Script } from "src/core/scripts/types";
 defineProps<{
   agent: Agent;
 }>();
-
-// setup stores
-const { selectedAgent } = agentStore;
-const { webActions } = urlActionStore;
-// updateStore is already imported from centralized store
 
 // setup dropdowns
 const { favoriteScriptOptions } = useScriptDropdown();
@@ -309,23 +304,23 @@ function toggleMaintenance(agent: Agent) {
   const data = {
     maintenance_mode: !agent.maintenance_mode,
   };
-  void agentStore.updateAgent(agent.agent_id, data);
+  void updateAgent(agent.agent_id, data);
 }
 
 function runPatchStatusScan(agent: Agent) {
-  void updateStore.runAgentUpdateScan(agent.agent_id);
+  void runAgentUpdateScan(agent.agent_id);
 }
 
 function installPatches(agent: Agent) {
-  void updateStore.runAgentUpdateInstall(agent.agent_id);
+  void runAgentUpdateInstall(agent.agent_id);
 }
 
 function runChecks(agent: Agent) {
-  void checkStore.runAgentChecks(agent.agent_id);
+  void runAgentChecks(agent.agent_id);
 }
 
 function wakeUp(agent: Agent) {
-  void agentStore.wakeUpWOL(agent.agent_id);
+  void wakeUpWOL(agent.agent_id);
 }
 
 function showRebootLaterModal(agent: Agent) {
@@ -349,7 +344,7 @@ function launchWebVNC(agentId: string) {
     ok: { label: "Launch", color: "primary" },
     noBackdropDismiss: true,
   }).onOk((port) => {
-    agentStore.runWebVNC(agentId, port);
+    runWebVNC(agentId, port);
   });
 }
 
@@ -360,7 +355,7 @@ function rebootNow(agent: Agent) {
     cancel: true,
     noBackdropDismiss: true,
   }).onOk(() => {
-    void agentStore.agentRebootNow(agent.agent_id);
+    void agentRebootNow(agent.agent_id);
   });
 }
 
@@ -375,7 +370,7 @@ function shutdown(agent: Agent) {
       okColor: "negative",
     },
   }).onOk(() => {
-    void agentStore.agentShutdown(agent.agent_id);
+    void agentShutdown(agent.agent_id);
   });
 }
 
@@ -399,7 +394,7 @@ function showAgentRecovery(agent: Agent) {
 }
 
 async function pingAgent(agent: Agent) {
-  const result = await agentStore.sendAgentPing(agent.agent_id);
+  const result = await sendAgentPing(agent.agent_id);
   if (result === "offline") {
     $q.dialog({
       title: "Agent offline",
@@ -430,11 +425,11 @@ function deleteAgent(agent: Agent) {
       okColor: "negative",
     },
   }).onOk(() => {
-    void agentStore.removeAgent(agent.agent_id);
+    void removeAgent(agent.agent_id);
   });
 }
 
 onMounted(() => {
-  urlActionStore.getURLActions();
+  getURLActions();
 });
 </script>

@@ -14,6 +14,7 @@
       virtual-scroll
       no-data-label="No checks"
       column-select
+      :filter="search"
       storage-key="agent-checks-tab"
     >
       <template #loading>
@@ -28,7 +29,7 @@
           flat
           push
           icon="refresh"
-          @click="checkStore.getAgentChecks(selectedAgentId, { force: true })"
+          @click="getAgentChecks(selectedAgentId, { force: true })"
         />
         <q-btn-dropdown icon="add" label="New" no-caps dense flat class="q-mr-md">
           <q-list dense style="min-width: 200px">
@@ -109,7 +110,7 @@
           no-caps
           icon="play_arrow"
           class="q-mr-md"
-          @click="checkStore.runAgentChecks(selectedAgentId)"
+          @click="runAgentChecks(selectedAgentId)"
         />
         <q-btn
           label="Reset All Checks Status"
@@ -409,9 +410,9 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore, useCheckStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const checkStore = useCheckStore();
-const dashboardStore = useDashboardStore();
+const { selectedAgentId, selectedAgentPlatform } = useAgentStore();
+const { checks, isLoading, getAgentChecks, runAgentChecks, updateCheck, removeCheck, resetCheck, resetAllAgentChecks } = useCheckStore();
+const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 import { notifyWarning } from "src/utils/notify";
 
 // ui imports
@@ -460,7 +461,7 @@ const columns: TacticalColumn[] = [
     field: (row) => row.check_result?.last_run,
     align: "left",
     sortable: true,
-    format: (val: string) => (val ? dashboardStore.formatDate(val) : "Never"),
+    format: (val: string) => (val ? formatDate(val) : "Never"),
   },
   {
     name: "assignedtasks",
@@ -477,16 +478,10 @@ const columns: TacticalColumn[] = [
   },
 ];
 
-// setup stores
-const { selectedAgentId, selectedAgentPlatform } = agentStore;
-const { checks, isLoading } = checkStore;
-
-const tabHeight = computed(() => dashboardStore.tabHeight);
-
-const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
-const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+const dashInfoColor = computed(() => dashboardSettings.dashInfoColor);
+const dashPositiveColor = computed(() => dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
 
 // setup quasar
 const $q = useQuasar();
@@ -548,7 +543,7 @@ function getAlertSeverity(check: Check) {
 function editCheck(check: Check, data: Partial<Check>) {
   if (check.policy) return;
 
-  void checkStore.updateCheck(check.id, data);
+  void updateCheck(check.id, data);
 }
 
 function deleteCheck(check: Check) {
@@ -559,7 +554,7 @@ function deleteCheck(check: Check) {
     ok: { label: "Delete", color: "negative" },
     noBackdropDismiss: true,
   }).onOk(() => {
-    void checkStore.removeCheck(check.id);
+    void removeCheck(check.id);
   });
 }
 
@@ -571,7 +566,7 @@ function resetCheckStatus(check: Check) {
     notifyWarning("Check is already passing");
   }
 
-  if (check.check_result?.id) void checkStore.resetCheck(check.check_result?.id);
+  if (check.check_result?.id) void resetCheck(check.check_result?.id);
 }
 
 function resetAllChecks() {
@@ -582,7 +577,7 @@ function resetAllChecks() {
     ok: { label: "Reset", color: "negative" },
     noBackdropDismiss: true,
   }).onOk(() => {
-    if (selectedAgentId.value) void checkStore.resetAllAgentChecks(selectedAgentId.value);
+    if (selectedAgentId.value) void resetAllAgentChecks(selectedAgentId.value);
   });
 }
 
@@ -649,10 +644,10 @@ function showCheckModal(type: CheckType, check?: Check) {
 }
 
 watch(selectedAgentId, (newValue) => {
-  if (newValue) checkStore.getAgentChecks(newValue);
+  if (newValue) getAgentChecks(newValue);
 });
 
 onMounted(() => {
-  if (selectedAgentId.value) checkStore.getAgentChecks(selectedAgentId.value);
+  if (selectedAgentId.value) getAgentChecks(selectedAgentId.value);
 });
 </script>

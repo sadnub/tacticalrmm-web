@@ -65,7 +65,7 @@ import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAPIKeyStore } from "src/stores/api";
 
-const apiKeyStore = useAPIKeyStore();
+const { isLoading, updateAPIKey, addAPIKey } = useAPIKeyStore();
 import { useUserDropdown } from "src/core/accounts/composables";
 import { formatDateInputField, formatDateStringwithTimezone } from "src/utils/format";
 
@@ -80,9 +80,6 @@ defineEmits(useDialogPluginComponent.emits);
 
 // setup quasar plugins
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-// setup stores
-const { isLoading } = apiKeyStore;
 
 // setup dropdowns
 const { userOptions } = useUserDropdown();
@@ -103,8 +100,8 @@ async function submit() {
     if (localKey.expiration)
       localKey.expiration = formatDateStringwithTimezone(localKey.expiration);
 
-    if (props.apiKey && localKey.id) await apiKeyStore.updateAPIKey(localKey.id, localKey);
-    else await apiKeyStore.addAPIKey(localKey);
+    if (props.apiKey && localKey.id) await updateAPIKey(localKey.id, localKey);
+    else await addAPIKey(localKey);
 
     onDialogOK();
   } catch {

@@ -42,7 +42,7 @@ import { ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { isLoading, sendAgentRecovery } = useAgentStore();
 import type { Agent, AgentRecoveryMode } from "../types";
 
 const props = defineProps<{
@@ -54,15 +54,12 @@ defineEmits(useDialogPluginComponent.emits);
 // setup quasar dialog plugin
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-// setup stores
-const { isLoading } = agentStore;
-
 // agent recovery logic
 const mode = ref<AgentRecoveryMode>("mesh");
 
 async function sendRecovery() {
   try {
-    await agentStore.sendAgentRecovery(props.agent.agent_id, mode.value);
+    await sendAgentRecovery(props.agent.agent_id, mode.value);
     onDialogOK();
   } catch {
     //

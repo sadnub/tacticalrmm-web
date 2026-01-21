@@ -470,7 +470,7 @@ import { useRoute } from "vue-router";
 import { type QTableColumn, useQuasar } from "quasar";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { agents, selectedAgentId, isLoading, getAgents, getAgent, updateAgent, runTakeControl, runRemoteBackground, clearSelectedAgent } = useAgentStore();
 import { runURLAction } from "src/core/settings/api";
 
 // setup dashboard store
@@ -493,9 +493,6 @@ import type { Agent } from "../types";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 const $q = useQuasar();
-
-// setup stores
-const { agents, selectedAgentId, isLoading } = agentStore;
 
 const tab = computed(() => dashboardSettings.defaultAgentTblTab);
 const dashInfoColor = computed(() => dashboardSettings.dashInfoColor);
@@ -605,7 +602,7 @@ const isFilteringTable = computed(
 );
 
 watch(selectedClientSiteNode, () => {
-  agentStore.clearSelectedAgent();
+  clearSelectedAgent();
 });
 
 watch(search, (newVal) => {
@@ -673,7 +670,7 @@ const filteredAgents = computed(() => {
 watch(tab, () => {
   if (dashboardSettings.clearSearchWhenSwitching) clearFilter();
 });
-onMounted(agentStore.getAgents);
+onMounted(getAgents);
 
 const pagination = ref({
   rowsPerPage: 0,
@@ -788,16 +785,16 @@ function filterTable(
 
 async function rowDoubleClicked(agentId: string, agentPlatform: string) {
   selectedAgentId.value = agentId;
-  agentStore.getAgent(agentId);
+  getAgent(agentId);
   switch (agentDblClickAction.value) {
     case "editagent":
       showEditAgent(agentId);
       break;
     case "takecontrol":
-      agentStore.runTakeControl(agentId);
+      runTakeControl(agentId);
       break;
     case "remotebg":
-      agentStore.runRemoteBackground(agentId, agentPlatform);
+      runRemoteBackground(agentId, agentPlatform);
       break;
     case "urlaction":
       if (agentUrlAction.value) await runURLAction(agentUrlAction.value, "agent", agentId);
@@ -807,7 +804,7 @@ async function rowDoubleClicked(agentId: string, agentPlatform: string) {
 
 function agentRowSelected(agentId: string) {
   selectedAgentId.value = agentId;
-  agentStore.getAgent(agentId);
+  getAgent(agentId);
 }
 
 function showPendingActionsModal(agent: Agent) {
@@ -829,7 +826,7 @@ function overdueAlert(
   };
 
   const alertColor = !alert_action ? dashPositiveColor : dashInfoColor;
-  void agentStore.updateAgent(agent.agent_id, data);
+  void updateAgent(agent.agent_id, data);
 
   $q.notify({
     color: alertColor.value,

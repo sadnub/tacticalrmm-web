@@ -40,7 +40,7 @@
           flat
           push
           icon="refresh"
-          @click="agentStore.getAgentEventLog(agentId, logType, days)"
+          @click="getAgentEventLog(agentId, logType, days)"
         />
         <q-space />
         <q-radio
@@ -48,7 +48,7 @@
           color="cyan"
           val="Application"
           label="Application"
-          @update:model-value="agentStore.getAgentEventLog(agentId, logType, days)"
+          @update:model-value="getAgentEventLog(agentId, logType, days)"
         />
         <q-radio v-model="logType" color="cyan" val="System" label="System" />
         <q-radio v-model="logType" color="cyan" val="Security" label="Security" />
@@ -85,7 +85,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { agentEventLog, agentEventLogCount, isLoading, getAgentEventLog } = useAgentStore();
 
 // ui imports
 import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
@@ -124,9 +124,6 @@ const columns: TacticalColumn[] = [
   },
 ];
 
-// setup stores
-const { agentEventLog, agentEventLogCount, isLoading } = agentStore;
-
 const lastDaysOptions = [1, 2, 3, 4, 5, 10, 30, 60, 90, 180, 360, 9999];
 
 const props = defineProps<{
@@ -144,7 +141,7 @@ const filter = ref("");
 
 const showDays = computed(() => `Show last ${days.value} days`);
 
-watch([logType, days], () => agentStore.getAgentEventLog(props.agentId, logType.value, days.value));
+watch([logType, days], () => getAgentEventLog(props.agentId, logType.value, days.value));
 
 function showEventMessage(message: string) {
   $q.dialog({
@@ -159,6 +156,6 @@ function showEventMessage(message: string) {
 // vue lifecycle hooks
 onMounted(() => {
   if (props.agentPlatform === "windows")
-    agentStore.getAgentEventLog(props.agentId, logType.value, days.value);
+    getAgentEventLog(props.agentId, logType.value, days.value);
 });
 </script>

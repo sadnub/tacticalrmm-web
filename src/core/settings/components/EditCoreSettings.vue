@@ -103,7 +103,7 @@
                       filled
                       dense
                       options-dense
-                      :options="dashboardStore.dashboardSettings.timezoneOptions"
+                      :options="dashboardSettings.timezoneOptions"
                       class="col-6"
                     />
                   </q-card-section>
@@ -640,8 +640,8 @@ import { computed, ref, onMounted } from "vue";
 import { openURL, useDialogPluginComponent, useQuasar } from "quasar";
 import { useCoreStore, useDashboardStore } from "src/stores/api";
 
-const coreStore = useCoreStore();
-const dashboardStore = useDashboardStore();
+const { coreSettings, getCoreSettings, updateCoreSettings } = useCoreStore();
+const { dashboardSettings } = useDashboardStore();
 import { usePolicyDropdown } from "src/core/automation/composables";
 import { useAlertTemplateDropdown } from "src/core/alerts/composables";
 import { isValidEmail } from "src/utils/validation";
@@ -659,14 +659,11 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// setup stores
-const { coreSettings } = coreStore;
-
 // setup dropdowns
 const { policyOptions } = usePolicyDropdown();
 const { alertTemplateOptions } = useAlertTemplateDropdown();
 
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
+const hosted = computed(() => dashboardSettings.hosted);
 
 const logLevelOptions = [
   { label: "Info", value: "info" },
@@ -760,7 +757,7 @@ function removeSMSNumber(num: string) {
 async function submit() {
   if (coreSettings.value) {
     try {
-      await coreStore.updateCoreSettings(coreSettings.value, emailTest.value, smsTest.value);
+      await updateCoreSettings(coreSettings.value, emailTest.value, smsTest.value);
       onDialogOK();
     } catch {
       //
@@ -768,5 +765,5 @@ async function submit() {
   }
 }
 
-onMounted(coreStore.getCoreSettings);
+onMounted(getCoreSettings);
 </script>

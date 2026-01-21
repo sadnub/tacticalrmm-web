@@ -153,7 +153,7 @@
 import { reactive, computed } from "vue";
 import { useCustomFieldStore } from "src/stores/api";
 
-const customFieldStore = useCustomFieldStore();
+const { isLoading, updateCustomField, addCustomField } = useCustomFieldStore();
 import { useDialogPluginComponent } from "quasar";
 
 // type imports
@@ -180,8 +180,6 @@ const props = defineProps<{ field?: CustomField; model: CustomFieldModel }>();
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
-// setup stores
-const { isLoading } = customFieldStore;
 
 const localField = props.field
   ? reactive<CustomField>(Object.assign({}, props.field))
@@ -209,8 +207,8 @@ const defaultValueRules = computed(() => {
 
 async function submit() {
   try {
-    if (props.field) await customFieldStore.updateCustomField(localField.id, localField);
-    else await customFieldStore.addCustomField(localField);
+    if (props.field) await updateCustomField(localField.id, localField);
+    else await addCustomField(localField);
     onDialogOK();
   } catch {
     //

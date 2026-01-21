@@ -126,7 +126,7 @@ import { ref, nextTick } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { sendAgentCommand } = useAgentStore();
 import { cmdPlaceholder } from "src/core/agents/composables";
 import { runAsUserToolTip } from "src/constants/constants";
 
@@ -177,7 +177,7 @@ async function submit() {
   } else {
     // Traditional mode - use REST API
     try {
-      ret.value = await agentStore.sendAgentCommand(props.agent.agent_id, state.value);
+      ret.value = await sendAgentCommand(props.agent.agent_id, state.value);
     } catch {
       //
     } finally {

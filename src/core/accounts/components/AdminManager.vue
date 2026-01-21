@@ -9,7 +9,7 @@
           flat
           push
           icon="refresh"
-          @click="userStore.getUsers({ force: true })"
+          @click="getUsers({ force: true })"
         />User Administration
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -193,8 +193,8 @@ import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAuthStore, useUserStore, useDashboardStore } from "src/stores/api";
 
-const userStore = useUserStore();
-const dashboardStore = useDashboardStore();
+const { users, userCount, getUsers, updateUser, removeUser, adminResetMFA } = useUserStore();
+const { formatDate } = useDashboardStore();
 
 // ui imports
 import UserForm from "./UserForm.vue";
@@ -252,7 +252,7 @@ const columns: TacticalColumn[] = [
     field: "last_login",
     align: "left",
     sortable: true,
-    format: (val: string) => (val ? dashboardStore.formatDate(val) : "Never"),
+    format: (val: string) => (val ? formatDate(val) : "Never"),
   },
   {
     name: "last_login_ip",
@@ -264,7 +264,6 @@ const columns: TacticalColumn[] = [
 ];
 
 // setup stores
-const { users, userCount } = userStore;
 const { username } = useAuthStore();
 
 const loggedInUser = computed(() => username.value);
@@ -304,7 +303,7 @@ function deleteUser(user: User) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    void userStore.removeUser(user.id);
+    void removeUser(user.id);
   });
 }
 
@@ -333,7 +332,7 @@ function toggleEnabled(user: User) {
     is_active: !user.is_active,
   };
 
-  void userStore.updateUser(user.id, data);
+  void updateUser(user.id, data);
 }
 
 function ResetPassword(user: User) {
@@ -351,9 +350,9 @@ function reset2FA(user: User) {
     cancel: true,
     ok: { label: "Reset", color: "positive" },
   }).onOk(() => {
-    void userStore.adminResetMFA(user);
+    void adminResetMFA(user);
   });
 }
 
-onMounted(userStore.getUsers);
+onMounted(getUsers);
 </script>

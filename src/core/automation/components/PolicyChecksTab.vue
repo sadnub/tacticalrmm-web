@@ -1,14 +1,28 @@
 <template>
-  <div class="row">
-    <div class="col-12">
-      <q-btn
+      <tactical-table
+        v-model:pagination="pagination"
+        :rows="checks"
+        :columns="columns"
+        :rows-per-page-options="[0]"
+        row-key="id"
+        binary-state-sort
+        dense
+        hide-pagination
+        virtual-scroll
+        column-select
+        :filter="filter"
+        :loading="isLoading"
+        storage-key="policy-checks"
+      >
+      <template #top>
+        <q-btn
         v-if="!!selectedPolicy"
         class="q-mr-sm"
         dense
         flat
         push
         icon="refresh"
-        @click="policyChecksStore.getPolicyChecks(selectedPolicy)"
+        @click="getPolicyChecks(selectedPolicy)"
       />
       <q-btn-dropdown v-if="!!selectedPolicy" icon="add" label="New" no-caps dense flat>
         <q-list dense style="min-width: 200px">
@@ -57,19 +71,15 @@
         </q-list>
       </q-btn-dropdown>
 
-      <tactical-table
-        v-model:pagination="pagination"
-        :rows="checks"
-        :columns="columns"
-        :rows-per-page-options="[0]"
-        row-key="id"
-        binary-state-sort
-        dense
-        hide-pagination
-        virtual-scroll
-        :loading="isLoading"
-        storage-key="policy-checks"
-      >
+      <q-space />
+      <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+        <template #prepend>
+          <q-icon name="search" color="primary" />
+        </template>
+      </q-input>
+      <tactical-table-export />
+
+      </template>
         <!-- No data Slot -->
         <template #no-data>
           <div class="full-width row flex-center q-gutter-sm">
@@ -211,8 +221,6 @@
           </q-tr>
         </template>
       </tactical-table>
-    </div>
-  </div>
 </template>
 
 <script lang="ts" setup>
@@ -220,7 +228,7 @@ import { ref, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { usePolicyChecksStore } from "src/stores/api";
 
-const policyChecksStore = usePolicyChecksStore();
+const { policyChecks: checks, isLoading, getPolicyChecks, updateCheck, removeCheck } = usePolicyChecksStore();
 import PolicyStatus from "./PolicyStatus.vue";
 import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
 import PingCheck from "src/core/checks/components/PingCheck.vue";
@@ -238,8 +246,6 @@ const props = defineProps<{
 }>();
 
 const $q = useQuasar();
-
-const { policyChecks: checks, isLoading } = policyChecksStore;
 
 const columns = [
   { name: "smsalert", field: "text_alert", align: "left" as const },
@@ -267,9 +273,11 @@ const pagination = ref({
   descending: true,
 });
 
+const filter = ref("");
+
 async function checkAlert(id: number, check: Partial<Check>) {
   try {
-    await policyChecksStore.updateCheck(id, check);
+    await updateCheck(id, check);
   } catch {
     // Error handling is done in the store
   }
@@ -280,7 +288,7 @@ function deleteCheck(check: Check) {
     title: `Delete ${check.check_type} check?`,
     ok: { label: "Delete", color: "negative" },
     cancel: true,
-  }).onOk(() => void policyChecksStore.removeCheck(check.id));
+  }).onOk(() => void removeCheck(check.id));
 }
 
 function showPolicyStatus(check: Check) {
@@ -318,9 +326,9 @@ function showCheckModal(type: string, check?: Check) {
 watch(
   () => props.selectedPolicy,
   (newValue) => {
-    if (newValue) policyChecksStore.getPolicyChecks(newValue);
+    if (newValue) getPolicyChecks(newValue);
   },
 );
 
-onMounted(() => policyChecksStore.getPolicyChecks(props.selectedPolicy));
+onMounted(() => getPolicyChecks(props.selectedPolicy));
 </script>

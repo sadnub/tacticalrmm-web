@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="width: 60vw">
+    <q-card class="q-dialog-plugin" style="min-width: 60vw; max-width: 60vw">
       <q-bar>
         <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getClient" />Sites for
         {{ client.name }}
@@ -17,8 +17,9 @@
         virtual-scroll
         :rows-per-page-options="[0]"
         no-data-label="No Sites"
-        style="height: 65vh"
-        :loading="clientStore.isLoading"
+        style="max-height: 50vh"
+        :loading="isLoading"
+        :filter="search"
         column-select
         storage-key="sites manager"
       >
@@ -67,7 +68,9 @@
               </q-list>
             </q-menu>
 
-            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="props" />
+            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+              {{ col.value }}
+            </q-td>
           </q-tr>
         </template>
       </tactical-table>
@@ -81,8 +84,8 @@ import { computed, onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useClientStore, useSiteStore } from "src/stores/api";
 
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
+const { isLoading, getClient: fetchClient } = useClientStore();
+const { removeSite } = useSiteStore();
 
 // ui imports
 import SitesForm from "./SitesForm.vue";
@@ -108,8 +111,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
 
 const sites = computed(() => props.client.sites || []);
 
@@ -138,7 +139,7 @@ function showSiteDeleteModal(site: Site) {
       message: `Delete site: ${site.name}.`,
       cancel: true,
       ok: { label: "Delete", color: "negative" },
-    }).onOk(() => void siteStore.removeSite(site.id));
+    }).onOk(() => void removeSite(site.id));
   }
 }
 
@@ -161,7 +162,7 @@ function showAddSite() {
 }
 
 async function getClient() {
-  await clientStore.getClient(props.client.id);
+  await fetchClient(props.client.id);
 }
 
 onMounted(() => void getClient());

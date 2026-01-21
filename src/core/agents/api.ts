@@ -223,7 +223,8 @@ function createAgentStore() {
     }
   }
 
-  function getAgentHistory(agent_id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _getAgentHistory(agent_id: string, _args?: { force: boolean }) {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -238,6 +239,8 @@ function createAgentStore() {
         isLoading.value = false;
       });
   }
+
+  const getAgentHistory = useCachedAction(_getAgentHistory, { key: "getAgentHistory", duration: 30 * 1000 });
 
   function getAgentProcesses(agent_id: string) {
     isLoading.value = true;
@@ -648,7 +651,8 @@ function createAgentSoftwareStore() {
 
   const agentSoftware = ref<Software[]>([]);
 
-  function getAgentSoftware(agent_id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _getAgentSoftware(agent_id: string, _args?: { force: boolean }) {
     isLoading.value = true;
     isError.value = false;
     agentSoftware.value = [];
@@ -661,6 +665,8 @@ function createAgentSoftwareStore() {
       .finally(() => (isLoading.value = false));
   }
 
+  const getAgentSoftware = useCachedAction(_getAgentSoftware, { key: "getAgentSoftware", duration: 30 * 1000 });
+
   interface InstallSoftwareRequest {
     name: string;
   }
@@ -672,21 +678,6 @@ function createAgentSoftwareStore() {
     try {
       await axios.post(`/software/${agent_id}/`, payload);
       notifySuccess("The software install was initiated successfully");
-    } catch {
-      isError.value = true;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  async function refreshAgentSoftware(agent_id: string) {
-    isLoading.value = true;
-    isError.value = false;
-
-    try {
-      await axios.put(`/software/${agent_id}/`);
-      getAgentSoftware(agent_id);
-      notifySuccess("Software was successfully refreshed");
     } catch {
       isError.value = true;
     } finally {
@@ -721,7 +712,6 @@ function createAgentSoftwareStore() {
     isError,
     getAgentSoftware,
     installAgentSoftware,
-    refreshAgentSoftware,
     uninstallAgentSoftware,
   };
 }
@@ -732,7 +722,8 @@ function createAgentNoteStore() {
 
   const agentNotes = ref<AgentNote[]>([]);
 
-  function getAgentNotes(agent_id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _getAgentNotes(agent_id: string, _args?: { force: boolean }) {
     isLoading.value = true;
     isError.value = false;
     agentNotes.value = [];
@@ -748,9 +739,11 @@ function createAgentNoteStore() {
         isLoading.value = false;
       });
   }
+
+  const getAgentNotes = useCachedAction(_getAgentNotes, { key: "getAgentNotes", duration: 30 * 1000 });
   interface AddAgentNoteRequest {
     note: string;
-    agentId: string;
+    agent_id: string;
   }
 
   async function addAgentNote(payload: AddAgentNoteRequest) {
@@ -819,7 +812,8 @@ function createWindowsUpdateStore() {
 
   const updates = ref<WindowsUpdate[]>([]);
 
-  function getAgentUpdates(agent_id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _getAgentUpdates(agent_id: string, _args?: { force: boolean }) {
     isLoading.value = true;
     isError.value = false;
     updates.value = [];
@@ -836,6 +830,8 @@ function createWindowsUpdateStore() {
         isLoading.value = false;
       });
   }
+
+  const getAgentUpdates = useCachedAction(_getAgentUpdates, { key: "getAgentUpdates", duration: 30 * 1000 });
 
   async function runAgentUpdateScan(agent_id: string) {
     isLoading.value = true;

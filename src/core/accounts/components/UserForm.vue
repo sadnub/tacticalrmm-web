@@ -111,7 +111,7 @@ import { ref, reactive, computed } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAuthStore, useUserStore } from "src/stores/api";
 
-const userStore = useUserStore();
+const { updateUser, addUser } = useUserStore();
 import { useRoleDropdown } from "../composables";
 import { isValidEmail } from "src/utils/validation";
 
@@ -157,9 +157,9 @@ async function onSubmit() {
         localUser.block_dashboard_login = false;
       }
 
-      await userStore.updateUser(localUser.id, localUser);
+      await updateUser(localUser.id, localUser);
     } else {
-      await userStore.addUser(localUser);
+      await addUser(localUser);
     }
   } catch {
     // do nothing

@@ -77,7 +77,7 @@ import { reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useCheckStore } from "src/stores/api";
 
-const checkStore = useCheckStore();
+const { isLoading, addCheck, updateCheck } = useCheckStore();
 import { failOptions, severityOptions } from "../composables";
 
 // import types
@@ -89,9 +89,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = checkStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -112,8 +109,8 @@ const localCheck = props.check
 
 async function submit() {
   try {
-    if (props.check) await checkStore.updateCheck(localCheck.id, localCheck);
-    else await checkStore.addCheck(localCheck);
+    if (props.check) await updateCheck(localCheck.id, localCheck);
+    else await addCheck(localCheck);
 
     onDialogOK();
   } catch {

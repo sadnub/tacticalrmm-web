@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="width: 70vw">
+    <q-card class="q-dialog-plugin" style="min-width: 60vw; max-width: 60vw">
       <q-bar>
         <q-btn
           class="q-mr-sm"
@@ -8,7 +8,7 @@
           flat
           push
           icon="refresh"
-          @click="clientStore.getClients({ force: true })"
+          @click="getClients({ force: true })"
         />Clients Manager
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -16,7 +16,7 @@
       <tactical-table
         :rows="clients"
         :columns="columns"
-        style="height: 70vh"
+        style="max-height: 50vh"
         :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: false }"
         dense
         row-key="id"
@@ -25,11 +25,13 @@
         :rows-per-page-options="[0]"
         no-data-label="No Clients"
         :loading="isLoading"
+        :filter="search"
         storage-key="clients-manager"
       >
         <!-- top slot -->
         <template #top>
           <q-btn label="New" dense flat push no-caps icon="add" @click="showAddClient" />
+          <q-space />
           <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm">
             <template #prepend>
               <q-icon name="search" />
@@ -107,7 +109,7 @@ import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useClientStore } from "src/stores/api";
 
-const clientStore = useClientStore();
+const { clients, isLoading, getClients, removeClient } = useClientStore();
 
 // ui imports
 import ClientsForm from "./ClientsForm.vue";
@@ -128,9 +130,6 @@ const columns: TacticalColumn[] = [
     align: "left",
   },
 ];
-
-// setup stores
-const { clients, isLoading } = clientStore;
 
 defineEmits(useDialogPluginComponent.emits);
 
@@ -158,7 +157,7 @@ function showClientDeleteModal(client: Client) {
       message: `Delete client: ${client.name}.`,
       cancel: true,
       ok: { label: "Delete", color: "negative" },
-    }).onOk(() => void clientStore.removeClient(client.id));
+    }).onOk(() => void removeClient(client.id));
   }
 }
 
@@ -195,5 +194,5 @@ function showSitesTable(client: Client) {
   });
 }
 
-onMounted(clientStore.getClients);
+onMounted(getClients);
 </script>

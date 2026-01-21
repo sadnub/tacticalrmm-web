@@ -204,9 +204,9 @@ import { computed } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore, useCoreStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const coreStore = useCoreStore();
-const dashboardStore = useDashboardStore();
+const { bulkAgentRecovery } = useAgentStore();
+const { clearCache } = useCoreStore();
+const { dashboardSettings } = useDashboardStore();
 import { notifyWarning } from "src/utils/notify";
 
 // ui imports
@@ -235,13 +235,7 @@ import type { BulkActionMode } from "src/core/agents/types";
 
 const $q = useQuasar();
 
-// setup stores
-const { bulkAgentRecovery } = agentStore;
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
-
-function clearCache() {
-  void coreStore.clearCache();
-}
+const hosted = computed(() => dashboardSettings.hosted);
 
 function bulkRecoverAgents() {
   $q.dialog({

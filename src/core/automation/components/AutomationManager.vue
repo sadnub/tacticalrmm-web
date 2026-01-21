@@ -4,7 +4,6 @@
       <q-card>
         <q-bar>
           <q-btn
-            ref="refresh"
             class="q-mr-sm"
             dense
             flat
@@ -15,33 +14,10 @@
           <q-space />
           <q-btn v-close-popup dense flat icon="close" />
         </q-bar>
-        <q-card-section>
-          <div class="q-gutter-sm">
-            <q-btn
-              label="New"
-              dense
-              flat
-              push
-              unelevated
-              no-caps
-              icon="add"
-              @click="showAddPolicyForm"
-            />
-            <q-btn
-              label="Policy Overview"
-              dense
-              flat
-              push
-              unelevated
-              no-caps
-              icon="remove_red_eye"
-              @click="showPolicyOverview"
-            />
-          </div>
           <div class="scroll" style="min-height: 35vh; max-height: 35vh">
             <tactical-table
               v-model:pagination="pagination"
-              :rows="policies"
+              :rows="policiesList"
               :columns="columns"
               :rows-per-page-options="[0]"
               dense
@@ -49,9 +25,23 @@
               binary-state-sort
               hide-pagination
               virtual-scroll
+              column-select
+              :filter="filter"
               no-data-label="No Policies"
               storage-key="automation-manager"
             >
+              <template #top>
+                <q-btn icon="add" label="Add Policy" no-caps dense flat push class="q-mr-sm" @click="showAddPolicyForm"/>
+                <q-btn icon="remove_red_eye" label="Policy Overview" no-caps dense flat push @click="showPolicyOverview" />
+                <q-space />
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+          <template #prepend>
+            <q-icon name="search" color="primary" />
+          </template>
+        </q-input>
+        <tactical-table-export />
+              </template>
+
               <!-- header slots -->
               <template #header-cell-active="props">
                 <q-th :props="props" auto-width>
@@ -140,6 +130,7 @@
                       </q-item>
                     </q-list>
                   </q-menu>
+
                   <q-td v-for="col in props.cols" :key="col.name" :props="props">
                     <!-- active -->
                     <template v-if="col.name === 'active'">
@@ -215,17 +206,6 @@
                       }}</span>
                     </template>
 
-                    <!-- actions -->
-                    <template v-else-if="col.name === 'actions'">
-                      <q-icon
-                        name="content_copy"
-                        size="1.5em"
-                        @click="showCopyPolicyForm(props.row)"
-                      >
-                        <q-tooltip>Create a copy of this policy</q-tooltip>
-                      </q-icon>
-                    </template>
-
                     <!-- default fallback -->
                     <template v-else>
                       {{ col.value }}
@@ -235,9 +215,7 @@
               </template>
             </tactical-table>
           </div>
-        </q-card-section>
 
-        <q-card-section>
           <q-tabs
             v-model="subtab"
             dense
@@ -253,13 +231,13 @@
             <q-tab name="tasks" icon="fas fa-tasks" label="Tasks" />
           </q-tabs>
           <q-separator />
-          <q-tab-panels v-model="subtab" :animated="false">
-            <q-tab-panel name="checks">
+          <q-tab-panels v-model="subtab" :animated="false" class="q-pa-none">
+            <q-tab-panel name="checks" class="q-pa-none">
               <div class="scroll" style="min-height: 25vh; max-height: 25vh">
                 <PolicyChecksTab v-if="!!selectedPolicy" :selected-policy="selectedPolicy.id" />
               </div>
             </q-tab-panel>
-            <q-tab-panel name="tasks">
+            <q-tab-panel name="tasks" class="q-pa-none">
               <div class="scroll" style="min-height: 25vh; max-height: 25vh">
                 <PolicyAutomatedTasksTab
                   v-if="!!selectedPolicy"
@@ -268,7 +246,6 @@
               </div>
             </q-tab-panel>
           </q-tab-panels>
-        </q-card-section>
       </q-card>
     </div>
   </q-dialog>
@@ -279,8 +256,8 @@ import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 
-const policyStore = usePolicyStore();
-const dashboardStore = useDashboardStore();
+const { policies, getPolicies, removePolicy, updatePolicy } = usePolicyStore();
+const { refreshDashboard } = useDashboardStore();
 import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
 import PolicyForm from "./PolicyForm.vue";
 import PolicyOverview from "./PolicyOverview.vue";
@@ -299,7 +276,7 @@ const $q = useQuasar();
 // state
 const subtab = ref("checks");
 const selectedPolicy = ref<Policy | null>(null);
-const policies = computed(() => policyStore.policies.value);
+const policiesList = computed(() => policies.value);
 const columns = [
   { name: "active", label: "Active", field: "active", align: "left" as const },
   {
@@ -345,25 +322,20 @@ const columns = [
     field: "alert_template",
     align: "left" as const,
   },
-  {
-    name: "actions",
-    label: "Actions",
-    field: "actions",
-    align: "left" as const,
-  },
 ];
 const pagination = ref({
   rowsPerPage: 0,
   sortBy: "name",
   descending: true,
 });
+const filter = ref("");
 
 function clearRow() {
   selectedPolicy.value = null;
 }
 
 function refresh() {
-  policyStore.getPolicies({ force: true });
+  getPolicies({ force: true });
   clearRow();
 }
 
@@ -373,9 +345,9 @@ function deletePolicy(policy: Policy) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    void policyStore.removePolicy(policy.id);
+    void removePolicy(policy.id);
     clearRow();
-    dashboardStore.refreshDashboard();
+    refreshDashboard();
   });
 }
 
@@ -467,7 +439,7 @@ function showPolicyExclusions(policy: Policy) {
 
 async function toggleCheckbox(policy: Policy, type: "active" | "enforced") {
   try {
-    await policyStore.updatePolicy(policy.id, { [type]: !policy[type] });
+    await updatePolicy(policy.id, { [type]: !policy[type] });
   } catch {
     // Error handling is done in the store
   }
@@ -489,6 +461,6 @@ function rowSelectedClass(id: number, selectedPolicy: Policy | null) {
 }
 
 onMounted(() => {
-  policyStore.getPolicies();
+  getPolicies();
 });
 </script>

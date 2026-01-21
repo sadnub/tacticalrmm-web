@@ -58,7 +58,7 @@ import { useSiteDropdown } from "src/core/clients/composables";
 import { useAgentDropdown } from "src/core/agents/composables";
 import { usePolicyStore } from "src/stores/api";
 
-const policyStore = usePolicyStore();
+const { isLoading, updatePolicy } = usePolicyStore();
 import type { Policy } from "src/core/automation/types";
 
 const props = defineProps<{ policy: Policy }>();
@@ -73,11 +73,9 @@ const { agentOptions } = useAgentDropdown();
 // Local editable copy of the policy, typed, copied in one line
 const localPolicy = reactive<Policy>(extend(true, {}, props.policy));
 
-const { isLoading } = policyStore;
-
 async function submit() {
   try {
-    await policyStore.updatePolicy(props.policy.id, localPolicy);
+    await updatePolicy(props.policy.id, localPolicy);
     onDialogOK();
   } catch {
     //

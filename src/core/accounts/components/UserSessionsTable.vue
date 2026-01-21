@@ -61,8 +61,8 @@ import { onMounted } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
 import { useUserStore, useDashboardStore } from "src/stores/api";
 
-const userStore = useUserStore();
-const dashboardStore = useDashboardStore();
+const { isLoading, userSessions, removeSession: deleteSession, removeAllUserSessions, getSessionsForUser } = useUserStore();
+const { formatDate } = useDashboardStore();
 
 //types
 import type { User, UserSession } from "../types";
@@ -75,7 +75,7 @@ const columns: TacticalColumn[] = [
     field: "created",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   {
     name: "expiry",
@@ -83,7 +83,7 @@ const columns: TacticalColumn[] = [
     field: "expiry",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   {
     name: "action",
@@ -102,9 +102,6 @@ const props = defineProps<{
   user: User;
 }>();
 
-// setup stores
-const { isLoading, userSessions } = userStore;
-
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
@@ -115,7 +112,7 @@ function removeSession(session: UserSession) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    void userStore.removeSession(session.digest);
+    void deleteSession(session.digest);
   });
 }
 
@@ -125,9 +122,9 @@ function removeAllSessions() {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    void userStore.removeAllUserSessions(props.user.id);
+    void removeAllUserSessions(props.user.id);
   });
 }
 
-onMounted(() => userStore.getSessionsForUser(props.user.id));
+onMounted(() => getSessionsForUser(props.user.id));
 </script>

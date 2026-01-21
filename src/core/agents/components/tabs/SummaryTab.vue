@@ -22,10 +22,10 @@
         :color="dashWarningColor"
         class="q-mr-sm"
       >
-        <q-tooltip>{{ dashboardStore.formatDate(selectedAgent.last_seen) }}</q-tooltip>
+        <q-tooltip>{{ formatDate(selectedAgent.last_seen) }}</q-tooltip>
       </q-icon>
       <q-icon v-else name="fas fa-signal" size="1.2em" :color="dashPositiveColor" class="q-mr-sm">
-        <q-tooltip>{{ dashboardStore.formatDate(selectedAgent.last_seen) }}</q-tooltip>
+        <q-tooltip>{{ formatDate(selectedAgent.last_seen) }}</q-tooltip>
       </q-icon>
       <b>{{ selectedAgent.hostname }}</b>
       <span v-if="selectedAgent.maintenance_mode">
@@ -202,14 +202,6 @@
 import { computed, watch, onMounted } from "vue";
 import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const customFieldStore = useCustomFieldStore();
-const dashboardStore = useDashboardStore();
-
-// ui imports
-import AgentActionMenu from "../AgentActionMenu.vue";
-
-// setup stores
 const {
   selectedAgent,
   selectedAgentId,
@@ -218,12 +210,17 @@ const {
   refreshAgentWMI,
   openAgentWindow,
   runTakeControl,
-} = agentStore;
-const { agentCustomFields } = customFieldStore;
-const dashInfoColor = computed(() => dashboardStore.dashboardSettings.dashInfoColor);
-const dashPositiveColor = computed(() => dashboardStore.dashboardSettings.dashPositiveColor);
-const dashNegativeColor = computed(() => dashboardStore.dashboardSettings.dashNegativeColor);
-const dashWarningColor = computed(() => dashboardStore.dashboardSettings.dashWarningColor);
+} = useAgentStore();
+const { agentCustomFields, getCustomFields } = useCustomFieldStore();
+const { dashboardSettings, formatDate } = useDashboardStore();
+
+// ui imports
+import AgentActionMenu from "../AgentActionMenu.vue";
+
+const dashInfoColor = computed(() => dashboardSettings.dashInfoColor);
+const dashPositiveColor = computed(() => dashboardSettings.dashPositiveColor);
+const dashNegativeColor = computed(() => dashboardSettings.dashNegativeColor);
+const dashWarningColor = computed(() => dashboardSettings.dashWarningColor);
 
 const serial_number = computed(() => {
   if (selectedAgent.value?.plat === "windows") {
@@ -300,6 +297,6 @@ watch(selectedAgentId, (newValue) => {
 
 onMounted(() => {
   if (selectedAgentId.value) getAgent(selectedAgentId.value);
-  customFieldStore.getCustomFields();
+  getCustomFields();
 });
 </script>

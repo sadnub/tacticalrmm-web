@@ -122,7 +122,7 @@ import type { QTableColumn } from "quasar";
 import { useQuasar, copyToClipboard } from "quasar";
 import { useDashboardStore } from "src/stores/api";
 
-const dashboardStore = useDashboardStore();
+const { dashboardSettings } = useDashboardStore();
 import { fetchSSOProviders, removeSSOProvider, fetchSSOSettings } from "src/ee/sso/api/sso";
 import { notifySuccess } from "src/utils/notify";
 import { truncateText } from "src/utils/format";
@@ -249,7 +249,7 @@ function openSSOSettings() {
   $q.dialog({
     component: SSOSettings,
   }).onOk((updatedSSOSettings: SSOSettingsType) => {
-    dashboardStore.dashboardSettings.blockLocalUserLogon =
+    dashboardSettings.blockLocalUserLogon =
       updatedSSOSettings.block_local_user_logon;
     ssoSettings.value = { ...updatedSSOSettings };
   });

@@ -21,10 +21,10 @@
           flat
           push
           icon="refresh"
-          @click="selectedAgentId && agentStore.getAgentHistory(selectedAgentId)"
+          @click="selectedAgentId && getAgentHistory(selectedAgentId, { force: true })"
         />
         <q-space />
-        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -56,13 +56,13 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useQuasar, Notify } from "quasar";
 import { formatTableColumnText, truncateText } from "src/utils/format";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const dashboardStore = useDashboardStore();
+const { selectedAgentId, agentHistory, isLoading, getAgentHistory } = useAgentStore();
+const { tabHeight, formatDate } = useDashboardStore();
 
 // ui imports
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
@@ -79,7 +79,7 @@ const columns: TacticalColumn[] = [
     field: "time",
     align: "left",
     sortable: true,
-    format: (val: string) => dashboardStore.formatDate(val),
+    format: (val: string) => formatDate(val),
   },
   {
     name: "type",
@@ -123,16 +123,12 @@ const columns: TacticalColumn[] = [
 
 const $q = useQuasar();
 
-// setup stores
-const { selectedAgentId, agentHistory, isLoading } = agentStore;
-const tabHeight = computed(() => dashboardStore.tabHeight);
-
 // setup main history functionality
 const filter = ref("");
 
 watch(selectedAgentId, (newValue) => {
   if (newValue) {
-    agentStore.getAgentHistory(newValue);
+    getAgentHistory(newValue);
   }
 });
 
@@ -166,6 +162,6 @@ function showCommandOutput(title: string, output: string) {
 
 // vue component hooks
 onMounted(() => {
-  if (selectedAgentId.value) agentStore.getAgentHistory(selectedAgentId.value);
+  if (selectedAgentId.value) getAgentHistory(selectedAgentId.value);
 });
 </script>

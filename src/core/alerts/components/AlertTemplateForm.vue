@@ -694,8 +694,8 @@ import { computed, ref, reactive, watch } from "vue";
 import { useQuasar, useDialogPluginComponent, type QStepper } from "quasar";
 import { useAlertTemplateStore, useDashboardStore } from "src/stores/api";
 
-const alertTemplateStore = useAlertTemplateStore();
-const dashboardStore = useDashboardStore();
+const { isLoading, addAlertTemplate, updateAlertTemplate } = useAlertTemplateStore();
+const { dashboardSettings } = useDashboardStore();
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useURLActionDropdown } from "src/core/settings/composables";
 import { isValidEmail } from "src/utils/validation";
@@ -703,12 +703,9 @@ import { isValidEmail } from "src/utils/validation";
 // types
 import type { AlertTemplate, AlertSeverity } from "src/core/alerts/types";
 
-// setup stores
-const { isLoading } = alertTemplateStore;
-
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
+const hosted = computed(() => dashboardSettings.hosted);
 const server_scripts_enabled = computed(
-  () => dashboardStore.dashboardSettings.serverScriptsEnabled,
+  () => dashboardSettings.serverScriptsEnabled,
 );
 
 // props
@@ -922,9 +919,9 @@ function removeSMSNumber(num: string) {
 async function submit() {
   try {
     if (props.alertTemplate) {
-      await alertTemplateStore.updateAlertTemplate(template.id, template);
+      await updateAlertTemplate(template.id, template);
     } else {
-      await alertTemplateStore.addAlertTemplate(template);
+      await addAlertTemplate(template);
     }
     onDialogOK();
   } catch {

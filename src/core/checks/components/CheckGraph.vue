@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="min-width: 80vw; min-height: 65vh; overflow-x: hidden">
       <q-bar>
-        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getCheckHistory" />
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="loadCheckHistory" />
         {{ check.readable_desc + " history" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -19,7 +19,7 @@
           filled
           dense
           class="q-pr-md q-pt-md"
-          @update:model-value="getCheckHistory"
+          @update:model-value="loadCheckHistory"
         />
       </div>
       <apex-chart
@@ -38,7 +38,7 @@ import { computed, onMounted, ref } from "vue";
 import { useDialogPluginComponent, useQuasar } from "quasar";
 import { useCheckStore } from "src/stores/api";
 
-const checkStore = useCheckStore();
+const { isLoading, getCheckHistory } = useCheckStore();
 
 // ui imports
 import ApexChart from "vue3-apexcharts";
@@ -58,9 +58,9 @@ const $q = useQuasar();
 let history = [] as CheckHistory[];
 const timeFilter = ref(1);
 
-async function getCheckHistory() {
+async function loadCheckHistory() {
   if (props.check.check_result)
-    history = await checkStore.getCheckHistory(props.check.check_result?.id, timeFilter.value);
+    history = await getCheckHistory(props.check.check_result?.id, timeFilter.value);
 }
 
 const timeFilterOptions = [
@@ -71,7 +71,7 @@ const timeFilterOptions = [
 ];
 
 const showChart = computed(() => {
-  return !checkStore.isLoading && history.length > 0;
+  return !isLoading.value && history.length > 0;
 });
 
 const seriesName = computed(() => {
@@ -183,6 +183,6 @@ const chartOptions = computed(() => {
 });
 
 onMounted(() => {
-  void getCheckHistory();
+  void loadCheckHistory();
 });
 </script>

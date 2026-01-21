@@ -67,7 +67,7 @@ import PolicyChecksTab from "./PolicyChecksTab.vue";
 import PolicyAutomatedTasksTab from "./PolicyAutomatedTasksTab.vue";
 import { usePolicyStore } from "src/stores/api";
 
-const policyStore = usePolicyStore();
+const { getPolicyOverview } = usePolicyStore();
 import type { PolicyTreeClient, PolicyTreeItem } from "src/core/automation/types";
 
 defineEmits([...useDialogPluginComponent.emits]);
@@ -82,7 +82,7 @@ const tree = useTemplateRef<QTree>("tree");
 
 async function getPolicyTree() {
   try {
-    const data = await policyStore.getPolicyOverview();
+    const data = await getPolicyOverview();
     processTreeDataFromApi(data);
   } catch {
     // Error handling is done in the store

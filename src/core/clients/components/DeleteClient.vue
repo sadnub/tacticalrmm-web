@@ -48,8 +48,8 @@ import { computed, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useClientStore, useSiteStore } from "src/stores/api";
 
-const clientStore = useClientStore();
-const siteStore = useSiteStore();
+const { removeClient } = useClientStore();
+const { removeSite } = useSiteStore();
 import { useSiteDropdown } from "../composables";
 import { isHeaderOption } from "src/core/dashboard/types";
 
@@ -96,8 +96,7 @@ function submit() {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
     if (props.type === "client") {
-      clientStore
-        .removeClient(props.object.id, site.value)
+      removeClient(props.object.id, site.value)
         .then(() => {
           onDialogOK();
         })
@@ -105,8 +104,7 @@ function submit() {
           //
         });
     } else {
-      siteStore
-        .removeSite(props.object.id, site.value)
+      removeSite(props.object.id, site.value)
         .then(() => {
           onDialogOK();
         })

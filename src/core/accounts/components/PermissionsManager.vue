@@ -7,7 +7,7 @@
           dense
           flat
           icon="refresh"
-          @click="roleStore.getRoles({ force: true })"
+          @click="getRoles({ force: true })"
         />
         <q-space />Manage Roles
         <q-space />
@@ -100,7 +100,7 @@ import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useRoleStore } from "src/stores/api";
 
-const roleStore = useRoleStore();
+const { roles, isLoading, getRoles, removeRole } = useRoleStore();
 
 // type imports
 import type { Role } from "../types";
@@ -134,8 +134,6 @@ defineEmits(useDialogPluginComponent.emits);
 const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
-// setup stores
-const { roles, isLoading } = roleStore;
 
 const search = ref("");
 
@@ -160,9 +158,9 @@ function deleteRole(role: Role) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (role.id) void roleStore.removeRole(role.id);
+    if (role.id) void removeRole(role.id);
   });
 }
 
-onMounted(roleStore.getRoles);
+onMounted(getRoles);
 </script>

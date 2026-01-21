@@ -209,8 +209,8 @@ import { ref, reactive, onMounted } from "vue";
 import { openURL, useDialogPluginComponent } from "quasar";
 import { useUserStore, useDashboardStore } from "src/stores/api";
 
-const userStore = useUserStore();
-const dashboardStore = useDashboardStore();
+const { updateUserPreferences } = useUserStore();
+const { dashboardSettings, getDashInfo } = useDashboardStore();
 import { useURLActionDropdown } from "src/core/settings/composables";
 
 // type imports
@@ -245,17 +245,17 @@ const loadingBarColors = [
 const { webActionOptions } = useURLActionDropdown();
 
 const state = reactive<Partial<User>>({
-  dblclick_action: dashboardStore.dashboardSettings.agentDblClickAction,
-  url_action: dashboardStore.dashboardSettings.agentUrlAction,
-  default_agent_tbl_tab: dashboardStore.dashboardSettings.defaultAgentTblTab,
-  client_tree_sort: dashboardStore.dashboardSettings.clientTreeSort,
-  loading_bar_color: dashboardStore.dashboardSettings.loadingBarColor,
-  dash_info_color: dashboardStore.dashboardSettings.dashInfoColor,
-  dash_positive_color: dashboardStore.dashboardSettings.dashPositiveColor,
-  dash_negative_color: dashboardStore.dashboardSettings.dashNegativeColor,
-  dash_warning_color: dashboardStore.dashboardSettings.dashWarningColor,
-  clear_search_when_switching: dashboardStore.dashboardSettings.clearSearchWhenSwitching,
-  date_format: dashboardStore.dashboardSettings.dateFormat,
+  dblclick_action: dashboardSettings.agentDblClickAction,
+  url_action: dashboardSettings.agentUrlAction,
+  default_agent_tbl_tab: dashboardSettings.defaultAgentTblTab,
+  client_tree_sort: dashboardSettings.clientTreeSort,
+  loading_bar_color: dashboardSettings.loadingBarColor,
+  dash_info_color: dashboardSettings.dashInfoColor,
+  dash_positive_color: dashboardSettings.dashPositiveColor,
+  dash_negative_color: dashboardSettings.dashNegativeColor,
+  dash_warning_color: dashboardSettings.dashWarningColor,
+  clear_search_when_switching: dashboardSettings.clearSearchWhenSwitching,
+  date_format: dashboardSettings.dateFormat,
 });
 
 const tab = ref("ui");
@@ -281,12 +281,12 @@ const defaultAgentTblTabOptions = [
 
 async function editUserPrefs() {
   try {
-    await userStore.updateUserPreferences(state);
+    await updateUserPreferences(state);
     onDialogOK();
   } catch {
     // do nothing
   }
 }
 
-onMounted(dashboardStore.getDashInfo);
+onMounted(getDashInfo);
 </script>

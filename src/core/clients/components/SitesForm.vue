@@ -49,8 +49,8 @@ import { useDialogPluginComponent } from "quasar";
 import { useClientDropdown } from "src/core/clients/composables";
 import { useCustomFieldStore, useSiteStore } from "src/stores/api";
 
-const customFieldStore = useCustomFieldStore();
-const siteStore = useSiteStore();
+const { siteCustomFields, getCustomFields } = useCustomFieldStore();
+const { isLoading, addSite, updateSite } = useSiteStore();
 
 import { formatCustomFields } from "src/utils/format";
 
@@ -67,10 +67,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = siteStore;
-const { siteCustomFields } = customFieldStore;
 
 // setup quasar dialog
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
@@ -90,8 +86,8 @@ async function submit() {
       site: state,
       custom_fields: formatCustomFields(siteCustomFields.value, siteCustomFieldValues.value),
     };
-    if (props.site) await siteStore.updateSite(props.site.id, data);
-    else await siteStore.addSite(data);
+    if (props.site) await updateSite(props.site.id, data);
+    else await addSite(data);
 
     onDialogOK();
   } catch {
@@ -121,6 +117,6 @@ const siteCustomFieldValues = computed(() => {
 });
 
 onMounted(() => {
-  customFieldStore.getCustomFields();
+  getCustomFields();
 });
 </script>

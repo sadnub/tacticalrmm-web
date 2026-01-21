@@ -85,7 +85,7 @@
       <q-tr :props="bodyProps" class="cursor-pointer">
         <q-menu context-menu auto-close>
           <q-list dense style="min-width: 200px">
-            <q-item clickable @click="agentStore.killAgentProcess(agentId, bodyProps.row.pid)">
+            <q-item clickable @click="killAgentProcess(agentId, bodyProps.row.pid)">
               <q-item-section side>
                 <q-icon name="fas fa-trash-alt" size="xs" />
               </q-item-section>
@@ -111,7 +111,7 @@ import { ref, computed, onMounted } from "vue";
 import { useIntervalFn } from "@vueuse/core";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { selectedAgent, agentProcesses, isLoading, getAgentProcesses, killAgentProcess, getAgent } = useAgentStore();
 import { bytes2Human } from "src/utils/format";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
@@ -159,15 +159,12 @@ const props = defineProps<{
   agentId: string;
 }>();
 
-// setup stores
-const { selectedAgent, agentProcesses, isLoading } = agentStore;
-
 // polling setup
 const pollInterval = ref(2);
 const pollIntervalMilli = computed(() => pollInterval.value * 1000);
 
 const { isActive, pause, resume } = useIntervalFn(() => {
-  agentStore.getAgentProcesses(props.agentId);
+  getAgentProcesses(props.agentId);
 }, pollIntervalMilli);
 
 // process manager logic
@@ -204,8 +201,8 @@ const totalRamUsage = computed(() => {
 });
 
 onMounted(() => {
-  agentStore.getAgent(props.agentId);
-  agentStore.getAgentProcesses(props.agentId);
+  getAgent(props.agentId);
+  getAgentProcesses(props.agentId);
   resume();
 });
 </script>

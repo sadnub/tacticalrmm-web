@@ -21,7 +21,7 @@
           flat
           push
           icon="refresh"
-          @click="agentNoteStore.getAgentNotes(selectedAgentId)"
+          @click="getAgentNotes(selectedAgentId, { force: true })"
         />
         <q-btn icon="add" label="Add Note" no-caps dense flat push @click="addNote" />
         <q-space />
@@ -38,7 +38,7 @@
             <div class="row">
               <div class="col">
                 <div class="text-subtitle2">
-                  {{ dashboardStore.formatDate(props.row.entry_time) }}
+                  {{ formatDate(props.row.entry_time) }}
                 </div>
                 <div class="text-caption">{{ props.row.username }}</div>
               </div>
@@ -76,13 +76,13 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentNoteStore, useAgentStore, useDashboardStore } from "src/stores/api";
 
-const agentNoteStore = useAgentNoteStore();
-const agentStore = useAgentStore();
-const dashboardStore = useDashboardStore();
+const { agentNotes, getAgentNotes, addAgentNote, updateAgentNote, removeAgentNote } = useAgentNoteStore();
+const { selectedAgentId, isLoading } = useAgentStore();
+const { tabHeight, formatDate } = useDashboardStore();
 
 // type imports
 import type { AgentNote } from "../../types";
@@ -106,11 +106,6 @@ const columns: TacticalColumn[] = [
     field: "note",
   },
 ];
-
-// setup stores
-const { selectedAgentId, isLoading } = agentStore;
-const { agentNotes } = agentNoteStore;
-const tabHeight = computed(() => dashboardStore.tabHeight);
 
 // setup quasar
 const $q = useQuasar();
@@ -136,8 +131,8 @@ function addNote() {
     cancel: true,
   }).onOk((data: string) => {
     if (selectedAgentId.value)
-      void agentNoteStore.addAgentNote({
-        agentId: selectedAgentId.value,
+      void addAgentNote({
+        agent_id: selectedAgentId.value,
         note: data,
       });
   });
@@ -156,7 +151,7 @@ function editNote(note: AgentNote) {
     ok: { label: "Save" },
     cancel: true,
   }).onOk((data) => {
-    void agentNoteStore.updateAgentNote(note.id, { note: data });
+    void updateAgentNote(note.id, { note: data });
   });
 }
 
@@ -167,18 +162,18 @@ function deleteNote(note: AgentNote) {
     ok: { label: "Delete", color: "negative" },
     color: "primary",
   }).onOk(() => {
-    void agentNoteStore.removeAgentNote(note.id);
+    void removeAgentNote(note.id);
   });
 }
 
 watch(selectedAgentId, (newValue) => {
   if (newValue) {
-    agentNoteStore.getAgentNotes(newValue);
+    getAgentNotes(newValue);
   }
 });
 
 onMounted(() => {
-  if (selectedAgentId.value) agentNoteStore.getAgentNotes(selectedAgentId.value);
+  if (selectedAgentId.value) getAgentNotes(selectedAgentId.value);
 });
 </script>
 

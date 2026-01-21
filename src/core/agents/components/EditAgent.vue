@@ -64,7 +64,7 @@
                       filled
                       dense
                       options-dense
-                      :options="dashboardStore.dashboardSettings.timezoneOptions"
+                      :options="dashboardSettings.timezoneOptions"
                       class="col-8"
                     />
                   </q-card-section>
@@ -90,7 +90,7 @@
                         class="q-pr-sm"
                         name="fas fa-signal"
                         size="1.2em"
-                        :color="dashboardStore.dashboardSettings.dashWarningColor"
+                        :color="dashboardSettings.dashWarningColor"
                       />
                       Mark an agent as
                       <span class="text-weight-bold">offline</span> if it has not checked in after:
@@ -115,7 +115,7 @@
                         class="q-pr-sm"
                         name="fas fa-signal"
                         size="1.2em"
-                        :color="dashboardStore.dashboardSettings.dashNegativeColor"
+                        :color="dashboardSettings.dashNegativeColor"
                       />
                       Mark an agent as
                       <span class="text-weight-bold">overdue</span> if it has not checked in after:
@@ -331,9 +331,9 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
-const customFieldStore = useCustomFieldStore();
-const dashboardStore = useDashboardStore();
+const { updateAgent, getAgent } = useAgentStore();
+const { agentCustomFields, getCustomFields } = useCustomFieldStore();
+const { dashboardSettings } = useDashboardStore();
 import { useSiteDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
 import { formatCustomFields } from "src/utils/format";
@@ -352,9 +352,6 @@ const props = defineProps<{
 
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-// setup stores
-const { agentCustomFields } = customFieldStore;
 const splitterModel = ref(25);
 const tab = ref("general");
 
@@ -403,7 +400,7 @@ async function submit() {
   );
 
   try {
-    await agentStore.updateAgent(props.agent.agent_id, {
+    await updateAgent(props.agent.agent_id, {
       ...localAgent,
       monitoring_type: localAgent.monitoring_type as AgentMonitoringType,
       description: localAgent.description || "",
@@ -434,7 +431,7 @@ function weekDaystoString(array: number[]) {
 }
 
 onMounted(() => {
-  customFieldStore.getCustomFields();
-  agentStore.getAgent(props.agent.agent_id);
+  getCustomFields();
+  getAgent(props.agent.agent_id);
 });
 </script>

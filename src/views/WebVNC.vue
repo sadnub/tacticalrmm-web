@@ -17,7 +17,7 @@ import { useQuasar, useMeta } from "quasar";
 
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { getAgentWebVNCUrl } = useAgentStore();
 
 // type imports
 import type { WebVNCUrl } from "src/core/agents/types";
@@ -25,9 +25,6 @@ import type { WebVNCUrl } from "src/core/agents/types";
 const $q = useQuasar();
 
 const { params } = useRoute();
-
-// setup stores
-const { getAgentWebVNCUrl } = agentStore;
 
 const webVNCUrl = ref<WebVNCUrl>({
   hostname: "",

@@ -9,10 +9,8 @@
 // composition imports
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { selectedAgentId } = useAgentStore();
 
 // ui imports
 import AuditManager from "src/core/logs/components/AuditManager.vue";
-
-const { selectedAgentId } = agentStore;
 </script>

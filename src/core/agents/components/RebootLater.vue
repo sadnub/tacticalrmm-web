@@ -39,7 +39,7 @@ import { reactive, ref } from "vue";
 import { useQuasar, useDialogPluginComponent, date } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { scheduleAgentReboot } = useAgentStore();
 import { formatDateInputField } from "src/utils/format";
 import type { Agent } from "../types";
 
@@ -48,8 +48,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
 
 // setup quasar dialog plugin
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
@@ -62,7 +60,7 @@ const state = reactive({
 const loading = ref(false);
 
 function scheduleReboot() {
-  void agentStore.scheduleAgentReboot(props.agent.agent_id, state);
+  void scheduleAgentReboot(props.agent.agent_id, state);
   $q.dialog({
     title: "Reboot pending",
     style: "width: 40vw",

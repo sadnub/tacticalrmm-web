@@ -13,7 +13,7 @@
           color="positive"
           class="full-width"
           :loading="isLoading"
-          @click="codeSignStore.codeSignAgents"
+          @click="codeSignAgents"
         >
           <q-tooltip>Force all existing agents to be updated to the code-signed version</q-tooltip>
           <template #loading>
@@ -21,7 +21,7 @@
           </template>
         </q-btn>
       </q-card-section>
-      <q-form @submit.prevent="codeSignStore.updateToken(token ?? '')">
+      <q-form @submit.prevent="updateToken(token ?? '')">
         <q-card-section class="row">
           <div class="col-2">Token:</div>
           <div class="col-1"></div>
@@ -48,23 +48,20 @@ import { onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useCodeSignStore } from "src/stores/api";
 
-const codeSignStore = useCodeSignStore();
+const { token, isLoading, codeSignAgents, updateToken, removeToken, getToken } = useCodeSignStore();
 
 // setup quasar plugins
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// setup stores
-const { token, isLoading } = codeSignStore;
-
 function confirmDelete() {
   $q.dialog({
     title: "Delete token?",
     cancel: true,
     noBackdropDismiss: true,
-  }).onOk(() => void codeSignStore.removeToken());
+  }).onOk(() => void removeToken());
 }
 
-onMounted(codeSignStore.getToken);
+onMounted(getToken);
 </script>

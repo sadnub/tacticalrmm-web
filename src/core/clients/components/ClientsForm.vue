@@ -45,8 +45,8 @@ import { onMounted, reactive, computed, ref } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useClientStore, useCustomFieldStore } from "src/stores/api";
 
-const clientStore = useClientStore();
-const customFieldStore = useCustomFieldStore();
+const { isLoading, getClient, addClient, updateClient } = useClientStore();
+const { clientCustomFields, getCustomFields } = useCustomFieldStore();
 import { formatCustomFields } from "src/utils/format";
 
 // ui imports
@@ -61,10 +61,6 @@ const props = defineProps<{
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
-
-// setup stores
-const { isLoading } = clientStore;
-const { clientCustomFields } = customFieldStore;
 // setup quasar dialog
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent();
 
@@ -81,8 +77,8 @@ async function submit() {
   };
 
   try {
-    if (props.client) await clientStore.updateClient(props.client.id, data);
-    else await clientStore.addClient(data);
+    if (props.client) await updateClient(props.client.id, data);
+    else await addClient(data);
     onDialogOK();
   } catch {
     //
@@ -110,12 +106,12 @@ const clientCustomFieldValues = computed(() => {
   return mapped_custom_fields as Record<string, CustomFieldValueField>;
 });
 
-async function getClient() {
-  if (props.client) localClient.value = await clientStore.getClient(props.client.id);
+async function getClientData() {
+  if (props.client) localClient.value = await getClient(props.client.id);
 }
 
 onMounted(() => {
-  void getClient();
-  customFieldStore.getCustomFields();
+  void getClientData();
+  getCustomFields();
 });
 </script>

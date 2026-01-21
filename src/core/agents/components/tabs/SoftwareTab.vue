@@ -30,7 +30,7 @@
           flat
           push
           icon="refresh"
-          @click="selectedAgentId && agentSoftwareStore.refreshAgentSoftware(selectedAgentId)"
+          @click="selectedAgentId && getAgentSoftware(selectedAgentId, { force: true })"
         />
         <q-btn
           icon="add"
@@ -44,7 +44,7 @@
 
         <q-space />
 
-        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
+        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -70,13 +70,13 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentSoftwareStore, useAgentStore, useDashboardStore } from "src/stores/api";
 
-const agentSoftwareStore = useAgentSoftwareStore();
-const agentStore = useAgentStore();
-const dashboardStore = useDashboardStore();
+const { selectedAgentPlatform, selectedAgentId } = useAgentStore();
+const { agentSoftware, isLoading, getAgentSoftware } = useAgentSoftwareStore();
+const { tabHeight } = useDashboardStore();
 
 // ui imports
 import InstallSoftware from "src/core/agents/components/InstallSoftware.vue";
@@ -138,11 +138,6 @@ const columns: TacticalColumn[] = [
 // setup quasar
 const $q = useQuasar();
 
-// setup stores
-const { selectedAgentPlatform, selectedAgentId } = agentStore;
-const { agentSoftware, isLoading } = agentSoftwareStore;
-const tabHeight = computed(() => dashboardStore.tabHeight);
-
 // software tab logic
 const filter = ref("");
 const pagination = ref({
@@ -180,11 +175,11 @@ function openUninstallSoftware(software: Software) {
 
 watch(selectedAgentId, (newValue) => {
   if (newValue) {
-    agentSoftwareStore.getAgentSoftware(newValue);
+    getAgentSoftware(newValue);
   }
 });
 
 onMounted(() => {
-  if (selectedAgentId.value) agentSoftwareStore.getAgentSoftware(selectedAgentId.value);
+  if (selectedAgentId.value) getAgentSoftware(selectedAgentId.value);
 });
 </script>

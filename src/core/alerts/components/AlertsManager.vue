@@ -4,21 +4,33 @@
       <q-card>
         <q-bar>
           <q-btn
-            ref="refresh"
             class="q-mr-sm"
             dense
             flat
             push
             icon="refresh"
-            @click="alertTemplateStore.getAlertTemplates({ force: true })"
+            @click="getAlertTemplates({ force: true })"
           />Alerts Manager
           <q-space />
           <q-btn v-close-popup dense flat icon="close" />
         </q-bar>
-        <div class="q-pa-sm" style="min-height: 65vh; max-height: 65vh">
-          <div class="q-gutter-sm">
-            <q-btn
-              ref="new"
+          <tactical-table
+            v-model:pagination="pagination"
+            dense
+            :rows="templates"
+            :columns="columns"
+            style="min-height: 65vh; max-height: 65vh"
+            row-key="id"
+            binary-state-sort
+            column-select
+            virtual-scroll
+            :filter="search"
+            :rows-per-page-options="[0]"
+            no-data-label="No Alert Templates"
+            storage-key="alerts-manager"
+          >
+            <template #top>
+              <q-btn
               label="New"
               dense
               flat
@@ -28,20 +40,15 @@
               icon="add"
               @click="showAddTemplateModal"
             />
-          </div>
-          <tactical-table
-            v-model:pagination="pagination"
-            dense
-            :rows="templates"
-            :columns="columns"
-            row-key="id"
-            binary-state-sort
-            hide-pagination
-            virtual-scroll
-            :rows-per-page-options="[0]"
-            no-data-label="No Alert Templates"
-            storage-key="alerts-manager"
-          >
+              <q-space />
+              <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+                <template #prepend>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+              <tactical-table-export />
+            </template>
+
             <!-- header slots -->
             <template #header-cell-is_active="props">
               <q-th :props="props" auto-width>
@@ -189,7 +196,6 @@
               </q-tr>
             </template>
           </tactical-table>
-        </div>
       </q-card>
     </div>
   </q-dialog>
@@ -200,8 +206,8 @@ import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAlertTemplateStore, useDashboardStore } from "src/stores/api";
 
-const alertTemplateStore = useAlertTemplateStore();
-const dashboardStore = useDashboardStore();
+const { alertTemplates: templates, getAlertTemplates, removeAlertTemplate, updateAlertTemplate } = useAlertTemplateStore();
+const { refreshDashboard } = useDashboardStore();
 import AlertTemplateForm from "src/core/alerts/components/AlertTemplateForm.vue";
 import AlertExclusions from "src/core/alerts/components/AlertExclusions.vue";
 import AlertTemplateRelated from "src/core/alerts/components/AlertTemplateRelated.vue";
@@ -212,8 +218,6 @@ defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// state
-const { alertTemplates: templates } = alertTemplateStore;
 
 const columns = [
   { name: "is_active", label: "Active", field: "is_active", align: "left" },
@@ -234,13 +238,15 @@ const columns = [
 
 const pagination = ref({ rowsPerPage: 0, sortBy: "name", descending: true });
 
+const search = ref("");
+
 function deleteTemplate(template: AlertTemplate) {
   $q.dialog({
     title: `Delete alert template ${template.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    void alertTemplateStore.removeAlertTemplate(template.id);
+    void removeAlertTemplate(template.id);
   });
 }
 
@@ -270,14 +276,14 @@ async function toggleEnabled(template: AlertTemplate) {
   const updatedTemplate = { ...template, is_active: !template.is_active };
 
   try {
-    await alertTemplateStore.updateAlertTemplate(template.id, updatedTemplate);
-    dashboardStore.refreshDashboard();
+    await updateAlertTemplate(template.id, updatedTemplate);
+    refreshDashboard();
   } catch {
     // Error handling is done in the store
   }
 }
 
 onMounted(() => {
-  alertTemplateStore.getAlertTemplates();
+  getAlertTemplates();
 });
 </script>

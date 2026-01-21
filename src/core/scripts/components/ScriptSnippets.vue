@@ -16,7 +16,7 @@
           flat
           push
           icon="refresh"
-          @click="scriptSnippetStore.getScriptSnippets({ force: true })"
+          @click="getScriptSnippets({ force: true })"
         />Script Snippets
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -153,7 +153,7 @@ import { onMounted, ref } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useScriptSnippetStore } from "src/stores/api";
 
-const scriptSnippetStore = useScriptSnippetStore();
+const { snippets, isLoading, getScriptSnippets, removeScriptSnippet } = useScriptSnippetStore();
 
 // ui imports
 import ScriptSnippetFormModal from "./ScriptSnippetFormModal.vue";
@@ -191,8 +191,6 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// setup stores
-const { snippets, isLoading } = scriptSnippetStore;
 
 const search = ref("");
 
@@ -202,7 +200,7 @@ function deleteSnippet(snippet: ScriptSnippet) {
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (snippet.id) void scriptSnippetStore.removeScriptSnippet(snippet.id);
+    if (snippet.id) void removeScriptSnippet(snippet.id);
   });
 }
 
@@ -221,5 +219,5 @@ function editSnippetModal(snippet: ScriptSnippet) {
   });
 }
 
-onMounted(scriptSnippetStore.getScriptSnippets);
+onMounted(getScriptSnippets);
 </script>

@@ -1,14 +1,26 @@
 <template>
-  <div class="row">
-    <div class="col-12">
-      <q-btn
+      <tactical-table
+        v-model:pagination="pagination"
+        :rows="tasks"
+        :columns="columns"
+        :rows-per-page-options="[0]"
+        dense
+        row-key="id"
+        binary-state-sort
+        virtual-scroll
+        column-select
+        :filter="filter"
+        storage-key="policy-automated-tasks"
+      >
+      <template #top>
+        <q-btn
         v-if="selectedPolicy"
         class="q-mr-sm"
         dense
         flat
         push
         icon="refresh"
-        @click="policyTasksStore.getPolicyTasks(selectedPolicy)"
+        @click="getPolicyTasks(selectedPolicy)"
       />
       <q-btn
         v-if="selectedPolicy"
@@ -20,18 +32,14 @@
         push
         @click="showAddTask"
       />
-      <tactical-table
-        v-model:pagination="pagination"
-        :rows="tasks"
-        :columns="columns"
-        :rows-per-page-options="[0]"
-        dense
-        row-key="id"
-        binary-state-sort
-        hide-pagination
-        virtual-scroll
-        storage-key="policy-automated-tasks"
-      >
+      <q-space />
+      <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+          <template #prepend>
+            <q-icon name="search" color="primary" />
+          </template>
+        </q-input>
+        <tactical-table-export />
+      </template>
         <!-- No data Slot -->
         <template #no-data>
           <div class="full-width row flex-center q-gutter-sm">
@@ -197,8 +205,6 @@
           </q-tr>
         </template>
       </tactical-table>
-    </div>
-  </div>
 </template>
 
 <script lang="ts" setup>
@@ -209,7 +215,7 @@ import AutomatedTaskForm from "src/core/tasks/components/AutomatedTaskForm.vue";
 import PolicyStatus from "./PolicyStatus.vue";
 import { usePolicyTasksStore } from "src/stores/api";
 
-const policyTasksStore = usePolicyTasksStore();
+const { policyTasks: tasks, getPolicyTasks, updateTaskPartial, runTask: executeTask, removeTask } = usePolicyTasksStore();
 
 // types
 import type { AutomatedTaskUI } from "src/core/tasks/types";
@@ -219,9 +225,6 @@ const props = defineProps<{
 }>();
 
 const $q = useQuasar();
-
-// state - use policy tasks store's tasks array
-const { policyTasks: tasks } = policyTasksStore;
 const columns = [
   { name: "enabled", align: "left" as const, field: "enabled" },
   { name: "smsalert", field: "text_alert", align: "left" as const },
@@ -269,10 +272,11 @@ const pagination = ref({
   descending: false,
 });
 
+const filter = ref("");
 async function editTask(id: number, task: Partial<AutomatedTaskUI>) {
   try {
     if (!task.id) return;
-    await policyTasksStore.updateTaskPartial(task.id, task);
+    await updateTaskPartial(task.id, task);
   } catch {
     // Error handling is done in the store
   }
@@ -320,7 +324,7 @@ function runTask(task: AutomatedTaskUI) {
     noBackdropDismiss: true,
   }).onOk(() => {
     if (!task.id) return;
-    policyTasksStore.runTask(task.id);
+    executeTask(task.id);
   });
 }
 
@@ -332,7 +336,7 @@ function deleteTask(task: AutomatedTaskUI) {
     noBackdropDismiss: true,
   }).onOk(() => {
     if (!task.id) return;
-    void policyTasksStore.removeTask(task.id);
+    void removeTask(task.id);
   });
 }
 
@@ -340,9 +344,9 @@ function deleteTask(task: AutomatedTaskUI) {
 watch(
   () => props.selectedPolicy,
   (newValue) => {
-    if (newValue) policyTasksStore.getPolicyTasks(newValue);
+    if (newValue) getPolicyTasks(newValue);
   },
 );
 
-onMounted(() => policyTasksStore.getPolicyTasks(props.selectedPolicy));
+onMounted(() => getPolicyTasks(props.selectedPolicy));
 </script>

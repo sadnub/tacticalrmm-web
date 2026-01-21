@@ -128,8 +128,6 @@ import { useAgentDropdown } from "src/core/agents/composables";
 import { useUserDropdown } from "src/core/accounts/composables";
 import { useAuditLogStore, useDashboardStore } from "src/stores/api";
 
-const auditLogStore = useAuditLogStore();
-const dashboardStore = useDashboardStore();
 import { formatDate, formatTableColumnText } from "src/utils/format";
 
 // ui imported
@@ -276,10 +274,10 @@ const props = defineProps<{
   modal: boolean;
 }>();
 
-// setup stores
-const { auditLog, rowsNumber } = auditLogStore;
 
-const tabHeight = computed(() => dashboardStore.tabHeight);
+// setup stores
+const { auditLog, rowsNumber, getAuditLog, $reset } = useAuditLogStore();
+const { tabHeight, dashboardSettings } = useDashboardStore();
 
 // setup dropdowns
 const { clientOptions } = useClientDropdown();
@@ -315,7 +313,7 @@ function search() {
   loading.value = true;
   searched.value = true;
 
-  auditLogStore.getAuditLog(requestData);
+  getAuditLog(requestData);
 
   loading.value = false;
 }
@@ -346,13 +344,13 @@ function openAuditDetail(_: Event, log: AuditLog) {
 function formatActionColor(action: AuditAction) {
   switch (action.toLowerCase()) {
     case "modify":
-      return dashboardStore.dashboardSettings.dashWarningColor;
+      return dashboardSettings.dashWarningColor;
     case "add":
     case "agent_install":
-      return dashboardStore.dashboardSettings.dashPositiveColor;
+      return dashboardSettings.dashPositiveColor;
     case "delete":
     case "failed_login":
-      return dashboardStore.dashboardSettings.dashNegativeColor;
+      return dashboardSettings.dashNegativeColor;
     default:
       return "primary";
   }
@@ -387,6 +385,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  auditLogStore.$reset();
+  $reset();
 });
 </script>

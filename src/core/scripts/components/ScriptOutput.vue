@@ -9,7 +9,7 @@
       <q-card-section style="height: 70vh" class="scroll">
         <div>
           Last Run:
-          <code>{{ scriptInfo.last_run && dashboardStore.formatDate(scriptInfo.last_run) }}</code>
+          <code>{{ scriptInfo.last_run && formatDate(scriptInfo.last_run) }}</code>
           <br />Run Time:
           <code>{{ scriptInfo.execution_time }} seconds</code>
           <br />Return Code:
@@ -40,7 +40,7 @@
 import { useDialogPluginComponent } from "quasar";
 import { useDashboardStore } from "src/stores/api";
 
-const dashboardStore = useDashboardStore();
+const { formatDate } = useDashboardStore();
 import ScriptOutputCopyClip from "./ScriptOutputCopyClip.vue";
 import type { CheckResult } from "src/core/checks/types";
 

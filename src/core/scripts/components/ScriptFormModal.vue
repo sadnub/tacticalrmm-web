@@ -221,8 +221,8 @@ import { useAgentDropdown, agentPlatformOptions } from "src/core/agents/composab
 import { notifyError } from "src/utils/notify";
 import { useScriptStore, useDashboardStore } from "src/stores/api";
 
-const scriptStore = useScriptStore();
-const dashboardStore = useDashboardStore();
+const { isLoading, updateScript, addScript, getScriptContents } = useScriptStore();
+const { dashboardSettings } = useDashboardStore();
 import { shellOptions } from "../composables";
 import { envVarsLabel } from "src/constants/constants";
 // ui imports
@@ -275,14 +275,12 @@ defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
-// setup stores
-const { isLoading } = scriptStore;
 
 // setup agent dropdown
 const { agentOptions, isLoading: agentLoading } = useAgentDropdown();
 
-const hosted = computed(() => dashboardStore.dashboardSettings.hosted);
-const serverScriptsEnabled = computed(() => dashboardStore.dashboardSettings.serverScriptsEnabled);
+const hosted = computed(() => dashboardSettings.hosted);
+const serverScriptsEnabled = computed(() => dashboardSettings.serverScriptsEnabled);
 
 // script form logic
 const script = props.script
@@ -349,9 +347,9 @@ async function submit() {
   try {
     // edit existing script
     if (props.script && !props.clone && props.script.id) {
-      await scriptStore.updateScript(props.script.id, script);
+      await updateScript(props.script.id, script);
     } else {
-      await scriptStore.addScript(script);
+      await addScript(script);
     }
     onDialogOK();
   } catch {
@@ -398,7 +396,7 @@ function loadEditor() {
 
   // get code if editing or cloning script
   if (props.script && script.id) {
-    void scriptStore.getScriptContents(script.id, props.readonly).then((r: string) => {
+    void getScriptContents(script.id, props.readonly).then((r: string) => {
       script.script_body = r;
       editor.setValue(r);
 

@@ -77,7 +77,7 @@ import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const agentStore = useAgentStore();
+const { getAgentMeshCentralUrls } = useAgentStore();
 
 // ui imports
 import ProcessManager from "src/core/agents/components/remotebg/ProcessManager.vue";
@@ -91,9 +91,6 @@ import type { MeshUrls } from "src/core/agents/types";
 
 // setup quasar
 const $q = useQuasar();
-
-// setup stores
-const { getAgentMeshCentralUrls } = agentStore;
 
 // vue router
 const { params, query } = useRoute();

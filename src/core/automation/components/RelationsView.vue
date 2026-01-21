@@ -116,7 +116,7 @@ import { ref, onMounted } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { usePolicyStore } from "src/stores/api";
 
-const policyStore = usePolicyStore();
+const { getPolicyRelated } = usePolicyStore();
 import type { Policy, PolicyRelated } from "src/core/automation/types";
 
 const props = defineProps<{ policy: Policy }>();
@@ -144,7 +144,7 @@ const thumbStyle = {
 
 async function loadRelated() {
   try {
-    related.value = await policyStore.getPolicyRelated(props.policy.id);
+    related.value = await getPolicyRelated(props.policy.id);
   } catch {
     //
   }

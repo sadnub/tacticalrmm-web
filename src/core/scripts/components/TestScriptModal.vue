@@ -36,7 +36,7 @@
 import { onMounted, ref } from "vue";
 import { useScriptStore } from "src/stores/api";
 
-const scriptStore = useScriptStore();
+const { isLoading, testScriptOnServer, testScript } = useScriptStore();
 
 import { useDialogPluginComponent } from "quasar";
 import ScriptOutputCopyClip from "./ScriptOutputCopyClip.vue";
@@ -53,9 +53,6 @@ const props = defineProps<{
 // setup quasar dialog plugin
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
-// setup stores
-const { isLoading } = scriptStore;
-
 const scriptTestResult = ref<ScriptResult | null>(null);
 
 async function runTestScript() {
@@ -70,8 +67,8 @@ async function runTestScript() {
 
   const result =
     props.ctx === "server"
-      ? await scriptStore.testScriptOnServer(data)
-      : await scriptStore.testScript(props.agent, data);
+      ? await testScriptOnServer(data)
+      : await testScript(props.agent, data);
   if (result) {
     scriptTestResult.value = result;
   }

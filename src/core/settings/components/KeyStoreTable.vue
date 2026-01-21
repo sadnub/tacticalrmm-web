@@ -83,7 +83,7 @@ import { ref } from "vue";
 import { useQuasar } from "quasar";
 import { useGlobalKeyStore } from "src/stores/api";
 
-const globalKeyStore = useGlobalKeyStore();
+const { keys, isLoading, removeKey } = useGlobalKeyStore();
 
 // ui imports
 import KeyStoreForm from "./KeyStoreForm.vue";
@@ -119,9 +119,6 @@ const pagination = ref({
 
 const $q = useQuasar();
 
-// setup stores
-const { keys, isLoading } = globalKeyStore;
-
 function addKeyForm() {
   $q.dialog({
     component: KeyStoreForm,
@@ -142,6 +139,6 @@ function deleteKey(key: GlobalKey) {
     title: `Delete key: ${key.name}?`,
     cancel: true,
     ok: { label: "Delete", color: "negative" },
-  }).onOk(() => void globalKeyStore.removeKey(key.id));
+  }).onOk(() => void removeKey(key.id));
 }
 </script>
