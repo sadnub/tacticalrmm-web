@@ -8,14 +8,13 @@
   >
     <q-card>
       <q-bar>
-        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="search" />
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="doSearch" />
         <q-space />
         Alerts Overview
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
 
-      <div class="text-h6 q-pl-sm q-pt-sm">Filter</div>
       <div class="row">
         <div class="q-pa-sm col-3">
           <q-select
@@ -54,8 +53,14 @@
             :options="timeOptions"
           />
         </div>
-        <div class="q-pa-sm col-2">
-          <q-checkbox v-model="includeSnoozed" filled dense label="Include snoozed" />
+        <div class="q-px-sm q-py-md col-2">
+          <q-checkbox
+            v-model="includeSnoozed"
+            filled
+            dense
+            label="Include snoozed"
+            class="q-pr-sm"
+          />
           <q-checkbox v-model="includeResolved" filled dense label="Include resolved" />
         </div>
         <div class="q-pa-sm col-2">
@@ -65,126 +70,136 @@
 
       <q-separator />
 
-      <q-card-section>
-        <tactical-table
-          v-model:pagination="pagination"
-          v-model:selected="selectedAlerts"
-          :rows="alerts"
-          :columns="columns"
-          :rows-per-page-options="[25, 50, 100, 500, 1000]"
-          :no-data-label="noDataText"
-          :visible-columns="visibleColumns"
-          selection="multiple"
-          binary-state-sort
-          row-key="id"
-          dense
-          virtual-scroll
-          :loading="isLoading"
-          storage-key="alerts-overview"
-        >
-          <template #top>
-            <div class="col-1 q-table__title">Alerts</div>
+      <tactical-table
+        v-model:pagination="pagination"
+        v-model:selected="selectedAlerts"
+        :rows="alerts"
+        :columns="columns"
+        :rows-per-page-options="[25, 50, 100, 500, 1000]"
+        :no-data-label="noDataText"
+        :visible-columns="visibleColumns"
+        :style="{ 'max-height': `${$q.screen.height - 32 - 40 - 56 - 6}px` }"
+        selection="multiple"
+        binary-state-sort
+        row-key="id"
+        dense
+        virtual-scroll
+        :loading="isLoading"
+        storage-key="alerts-overview"
+        @request="onRequest"
+      >
+        <template #top>
+          <div class="col-1 q-table__title">Alerts</div>
 
-            <q-btn-dropdown
-              flat
-              label="Bulk Actions"
-              :disable="selectedAlerts.length === 0 || includeResolved"
+          <q-btn-dropdown
+            flat
+            label="Bulk Actions"
+            :disable="selectedAlerts.length === 0 || includeResolved"
+          >
+            <q-list dense>
+              <q-item v-close-popup clickable @click="snoozeAlertBulk(selectedAlerts)">
+                <q-item-section avatar>
+                  <q-icon name="alarm_off" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Snooze alerts</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item v-close-popup clickable @click="resolveAlertBulk(selectedAlerts)">
+                <q-item-section avatar>
+                  <q-icon name="flag" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Resolve alerts</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+        </template>
+
+        <template #body-cell-actions="props">
+          <q-td :props="props">
+            <q-icon
+              v-if="props.row.action_run"
+              name="mdi-archive-alert"
+              size="sm"
+              class="cursor-pointer"
+              @click="showScriptOutput(props.row, true)"
             >
-              <q-list dense>
-                <q-item v-close-popup clickable @click="snoozeAlertBulk(selectedAlerts)">
-                  <q-item-section avatar>
-                    <q-icon name="alarm_off" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Snooze alerts</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable @click="resolveAlertBulk(selectedAlerts)">
-                  <q-item-section avatar>
-                    <q-icon name="flag" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>Resolve alerts</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-btn-dropdown>
-          </template>
+              <q-tooltip>Show failure action run results</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-if="props.row.resolved_action_run"
+              name="mdi-archive-check"
+              size="sm"
+              class="cursor-pointer"
+              @click="showScriptOutput(props.row, false)"
+            >
+              <q-tooltip>Show resolved action run results</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-if="!props.row.resolved && !props.row.snoozed"
+              name="snooze"
+              size="sm"
+              class="cursor-pointer"
+              @click="snoozeAlert(props.row)"
+            >
+              <q-tooltip>Snooze alert</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-else-if="!props.row.resolved && props.row.snoozed"
+              name="alarm_off"
+              size="sm"
+              class="cursor-pointer"
+              @click="unsnoozeAlert(props.row)"
+            >
+              <q-tooltip>Unsnooze alert</q-tooltip>
+            </q-icon>
+            <q-icon
+              v-if="!props.row.resolved"
+              name="flag"
+              size="sm"
+              class="cursor-pointer"
+              @click="resolveAlert(props.row)"
+            >
+              <q-tooltip>Resolve alert</q-tooltip>
+            </q-icon>
+          </q-td>
+        </template>
 
-          <template #body-cell-actions="props">
-            <q-td :props="props">
-              <q-icon
-                v-if="props.row.action_run"
-                name="mdi-archive-alert"
-                size="sm"
-                class="cursor-pointer"
-                @click="showScriptOutput(props.row, true)"
-              >
-                <q-tooltip>Show failure action run results</q-tooltip>
-              </q-icon>
-              <q-icon
-                v-if="props.row.resolved_action_run"
-                name="mdi-archive-check"
-                size="sm"
-                class="cursor-pointer"
-                @click="showScriptOutput(props.row, false)"
-              >
-                <q-tooltip>Show resolved action run results</q-tooltip>
-              </q-icon>
-              <q-icon
-                v-if="!props.row.resolved && !props.row.snoozed"
-                name="snooze"
-                size="sm"
-                class="cursor-pointer"
-                @click="snoozeAlert(props.row)"
-              >
-                <q-tooltip>Snooze alert</q-tooltip>
-              </q-icon>
-              <q-icon
-                v-else-if="!props.row.resolved && props.row.snoozed"
-                name="alarm_off"
-                size="sm"
-                class="cursor-pointer"
-                @click="unsnoozeAlert(props.row)"
-              >
-                <q-tooltip>Unsnooze alert</q-tooltip>
-              </q-icon>
-              <q-icon
-                v-if="!props.row.resolved"
-                name="flag"
-                size="sm"
-                class="cursor-pointer"
-                @click="resolveAlert(props.row)"
-              >
-                <q-tooltip>Resolve alert</q-tooltip>
-              </q-icon>
-            </q-td>
-          </template>
-
-          <template #body-cell-severity="props">
-            <q-td :props="props">
-              <q-badge :color="alertColor(props.row.severity)">{{
-                capitalize(props.row.severity)
-              }}</q-badge>
-            </q-td>
-          </template>
-        </tactical-table>
-      </q-card-section>
+        <template #body-cell-severity="props">
+          <q-td :props="props">
+            <q-badge :color="alertColor(props.row.severity)">{{
+              capitalize(props.row.severity)
+            }}</q-badge>
+          </q-td>
+        </template>
+      </tactical-table>
     </q-card>
   </q-dialog>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import ScriptOutput from "src/core/scripts/components/ScriptOutput.vue";
 import { useClientDropdown } from "src/core/clients/composables";
 import { capitalize } from "src/utils/format";
 import { useAlertsStore, useDashboardStore } from "src/stores/api";
 
-const { alerts, isLoading, searchAlerts, snoozeAlert: snoozeAlertApi, unsnoozeAlert: unsnoozeAlertApi, resolveAlert: resolveAlertApi, bulkResolveAlerts, bulkSnoozeAlerts } = useAlertsStore();
+const {
+  alerts,
+  isLoading,
+  rowsNumber,
+  searchAlerts,
+  snoozeAlert: snoozeAlertApi,
+  unsnoozeAlert: unsnoozeAlertApi,
+  resolveAlert: resolveAlertApi,
+  bulkResolveAlerts,
+  bulkSnoozeAlerts,
+} = useAlertsStore();
 const { formatDate } = useDashboardStore();
-import type { Alert, AlertSearchParams, AlertSeverity } from "src/core/alerts/types";
+import type { Alert, AlertSearchParams, AlertSeverity, Pagination } from "src/core/alerts/types";
 
 // emits
 defineEmits([...useDialogPluginComponent.emits]);
@@ -266,7 +281,13 @@ const columns = [
   { name: "actions", label: "Actions", field: "actions", align: "left" as const },
 ];
 
-const pagination = ref({ rowsPerPage: 50, sortBy: "alert_time", descending: true });
+const pagination = ref<Pagination>({
+  page: 1,
+  rowsPerPage: 50,
+  sortBy: "alert_time",
+  descending: true,
+  rowsNumber: 0,
+});
 
 const noDataText = computed(() =>
   searched.value ? "No data found. Try to refine you search" : "Click search to find alerts",
@@ -284,13 +305,19 @@ const visibleColumns = computed(() => {
   });
 });
 
-function search() {
+function doSearch() {
   selectedAlerts.value = [];
   searched.value = true;
 
   const params: AlertSearchParams = {
     snoozedFilter: includeSnoozed.value,
     resolvedFilter: includeResolved.value,
+    pagination: {
+      page: pagination.value.page || 1,
+      rowsPerPage: pagination.value.rowsPerPage || 50,
+      sortBy: pagination.value.sortBy || "alert_time",
+      descending: pagination.value.descending ?? true,
+    },
   };
 
   if (clientFilter.value.length > 0) params.clientFilter = clientFilter.value;
@@ -299,6 +326,23 @@ function search() {
 
   void searchAlerts(params);
 }
+
+function search() {
+  // Reset to first page when user clicks Search button
+  pagination.value.page = 1;
+  doSearch();
+}
+
+function onRequest(data: { pagination: Pagination }) {
+  if (data) {
+    pagination.value = data.pagination;
+    doSearch();
+  }
+}
+
+watch(rowsNumber, (newValue) => {
+  pagination.value.rowsNumber = newValue;
+});
 
 function snoozeAlert(alert: Alert) {
   $q.dialog({
@@ -315,27 +359,27 @@ function snoozeAlert(alert: Alert) {
     cancel: true,
   }).onOk((days: number) => {
     void snoozeAlertApi(alert.id, days).then(() => {
-      search();
+      doSearch();
     });
   });
 }
 
 function unsnoozeAlert(alert: Alert) {
   void unsnoozeAlertApi(alert.id).then(() => {
-    search();
+    doSearch();
   });
 }
 
 function resolveAlert(alert: Alert) {
   void resolveAlertApi(alert.id).then(() => {
-    search();
+    doSearch();
   });
 }
 
 function resolveAlertBulk(alertsParam: Alert[]) {
   const ids = alertsParam.map((a) => a.id);
   void bulkResolveAlerts(ids).then(() => {
-    search();
+    doSearch();
   });
 }
 
@@ -355,7 +399,7 @@ function snoozeAlertBulk(alertsParam: Alert[]) {
   }).onOk((days: number) => {
     const ids = alertsParam.map((a) => a.id);
     void bulkSnoozeAlerts(ids, days).then(() => {
-      search();
+      doSearch();
     });
   });
 }

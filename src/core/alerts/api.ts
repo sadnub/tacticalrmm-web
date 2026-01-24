@@ -4,6 +4,7 @@ import type {
   AlertTemplate,
   Alert,
   AlertSearchParams,
+  AlertSearchResponse,
   BulkActionRequest,
   AlertActionRequest,
   AlertTemplateRelated,
@@ -136,21 +137,23 @@ function createAlertsStore() {
   const isLoading = ref(false);
   const isError = ref(false);
   const alertsCount = ref(0);
+  const rowsNumber = ref(0);
   const lastSearchParams = ref<AlertSearchParams>({});
 
   // Tray alerts for the notification icon (separate from main alerts list)
   const trayAlerts = ref<Alert[]>([]);
   const trayAlertsCount = ref(0);
 
-  function _searchAlerts(params: AlertSearchParams) {
+  function searchAlerts(params: AlertSearchParams) {
     isLoading.value = true;
     isError.value = false;
     // Save the search parameters for later use
     lastSearchParams.value = { ...params };
     axios
-      .patch<Alert[]>("/alerts/", params)
-      .then(({ data }) => {
-        alerts.value = data;
+      .patch<AlertSearchResponse>("/alerts/v2/", params)
+      .then(({ data: { alerts: alertsData, total } }) => {
+        alerts.value = alertsData;
+        rowsNumber.value = total;
       })
       .catch(() => {
         isError.value = true;
@@ -159,11 +162,6 @@ function createAlertsStore() {
         isLoading.value = false;
       });
   }
-
-  const searchAlerts = useCachedAction(_searchAlerts, {
-    key: "searchAlerts",
-    duration: 1 * 30 * 1000, // 30 seconds cache
-  });
 
   function refreshSearch() {
     searchAlerts(lastSearchParams.value);
@@ -310,6 +308,7 @@ function createAlertsStore() {
     alerts,
     selected,
     alertsCount,
+    rowsNumber,
     isLoading,
     isError,
     trayAlerts,

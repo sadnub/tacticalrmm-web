@@ -97,6 +97,14 @@ export interface TopAlertsResponse {
   alerts: Alert[];
 }
 
+export interface Pagination {
+  page?: number;
+  rowsPerPage?: number;
+  sortBy?: string | null;
+  descending?: boolean;
+  rowsNumber?: number;
+}
+
 export interface AlertSearchParams {
   clientFilter?: number[];
   severityFilter?: AlertSeverity[];
@@ -104,6 +112,12 @@ export interface AlertSearchParams {
   snoozedFilter?: boolean;
   resolvedFilter?: boolean;
   top?: number;
+  pagination?: Pagination;
+}
+
+export interface AlertSearchResponse {
+  alerts: Alert[];
+  total: number;
 }
 
 // API request/response types
