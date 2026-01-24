@@ -742,9 +742,7 @@
 import { computed, ref, watch, reactive, useTemplateRef, toRaw } from "vue";
 import { QForm, QStepper, useDialogPluginComponent, extend } from "quasar";
 import draggable from "vuedraggable";
-import { useTaskStore } from "src/stores/api";
-
-const { isLoading: taskIsLoading, addTask: submitAddTask, updateTask: submitUpdateTask } = useTaskStore();
+import { useTaskStore, usePolicyTasksStore } from "src/stores/api";
 import { useScriptDropdown } from "src/core/scripts/composables";
 import { useAgentCheckDropdown, usePolicyCheckDropdown } from "src/core/checks/composables";
 import { useCustomFieldDropdown } from "src/core/settings/composables";
@@ -837,16 +835,8 @@ type AgentParent = { agent: string };
 const props = defineProps<{
   parent: AgentParent | PolicyParent;
   task?: AutomatedTaskUI;
-  plat: AgentPlat;
+  plat?: AgentPlat;
 }>();
-
-defineEmits(useDialogPluginComponent.emits);
-
-// setup quasar dialog
-const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-
-// setup dropdowns
-const { filterByPlatformOptions, getScriptById } = useScriptDropdown(props.plat);
 
 function isAgentParent(parent: AgentParent | PolicyParent): parent is AgentParent {
   return "agent" in parent;
@@ -855,6 +845,31 @@ function isAgentParent(parent: AgentParent | PolicyParent): parent is AgentParen
 function isPolicyParent(parent: AgentParent | PolicyParent): parent is PolicyParent {
   return "policy" in parent;
 }
+
+// Use the appropriate store based on context
+const {
+  isLoading: agentIsLoading,
+  addTask: agentAddTask,
+  updateTask: agentUpdateTask,
+} = useTaskStore();
+const {
+  isLoading: policyIsLoading,
+  addTask: policyAddTask,
+  updateTask: policyUpdateTask,
+} = usePolicyTasksStore();
+const isAgentContext = isAgentParent(props.parent);
+
+const taskIsLoading = isAgentContext ? agentIsLoading : policyIsLoading;
+const submitAddTask = isAgentContext ? agentAddTask : policyAddTask;
+const submitUpdateTask = isAgentContext ? agentUpdateTask : policyUpdateTask;
+
+defineEmits(useDialogPluginComponent.emits);
+
+// setup quasar dialog
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+
+// setup dropdowns
+const { filterByPlatformOptions, getScriptById } = useScriptDropdown(props.plat);
 
 const policyCheck = usePolicyCheckDropdown(
   isPolicyParent(props.parent) ? props.parent.policy : null,
@@ -869,7 +884,6 @@ const checkOptions = computed(() => {
   }
   return [];
 });
-
 
 const { customFieldOptions } = useCustomFieldDropdown();
 

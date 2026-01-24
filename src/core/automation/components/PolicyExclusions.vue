@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="width: 50vw; max-width: 50vw">
       <q-bar>
         Policy Exclusions for {{ policy.name }}

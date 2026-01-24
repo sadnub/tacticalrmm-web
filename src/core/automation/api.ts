@@ -196,7 +196,7 @@ function createPolicyChecksStore() {
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getPolicyChecks(policyId: number) {
+  function _getPolicyChecks(policyId: number) {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -211,6 +211,11 @@ function createPolicyChecksStore() {
         isLoading.value = false;
       });
   }
+
+  const getPolicyChecks = useCachedAction(_getPolicyChecks, {
+    key: "getPolicyChecks",
+    duration: 30 * 1000, // 30 seconds cache
+  });
 
   async function addCheck(check: Check) {
     isLoading.value = true;
@@ -280,7 +285,7 @@ function createPolicyTasksStore() {
   const isLoading = ref(false);
   const isError = ref(false);
 
-  function getPolicyTasks(policyId: number) {
+  function _getPolicyTasks(policyId: number) {
     isLoading.value = true;
     isError.value = false;
     axios
@@ -296,6 +301,11 @@ function createPolicyTasksStore() {
         isLoading.value = false;
       });
   }
+
+  const getPolicyTasks = useCachedAction(_getPolicyTasks, {
+    key: "getPolicyTasks",
+    duration: 30 * 1000, // 30 seconds cache
+  });
 
   async function addTask(task: AutomatedTaskUI) {
     isLoading.value = true;

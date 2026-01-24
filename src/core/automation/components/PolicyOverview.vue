@@ -1,5 +1,5 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 90vw; max-width: 90vw">
       <q-bar>
         <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="getPolicyTree" />Policy

@@ -240,7 +240,10 @@ function createAgentStore() {
       });
   }
 
-  const getAgentHistory = useCachedAction(_getAgentHistory, { key: "getAgentHistory", duration: 30 * 1000 });
+  const getAgentHistory = useCachedAction(_getAgentHistory, {
+    key: "getAgentHistory",
+    duration: 30 * 1000,
+  });
 
   function getAgentProcesses(agent_id: string) {
     isLoading.value = true;
@@ -665,7 +668,10 @@ function createAgentSoftwareStore() {
       .finally(() => (isLoading.value = false));
   }
 
-  const getAgentSoftware = useCachedAction(_getAgentSoftware, { key: "getAgentSoftware", duration: 30 * 1000 });
+  const getAgentSoftware = useCachedAction(_getAgentSoftware, {
+    key: "getAgentSoftware",
+    duration: 30 * 1000,
+  });
 
   interface InstallSoftwareRequest {
     name: string;
@@ -740,7 +746,10 @@ function createAgentNoteStore() {
       });
   }
 
-  const getAgentNotes = useCachedAction(_getAgentNotes, { key: "getAgentNotes", duration: 30 * 1000 });
+  const getAgentNotes = useCachedAction(_getAgentNotes, {
+    key: "getAgentNotes",
+    duration: 30 * 1000,
+  });
   interface AddAgentNoteRequest {
     note: string;
     agent_id: string;
@@ -831,7 +840,10 @@ function createWindowsUpdateStore() {
       });
   }
 
-  const getAgentUpdates = useCachedAction(_getAgentUpdates, { key: "getAgentUpdates", duration: 30 * 1000 });
+  const getAgentUpdates = useCachedAction(_getAgentUpdates, {
+    key: "getAgentUpdates",
+    duration: 30 * 1000,
+  });
 
   async function runAgentUpdateScan(agent_id: string) {
     isLoading.value = true;

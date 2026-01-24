@@ -145,14 +145,12 @@
 // composition imports
 import { ref, watch, reactive } from "vue";
 import { useDialogPluginComponent } from "quasar";
-import { useCheckStore } from "src/stores/api";
-
-const { isLoading, addCheck, updateCheck } = useCheckStore();
+import { useCheckStore, usePolicyChecksStore } from "src/stores/api";
 import { failOptions, severityOptions } from "../composables";
 import { validateEventID } from "src/utils/validation";
 
 // import types
-import type { Check } from "../types";
+import { isAgent, type Check } from "../types";
 
 const logNameOptions = ["Application", "System", "Security"];
 
@@ -165,6 +163,15 @@ const props = defineProps<{
   check?: Check;
   parent: { agent: string } | { policy: number };
 }>();
+
+// Use the appropriate store based on context
+const { isLoading: agentIsLoading, addCheck: agentAddCheck, updateCheck: agentUpdateCheck } = useCheckStore();
+const { isLoading: policyIsLoading, addCheck: policyAddCheck, updateCheck: policyUpdateCheck } = usePolicyChecksStore();
+const isAgentContext = isAgent(props.parent);
+
+const isLoading = isAgentContext ? agentIsLoading : policyIsLoading;
+const addCheck = isAgentContext ? agentAddCheck : policyAddCheck;
+const updateCheck = isAgentContext ? agentUpdateCheck : policyUpdateCheck;
 
 defineEmits(useDialogPluginComponent.emits);
 

@@ -1,28 +1,27 @@
 <template>
-      <tactical-table
-        v-model:pagination="pagination"
-        :rows="checks"
-        :columns="columns"
-        :rows-per-page-options="[0]"
-        row-key="id"
-        binary-state-sort
-        dense
-        hide-pagination
-        virtual-scroll
-        column-select
-        :filter="filter"
-        :loading="isLoading"
-        storage-key="policy-checks"
-      >
-      <template #top>
-        <q-btn
+  <tactical-table
+    v-model:pagination="pagination"
+    :rows="checks"
+    :columns="columns"
+    :rows-per-page-options="[0]"
+    row-key="id"
+    binary-state-sort
+    dense
+    virtual-scroll
+    column-select
+    :filter="filter"
+    :loading="isLoading"
+    storage-key="policy-checks"
+  >
+    <template #top>
+      <q-btn
         v-if="!!selectedPolicy"
         class="q-mr-sm"
         dense
         flat
         push
         icon="refresh"
-        @click="getPolicyChecks(selectedPolicy)"
+        @click="getPolicyChecks(selectedPolicy, { force: true })"
       />
       <q-btn-dropdown v-if="!!selectedPolicy" icon="add" label="New" no-caps dense flat>
         <q-list dense style="min-width: 200px">
@@ -72,155 +71,154 @@
       </q-btn-dropdown>
 
       <q-space />
-      <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+      <q-input
+        v-model="filter"
+        filled
+        label="Search"
+        dense
+        clearable
+        class="q-pr-sm"
+        style="width: 300px"
+      >
         <template #prepend>
           <q-icon name="search" color="primary" />
         </template>
       </q-input>
       <tactical-table-export />
+    </template>
+    <!-- No data Slot -->
+    <template #no-data>
+      <div class="full-width row flex-center q-gutter-sm">
+        <span v-if="!selectedPolicy">Click on a policy to see the checks</span>
+        <span v-else>There are no checks added to this policy</span>
+      </div>
+    </template>
+    <!-- header slots -->
+    <template #header-cell-smsalert="headerProps">
+      <q-th auto-width :props="headerProps">
+        <q-icon name="phone_android" size="1.5em">
+          <q-tooltip>SMS Alert</q-tooltip>
+        </q-icon>
+      </q-th>
+    </template>
+    <template #header-cell-emailalert="headerProps">
+      <q-th auto-width :props="headerProps">
+        <q-icon name="email" size="1.5em">
+          <q-tooltip>Email Alert</q-tooltip>
+        </q-icon>
+      </q-th>
+    </template>
+    <template #header-cell-dashboardalert="headerProps">
+      <q-th auto-width :props="headerProps">
+        <q-icon name="notifications" size="1.5em">
+          <q-tooltip>Dashboard Alert</q-tooltip>
+        </q-icon>
+      </q-th>
+    </template>
+    <template #header-cell-statusicon="headerProps">
+      <q-th auto-width :props="headerProps"></q-th>
+    </template>
+    <!-- body slots -->
+    <template #body="bodyProps">
+      <q-tr
+        :props="bodyProps"
+        class="cursor-pointer"
+        @dblclick="showCheckModal(bodyProps.row.check_type, bodyProps.row)"
+      >
+        <!-- context menu -->
+        <q-menu context-menu>
+          <q-list dense style="min-width: 200px">
+            <q-item
+              v-close-popup
+              clickable
+              @click="showCheckModal(bodyProps.row.check_type, bodyProps.row)"
+            >
+              <q-item-section side>
+                <q-icon name="edit" />
+              </q-item-section>
+              <q-item-section>Edit</q-item-section>
+            </q-item>
+            <q-item v-close-popup clickable @click="deleteCheck(bodyProps.row)">
+              <q-item-section side>
+                <q-icon name="delete" />
+              </q-item-section>
+              <q-item-section>Delete</q-item-section>
+            </q-item>
 
-      </template>
-        <!-- No data Slot -->
-        <template #no-data>
-          <div class="full-width row flex-center q-gutter-sm">
-            <span v-if="!selectedPolicy">Click on a policy to see the checks</span>
-            <span v-else>There are no checks added to this policy</span>
-          </div>
-        </template>
-        <!-- header slots -->
-        <template #header-cell-smsalert="headerProps">
-          <q-th auto-width :props="headerProps">
-            <q-icon name="phone_android" size="1.5em">
-              <q-tooltip>SMS Alert</q-tooltip>
-            </q-icon>
-          </q-th>
-        </template>
-        <template #header-cell-emailalert="headerProps">
-          <q-th auto-width :props="headerProps">
-            <q-icon name="email" size="1.5em">
-              <q-tooltip>Email Alert</q-tooltip>
-            </q-icon>
-          </q-th>
-        </template>
-        <template #header-cell-dashboardalert="headerProps">
-          <q-th auto-width :props="headerProps">
-            <q-icon name="notifications" size="1.5em">
-              <q-tooltip>Dashboard Alert</q-tooltip>
-            </q-icon>
-          </q-th>
-        </template>
-        <template #header-cell-statusicon="headerProps">
-          <q-th auto-width :props="headerProps"></q-th>
-        </template>
-        <!-- body slots -->
-        <template #body="bodyProps">
-          <q-tr
-            :props="bodyProps"
-            class="cursor-pointer"
-            @dblclick="showCheckModal(bodyProps.row.check_type, bodyProps.row)"
-          >
-            <!-- context menu -->
-            <q-menu context-menu>
-              <q-list dense style="min-width: 200px">
-                <q-item
-                  v-close-popup
-                  clickable
-                  @click="showCheckModal(bodyProps.row.check_type, bodyProps.row)"
-                >
-                  <q-item-section side>
-                    <q-icon name="edit" />
-                  </q-item-section>
-                  <q-item-section>Edit</q-item-section>
-                </q-item>
-                <q-item v-close-popup clickable @click="deleteCheck(bodyProps.row)">
-                  <q-item-section side>
-                    <q-icon name="delete" />
-                  </q-item-section>
-                  <q-item-section>Delete</q-item-section>
-                </q-item>
+            <q-separator></q-separator>
 
-                <q-separator></q-separator>
+            <q-item v-close-popup clickable @click="showPolicyStatus(bodyProps.row)">
+              <q-item-section side>
+                <q-icon name="sync" />
+              </q-item-section>
+              <q-item-section>Policy Status</q-item-section>
+            </q-item>
 
-                <q-item v-close-popup clickable @click="showPolicyStatus(bodyProps.row)">
-                  <q-item-section side>
-                    <q-icon name="sync" />
-                  </q-item-section>
-                  <q-item-section>Policy Status</q-item-section>
-                </q-item>
+            <q-separator></q-separator>
 
-                <q-separator></q-separator>
+            <q-item v-close-popup clickable>
+              <q-item-section>Close</q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+        <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+          <!-- sms alert -->
+          <template v-if="col.name === 'smsalert'">
+            <q-checkbox
+              v-model="bodyProps.row.text_alert"
+              dense
+              @update:model-value="(val) => checkAlert(bodyProps.row.id, { text_alert: val })"
+            />
+          </template>
 
-                <q-item v-close-popup clickable>
-                  <q-item-section>Close</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
-              <!-- sms alert -->
-              <template v-if="col.name === 'smsalert'">
-                <q-checkbox
-                  v-model="bodyProps.row.text_alert"
-                  dense
-                  @update:model-value="
-                    checkAlert(bodyProps.row.id, { text_alert: !bodyProps.row.text_alert })
-                  "
-                />
-              </template>
+          <!-- email alert -->
+          <template v-else-if="col.name === 'emailalert'">
+            <q-checkbox
+              v-model="bodyProps.row.email_alert"
+              dense
+              @update:model-value="(val) => checkAlert(bodyProps.row.id, { email_alert: val })"
+            />
+          </template>
 
-              <!-- email alert -->
-              <template v-else-if="col.name === 'emailalert'">
-                <q-checkbox
-                  v-model="bodyProps.row.email_alert"
-                  dense
-                  @update:model-value="
-                    checkAlert(bodyProps.row.id, { email_alert: !bodyProps.row.email_alert })
-                  "
-                />
-              </template>
+          <!-- dashboard alert -->
+          <template v-else-if="col.name === 'dashboardalert'">
+            <q-checkbox
+              v-model="bodyProps.row.dashboard_alert"
+              dense
+              @update:model-value="(val) => checkAlert(bodyProps.row.id, { dashboard_alert: val })"
+            />
+          </template>
 
-              <!-- dashboard alert -->
-              <template v-else-if="col.name === 'dashboardalert'">
-                <q-checkbox
-                  v-model="bodyProps.row.dashboard_alert"
-                  dense
-                  @update:model-value="
-                    checkAlert(bodyProps.row.id, {
-                      dashboard_alert: !bodyProps.row.dashboard_alert,
-                    })
-                  "
-                />
-              </template>
+          <!-- description -->
+          <template v-else-if="col.name === 'desc'">
+            {{ bodyProps.row.readable_desc }}
+          </template>
 
-              <!-- description -->
-              <template v-else-if="col.name === 'desc'">
-                {{ bodyProps.row.readable_desc }}
-              </template>
+          <!-- status -->
+          <template v-else-if="col.name === 'status'">
+            <span class="status-cell text-primary" @click="showPolicyStatus(bodyProps.row)"
+              >See Status</span
+            >
+          </template>
 
-              <!-- status -->
-              <template v-else-if="col.name === 'status'">
-                <span class="status-cell text-primary" @click="showPolicyStatus(bodyProps.row)"
-                  >See Status</span
-                >
-              </template>
+          <!-- assigned task -->
+          <template v-else-if="col.name === 'assigned_task'">
+            <span v-if="bodyProps.row.assignedtasks.length > 1"
+              >{{ bodyProps.row.assignedtasks.length }} Tasks</span
+            >
+            <span v-else-if="bodyProps.row.assignedtasks.length === 1">{{
+              bodyProps.row.assignedtasks[0].name
+            }}</span>
+          </template>
 
-              <!-- assigned task -->
-              <template v-else-if="col.name === 'assigned_task'">
-                <span v-if="bodyProps.row.assignedtasks.length > 1"
-                  >{{ bodyProps.row.assignedtasks.length }} Tasks</span
-                >
-                <span v-else-if="bodyProps.row.assignedtasks.length === 1">{{
-                  bodyProps.row.assignedtasks[0].name
-                }}</span>
-              </template>
-
-              <!-- default fallback -->
-              <template v-else>
-                {{ col.value }}
-              </template>
-            </q-td>
-          </q-tr>
-        </template>
-      </tactical-table>
+          <!-- default fallback -->
+          <template v-else>
+            {{ col.value }}
+          </template>
+        </q-td>
+      </q-tr>
+    </template>
+  </tactical-table>
 </template>
 
 <script lang="ts" setup>
@@ -228,7 +226,13 @@ import { ref, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { usePolicyChecksStore } from "src/stores/api";
 
-const { policyChecks: checks, isLoading, getPolicyChecks, updateCheck, removeCheck } = usePolicyChecksStore();
+const {
+  policyChecks: checks,
+  isLoading,
+  getPolicyChecks,
+  updateCheck,
+  removeCheck,
+} = usePolicyChecksStore();
 import PolicyStatus from "./PolicyStatus.vue";
 import DiskSpaceCheck from "src/core/checks/components/DiskSpaceCheck.vue";
 import PingCheck from "src/core/checks/components/PingCheck.vue";

@@ -123,7 +123,7 @@
                     <q-checkbox
                       v-model="props.row.is_active"
                       dense
-                      @update:model-value="toggleEnabled(props.row)"
+                      @update:model-value="(val) => toggleEnabled(props.row, val)"
                     />
                   </template>
 
@@ -272,8 +272,8 @@ function showTemplateApplied(template: AlertTemplate) {
   $q.dialog({ component: AlertTemplateRelated, componentProps: { template } });
 }
 
-async function toggleEnabled(template: AlertTemplate) {
-  const updatedTemplate = { ...template, is_active: !template.is_active };
+async function toggleEnabled(template: AlertTemplate, newValue: boolean) {
+  const updatedTemplate = { ...template, is_active: newValue };
 
   try {
     await updateAlertTemplate(template.id, updatedTemplate);

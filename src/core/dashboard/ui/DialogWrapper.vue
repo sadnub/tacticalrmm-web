@@ -6,10 +6,15 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <component :is="component" v-bind="componentProps" @close="onDialogOK" @hide="onDialogHide" />
+      <component
+        :is="vuecomponent"
+        v-bind="componentProps"
+        @close="onDialogOK"
+        @hide="onDialogHide"
+      />
     </q-card>
     <component
-      :is="component"
+      :is="vuecomponent"
       v-else
       class="q-dialog-plugin"
       v-bind="componentProps"
@@ -23,7 +28,7 @@ import { useDialogPluginComponent } from "quasar";
 import type { Component } from "vue";
 
 defineProps<{
-  component: Component;
+  vuecomponent: Component;
   title?: string;
   width?: string;
   noCard?: boolean;

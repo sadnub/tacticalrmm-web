@@ -140,7 +140,7 @@
                 v-model="props.row.enabled"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="editTask(props.row, { enabled: !props.row.enabled })"
+                @update:model-value="(val) => editTask(props.row, { enabled: val })"
               />
             </template>
 
@@ -163,7 +163,7 @@
                 v-model="props.row.text_alert"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="editTask(props.row, { text_alert: !props.row.text_alert })"
+                @update:model-value="(val) => editTask(props.row, { text_alert: val })"
               />
             </template>
 
@@ -186,7 +186,7 @@
                 v-model="props.row.email_alert"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="editTask(props.row, { email_alert: !props.row.email_alert })"
+                @update:model-value="(val) => editTask(props.row, { email_alert: val })"
               />
             </template>
 
@@ -209,11 +209,7 @@
                 v-model="props.row.dashboard_alert"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="
-                  editTask(props.row, {
-                    dashboard_alert: !props.row.dashboard_alert,
-                  })
-                "
+                @update:model-value="(val) => editTask(props.row, { dashboard_alert: val })"
               />
             </template>
 

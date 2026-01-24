@@ -243,7 +243,7 @@
                 v-model="props.row.text_alert"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="editCheck(props.row, { text_alert: !props.row.text_alert })"
+                @update:model-value="(val) => editCheck(props.row, { text_alert: val })"
               />
             </template>
 
@@ -266,7 +266,7 @@
                 v-model="props.row.email_alert"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="editCheck(props.row, { email_alert: !props.row.email_alert })"
+                @update:model-value="(val) => editCheck(props.row, { email_alert: val })"
               />
             </template>
 
@@ -289,11 +289,7 @@
                 v-model="props.row.dashboard_alert"
                 dense
                 :disable="!!props.row.policy"
-                @update:model-value="
-                  editCheck(props.row, {
-                    dashboard_alert: !props.row.dashboard_alert,
-                  })
-                "
+                @update:model-value="(val) => editCheck(props.row, { dashboard_alert: val })"
               />
             </template>
 
