@@ -37,7 +37,7 @@
             label="Excluded Agents"
             filled
             multiple
-            :options="agentOptions"
+            :options="agentOptionsById"
             use-chips
             map-options
             filterable
@@ -77,7 +77,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 // Dropdown options from composables
 const { clientOptions } = useClientDropdown();
 const { siteOptions } = useSiteDropdown();
-const { agentOptions } = useAgentDropdown();
+const { agentOptionsById } = useAgentDropdown();
 
 const localTemplate = reactive<AlertTemplate>(extend(true, {}, props.template));
 
@@ -86,7 +86,7 @@ async function submit() {
     await updateAlertTemplate(props.template.id, localTemplate);
     onDialogOK();
   } catch {
-    //
+    // Error handled by store
   }
 }
 </script>

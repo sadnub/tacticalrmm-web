@@ -4,6 +4,7 @@
     :rows="rows"
     :columns="localColumns"
     :visible-columns="visibleColumns"
+    :selected="selected"
     :table-class="{
       'table-bgcolor': !$q.dark.isActive,
       'table-bgcolor-dark': $q.dark.isActive,
@@ -13,6 +14,7 @@
       'tbl-sticky': !columnSelect,
     }"
     v-bind="$attrs"
+    @update:selected="$emit('update:selected', $event)"
   >
     <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
       <slot :name="slotName" v-bind="slotProps ?? {}" />
@@ -50,9 +52,14 @@ const props = withDefaults(
     columns: TacticalColumn[];
     columnSelect?: boolean;
     storageKey?: string;
+    selected?: unknown[];
   }>(),
-  { columnSelect: false, storageKey: "" },
+  { columnSelect: false, storageKey: "", selected: () => [] },
 );
+
+defineEmits<{
+  'update:selected': [value: readonly unknown[]];
+}>();
 
 const columnSelectCol = {
   name: "columnSelect",

@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else-if="selectedAgentPlatform !== 'windows'" class="q-pa-sm">
     Only supported for Windows agents at this time
   </div>
@@ -174,7 +175,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore, useWindowsUpdateStore, useDashboardStore } from "src/stores/api";
 
-const { selectedAgentPlatform, selectedAgentId } = useAgentStore();
+const { selectedAgentPlatform, selectedAgentId, selectedAgentIds } = useAgentStore();
 const { updates, isLoading, getAgentUpdates, runAgentUpdateScan, runAgentUpdateInstall, updateAgentUpdate } = useWindowsUpdateStore();
 const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 

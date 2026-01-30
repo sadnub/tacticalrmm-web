@@ -321,7 +321,7 @@ function showAuditManager() {
   $q.dialog({
     component: DialogWrapper,
     componentProps: {
-      component: AuditManager,
+      vuecomponent: AuditManager,
       noCard: true,
       componentProps: {
         modal: true,
@@ -349,7 +349,7 @@ function showDebugLog() {
   $q.dialog({
     component: DialogWrapper,
     componentProps: {
-      component: DebugLog,
+      vuecomponent: DebugLog,
       noCard: true,
       componentProps: {
         modal: true,

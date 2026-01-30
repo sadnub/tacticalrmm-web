@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" v-bind="$attrs" @hide="onDialogHide">
-    <q-card v-if="!noCard" class="q-dialog-plugin" :style="`min-width: ${width}`">
+    <q-card v-if="!noCard" class="q-dialog-plugin" :style="{ 'min-width': width }">
       <q-bar v-if="title">
         {{ title }}
         <q-space />

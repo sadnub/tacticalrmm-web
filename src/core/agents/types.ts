@@ -308,3 +308,33 @@ export interface RegistryValue {
   data: string | number | string[];
   newKey?: boolean;
 }
+
+// Pagination types for agent table
+export interface AgentPagination {
+  page?: number;
+  rowsPerPage?: number;
+  sortBy?: string | null;
+  descending?: boolean;
+  rowsNumber?: number;
+}
+
+export type AgentStatus = "online" | "offline" | "overdue" | "offline_30days" | null;
+
+export interface AgentSearchParams {
+  pagination?: AgentPagination;
+  monitoringType?: AgentMonitoringType | null;
+  clientId?: number | null;
+  siteId?: number | null;
+  status?: AgentStatus;
+  search?: string;
+  // Advanced filters
+  patchesPending?: boolean;
+  actionsPending?: boolean;
+  rebootNeeded?: boolean;
+  checksFailing?: boolean;
+}
+
+export interface AgentSearchResponse {
+  agents: Agent[];
+  total: number;
+}

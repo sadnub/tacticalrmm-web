@@ -2,11 +2,12 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card style="min-width: 800px">
       <q-bar>
-        Edit {{ agent.hostname }}
+        Edit {{ agent?.hostname ?? "Agent" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-splitter v-model="splitterModel">
+      <q-inner-loading :showing="!agent" />
+      <q-splitter v-if="agent" v-model="splitterModel">
         <template #before>
           <q-tabs v-model="tab" dense vertical class="text-primary">
             <q-tab name="general" label="General" />
@@ -327,11 +328,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useDialogPluginComponent } from "quasar";
 import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/stores/api";
 
-const { updateAgent, getAgent } = useAgentStore();
+const { selectedAgent: agent, updateAgent, getAgent } = useAgentStore();
 const { agentCustomFields, getCustomFields } = useCustomFieldStore();
 const { dashboardSettings } = useDashboardStore();
 import { useSiteDropdown } from "src/core/clients/composables";
@@ -343,11 +344,11 @@ import PatchPolicyForm from "src/core/automation/components/PatchPolicyForm.vue"
 import CustomField from "src/core/dashboard/ui/CustomField.vue";
 
 // type imports
-import type { Agent, UpdateAgentRequest, AgentMonitoringType } from "../types";
+import type { UpdateAgentRequest, AgentMonitoringType } from "../types";
 import type { CustomFieldValueField } from "src/core/settings/types";
 
 const props = defineProps<{
-  agent: Agent;
+  agentId: string;
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
@@ -358,25 +359,47 @@ const tab = ref("general");
 const { siteOptions } = useSiteDropdown();
 
 const localAgent = reactive<UpdateAgentRequest>({
-  id: props.agent.id,
-  hostname: props.agent.hostname,
-  site: props.agent.site,
-  monitoring_type: props.agent.monitoring_type,
-  description: props.agent.description,
-  time_zone: props.agent.time_zone,
-  check_interval: props.agent.check_interval,
-  offline_time: props.agent.offline_time,
-  overdue_time: props.agent.overdue_time,
-  overdue_email_alert: props.agent.overdue_email_alert,
-  overdue_text_alert: props.agent.overdue_text_alert,
-  overdue_dashboard_alert: props.agent.overdue_dashboard_alert,
+  id: 0,
+  hostname: "",
+  site: 0,
+  monitoring_type: "workstation",
+  description: "",
+  time_zone: "",
+  check_interval: 120,
+  offline_time: 4,
+  overdue_time: 30,
+  overdue_email_alert: false,
+  overdue_text_alert: false,
+  overdue_dashboard_alert: false,
 });
+
+// Initialize localAgent when agent data is loaded
+watch(
+  agent,
+  (newAgent) => {
+    if (newAgent) {
+      localAgent.id = newAgent.id;
+      localAgent.hostname = newAgent.hostname;
+      localAgent.site = newAgent.site;
+      localAgent.monitoring_type = newAgent.monitoring_type;
+      localAgent.description = newAgent.description;
+      localAgent.time_zone = newAgent.time_zone;
+      localAgent.check_interval = newAgent.check_interval;
+      localAgent.offline_time = newAgent.offline_time;
+      localAgent.overdue_time = newAgent.overdue_time;
+      localAgent.overdue_email_alert = newAgent.overdue_email_alert;
+      localAgent.overdue_text_alert = newAgent.overdue_text_alert;
+      localAgent.overdue_dashboard_alert = newAgent.overdue_dashboard_alert;
+    }
+  },
+  { immediate: true },
+);
 
 const agentCustomFieldValues = computed(() => {
   const mapped_custom_fields = {} as Record<string, unknown>;
-  if (props.agent && props.agent.custom_fields) {
+  if (agent.value && agent.value.custom_fields) {
     for (const field of agentCustomFields.value) {
-      const value = props.agent.custom_fields.find((value) => value.field === field.id);
+      const value = agent.value.custom_fields.find((value) => value.field === field.id);
 
       if (field.type === "multiple") {
         if (value) mapped_custom_fields[field.name] = value.value;
@@ -394,13 +417,15 @@ const agentCustomFieldValues = computed(() => {
 });
 
 async function submit() {
+  if (!agent.value) return;
+
   localAgent.custom_fields = formatCustomFields(
     agentCustomFields.value,
     agentCustomFieldValues.value,
   );
 
   try {
-    await updateAgent(props.agent.agent_id, {
+    await updateAgent(agent.value.agent_id, {
       ...localAgent,
       monitoring_type: localAgent.monitoring_type as AgentMonitoringType,
       description: localAgent.description || "",
@@ -432,6 +457,6 @@ function weekDaystoString(array: number[]) {
 
 onMounted(() => {
   getCustomFields();
-  getAgent(props.agent.agent_id);
+  getAgent(props.agentId, { force: true });
 });
 </script>

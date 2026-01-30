@@ -62,8 +62,9 @@ function createUserStore() {
       const { data } = await axios.post<User>("/accounts/users/", payload);
       users.value.unshift(data);
       notifySuccess("User was added successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -80,8 +81,9 @@ function createUserStore() {
         users.value[index] = data;
       }
       notifySuccess("User was modified successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -100,8 +102,9 @@ function createUserStore() {
       void dashStore.getDashInfo({ force: true });
       dashStore.refreshDashboard();
       notifySuccess("User was modified successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -118,8 +121,9 @@ function createUserStore() {
         users.value.splice(index, 1);
       }
       notifySuccess("User was deleted successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -132,8 +136,9 @@ function createUserStore() {
     try {
       await axios.put("/accounts/resetpw/", { password });
       notifySuccess("Password was reset successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -146,8 +151,9 @@ function createUserStore() {
     try {
       await axios.put("/accounts/users/reset/", { id, password });
       notifySuccess("Password was reset successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -160,8 +166,9 @@ function createUserStore() {
     try {
       await axios.put("/accounts/reset2fa/");
       notifySuccess("MFA authentication was reset successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -174,8 +181,9 @@ function createUserStore() {
     try {
       await axios.put("/accounts/users/reset2fa/", user);
       notifySuccess(`MFA authentication was reset successfully for ${user.username}`);
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -211,8 +219,9 @@ function createUserStore() {
       await axios.delete(`/accounts/users/${userId}/sessions/`);
       userSessions.value = [];
       notifySuccess("All user sessions have been deleted");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -229,8 +238,9 @@ function createUserStore() {
         userSessions.value.splice(index, 1);
       }
       notifySuccess("Session was deleted successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -289,8 +299,9 @@ function createRoleStore() {
       const { data } = await axios.post<Role>("/accounts/roles/", role);
       roles.value.push(data);
       notifySuccess("Role was added successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -307,8 +318,9 @@ function createRoleStore() {
         roles.value[index] = data;
       }
       notifySuccess("Role was modified successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -323,8 +335,9 @@ function createRoleStore() {
 
       roles.value = roles.value.filter((role) => role.id !== id);
       notifySuccess("Role was deleted successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

@@ -4,19 +4,18 @@
       v-model:pagination="pagination"
       dense
       :table-style="{ 'max-height': `${tableHeight}px` }"
-      :rows="filteredAgents"
-      :filter="search"
-      :filter-method="filterTable"
+      :rows="agents"
       :columns="columns"
       row-key="id"
       flat
       binary-state-sort
       virtual-scroll
-      :rows-per-page-options="[0]"
+      :rows-per-page-options="[25, 50, 100, 500, 1000]"
       no-data-label="No Agents"
       :loading="isLoading"
       column-select
       storage-key="agent-table"
+      @request="onRequest"
     >
       <template #top>
         <q-tabs
@@ -35,6 +34,14 @@
           <q-tab name="mixed" label="Mixed" />
         </q-tabs>
         <q-space />
+
+        <template v-if="selectedAgentIds.length > 0">
+          <div class="text-subtitle2 q-mr-sm">{{ selectedAgentIds.length }} selected</div>
+          <q-btn dense flat icon="clear" size="sm" class="q-mr-md" @click="selectedAgentIds = []">
+            <q-tooltip>Clear selection</q-tooltip>
+          </q-btn>
+        </template>
+
         <q-input
           v-model="search"
           style="width: 450px"
@@ -44,6 +51,7 @@
           clearable
           class="q-pr-md q-pb-xs"
           @clear="clearFilter"
+          @keyup.enter="searchAndReset"
         >
           <template #prepend>
             <q-icon name="search" color="primary" />
@@ -164,6 +172,16 @@
         <tactical-table-export />
       </template>
       <!-- header slots -->
+      <template #header-cell-selection="props">
+        <q-th auto-width :props="props">
+          <q-checkbox
+            :model-value="allSelected"
+            :indeterminate="someSelected && !allSelected"
+            dense
+            @update:model-value="toggleSelectAll"
+          />
+        </q-th>
+      </template>
       <template #header-cell-smsalert="props">
         <q-th auto-width :props="props">
           <q-icon name="phone_android" size="1.5em">
@@ -230,16 +248,24 @@
       <template #body="props">
         <q-tr
           :props="props"
-          :class="rowSelectedClass(props.row.agent_id)"
-          @contextmenu="agentRowSelected(props.row.agent_id)"
-          @click="agentRowSelected(props.row.agent_id)"
-          @dblclick="rowDoubleClicked(props.row.agent_id, props.row.plat)"
+          class="cursor-pointer"
+          @contextmenu="selectRow(props.row)"
+          @click="selectRow(props.row)"
+          @dblclick="selectSingleRow(props.row)"
         >
           <q-menu context-menu>
             <AgentActionMenu :agent="props.row" />
           </q-menu>
 
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <!-- selection checkbox -->
+            <template v-if="col.name === 'selection'">
+              <q-checkbox
+                :model-value="selectedAgentIds.includes(props.row.agent_id)"
+                dense
+                @update:model-value="(val: boolean) => toggleCheckbox(props.row.agent_id, val)"
+              />
+            </template>
             <!-- status -->
             <template v-if="col.name === 'status'">
               <q-icon
@@ -467,21 +493,25 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { type QTableColumn, useQuasar } from "quasar";
+import { useQuasar } from "quasar";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
 
-const { agents, selectedAgentId, isLoading, getAgents, getAgent, updateAgent, runTakeControl, runRemoteBackground, clearSelectedAgent } = useAgentStore();
+const {
+  agents,
+  selectedAgentIds,
+  isLoading,
+  rowsNumber,
+  searchAgents,
+  updateAgent,
+  runTakeControl,
+  runRemoteBackground,
+  clearSelectedAgent,
+} = useAgentStore();
 import { runURLAction } from "src/core/settings/api";
 
 // setup dashboard store
-const {
-  tableHeight,
-  selectedClientSiteNode,
-  dashboardSettings,
-  formatDate,
-} = useDashboardStore();
-import { date } from "quasar";
-import { capitalize, getTimeLapse } from "src/utils/format";
+const { tableHeight, selectedClientSiteNode, dashboardSettings, formatDate } = useDashboardStore();
+import { getTimeLapse } from "src/utils/format";
 
 // ui imports
 import EditAgent from "./EditAgent.vue";
@@ -489,7 +519,7 @@ import PendingActions from "src/core/logs/components/PendingActions.vue";
 import AgentActionMenu from "./AgentActionMenu.vue";
 
 // type imports
-import type { Agent } from "../types";
+import type { Agent, AgentSearchParams, AgentPagination, AgentMonitoringType } from "../types";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 const $q = useQuasar();
@@ -504,7 +534,6 @@ const agentUrlAction = computed(() => dashboardSettings.agentUrlAction);
 
 const route = useRoute();
 const search = ref(route.query.search ? String(route.query.search) : "");
-const filterTextLength = ref(0);
 const filterAvailability = ref("all");
 const filterPatchesPending = ref(false);
 const filterActionsPending = ref(false);
@@ -512,6 +541,7 @@ const filterChecksFailing = ref(false);
 const filterRebootNeeded = ref(false);
 
 const columns: TacticalColumn[] = [
+  { name: "selection", field: "", align: "left", label: "", sortable: false, required: true },
   { name: "status", field: "status", align: "left", label: "Agent Status", sortable: true },
   { name: "smsalert", align: "left", label: "SMS Alert", field: "", sortable: false },
   { name: "emailalert", align: "left", label: "Email Alert", field: "", sortable: false },
@@ -603,208 +633,178 @@ const isFilteringTable = computed(
 
 watch(selectedClientSiteNode, () => {
   clearSelectedAgent();
-});
-
-watch(search, (newVal) => {
-  if (newVal === "") clearFilter();
-  else if (newVal.length < filterTextLength.value) clearFilter();
+  searchAndReset();
 });
 
 const clearFilter = () => {
-  filterTextLength.value = 0;
   filterPatchesPending.value = false;
   filterRebootNeeded.value = false;
   filterChecksFailing.value = false;
   filterActionsPending.value = false;
   filterAvailability.value = "all";
   search.value = "";
+  searchAndReset();
 };
 
 const applyFilter = () => {
-  if (
-    filterAvailability.value === "all" &&
-    (search.value.includes("is:online") ||
-      search.value.includes("is:offline") ||
-      search.value.includes("is:expired") ||
-      search.value.includes("is:overdue"))
-  ) {
-    clearFilter();
-  }
-
-  if (!isFilteringTable.value) return;
-
-  let filterText = "";
-  if (filterPatchesPending.value) filterText += "is:patchespending ";
-  if (filterActionsPending.value) filterText += "is:actionspending ";
-  if (filterChecksFailing.value) filterText += "is:checksfailing ";
-  if (filterRebootNeeded.value) filterText += "is:rebootneeded ";
-  if (filterAvailability.value !== "all") {
-    if (filterAvailability.value === "online") filterText += "is:online ";
-    else if (filterAvailability.value === "offline") filterText += "is:offline ";
-    else if (filterAvailability.value === "offline_30days") filterText += "is:expired ";
-    else if (filterAvailability.value === "overdue") filterText += "is:overdue ";
-  }
-
-  search.value = filterText;
-  filterTextLength.value = filterText.length - 1;
+  searchAndReset();
 };
 
-const filteredAgents = computed(() => {
-  // tab filter
-  const tabFilteredAgents =
-    tab.value === "mixed"
-      ? agents.value
-      : agents.value.filter((k) => k.monitoring_type === tab.value);
+watch(tab, () => {
+  if (dashboardSettings.clearSearchWhenSwitching) clearFilter();
+  doSearch();
+});
 
-  // client tree filter
+const pagination = ref<AgentPagination>({
+  page: 1,
+  rowsPerPage: 50,
+  sortBy: "hostname",
+  descending: false,
+  rowsNumber: 0,
+});
+
+function getClientSiteFilter(): { clientId?: number; siteId?: number } {
   if (selectedClientSiteNode.value) {
     const treeKey = selectedClientSiteNode.value.split("|");
     const model = treeKey[0];
     const id = parseInt(String(treeKey[1]));
-    if (model === "site") return tabFilteredAgents.filter((agent) => agent.site === id);
-    else if (model === "client") return tabFilteredAgents.filter((agent) => agent.client === id);
+    if (model === "site") return { siteId: id };
+    else if (model === "client") return { clientId: id };
   }
-  return tabFilteredAgents;
-});
-
-watch(tab, () => {
-  if (dashboardSettings.clearSearchWhenSwitching) clearFilter();
-});
-onMounted(getAgents);
-
-const pagination = ref({
-  rowsPerPage: 0,
-  sortBy: "hostname",
-  descending: false,
-});
-
-type AvailabilityStatus = "online" | "offline" | "expired" | "overdue" | null;
-type CellValueFunction = (
-  col: { field: string | ((row: Agent) => unknown) },
-  row: Agent,
-) => unknown;
-
-function filterTable(
-  rows: readonly Agent[],
-  terms: string,
-  cols: readonly QTableColumn[],
-  cellValue: CellValueFunction,
-): Agent[] {
-  const hiddenFields: string[] = [
-    "version",
-    "operating_system",
-    "public_ip",
-    "cpu_model",
-    "graphics",
-    "local_ips",
-    "make_model",
-    "physical_disks",
-    "custom_fields",
-    "serial_number",
-  ];
-
-  const allColumns = [...cols, ...hiddenFields.map((field) => ({ name: field, field }))];
-
-  const lowerTerms = terms ? terms.toLowerCase() : "";
-  if (!lowerTerms) {
-    return [...rows];
-  }
-
-  let advancedFilter: boolean = false;
-  let availability: AvailabilityStatus = null;
-  let checks: boolean = false;
-  let patches: boolean = false;
-  let actions: boolean = false;
-  let reboot: boolean = false;
-  let search: string = "";
-
-  const params = lowerTerms.trim().split(" ");
-  params.forEach((param) => {
-    if (param.startsWith("is:")) {
-      advancedFilter = true;
-      const filter = param.split(":")[1];
-      if (filter === "patchespending") patches = true;
-      else if (filter === "actionspending") actions = true;
-      else if (filter === "checksfailing") checks = true;
-      else if (filter === "rebootneeded") reboot = true;
-      else if (["online", "offline", "expired", "overdue"].includes(filter || "")) {
-        availability = filter as AvailabilityStatus;
-      }
-    } else {
-      search += param + " ";
-    }
-  });
-
-  search = search.trim();
-
-  return rows.filter((row: Agent) => {
-    if (advancedFilter) {
-      if (checks && !row.checks.has_failing_checks) return false;
-      if (patches && !row.has_patches_pending) return false;
-      if (actions && row.pending_actions_count === 0) return false;
-      if (reboot && !row.needs_reboot) return false;
-      if (availability) {
-        if (availability === "online" && row.status !== "online") return false;
-        if (availability === "offline" && row.status !== "offline") return false;
-        if (availability === "overdue" && row.status !== "overdue") return false;
-        if (availability === "expired") {
-          const now = new Date();
-          const lastSeen = new Date(row.last_seen);
-          const diff = date.getDateDiff(now, lastSeen, "days");
-          if (diff < 30) return false;
-        }
-      }
-    }
-
-    if (search.length === 0 && advancedFilter) {
-      return true;
-    }
-
-    return allColumns.some((col) => {
-      const valObj: unknown = cellValue(col, row);
-      let haystack: string;
-
-      if (valObj === null || valObj === undefined) {
-        haystack = "";
-      } else if (Array.isArray(valObj)) {
-        const flattened = valObj.map((item) =>
-          item && typeof item === "object" && "value" in item ? item.value : item,
-        );
-        haystack = flattened.join(" ");
-      } else if (typeof valObj === "object") {
-        haystack = Object.values(valObj).join(" ");
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        haystack = String(valObj);
-      }
-
-      return haystack.toLowerCase().includes(search);
-    });
-  });
+  return {};
 }
 
-async function rowDoubleClicked(agentId: string, agentPlatform: string) {
-  selectedAgentId.value = agentId;
-  getAgent(agentId);
+function doSearch() {
+  const clientSiteFilter = getClientSiteFilter();
+
+  const params: AgentSearchParams = {
+    pagination: {
+      page: pagination.value.page || 1,
+      rowsPerPage: pagination.value.rowsPerPage || 50,
+      sortBy: pagination.value.sortBy || "hostname",
+      descending: pagination.value.descending ?? false,
+    },
+    ...clientSiteFilter,
+  };
+
+  // Tab filter - monitoring type
+  if (tab.value !== "mixed") {
+    params.monitoringType = tab.value as AgentMonitoringType;
+  }
+
+  // Search text
+  if (search.value.trim()) {
+    params.search = search.value.trim();
+  }
+
+  // Status filter from availability
+  if (filterAvailability.value === "online") {
+    params.status = "online";
+  } else if (filterAvailability.value === "offline") {
+    params.status = "offline";
+  } else if (filterAvailability.value === "overdue") {
+    params.status = "overdue";
+  } else if (filterAvailability.value === "offline_30days") {
+    params.status = "offline_30days";
+  }
+
+  // Advanced filters - send to server
+  if (filterPatchesPending.value) {
+    params.patchesPending = true;
+  }
+  if (filterActionsPending.value) {
+    params.actionsPending = true;
+  }
+  if (filterRebootNeeded.value) {
+    params.rebootNeeded = true;
+  }
+  if (filterChecksFailing.value) {
+    params.checksFailing = true;
+  }
+
+  searchAgents(params);
+}
+
+function searchAndReset() {
+  pagination.value.page = 1;
+  doSearch();
+}
+
+function onRequest(data: { pagination: AgentPagination }) {
+  if (data) {
+    pagination.value = data.pagination;
+    doSearch();
+  }
+}
+
+watch(rowsNumber, (newValue) => {
+  pagination.value.rowsNumber = newValue;
+});
+
+onMounted(doSearch);
+
+// Select all checkbox logic
+const allSelected = computed(
+  () =>
+    agents.value.length > 0 &&
+    agents.value.every((a) => selectedAgentIds.value.includes(a.agent_id)),
+);
+
+const someSelected = computed(() =>
+  agents.value.some((a) => selectedAgentIds.value.includes(a.agent_id)),
+);
+
+function toggleSelectAll(selected: boolean) {
+  if (selected) {
+    selectedAgentIds.value = agents.value.map((a) => a.agent_id);
+  } else {
+    selectedAgentIds.value = [];
+  }
+}
+
+function selectRow(row: Agent) {
+  // Single click clears selection and selects just this row
+  selectedAgentIds.value = [row.agent_id];
+}
+
+function toggleCheckbox(agentId: string, selected: boolean) {
+  if (selected) {
+    if (!selectedAgentIds.value.includes(agentId)) {
+      selectedAgentIds.value = [...selectedAgentIds.value, agentId];
+    }
+  } else {
+    selectedAgentIds.value = selectedAgentIds.value.filter((id) => id !== agentId);
+  }
+}
+
+async function selectSingleRow(row: Agent) {
+  // Double-click selects only this row (clears other selections)
+  selectedAgentIds.value = [row.agent_id];
+
+  // Then perform the configured double-click action
   switch (agentDblClickAction.value) {
     case "editagent":
-      showEditAgent(agentId);
+      showEditAgent(row.agent_id);
       break;
     case "takecontrol":
-      runTakeControl(agentId);
+      runTakeControl(row.agent_id);
       break;
     case "remotebg":
-      runRemoteBackground(agentId, agentPlatform);
+      runRemoteBackground(row.agent_id, row.plat);
       break;
     case "urlaction":
-      if (agentUrlAction.value) await runURLAction(agentUrlAction.value, "agent", agentId);
+      if (agentUrlAction.value) await runURLAction(agentUrlAction.value, "agent", row.agent_id);
       break;
   }
 }
 
-function agentRowSelected(agentId: string) {
-  selectedAgentId.value = agentId;
-  getAgent(agentId);
+function showEditAgent(agentId: string) {
+  $q.dialog({
+    component: EditAgent,
+    componentProps: {
+      agentId: agentId,
+    },
+  });
 }
 
 function showPendingActionsModal(agent: Agent) {
@@ -819,40 +819,12 @@ function showPendingActionsModal(agent: Agent) {
 function overdueAlert(
   category: "email" | "text" | "dashboard",
   agent: Agent,
-  alert_action: "enable" | "disabled",
+  alert_action: boolean,
 ) {
   const data = {
-    [`overdue_${category}_alert`]: !alert_action,
+    [`overdue_${category}_alert`]: alert_action,
   };
 
-  const alertColor = !alert_action ? dashPositiveColor : dashInfoColor;
   void updateAgent(agent.agent_id, data);
-
-  $q.notify({
-    color: alertColor.value,
-    textColor: "black",
-    icon: "fas fa-check-circle",
-    message: `${capitalize(category)} alerts will now be ${alert_action ? "disabled" : "enabled"} when ${
-      agent.hostname
-    } is overdue.`,
-    timeout: 5000,
-  });
-}
-
-function rowSelectedClass(agent_id: string) {
-  if (agent_id === selectedAgentId.value) {
-    return $q.dark.isActive ? "highlight-dark cursor-pointer" : "highlight cursor-pointer";
-  } else {
-    return "cursor-pointer";
-  }
-}
-
-function showEditAgent(agentId: string) {
-  $q.dialog({
-    component: EditAgent,
-    componentProps: {
-      agentId: agentId,
-    },
-  });
 }
 </script>

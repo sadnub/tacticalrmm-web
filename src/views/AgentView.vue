@@ -24,18 +24,21 @@ const route = useRoute();
 const $q = useQuasar();
 
 // setup stores
-const { selectedAgentId } = useAgentStore();
+const { selectedAgentIds, getAgent } = useAgentStore();
 const { tabHeight } = useDashboardStore();
 
 tabHeight.value = $q.screen.height - 309 - 50 - 36;
 
-selectedAgentId.value = typeof route.params.agent_id === "string" ? route.params.agent_id : null;
+function selectAgentFromRoute() {
+  const agentId = typeof route.params.agent_id === "string" ? route.params.agent_id : null;
+  if (agentId) {
+    selectedAgentIds.value = [agentId];
+    getAgent(agentId);
+  }
+}
+
+selectAgentFromRoute();
 
 // watch for route change
-watch(
-  () => route.params.agent_id,
-  () =>
-    (selectedAgentId.value =
-      typeof route.params.agent_id === "string" ? route.params.agent_id : null),
-);
+watch(() => route.params.agent_id, selectAgentFromRoute);
 </script>

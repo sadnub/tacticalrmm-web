@@ -278,6 +278,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
+import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
 import PolicyForm from "./PolicyForm.vue";
 import PolicyOverview from "./PolicyOverview.vue";
 import RelationsView from "./RelationsView.vue";
@@ -431,17 +432,19 @@ function showAlertTemplateAdd(policy: Policy) {
 }
 
 function showPatchPolicyForm(policy: Policy) {
-  $q.dialogWrapper({
-    component: PatchPolicyForm,
-    props: {
-      policy: policy,
+  $q.dialog({
+    component: DialogWrapper,
+    componentProps: {
+      title:
+        policy.winupdatepolicy && policy.winupdatepolicy.length > 0
+          ? "Edit Patch Policy"
+          : "Add Patch Policy",
+      vuecomponent: PatchPolicyForm,
+      width: "50vw",
+      componentProps: {
+        policy: policy,
+      },
     },
-    title:
-      policy.winupdatepolicy && policy.winupdatepolicy.length > 0
-        ? "Edit Patch Policy"
-        : "Add Patch Policy",
-  }).onOk(() => {
-    clearRow();
   });
 }
 
@@ -451,8 +454,6 @@ function showPolicyExclusions(policy: Policy) {
     componentProps: {
       policy: policy,
     },
-  }).onOk(() => {
-    clearRow();
   });
 }
 

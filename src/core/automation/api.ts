@@ -75,8 +75,9 @@ function createPolicyStore() {
       const { data } = await axios.post<Policy>("automation/policies/", requestData);
       policies.value.unshift(data);
       notifySuccess("Policy was created successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -90,8 +91,9 @@ function createPolicyStore() {
       const index = policies.value.findIndex((p) => p.id === id);
       if (index !== -1) policies.value[index] = data;
       notifySuccess("Policy was updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -105,8 +107,9 @@ function createPolicyStore() {
       const index = policies.value.findIndex((p) => p.id === id);
       if (index !== -1) policies.value.splice(index, 1);
       notifySuccess("Policy was removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -224,8 +227,9 @@ function createPolicyChecksStore() {
       const { data } = await axios.post<Check>("/checks/", check);
       policyChecks.value.push(data);
       notifySuccess("Check added successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -243,8 +247,9 @@ function createPolicyChecksStore() {
         policyChecks.value[index] = data;
       }
       notifySuccess("Check updated successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -262,8 +267,9 @@ function createPolicyChecksStore() {
         policyChecks.value.splice(index, 1);
       }
       notifySuccess("Check removed successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -317,8 +323,9 @@ function createPolicyTasksStore() {
       const processedTask = processTaskDatafromDB(data);
       policyTasks.value.push(processedTask);
       notifySuccess("Task added successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -338,8 +345,9 @@ function createPolicyTasksStore() {
         policyTasks.value[index] = processedTask;
       }
       notifySuccess("Task updated successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -359,8 +367,9 @@ function createPolicyTasksStore() {
         policyTasks.value[index] = processedTask;
       }
       notifySuccess("Task updated successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -378,8 +387,9 @@ function createPolicyTasksStore() {
         policyTasks.value.splice(index, 1);
       }
       notifySuccess("Task removed successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -436,6 +446,16 @@ function createPatchPolicyStore() {
     isError.value = false;
     try {
       const { data } = await axios.post<WinPatchPolicy>("/automation/patchpolicy/", policy);
+
+      // Update the parent policy in the policies store
+      if (policy.policy) {
+        const { policies } = usePolicyStore();
+        const parentPolicy = policies.value.find((p) => p.id === policy.policy);
+        if (parentPolicy) {
+          parentPolicy.winupdatepolicy = [data];
+        }
+      }
+
       notifySuccess("Patch policy was created successfully.");
       return data;
     } catch (e) {
@@ -454,6 +474,16 @@ function createPatchPolicyStore() {
         `/automation/patchpolicy/${policy.id}/`,
         policy,
       );
+
+      // Update the parent policy in the policies store
+      if (policy.policy) {
+        const { policies } = usePolicyStore();
+        const parentPolicy = policies.value.find((p) => p.id === policy.policy);
+        if (parentPolicy) {
+          parentPolicy.winupdatepolicy = [data];
+        }
+      }
+
       notifySuccess("Patch policy was updated successfully.");
       return data;
     } catch (e) {
@@ -464,11 +494,21 @@ function createPatchPolicyStore() {
     }
   }
 
-  async function deletePatchPolicy(id: number) {
+  async function deletePatchPolicy(id: number, policyId?: number) {
     isLoading.value = true;
     isError.value = false;
     try {
       await axios.delete(`/automation/patchpolicy/${id}/`);
+
+      // Update the parent policy in the policies store
+      if (policyId) {
+        const { policies } = usePolicyStore();
+        const parentPolicy = policies.value.find((p) => p.id === policyId);
+        if (parentPolicy) {
+          parentPolicy.winupdatepolicy = [];
+        }
+      }
+
       notifySuccess("Patch policy was removed successfully.");
     } catch (e) {
       isError.value = true;

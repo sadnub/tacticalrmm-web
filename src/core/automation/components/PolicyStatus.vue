@@ -7,143 +7,158 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-card-section>
-        <tactical-table
-          v-model:pagination="pagination"
-          style="max-height: 35vh"
-          :rows="data"
-          :columns="columns"
-          :rows-per-page-options="[0]"
-          row-key="id"
-          binary-state-sort
-          dense
-          virtual-scroll
-          hide-pagination
-          no-data-label="There are no agents in this policy"
-          storage-key="policy-status"
-          :loading="isLoading"
-        >
-          <!-- header slots -->
-          <template #header-cell-statusicon="headerProps">
-            <q-th auto-width :props="headerProps"></q-th>
-          </template>
-          <!-- body slots -->
-          <template #body="bodyProps">
-            <q-tr :props="bodyProps">
-              <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
-                <!-- agent hostname -->
-                <template v-if="col.name === 'agent'">
-                  {{ bodyProps.row.hostname }}
-                </template>
+      <tactical-table
+        v-model:pagination="pagination"
+        style="max-height: 50vh"
+        :rows="data"
+        :columns="columns"
+        :rows-per-page-options="[0]"
+        row-key="id"
+        binary-state-sort
+        dense
+        virtual-scroll
+        :filter="filter"
+        no-data-label="No agents ran this check/task yet"
+        storage-key="policy-status"
+        :loading="isLoading"
+      >
+        <!-- header slots -->
+        <template #header-cell-statusicon="headerProps">
+          <q-th auto-width :props="headerProps"></q-th>
+        </template>
 
-                <!-- status icon -->
-                <template v-else-if="col.name === 'statusicon'">
-                  <q-icon
-                    v-if="bodyProps.row.status === 'passing'"
-                    style="font-size: 1.3rem"
-                    :color="dashboardSettings.dashPositiveColor"
-                    name="check_circle"
-                  >
-                    <q-tooltip>Passing</q-tooltip>
-                  </q-icon>
-                  <q-icon
-                    v-else-if="
-                      bodyProps.row.status === 'failing' && bodyProps.row.alert_severity === 'info'
-                    "
-                    style="font-size: 1.3rem"
-                    :color="dashboardSettings.dashInfoColor"
-                    name="info"
-                  >
-                    <q-tooltip>Informational</q-tooltip>
-                  </q-icon>
-                  <q-icon
-                    v-else-if="
-                      bodyProps.row.status === 'failing' &&
-                      bodyProps.row.alert_severity === 'warning'
-                    "
-                    style="font-size: 1.3rem"
-                    :color="dashboardSettings.dashWarningColor"
-                    name="warning"
-                  >
-                    <q-tooltip>Warning</q-tooltip>
-                  </q-icon>
-                  <q-icon
-                    v-else-if="bodyProps.row.status === 'failing'"
-                    style="font-size: 1.3rem"
-                    :color="dashboardSettings.dashNegativeColor"
-                    name="error"
-                  >
-                    <q-tooltip>Error</q-tooltip>
-                  </q-icon>
-                </template>
+        <template #top>
+          <q-space />
+          <q-input
+            v-model="filter"
+            filled
+            label="Search"
+            dense
+            clearable
+            class="q-pr-sm"
+            style="width: 300px"
+          >
+            <template #prepend>
+              <q-icon name="search" color="primary" />
+            </template>
+          </q-input>
+          <tactical-table-export />
+        </template>
 
-                <!-- status text -->
-                <template v-else-if="col.name === 'status'">
-                  <span v-if="bodyProps.row.status === 'pending'"
-                    >Awaiting First Synchronization</span
-                  >
-                  <span v-else-if="bodyProps.row.sync_status === 'notsynced'"
-                    >Will sync on next agent checkin</span
-                  >
-                  <span v-else-if="bodyProps.row.sync_status === 'synced'">Synced with agent</span>
-                  <span v-else-if="bodyProps.row.sync_status === 'pendingdeletion'"
-                    >Pending deletion on agent</span
-                  >
-                  <span v-else-if="bodyProps.row.sync_status === 'initial'"
-                    >Waiting for task creation on agent</span
-                  >
-                </template>
+        <!-- body slots -->
+        <template #body="bodyProps">
+          <q-tr :props="bodyProps">
+            <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
+              <!-- agent hostname -->
+              <template v-if="col.name === 'agent'">
+                {{ bodyProps.row.hostname }}
+              </template>
 
-                <!-- more info -->
-                <template v-else-if="col.name === 'moreinfo'">
-                  <span
-                    v-if="bodyProps.row.check_type === 'ping'"
-                    class="ping-cell text-primary"
-                    @click="pingInfo(bodyProps.row)"
-                    >output</span
-                  >
-                  <span
-                    v-else-if="
-                      bodyProps.row.check_type === 'script' ||
-                      bodyProps.row.retcode ||
-                      bodyProps.row.stdout ||
-                      bodyProps.row.stderr
-                    "
-                    class="script-cell text-primary"
-                    @click="showScriptOutput(bodyProps.row)"
-                    >output</span
-                  >
-                  <span
-                    v-else-if="bodyProps.row.check_type === 'eventlog'"
-                    class="eventlog-cell text-primary"
-                    @click="showEventInfo(bodyProps.row)"
-                    >output</span
-                  >
-                  <span
-                    v-else-if="
-                      bodyProps.row.check_type === 'cpuload' ||
-                      bodyProps.row.check_type === 'memory'
-                    "
-                    >{{ bodyProps.row.history_info }}</span
-                  >
-                  <span v-else-if="bodyProps.row.more_info">{{ bodyProps.row.more_info }}</span>
-                  <span v-else>Awaiting Output</span>
-                </template>
+              <!-- status icon -->
+              <template v-else-if="col.name === 'statusicon'">
+                <q-icon
+                  v-if="bodyProps.row.status === 'passing'"
+                  style="font-size: 1.3rem"
+                  :color="dashboardSettings.dashPositiveColor"
+                  name="check_circle"
+                >
+                  <q-tooltip>Passing</q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="
+                    bodyProps.row.status === 'failing' && bodyProps.row.alert_severity === 'info'
+                  "
+                  style="font-size: 1.3rem"
+                  :color="dashboardSettings.dashInfoColor"
+                  name="info"
+                >
+                  <q-tooltip>Informational</q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="
+                    bodyProps.row.status === 'failing' && bodyProps.row.alert_severity === 'warning'
+                  "
+                  style="font-size: 1.3rem"
+                  :color="dashboardSettings.dashWarningColor"
+                  name="warning"
+                >
+                  <q-tooltip>Warning</q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-else-if="bodyProps.row.status === 'failing'"
+                  style="font-size: 1.3rem"
+                  :color="dashboardSettings.dashNegativeColor"
+                  name="error"
+                >
+                  <q-tooltip>Error</q-tooltip>
+                </q-icon>
+              </template>
 
-                <!-- datetime -->
-                <template v-else-if="col.name === 'datetime'">
-                  {{ bodyProps.row.last_run ? formatDate(bodyProps.row.last_run) : "Never" }}
-                </template>
+              <!-- status text -->
+              <template v-else-if="col.name === 'status'">
+                <span v-if="bodyProps.row.status === 'pending'"
+                  >Awaiting First Synchronization</span
+                >
+                <span v-else-if="bodyProps.row.sync_status === 'notsynced'"
+                  >Will sync on next agent checkin</span
+                >
+                <span v-else-if="bodyProps.row.sync_status === 'synced'">Synced with agent</span>
+                <span v-else-if="bodyProps.row.sync_status === 'pendingdeletion'"
+                  >Pending deletion on agent</span
+                >
+                <span v-else-if="bodyProps.row.sync_status === 'initial'"
+                  >Waiting for task creation on agent</span
+                >
+              </template>
 
-                <!-- default fallback -->
-                <template v-else>
-                  {{ col.value }}
-                </template>
-              </q-td>
-            </q-tr>
-          </template>
-        </tactical-table>
-      </q-card-section>
+              <!-- more info -->
+              <template v-else-if="col.name === 'moreinfo'">
+                <span
+                  v-if="bodyProps.row.check_type === 'ping'"
+                  class="ping-cell text-primary"
+                  @click="pingInfo(bodyProps.row)"
+                  >output</span
+                >
+                <span
+                  v-else-if="
+                    bodyProps.row.check_type === 'script' ||
+                    bodyProps.row.retcode ||
+                    bodyProps.row.stdout ||
+                    bodyProps.row.stderr
+                  "
+                  class="script-cell text-primary"
+                  @click="showScriptOutput(bodyProps.row)"
+                  >output</span
+                >
+                <span
+                  v-else-if="bodyProps.row.check_type === 'eventlog'"
+                  class="eventlog-cell text-primary"
+                  @click="showEventInfo(bodyProps.row)"
+                  >output</span
+                >
+                <span
+                  v-else-if="
+                    bodyProps.row.check_type === 'cpuload' || bodyProps.row.check_type === 'memory'
+                  "
+                  >{{ bodyProps.row.history_info }}</span
+                >
+                <span v-else-if="bodyProps.row.more_info">{{ bodyProps.row.more_info }}</span>
+                <span v-else>Awaiting Output</span>
+              </template>
+
+              <!-- datetime -->
+              <template v-else-if="col.name === 'datetime'">
+                {{ bodyProps.row.last_run ? formatDate(bodyProps.row.last_run) : "Never" }}
+              </template>
+
+              <!-- default fallback -->
+              <template v-else>
+                {{ col.value }}
+              </template>
+            </q-td>
+          </q-tr>
+        </template>
+      </tactical-table>
     </q-card>
   </q-dialog>
 </template>
@@ -187,7 +202,7 @@ defineEmits([...useDialogPluginComponent.emits]);
 const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
-// stores
+const filter = ref("");
 
 // state
 const data = ref<PolicyStatusItem[]>([]);

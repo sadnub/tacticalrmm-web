@@ -92,8 +92,9 @@ function createScriptStore() {
       const { data: newScript } = await axios.post<Script>(`/scripts/`, payload);
       scripts.value.unshift(newScript);
       notifySuccess("Script was created successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -109,8 +110,9 @@ function createScriptStore() {
         scripts.value[index] = updatedScript;
       }
       notifySuccess("Script was updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -126,8 +128,9 @@ function createScriptStore() {
         scripts.value.splice(index, 1);
       }
       notifySuccess("Script was removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -221,8 +224,9 @@ function createScriptSnippetStore() {
     try {
       const response = await axios.post<ScriptSnippet>(`/scripts/snippets/`, payload);
       snippets.value.unshift(response.data);
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -251,8 +255,9 @@ function createScriptSnippetStore() {
       if (index !== -1) {
         snippets.value[index] = response.data;
       }
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -267,8 +272,9 @@ function createScriptSnippetStore() {
       if (index !== -1) {
         snippets.value.splice(index, 1);
       }
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

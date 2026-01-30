@@ -1,7 +1,8 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else>
-    <AuditManager :modal="false" :agent="selectedAgentId" />
+    <AuditManager v-if="selectedAgentId" :modal="false" :agent="selectedAgentId" />
   </div>
 </template>
 
@@ -9,7 +10,7 @@
 // composition imports
 import { useAgentStore } from "src/stores/api";
 
-const { selectedAgentId } = useAgentStore();
+const { selectedAgentId, selectedAgentIds } = useAgentStore();
 
 // ui imports
 import AuditManager from "src/core/logs/components/AuditManager.vue";

@@ -64,8 +64,9 @@ function createAlertTemplateStore() {
       const { data } = await axios.post<AlertTemplate>("alerts/templates/", payload);
       alertTemplates.value.unshift(data);
       notifySuccess("Alert template was created successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -79,8 +80,9 @@ function createAlertTemplateStore() {
       const index = alertTemplates.value.findIndex((a) => a.id === id);
       if (index !== -1) alertTemplates.value[index] = data;
       notifySuccess("Alert template was updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -94,8 +96,9 @@ function createAlertTemplateStore() {
       const index = alertTemplates.value.findIndex((a) => a.id === id);
       if (index !== -1) alertTemplates.value.splice(index, 1);
       notifySuccess("Alert template was removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -195,8 +198,9 @@ function createAlertsStore() {
         }
       }
       notifySuccess("Alert snoozed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -218,8 +222,9 @@ function createAlertsStore() {
         }
       }
       notifySuccess("Alert unsnoozed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -241,8 +246,9 @@ function createAlertsStore() {
         }
       }
       notifySuccess("Alert resolved successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -269,8 +275,9 @@ function createAlertsStore() {
       notifySuccess(`${ids.length} alerts resolved successfully.`);
       // Refresh search to update the view
       refreshSearch();
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -297,8 +304,9 @@ function createAlertsStore() {
       notifySuccess(`${ids.length} alerts snoozed successfully.`);
       // Refresh search to update the view
       refreshSearch();
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

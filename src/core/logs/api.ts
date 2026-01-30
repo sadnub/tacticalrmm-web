@@ -86,8 +86,9 @@ function createPendingActionStore() {
       if (index !== -1) {
         pendingActions.value.splice(index, 1);
       }
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

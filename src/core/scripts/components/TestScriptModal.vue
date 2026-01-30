@@ -6,26 +6,30 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-card-section v-if="scriptTestResult" style="height: 70vh" class="scroll">
-        <div>
-          Run Time:
-          <code>{{ scriptTestResult.execution_time }} seconds</code>
-          <br />Return Code:
-          <code>{{ scriptTestResult.retcode }}</code>
+      <q-card-section style="height: 70vh" class="scroll">
+        <q-inner-loading :showing="isLoading">
+          <q-spinner size="50px" color="primary" />
+        </q-inner-loading>
+        <template v-if="scriptTestResult">
+          <div>
+            Run Time:
+            <code>{{ scriptTestResult.execution_time }} seconds</code>
+            <br />Return Code:
+            <code>{{ scriptTestResult.retcode }}</code>
+            <br />
+          </div>
           <br />
-        </div>
-        <br />
-        <div v-if="scriptTestResult.stdout">
-          <script-output-copy-clip label="Standard Output" :data="scriptTestResult.stdout" />
-          <q-separator />
-          <pre>{{ scriptTestResult.stdout }}</pre>
-        </div>
-        <div v-if="scriptTestResult.stderr">
-          <script-output-copy-clip label="Standard Error" :data="scriptTestResult.stderr" />
-          <q-separator />
-          <pre>{{ scriptTestResult.stderr }}</pre>
-        </div>
-        <q-inner-loading :showing="isLoading" />
+          <div v-if="scriptTestResult.stdout">
+            <script-output-copy-clip label="Standard Output" :data="scriptTestResult.stdout" />
+            <q-separator />
+            <pre>{{ scriptTestResult.stdout }}</pre>
+          </div>
+          <div v-if="scriptTestResult.stderr">
+            <script-output-copy-clip label="Standard Error" :data="scriptTestResult.stderr" />
+            <q-separator />
+            <pre>{{ scriptTestResult.stderr }}</pre>
+          </div>
+        </template>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -66,9 +70,7 @@ async function runTestScript() {
   };
 
   const result =
-    props.ctx === "server"
-      ? await testScriptOnServer(data)
-      : await testScript(props.agent, data);
+    props.ctx === "server" ? await testScriptOnServer(data) : await testScript(props.agent, data);
   if (result) {
     scriptTestResult.value = result;
   }

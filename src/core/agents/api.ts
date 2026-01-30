@@ -22,6 +22,8 @@ import type {
   RunScriptRequest,
   AgentVersionsResponse,
   AgentCommandRequest,
+  AgentSearchParams,
+  AgentSearchResponse,
 } from "./types";
 import type { ScriptResult } from "../scripts/types";
 
@@ -61,9 +63,20 @@ export function useWindowsUpdateStore() {
 
 function createAgentStore() {
   const agents = ref<Agent[]>([]);
+  const selectedAgentIds = ref<string[]>([]);
   const selectedAgent = ref<Agent | null>(null);
-  const selectedAgentId = ref<string | null>(null);
-  const selectedAgentPlatform = computed(() => selectedAgent.value?.plat);
+
+  // Computed: single selected agent_id (for tabs that need single selection)
+  const selectedAgentId = computed(() =>
+    selectedAgentIds.value.length === 1 ? (selectedAgentIds.value[0] ?? null) : null,
+  );
+
+  // Computed: platform of single selected agent
+  const selectedAgentPlatform = computed(() => {
+    if (selectedAgentIds.value.length !== 1) return undefined;
+    const agent = agents.value.find((a) => a.agent_id === selectedAgentIds.value[0]);
+    return agent?.plat;
+  });
 
   const agentHistory = ref<AgentHistory[]>([]);
   const agentProcesses = ref<AgentProcess[]>([]);
@@ -71,25 +84,43 @@ function createAgentStore() {
   const agentServices = ref<AgentService[]>([]);
 
   function clearSelectedAgent() {
+    selectedAgentIds.value = [];
     selectedAgent.value = null;
-    selectedAgentId.value = null;
     agentHistory.value = [];
     agentProcesses.value = [];
     agentEventLog.value = [];
     agentServices.value = [];
   }
 
-  watch(selectedAgent, (newValue) => {
-    if (!newValue) {
-      clearSelectedAgent();
-    }
-  });
-
   const isLoading = ref(false);
   const isError = ref(false);
+  const rowsNumber = ref(0);
+  const lastSearchParams = ref<AgentSearchParams>({});
 
   const agentCount = computed(() => agents.value.length);
   const agentEventLogCount = computed(() => agentEventLog.value.length);
+
+  function searchAgents(params: AgentSearchParams) {
+    isLoading.value = true;
+    isError.value = false;
+    lastSearchParams.value = { ...params };
+    axios
+      .patch<AgentSearchResponse>("/agents/v2/", params)
+      .then(({ data: { agents: agentsData, total } }) => {
+        agents.value = agentsData;
+        rowsNumber.value = total;
+      })
+      .catch(() => {
+        isError.value = true;
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }
+
+  function refreshAgentSearch() {
+    searchAgents(lastSearchParams.value);
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function _getAgents(_args?: { force: boolean }) {
@@ -131,6 +162,20 @@ function createAgentStore() {
 
   const getAgent = useCachedAction(_getAgent, { key: "getAgent", duration: 1 * 60 * 1000 });
 
+  // When single agent is selected, fetch full details
+  watch(selectedAgentId, (newValue, oldValue) => {
+    if (newValue) {
+      // Force refresh if coming from multi-select (oldValue was null)
+      getAgent(newValue, { force: oldValue === null });
+    } else {
+      selectedAgent.value = null;
+      agentHistory.value = [];
+      agentProcesses.value = [];
+      agentEventLog.value = [];
+      agentServices.value = [];
+    }
+  });
+
   async function updateAgent(agentId: string, payload: Partial<Agent>) {
     isLoading.value = true;
     isError.value = false;
@@ -138,7 +183,6 @@ function createAgentStore() {
     try {
       const { data } = await axios.put<Agent>(`/agents/${agentId}/`, payload);
 
-      // TODO: update only specific table data to agents list. It doesn't contain big fields like wmi data, services, etc
       const index = agents.value.findIndex((agent) => agent.agent_id === agentId);
       if (index !== -1) {
         agents.value[index] = data;
@@ -148,8 +192,9 @@ function createAgentStore() {
 
       notifySuccess("Agent was modified successfully");
       return data;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -168,8 +213,9 @@ function createAgentStore() {
 
       clearSelectedAgent();
       notifySuccess("Agent was deleted successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -319,8 +365,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agent_id}/reboot/`);
       notifySuccess("Agent reboot command sent.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -333,8 +380,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agent_id}/shutdown/`);
       notifySuccess("Agent shutdown command sent.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -347,8 +395,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agent_id}/wol/`);
       notifySuccess("Wake-on-LAN packet sent.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -361,8 +410,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agent_id}/recover/`, { mode });
       notifySuccess("Recovery action sent.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -375,8 +425,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agent_id}/wmi/`);
       notifySuccess("WMI refresh command sent.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -389,8 +440,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agentId}/reboot/`);
       notifySuccess("Agent reboot command sent");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -400,8 +452,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/${agentId}/shutdown/`);
       notifySuccess("Agent shutdown command sent");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -413,8 +466,9 @@ function createAgentStore() {
       const result = await getAgentMeshCentralUrls(agentId);
       notifySuccess("Mesh recovery command sent successfully");
       return result;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -439,8 +493,9 @@ function createAgentStore() {
     try {
       await axios.patch(`/agents/${agent_id}/reboot/`, payload);
       notifySuccess("Reboot has been scheduled.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -453,8 +508,9 @@ function createAgentStore() {
     try {
       await axios.post(`/agents/actions/bulk/`, payload);
       notifySuccess("Bulk action initiated.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -470,8 +526,9 @@ function createAgentStore() {
         agentProcesses.value.splice(index, 1);
       }
       notifySuccess(`Process ${pid} was terminated.`);
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -521,8 +578,9 @@ function createAgentStore() {
       notifySuccess("Service action sent successfully");
 
       return service;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -549,8 +607,9 @@ function createAgentStore() {
       notifySuccess("The service was updated successfully");
 
       return service;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -577,8 +636,9 @@ function createAgentStore() {
     try {
       await axios.post("/agents/update/", { agent_ids: agentIds });
       notifySuccess("Agents will now be updated");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -591,14 +651,16 @@ function createAgentStore() {
     try {
       await axios.get("/agents/bulkrecovery/");
       notifySuccess("Agents will now be recovered");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
   }
   return {
     agents,
+    selectedAgentIds,
     selectedAgent,
     selectedAgentId,
     selectedAgentPlatform,
@@ -611,6 +673,9 @@ function createAgentStore() {
     isLoading,
     isError,
     agentCount,
+    rowsNumber,
+    searchAgents,
+    refreshAgentSearch,
     runTakeControl,
     runWebVNC,
     getAgentMeshCentralUrls,
@@ -684,8 +749,9 @@ function createAgentSoftwareStore() {
     try {
       await axios.post(`/software/${agent_id}/`, payload);
       notifySuccess("The software install was initiated successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -705,8 +771,9 @@ function createAgentSoftwareStore() {
     try {
       await axios.delete<string>(`/software/${agent_id}/`, { data: payload });
       notifySuccess("Uninstall command was sent successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -763,8 +830,9 @@ function createAgentNoteStore() {
       const { data } = await axios.post<AgentNote>(`/agents/notes/`, payload);
       agentNotes.value.unshift(data);
       notifySuccess("Note added successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -781,8 +849,9 @@ function createAgentNoteStore() {
         agentNotes.value[index] = data;
       }
       notifySuccess("Note updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -799,8 +868,9 @@ function createAgentNoteStore() {
         agentNotes.value.splice(index, 1);
       }
       notifySuccess("Note removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -852,8 +922,9 @@ function createWindowsUpdateStore() {
     try {
       await axios.post(`/winupdate/${agent_id}/scan/`);
       notifySuccess("Update scan initiated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -866,8 +937,9 @@ function createWindowsUpdateStore() {
     try {
       await axios.post(`/winupdate/${agent_id}/install/`);
       notifySuccess("Update installation process started.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -885,8 +957,9 @@ function createWindowsUpdateStore() {
       }
       notifySuccess(`Update was modified successfully.`);
       return updatedUpdate;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

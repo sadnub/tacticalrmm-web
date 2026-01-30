@@ -127,8 +127,9 @@ function createCoreStore() {
           Loading.hide();
         }
       }
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -149,8 +150,9 @@ function createCoreStore() {
     try {
       await axios.post("/core/servermaintenance/", payload);
       notifySuccess("Maintenance operations executed successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -163,8 +165,9 @@ function createCoreStore() {
     try {
       await axios.post("/core/clearcache/");
       notifySuccess("Cache was cleared successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -245,8 +248,9 @@ function createCustomFieldStore() {
       const { data } = await axios.post<CustomField>("/core/customfields/", action);
       customFields.value.unshift(data);
       notifySuccess("Custom Field saved successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -264,8 +268,9 @@ function createCustomFieldStore() {
         customFields.value[index] = data;
       }
       notifySuccess("Custom Field updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -282,8 +287,9 @@ function createCustomFieldStore() {
         customFields.value.splice(index, 1);
       }
       notifySuccess("custom Field removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -344,8 +350,9 @@ function createURLActionStore() {
       const { data } = await axios.post<URLAction>("/core/urlaction/", action);
       urlActions.value.unshift(data);
       notifySuccess("URL Action saved successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -362,8 +369,9 @@ function createURLActionStore() {
         urlActions.value[index] = data;
       }
       notifySuccess("URL Action updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -380,8 +388,9 @@ function createURLActionStore() {
         urlActions.value.splice(index, 1);
       }
       notifySuccess("URL Action removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -451,8 +460,9 @@ function createAPIKeyStore() {
       const { data } = await axios.post<APIKey>("/accounts/apikeys/", newAPIKey);
       apiKeys.value.push(data);
       notifySuccess("API Key saved successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -469,8 +479,9 @@ function createAPIKeyStore() {
         apiKeys.value[index] = data;
       }
       notifySuccess("API Key updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -484,8 +495,9 @@ function createAPIKeyStore() {
       await axios.delete(`/accounts/apikeys/${id}/`);
       apiKeys.value = apiKeys.value.filter((key) => key.id !== id);
       notifySuccess("API Key removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -537,8 +549,9 @@ function createGlobalKeyStore() {
       const { data } = await axios.post<GlobalKey>("/core/keystore/", newKey);
       keys.value.push(data);
       notifySuccess("Key saved successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -556,8 +569,9 @@ function createGlobalKeyStore() {
       }
 
       notifySuccess("Key updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -571,8 +585,9 @@ function createGlobalKeyStore() {
       await axios.delete(`/core/keystore/${id}/`);
       keys.value = keys.value.filter((key) => key.id !== id);
       notifySuccess("Key removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -622,8 +637,9 @@ function createCodeSignStore() {
       await axios.delete("/core/codesign/");
       token.value = null;
       notifySuccess("Token was deleted!");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -635,8 +651,9 @@ function createCodeSignStore() {
     try {
       await axios.post("/core/codesign/");
       notifySuccess("Agents will signed");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -647,8 +664,9 @@ function createCodeSignStore() {
     try {
       await axios.patch("/core/codesign/", { token });
       notifySuccess("Token was updated successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

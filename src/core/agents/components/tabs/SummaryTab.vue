@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1" class="q-pa-sm"></div>
   <div v-else-if="isLoading" class="q-pa-md flex flex-center">
     <q-circular-progress indeterminate size="50px" color="primary" class="q-ma-md" />
   </div>
@@ -205,6 +206,7 @@ import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/store
 const {
   selectedAgent,
   selectedAgentId,
+  selectedAgentIds,
   isLoading,
   getAgent,
   refreshAgentWMI,

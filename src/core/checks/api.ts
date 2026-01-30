@@ -52,8 +52,9 @@ function createCheckStore() {
       });
 
       notifySuccess("Checks have been reset.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -66,8 +67,9 @@ function createCheckStore() {
     try {
       await axios.post(`/checks/${agentId}/run/`);
       notifySuccess("Agent checks will be run shortly");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -81,8 +83,9 @@ function createCheckStore() {
       const { data } = await axios.post<Check>(`/checks/`, payload);
       checks.value.unshift(data);
       notifySuccess("Check was created successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -99,8 +102,9 @@ function createCheckStore() {
         checks.value[index] = data;
       }
       notifySuccess("Check was updated successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -117,8 +121,9 @@ function createCheckStore() {
         checks.value.splice(index, 1);
       }
       notifySuccess("Check was removed successfully.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -135,8 +140,9 @@ function createCheckStore() {
         checks.value[index] = data;
       }
       notifySuccess("Check has been reset.");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

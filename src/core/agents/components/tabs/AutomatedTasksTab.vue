@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
@@ -304,7 +305,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useTaskStore, useAgentStore, useDashboardStore } from "src/stores/api";
 
-const { selectedAgentPlatform, selectedAgentId } = useAgentStore();
+const { selectedAgentPlatform, selectedAgentId, selectedAgentIds } = useAgentStore();
 const { tasks, getAgentTasks, isLoading, updateTaskPartial, removeTask, runTask } = useTaskStore();
 const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 import { notifyError } from "src/utils/notify";

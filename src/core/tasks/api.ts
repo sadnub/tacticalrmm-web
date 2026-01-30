@@ -93,8 +93,9 @@ function createTaskStore() {
       tasks.value.push(processTaskDatafromDB(data));
       notifySuccess("Task added successfully");
       return data;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -114,8 +115,9 @@ function createTaskStore() {
 
       notifySuccess("Task updated successfully");
       return data;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -131,8 +133,9 @@ function createTaskStore() {
       if (index !== -1) tasks.value[index] = processTaskDatafromDB(data);
       notifySuccess("Task updated successfully");
       return data;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -146,8 +149,9 @@ function createTaskStore() {
       await axios.delete(`/tasks/${id}/`);
       tasks.value = tasks.value.filter((task) => task.id !== id);
       notifySuccess("Task removed successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

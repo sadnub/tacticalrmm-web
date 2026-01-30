@@ -1,7 +1,7 @@
 <template>
   <q-list dense style="min-width: 200px">
     <!-- edit agent -->
-    <q-item v-close-popup clickable @click="selectedAgent && showEditAgent(selectedAgent)">
+    <q-item v-close-popup clickable @click="showEditAgent(agent.agent_id)">
       <q-item-section side>
         <q-icon size="xs" name="fas fa-edit" />
       </q-item-section>
@@ -235,7 +235,7 @@ import { useURLActionStore, runURLAction, useAgentStore, useCheckStore, useWindo
 import { useScriptDropdown } from "src/core/scripts/composables";
 
 const { webActions, getURLActions } = useURLActionStore();
-const { selectedAgent, updateAgent, wakeUpWOL, runTakeControl, runRemoteBackground, runWebVNC, agentRebootNow, agentShutdown, sendAgentPing, removeAgent } = useAgentStore();
+const { updateAgent, wakeUpWOL, runTakeControl, runRemoteBackground, runWebVNC, agentRebootNow, agentShutdown, sendAgentPing, removeAgent } = useAgentStore();
 const { runAgentChecks } = useCheckStore();
 const { runAgentUpdateScan, runAgentUpdateInstall } = useWindowsUpdateStore();
 
@@ -263,11 +263,11 @@ const { favoriteScriptOptions } = useScriptDropdown();
 // setup quasar
 const $q = useQuasar();
 
-function showEditAgent(agent: Agent) {
+function showEditAgent(agentId: string) {
   $q.dialog({
     component: EditAgent,
     componentProps: {
-      agent: agent,
+      agentId: agentId,
     },
   });
 }

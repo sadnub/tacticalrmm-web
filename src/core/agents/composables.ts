@@ -8,18 +8,29 @@ import type { Agent } from "./types";
 const agentStore = useAgentStore();
 const dashboardStore = useDashboardStore();
 
-// TODO: Apply remove extra categories when filtering or test to make sure it is working
 export function useAgentDropdown() {
   const { agents, isLoading } = agentStore;
 
+  // Returns string agent_id as value (for bulk actions, logs, scripts, etc.)
   const agentOptions = computed(() => {
     return _formatAgentOptions(agents.value);
+  });
+
+  // Returns numeric id as value (for exclusions)
+  const agentOptionsById = computed(() => {
+    return agents.value
+      .map(({ hostname, id }) => ({
+        label: hostname,
+        value: id,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   });
 
   onMounted(agentStore.getAgents);
 
   return {
     agentOptions,
+    agentOptionsById,
     isLoading,
   };
 }

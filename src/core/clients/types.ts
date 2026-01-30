@@ -10,7 +10,7 @@ export interface Client {
   };
   workstation_policy?: number;
   server_policy?: number;
-  alert_template?: number;
+  alert_template?: number | null;
   patch_policy?: number;
   sites: Site[];
   maintenance_mode: boolean;
@@ -30,7 +30,7 @@ export interface Site {
   };
   workstation_policy?: number;
   server_policy?: number;
-  alert_template?: number;
+  alert_template?: number | null;
   patch_policy?: number;
   maintenance_mode: boolean;
   agent_count?: number;

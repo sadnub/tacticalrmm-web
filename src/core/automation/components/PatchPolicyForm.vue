@@ -71,104 +71,109 @@
           map-options
         />
       </q-card-section>
-      <!-- Installation Schedule -->
-      <div class="text-subtitle2">Installation Schedule</div>
-      <q-separator />
-      <q-card-section class="row">
-        <div class="col-3">Schedule Frequency:</div>
-        <div class="col-4"></div>
-        <q-select
-          v-model="winupdatepolicy.run_time_frequency"
-          dense
-          class="col-5"
-          filled
-          :options="frequencyOptions"
-          emit-value
-          map-options
-        />
-      </q-card-section>
-      <q-card-section v-if="winupdatepolicy.run_time_frequency === 'monthly'" class="row">
-        <div class="col-3">Day of month to run:</div>
-        <div class="col-4"></div>
-        <q-select
-          v-model="winupdatepolicy.run_time_day"
-          dense
-          class="col-5"
-          filled
-          :options="monthDays"
-          emit-value
-          map-options
-        />
-      </q-card-section>
-      <q-card-section v-show="winupdatepolicy.run_time_frequency !== 'inherit'" class="row">
-        <div class="col-3">Scheduled Time:</div>
-        <div class="col-4"></div>
-        <q-select
-          v-model="winupdatepolicy.run_time_hour"
-          dense
-          class="col-5"
-          filled
-          :options="timeOptions"
-          emit-value
-          map-options
-        />
-      </q-card-section>
-      <q-card-section v-if="winupdatepolicy.run_time_frequency in ['inherit', 'daily']">
-        <div class="q-gutter-sm">
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="0" label="Monday" />
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="1" label="Tuesday" />
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="2" label="Wednesday" />
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="3" label="Thursday" />
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="4" label="Friday" />
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="5" label="Saturday" />
-          <q-checkbox v-model="winupdatepolicy.run_time_days" :val="6" label="Sunday" />
-        </div>
-      </q-card-section>
-      <div class="text-subtitle2">Reboot After Installation</div>
-      <q-separator />
-      <q-card-section class="row">
-        <div class="col-3"></div>
-        <div class="col-4"></div>
-        <q-select
-          v-model="winupdatepolicy.reboot_after_install"
-          dense
-          class="col-5"
-          filled
-          :options="rebootOptions"
-          emit-value
-          map-options
-        />
-      </q-card-section>
-      <div class="text-subtitle2">Failed Patches</div>
-      <q-separator />
-      <q-card-section v-if="!policy" class="row">
-        <div class="col-5">
-          <q-checkbox
-            v-model="winupdatepolicy.reprocess_failed_inherit"
-            label="Inherit failed patch settings"
-          />
-        </div>
-      </q-card-section>
-      <q-card-section v-show="!winupdatepolicy.reprocess_failed_inherit" class="row">
-        <div class="col-5">
-          <q-checkbox v-model="winupdatepolicy.reprocess_failed" label="Reprocess failed patches" />
-        </div>
-
-        <div class="col-3">
-          <q-input
-            v-model.number="winupdatepolicy.reprocess_failed_times"
+      <q-card-section>
+        <!-- Installation Schedule -->
+        <div class="text-subtitle2">Installation Schedule</div>
+        <q-separator />
+        <q-card-section class="row">
+          <div class="col-3">Schedule Frequency:</div>
+          <div class="col-4"></div>
+          <q-select
+            v-model="winupdatepolicy.run_time_frequency"
             dense
-            type="number"
+            class="col-5"
             filled
-            label="Times"
-            :rules="[(val) => val > 0 || 'Must be greater than 0']"
+            :options="frequencyOptions"
+            emit-value
+            map-options
           />
-        </div>
-        <div class="col-3"></div>
-        <q-checkbox
-          v-model="winupdatepolicy.email_if_fail"
-          label="Send an email when patch installation fails"
-        />
+        </q-card-section>
+        <q-card-section v-if="winupdatepolicy.run_time_frequency === 'monthly'" class="row">
+          <div class="col-3">Day of month to run:</div>
+          <div class="col-4"></div>
+          <q-select
+            v-model="winupdatepolicy.run_time_day"
+            dense
+            class="col-5"
+            filled
+            :options="monthDays"
+            emit-value
+            map-options
+          />
+        </q-card-section>
+        <q-card-section v-show="winupdatepolicy.run_time_frequency !== 'inherit'" class="row">
+          <div class="col-3">Scheduled Time:</div>
+          <div class="col-4"></div>
+          <q-select
+            v-model="winupdatepolicy.run_time_hour"
+            dense
+            class="col-5"
+            filled
+            :options="timeOptions"
+            emit-value
+            map-options
+          />
+        </q-card-section>
+        <q-card-section v-if="winupdatepolicy.run_time_frequency in ['inherit', 'daily']">
+          <div class="q-gutter-sm">
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="0" label="Monday" />
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="1" label="Tuesday" />
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="2" label="Wednesday" />
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="3" label="Thursday" />
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="4" label="Friday" />
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="5" label="Saturday" />
+            <q-checkbox v-model="winupdatepolicy.run_time_days" :val="6" label="Sunday" />
+          </div>
+        </q-card-section>
+        <div class="text-subtitle2">Reboot After Installation</div>
+        <q-separator />
+        <q-card-section class="row">
+          <div class="col-3"></div>
+          <div class="col-4"></div>
+          <q-select
+            v-model="winupdatepolicy.reboot_after_install"
+            dense
+            class="col-5"
+            filled
+            :options="rebootOptions"
+            emit-value
+            map-options
+          />
+        </q-card-section>
+        <div class="text-subtitle2">Failed Patches</div>
+        <q-separator />
+        <q-card-section v-if="!policy" class="row">
+          <div class="col-5">
+            <q-checkbox
+              v-model="winupdatepolicy.reprocess_failed_inherit"
+              label="Inherit failed patch settings"
+            />
+          </div>
+        </q-card-section>
+        <q-card-section v-show="!winupdatepolicy.reprocess_failed_inherit" class="row">
+          <div class="col-5">
+            <q-checkbox
+              v-model="winupdatepolicy.reprocess_failed"
+              label="Reprocess failed patches"
+            />
+          </div>
+
+          <div class="col-3">
+            <q-input
+              v-model.number="winupdatepolicy.reprocess_failed_times"
+              dense
+              type="number"
+              filled
+              label="Times"
+              :rules="[(val) => val > 0 || 'Must be greater than 0']"
+            />
+          </div>
+          <div class="col-3"></div>
+          <q-checkbox
+            v-model="winupdatepolicy.email_if_fail"
+            label="Send an email when patch installation fails"
+          />
+        </q-card-section>
       </q-card-section>
       <q-card-actions v-if="policy" align="left">
         <q-btn label="Submit" color="primary" type="submit" />
@@ -275,14 +280,15 @@ async function submit() {
   }
 }
 
-function deletePolicy(policy: WinPatchPolicy) {
+function deletePolicy(patchPolicy: WinPatchPolicy) {
   $q.dialog({
     title: "Delete patch policy?",
     cancel: true,
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
-    if (!policy.id) return;
-    void deletePatchPolicy(policy.id);
+    if (!patchPolicy.id) return;
+    void deletePatchPolicy(patchPolicy.id, patchPolicy.policy);
+    emit("hide");
   });
 }
 </script>

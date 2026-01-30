@@ -1,15 +1,6 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card
-      id="script-manager-card"
-      class="q-dialog-plugin"
-      :style="{
-        width: `${$q.screen.width - 100}px`,
-        'max-width': `${$q.screen.width - 100}px`,
-        height: `${$q.screen.height - 100}px`,
-        'max-height': `${$q.screen.height - 100}px`,
-      }"
-    >
+  <q-dialog ref="dialogRef" maximized @hide="onDialogHide">
+    <q-card id="script-manager-card" class="q-dialog-plugin">
       <q-bar>
         <q-btn
           class="q-mr-sm"
@@ -22,7 +13,7 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <div class="row q-pt-xs q-pl-xs">
+      <div class="row q-gutter-sm q-pa-sm">
         <q-btn-dropdown icon="add" label="New" no-caps dense flat>
           <q-list dense>
             <q-item v-close-popup clickable @click="newScriptModal">
@@ -47,7 +38,6 @@
           no-caps
           dense
           flat
-          class="q-ml-sm"
           label="Script Snippets"
           icon="mdi-script"
           @click="ScriptSnippetModal"
@@ -56,7 +46,6 @@
           dense
           flat
           no-caps
-          class="q-ml-sm"
           :label="tableView ? 'Folder View' : 'Table View'"
           :icon="tableView ? 'folder' : 'list'"
           @click="tableView = !tableView"
@@ -65,7 +54,6 @@
           dense
           flat
           no-caps
-          class="q-ml-sm"
           :label="showCommunityScripts ? 'Hide Community Scripts' : 'Show Community Scripts'"
           :icon="showCommunityScripts ? 'visibility_off' : 'visibility'"
           @click="setShowCommunityScripts(!showCommunityScripts)"
@@ -75,34 +63,27 @@
           dense
           flat
           no-caps
-          class="q-ml-sm"
           :label="showHiddenScripts ? 'Hide Hidden Scripts' : 'Show Hidden Scripts'"
           :icon="showHiddenScripts ? 'visibility_off' : 'visibility'"
           @click="showHiddenScripts = !showHiddenScripts"
         />
 
         <q-space />
-        <q-input
-          v-model="search"
-          style="width: 300px"
-          label="Search"
-          dense
-          filled
-          clearable
-          class="q-pr-md q-pb-xs"
-        >
+        <q-input v-model="search" style="width: 350px" label="Search" dense filled clearable>
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
         </q-input>
+
+        <tactical-table-export />
       </div>
       <!-- List View -->
       <div
         v-if="!tableView"
         class="scroll q-pl-xs"
         :style="{
-          'max-height': `${$q.screen.height - 182}px`,
-          'min-height': `${$q.screen.height - 382}px`,
+          'max-height': `${$q.screen.height - 32 - 58}px`,
+          'min-height': `${$q.screen.height - 32 - 58}px`,
         }"
       >
         <q-tree
@@ -271,7 +252,7 @@
       <tactical-table
         v-if="tableView"
         dense
-        :style="{ 'max-height': `${$q.screen.height - 182}px` }"
+        :style="{ 'max-height': `${$q.screen.height - 32 - 58}px` }"
         :rows="visibleScripts"
         :columns="columns"
         :loading="isLoading"
@@ -496,7 +477,8 @@ import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useStorage } from "@vueuse/core";
 import { useScriptStore, useDashboardStore } from "src/stores/api";
 
-const { scripts, isLoading, getScripts, updateScript, removeScript, downloadScript } = useScriptStore();
+const { scripts, isLoading, getScripts, updateScript, removeScript, downloadScript } =
+  useScriptStore();
 const { dashboardSettings, setShowCommunityScripts } = useDashboardStore();
 import { capitalize } from "src/utils/format";
 

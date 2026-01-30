@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else>
     <tactical-table
       :rows="agentHistory"
@@ -61,7 +62,7 @@ import { useQuasar, Notify } from "quasar";
 import { formatTableColumnText, truncateText } from "src/utils/format";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
 
-const { selectedAgentId, agentHistory, isLoading, getAgentHistory } = useAgentStore();
+const { selectedAgentId, selectedAgentIds, agentHistory, isLoading, getAgentHistory } = useAgentStore();
 const { tabHeight, formatDate } = useDashboardStore();
 
 // ui imports

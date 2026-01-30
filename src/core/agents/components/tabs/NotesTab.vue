@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
@@ -21,7 +22,7 @@
           flat
           push
           icon="refresh"
-          @click="getAgentNotes(selectedAgentId, { force: true })"
+          @click="selectedAgentId && getAgentNotes(selectedAgentId, { force: true })"
         />
         <q-btn icon="add" label="Add Note" no-caps dense flat push @click="addNote" />
         <q-space />
@@ -81,7 +82,7 @@ import { useQuasar } from "quasar";
 import { useAgentNoteStore, useAgentStore, useDashboardStore } from "src/stores/api";
 
 const { agentNotes, getAgentNotes, addAgentNote, updateAgentNote, removeAgentNote } = useAgentNoteStore();
-const { selectedAgentId, isLoading } = useAgentStore();
+const { selectedAgentId, selectedAgentIds, isLoading } = useAgentStore();
 const { tabHeight, formatDate } = useDashboardStore();
 
 // type imports

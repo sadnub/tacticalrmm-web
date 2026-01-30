@@ -89,8 +89,9 @@ function createClientStore() {
       const { data } = await axios.post<Client>("/clients/", payload);
       clients.value.unshift(data);
       notifySuccess("Client was added successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -106,8 +107,9 @@ function createClientStore() {
         clients.value[index] = data;
       }
       notifySuccess("Client was modified successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -138,8 +140,9 @@ function createClientStore() {
 
       dashboardStore.refreshDashboard();
       notifySuccess("Client was deleted successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -205,8 +208,9 @@ function createSiteStore() {
       sites.value.unshift(data);
 
       notifySuccess("Site was added successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -224,8 +228,9 @@ function createSiteStore() {
       }
 
       notifySuccess("Site was modified successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -247,8 +252,9 @@ function createSiteStore() {
       dashboardStore.refreshDashboard();
 
       notifySuccess("Site was deleted successfully");
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -300,8 +306,9 @@ function createDeploymentStore() {
     try {
       const { data } = await axios.post<Deployment>("/clients/deployments/", payload);
       deployments.value.unshift(data);
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -317,8 +324,9 @@ function createDeploymentStore() {
       if (index !== -1) {
         deployments.value.splice(index, 1);
       }
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

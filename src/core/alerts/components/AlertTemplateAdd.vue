@@ -67,12 +67,14 @@ const { alertTemplateOptions } = useAlertTemplateDropdown();
 const selectedTemplate = ref<number | null>(null);
 
 async function submit() {
-  if (props.object.alert_template === selectedTemplate.value || !selectedTemplate.value) {
+  // Only skip if the value hasn't changed (allow null to clear the template)
+  if (props.object.alert_template === selectedTemplate.value) {
     onDialogOK();
     return;
   }
 
   try {
+    // selectedTemplate.value can be null to clear the alert template
     const payload = { alert_template: selectedTemplate.value };
     if (props.type === "client") {
       await updateClient(props.object.id, payload);

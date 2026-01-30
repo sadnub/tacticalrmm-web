@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else-if="selectedAgentPlatform !== 'windows'" class="q-pa-sm">
     Only supported for Windows agents at this time
   </div>
@@ -83,7 +84,7 @@ import { useAgentStore, useDashboardStore } from "src/stores/api";
 import WmiDetail from "./WmiDetail.vue";
 
 // setup stores
-const { selectedAgent, selectedAgentId, selectedAgentPlatform, getAgent } = useAgentStore();
+const { selectedAgent, selectedAgentId, selectedAgentIds, selectedAgentPlatform, getAgent } = useAgentStore();
 const { tabHeight } = useDashboardStore();
 
 // assets tab logic

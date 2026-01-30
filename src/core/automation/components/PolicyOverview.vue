@@ -41,13 +41,13 @@
             transition-prev="jump-up"
             transition-next="jump-up"
           >
-            <q-tab-panel name="checks">
+            <q-tab-panel name="checks" class="q-pa-none">
               <PolicyChecksTab
                 v-if="!!selectedPolicyId && tree"
                 :selected-policy="tree.getNodeByKey(selectedPolicyId).id"
               />
             </q-tab-panel>
-            <q-tab-panel name="tasks">
+            <q-tab-panel name="tasks" class="q-pa-none">
               <PolicyAutomatedTasksTab
                 v-if="!!selectedPolicyId && tree"
                 :selected-policy="tree.getNodeByKey(selectedPolicyId).id"

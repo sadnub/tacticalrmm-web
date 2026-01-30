@@ -32,7 +32,7 @@
         <q-card-section>
           <tactical-dropdown
             v-model="localPolicy.excluded_agents"
-            :options="agentOptions"
+            :options="agentOptionsById"
             label="Excluded Agents"
             filled
             multiple
@@ -68,7 +68,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 // Dropdown options from composables
 const { clientOptions } = useClientDropdown();
 const { siteOptions } = useSiteDropdown();
-const { agentOptions } = useAgentDropdown();
+const { agentOptionsById } = useAgentDropdown();
 
 // Local editable copy of the policy, typed, copied in one line
 const localPolicy = reactive<Policy>(extend(true, {}, props.policy));
@@ -78,7 +78,7 @@ async function submit() {
     await updatePolicy(props.policy.id, localPolicy);
     onDialogOK();
   } catch {
-    //
+    // Error handled by store
   }
 }
 </script>

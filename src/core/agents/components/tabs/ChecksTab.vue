@@ -1,5 +1,6 @@
 <template>
-  <div v-if="!selectedAgentId" class="q-pa-sm">No agent selected</div>
+  <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
+  <div v-else-if="selectedAgentIds.length > 1"></div>
   <div v-else>
     <tactical-table
       v-model:pagination="pagination"
@@ -29,7 +30,7 @@
           flat
           push
           icon="refresh"
-          @click="getAgentChecks(selectedAgentId, { force: true })"
+          @click="selectedAgentId && getAgentChecks(selectedAgentId, { force: true })"
         />
         <q-btn-dropdown icon="add" label="New" no-caps dense flat class="q-mr-md">
           <q-list dense style="min-width: 200px">
@@ -110,7 +111,7 @@
           no-caps
           icon="play_arrow"
           class="q-mr-md"
-          @click="runAgentChecks(selectedAgentId)"
+          @click="selectedAgentId && runAgentChecks(selectedAgentId)"
         />
         <q-btn
           label="Reset All Checks Status"
@@ -406,7 +407,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useAgentStore, useCheckStore, useDashboardStore } from "src/stores/api";
 
-const { selectedAgentId, selectedAgentPlatform } = useAgentStore();
+const { selectedAgentId, selectedAgentIds, selectedAgentPlatform } = useAgentStore();
 const { checks, isLoading, getAgentChecks, runAgentChecks, updateCheck, removeCheck, resetCheck, resetAllAgentChecks } = useCheckStore();
 const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 import { notifyWarning } from "src/utils/notify";
