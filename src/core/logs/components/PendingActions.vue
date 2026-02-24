@@ -8,7 +8,7 @@
           flat
           push
           icon="refresh"
-          @click="getPendingActions()"
+          @click="refreshPendingActions()"
         />
         {{ agent ? `Pending Actions for ${agent.hostname}` : "All Pending Actions" }}
         <q-space />
@@ -112,7 +112,14 @@ import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePendingActionStore, useDashboardStore } from "src/stores/api";
 
-const { pendingActions, isLoading, getPendingActions, deletePendingAction } = usePendingActionStore();
+const {
+  pendingActions,
+  agentPendingActions,
+  isLoading,
+  getPendingActions,
+  getAgentPendingActions,
+  deletePendingAction,
+} = usePendingActionStore();
 const { formatDate } = useDashboardStore();
 import { getNextAgentUpdateTime } from "src/utils/format";
 
@@ -180,7 +187,7 @@ const columns: TacticalColumn[] = [
 ];
 
 const props = defineProps<{
-  agent: Agent;
+  agent?: Agent;
 }>();
 
 defineEmits(useDialogPluginComponent.emits);
@@ -189,11 +196,13 @@ const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 
-// pending actions logic
+// pending actions logic - use agent-specific or all actions
+const actionsSource = computed(() => (props.agent ? agentPendingActions.value : pendingActions.value));
+
 const showCompleted = ref(false);
 const completedCount = computed(() => {
   try {
-    return pendingActions.value.filter((action) => action.status === "completed").length;
+    return actionsSource.value.filter((action) => action.status === "completed").length;
   } catch (e) {
     console.error(e);
     return 0;
@@ -205,9 +214,17 @@ const visibleColumns = computed(() => {
   else return ["type", "due", "desc", "agent", "client", "site", "details"];
 });
 
+function refreshPendingActions() {
+  if (props.agent) {
+    void getAgentPendingActions(props.agent.agent_id);
+  } else {
+    getPendingActions();
+  }
+}
+
 const filteredActions = computed(() => {
-  if (showCompleted.value) return pendingActions.value;
-  else return pendingActions.value.filter((action) => action.status !== "completed");
+  if (showCompleted.value) return actionsSource.value;
+  else return actionsSource.value.filter((action) => action.status !== "completed");
 });
 
 function showOutput(details: string) {
@@ -234,5 +251,5 @@ function cancelPendingAction(action: PendingAction) {
   });
 }
 
-onMounted(() => getPendingActions());
+onMounted(() => refreshPendingActions());
 </script>

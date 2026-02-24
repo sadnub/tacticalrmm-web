@@ -86,6 +86,10 @@ function createPendingActionStore() {
       if (index !== -1) {
         pendingActions.value.splice(index, 1);
       }
+      const agentIndex = agentPendingActions.value.findIndex((action) => action.id === id);
+      if (agentIndex !== -1) {
+        agentPendingActions.value.splice(agentIndex, 1);
+      }
     } catch (e) {
       isError.value = true;
       throw e;

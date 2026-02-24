@@ -321,7 +321,7 @@ function showCheckModal(type: string, check?: Check) {
     component: component,
     componentProps: {
       check: check,
-      parent: !check ? { policy: props.selectedPolicy } : undefined,
+      parent: { policy: props.selectedPolicy },
     },
   });
 }

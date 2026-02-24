@@ -21,6 +21,7 @@
         no-data-label="No agents ran this check/task yet"
         storage-key="policy-status"
         :loading="isLoading"
+        column-select
       >
         <!-- header slots -->
         <template #header-cell-statusicon="headerProps">
@@ -115,7 +116,7 @@
               <template v-else-if="col.name === 'moreinfo'">
                 <span
                   v-if="bodyProps.row.check_type === 'ping'"
-                  class="ping-cell text-primary"
+                  class="ping-cell text-primary cursor-pointer"
                   @click="pingInfo(bodyProps.row)"
                   >output</span
                 >
@@ -126,13 +127,13 @@
                     bodyProps.row.stdout ||
                     bodyProps.row.stderr
                   "
-                  class="script-cell text-primary"
+                  class="script-cell text-primary cursor-pointer"
                   @click="showScriptOutput(bodyProps.row)"
                   >output</span
                 >
                 <span
                   v-else-if="bodyProps.row.check_type === 'eventlog'"
-                  class="eventlog-cell text-primary"
+                  class="eventlog-cell text-primary cursor-pointer"
                   @click="showEventInfo(bodyProps.row)"
                   >output</span
                 >
@@ -164,7 +165,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 
@@ -178,6 +179,8 @@ import PreDialog from "src/core/dashboard/ui/PreDialog.vue";
 interface PolicyStatusItem {
   id: number;
   hostname: string;
+  client?: string;
+  site?: string;
   status: "passing" | "failing" | "pending";
   alert_severity?: "info" | "warning" | "error";
   sync_status?: "notsynced" | "synced" | "pendingdeletion" | "initial";
@@ -207,7 +210,7 @@ const filter = ref("");
 // state
 const data = ref<PolicyStatusItem[]>([]);
 
-const columns = [
+const allColumns = [
   {
     name: "agent",
     label: "Hostname",
@@ -215,7 +218,21 @@ const columns = [
     align: "left" as const,
     sortable: true,
   },
-  { name: "statusicon", label: "", field: "statusicon", align: "left" as const },
+  {
+    name: "client",
+    label: "Client",
+    field: "client",
+    align: "left" as const,
+    sortable: true,
+  },
+  {
+    name: "site",
+    label: "Site",
+    field: "site",
+    align: "left" as const,
+    sortable: true,
+  },
+  { name: "statusicon", label: "Status Icon", field: "statusicon", align: "left" as const },
   {
     name: "status",
     label: "Status",
@@ -239,11 +256,26 @@ const columns = [
   },
 ];
 
+const columns = computed(() =>
+  props.type === "check" ? allColumns.filter((col) => col.name !== "status") : allColumns,
+);
+
 const pagination = ref({
   rowsPerPage: 0,
   sortBy: "status",
   descending: false,
 });
+
+// Use a visible column for default sort when type is check (status column hidden)
+watch(
+  () => props.type,
+  (type) => {
+    if (type === "check") {
+      pagination.value.sortBy = "agent";
+    }
+  },
+  { immediate: true },
+);
 
 // Computed
 const title = computed(() => {

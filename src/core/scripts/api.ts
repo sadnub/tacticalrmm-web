@@ -224,6 +224,7 @@ function createScriptSnippetStore() {
     try {
       const response = await axios.post<ScriptSnippet>(`/scripts/snippets/`, payload);
       snippets.value.unshift(response.data);
+      notifySuccess("Script snippet was created successfully.");
     } catch (e) {
       isError.value = true;
       throw e;
@@ -255,6 +256,7 @@ function createScriptSnippetStore() {
       if (index !== -1) {
         snippets.value[index] = response.data;
       }
+      notifySuccess("Script snippet was updated successfully.");
     } catch (e) {
       isError.value = true;
       throw e;
@@ -272,6 +274,7 @@ function createScriptSnippetStore() {
       if (index !== -1) {
         snippets.value.splice(index, 1);
       }
+      notifySuccess("Script snippet was removed successfully.");
     } catch (e) {
       isError.value = true;
       throw e;

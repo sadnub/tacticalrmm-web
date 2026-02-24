@@ -63,6 +63,7 @@ export function useWindowsUpdateStore() {
 
 function createAgentStore() {
   const agents = ref<Agent[]>([]);
+  const dropdownAgents = ref<Agent[]>([]); // Separate array for dropdown use
   const selectedAgentIds = ref<string[]>([]);
   const selectedAgent = ref<Agent | null>(null);
 
@@ -141,6 +142,31 @@ function createAgentStore() {
   }
 
   const getAgents = useCachedAction(_getAgents, { key: "getAgents", duration: 5 * 60 * 1000 });
+
+  // Separate function for dropdown agents - doesn't affect table pagination
+  const isDropdownLoading = ref(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function _getDropdownAgents(_args?: { force: boolean }) {
+    isDropdownLoading.value = true;
+
+    axios
+      .get<Agent[]>("/agents/")
+      .then(({ data }) => {
+        dropdownAgents.value = data;
+      })
+      .catch(() => {
+        // Silent fail for dropdown
+      })
+      .finally(() => {
+        isDropdownLoading.value = false;
+      });
+  }
+
+  const getDropdownAgents = useCachedAction(_getDropdownAgents, {
+    key: "getDropdownAgents",
+    duration: 5 * 60 * 1000,
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function _getAgent(agent_id: string, _args?: { force: boolean }) {
@@ -660,6 +686,7 @@ function createAgentStore() {
   }
   return {
     agents,
+    dropdownAgents,
     selectedAgentIds,
     selectedAgent,
     selectedAgentId,
@@ -671,6 +698,7 @@ function createAgentStore() {
     agentEventLog,
     agentEventLogCount,
     isLoading,
+    isDropdownLoading,
     isError,
     agentCount,
     rowsNumber,
@@ -683,6 +711,7 @@ function createAgentStore() {
     openAgentWindow,
     runRemoteBackground,
     getAgents,
+    getDropdownAgents,
     getAgent,
     updateAgent,
     removeAgent,

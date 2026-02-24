@@ -9,16 +9,16 @@ const agentStore = useAgentStore();
 const dashboardStore = useDashboardStore();
 
 export function useAgentDropdown() {
-  const { agents, isLoading } = agentStore;
+  const { dropdownAgents, isDropdownLoading } = agentStore;
 
   // Returns string agent_id as value (for bulk actions, logs, scripts, etc.)
   const agentOptions = computed(() => {
-    return _formatAgentOptions(agents.value);
+    return _formatAgentOptions(dropdownAgents.value);
   });
 
   // Returns numeric id as value (for exclusions)
   const agentOptionsById = computed(() => {
-    return agents.value
+    return dropdownAgents.value
       .map(({ hostname, id }) => ({
         label: hostname,
         value: id,
@@ -26,12 +26,12 @@ export function useAgentDropdown() {
       .sort((a, b) => a.label.localeCompare(b.label));
   });
 
-  onMounted(agentStore.getAgents);
+  onMounted(agentStore.getDropdownAgents);
 
   return {
     agentOptions,
     agentOptionsById,
-    isLoading,
+    isLoading: isDropdownLoading,
   };
 }
 

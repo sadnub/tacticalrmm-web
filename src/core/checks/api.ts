@@ -152,10 +152,10 @@ function createCheckStore() {
     isLoading.value = true;
     try {
       const { data } = await axios.patch(`/checks/${checkResultId}/history/`, { timeFilter });
-      console.log(data);
-      return Object.freeze(data);
+      return Array.isArray(data) ? Object.freeze(data) : [];
     } catch {
       isError.value = true;
+      return [];
     } finally {
       isLoading.value = false;
     }

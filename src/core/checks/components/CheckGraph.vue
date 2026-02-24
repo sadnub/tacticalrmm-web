@@ -8,7 +8,8 @@
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <div class="row">
-        <span v-if="!showChart" class="q-pa-md">No Data</span>
+        <span v-if="isLoading" class="q-pa-md">Loading…</span>
+        <span v-else-if="!showChart" class="q-pa-md">No Data</span>
         <q-space />
         <q-select
           v-model="timeFilter"
@@ -55,12 +56,13 @@ defineEmits([...useDialogPluginComponent.emits]);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
-let history = [] as CheckHistory[];
+const history = ref<CheckHistory[]>([]);
 const timeFilter = ref(1);
 
 async function loadCheckHistory() {
-  if (props.check.check_result)
-    history = await getCheckHistory(props.check.check_result?.id, timeFilter.value);
+  if (!props.check.check_result) return;
+  const data = await getCheckHistory(props.check.check_result.id, timeFilter.value);
+  history.value = Array.isArray(data) ? data : [];
 }
 
 const timeFilterOptions = [
@@ -71,7 +73,7 @@ const timeFilterOptions = [
 ];
 
 const showChart = computed(() => {
-  return !isLoading.value && history.length > 0;
+  return !isLoading.value && history.value.length > 0;
 });
 
 const seriesName = computed(() => {
@@ -168,13 +170,14 @@ const chartOptions = computed(() => {
         y: {
           title: { formatter: () => "" },
           formatter: (_: never, { dataPointIndex }: { dataPointIndex: number }) => {
-            if (!history[dataPointIndex]) return "";
+            const point = history.value[dataPointIndex];
+            if (!point) return "";
             if (props.check.check_type === "script") {
-              const results = history[dataPointIndex].results;
+              const results = point.results;
               return `Return Code: ${results.retcode}<br/>Std Out: ${results.stdout}<br/>Err Out: ${results.errout}<br/>Execution Time: ${results.execution_time}`;
             }
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            return String(history[dataPointIndex].results);
+            return String(point.results);
           },
         },
       },
