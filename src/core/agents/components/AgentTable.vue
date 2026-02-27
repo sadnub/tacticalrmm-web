@@ -578,7 +578,7 @@ const columns: TacticalColumn[] = [
   {
     name: "user",
     label: "User",
-    field: (row) => (row.italic ? row.italic : row.logged_username),
+    field: (row) => row.logged_username ?? "",
     sortable: true,
     align: "left",
     classes: (row) => (row.italic ? "text-italic" : ""),
@@ -634,6 +634,8 @@ const isFilteringTable = computed(
 watch(selectedClientSiteNode, () => {
   clearSelectedAgent();
   searchAndReset();
+
+  if (dashboardSettings.clearSearchWhenSwitching) clearFilter();
 });
 
 const clearFilter = () => {

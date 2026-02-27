@@ -2,14 +2,7 @@
   <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="height: 70vh; min-width: 70vw" no-backdrop-dismiss>
       <q-bar>
-        <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          push
-          icon="refresh"
-          @click="refreshPendingActions()"
-        />
+        <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="refreshPendingActions()" />
         {{ agent ? `Pending Actions for ${agent.hostname}` : "All Pending Actions" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -111,6 +104,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { usePendingActionStore, useDashboardStore } from "src/stores/api";
+import { useAgentStore } from "src/stores/api";
 
 const {
   pendingActions,
@@ -120,6 +114,9 @@ const {
   getAgentPendingActions,
   deletePendingAction,
 } = usePendingActionStore();
+
+const { refreshAgentSearch } = useAgentStore();
+
 const { formatDate } = useDashboardStore();
 import { getNextAgentUpdateTime } from "src/utils/format";
 
@@ -149,8 +146,7 @@ const columns: TacticalColumn[] = [
     format: (_, row) => {
       if (row.status !== "completed")
         if (row.action_type === "agentupdate") return getNextAgentUpdateTime();
-        else
-          return row.action_type === "schedreboot" ? formatDate(row.due) : row.due;
+        else return row.action_type === "schedreboot" ? formatDate(row.due) : row.due;
       else return "Completed";
     },
   },
@@ -195,9 +191,10 @@ defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
-
 // pending actions logic - use agent-specific or all actions
-const actionsSource = computed(() => (props.agent ? agentPendingActions.value : pendingActions.value));
+const actionsSource = computed(() =>
+  props.agent ? agentPendingActions.value : pendingActions.value,
+);
 
 const showCompleted = ref(false);
 const completedCount = computed(() => {
@@ -245,11 +242,9 @@ function cancelPendingAction(action: PendingAction) {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => {
     void deletePendingAction(action.id);
-
-    // TODO: Only update the agent and not pull every single agent
-    // store.dispatch("refreshDashboard");
+    refreshAgentSearch();
   });
 }
 
-onMounted(() => refreshPendingActions());
+onMounted(refreshPendingActions);
 </script>

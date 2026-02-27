@@ -35,13 +35,7 @@
       storage-key="eventlog-manager"
     >
       <template #top>
-        <q-btn
-          dense
-          flat
-          push
-          icon="refresh"
-          @click="getAgentEventLog(agentId, logType, days)"
-        />
+        <q-btn dense flat push icon="refresh" @click="getAgentEventLog(agentId, logType, days)" />
         <q-space />
         <q-radio
           v-model="logType"
@@ -60,7 +54,7 @@
           label="Search"
           dense
           clearable
-          class="q=pr-sm"
+          class="q-pr-sm"
         >
           <template #prepend>
             <q-icon name="search" />
@@ -155,7 +149,6 @@ function showEventMessage(message: string) {
 
 // vue lifecycle hooks
 onMounted(() => {
-  if (props.agentPlatform === "windows")
-    getAgentEventLog(props.agentId, logType.value, days.value);
+  if (props.agentPlatform === "windows") getAgentEventLog(props.agentId, logType.value, days.value);
 });
 </script>

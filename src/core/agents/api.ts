@@ -105,6 +105,8 @@ function createAgentStore() {
     isLoading.value = true;
     isError.value = false;
     lastSearchParams.value = { ...params };
+    clearSelectedAgent();
+
     axios
       .patch<AgentSearchResponse>("/agents/v2/", params)
       .then(({ data: { agents: agentsData, total } }) => {

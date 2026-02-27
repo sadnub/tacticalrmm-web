@@ -319,7 +319,7 @@ function createDeploymentStore() {
     isError.value = false;
 
     try {
-      await axios.delete(`/client/deployments/${id}/`);
+      await axios.delete(`/clients/deployments/${id}/`);
       const index = deployments.value.findIndex((d) => d.id === id);
       if (index !== -1) {
         deployments.value.splice(index, 1);

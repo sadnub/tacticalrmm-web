@@ -32,7 +32,15 @@
         <template #top>
           <q-btn label="New" dense flat push no-caps icon="add" @click="showAddClient" />
           <q-space />
-          <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm">
+          <q-input
+            v-model="search"
+            filled
+            label="Search"
+            dense
+            clearable
+            class="q-pr-sm"
+            style="width: 300px"
+          >
             <template #prepend>
               <q-icon name="search" />
             </template>

@@ -20,7 +20,15 @@
     <template #top>
       <q-btn dense flat push icon="refresh" @click="getAgentServices(agentId)" />
       <q-space />
-      <q-input v-model="filter" filled label="Search" dense clearable>
+      <q-input
+        v-model="filter"
+        filled
+        label="Search"
+        dense
+        clearable
+        class="q-pr-sm"
+        style="width: 300px"
+      >
         <template #prepend>
           <q-icon name="search" />
         </template>

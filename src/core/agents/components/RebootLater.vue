@@ -39,7 +39,7 @@ import { reactive, ref } from "vue";
 import { useQuasar, useDialogPluginComponent, date } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const { scheduleAgentReboot } = useAgentStore();
+const { scheduleAgentReboot, refreshAgentSearch } = useAgentStore();
 import { formatDateInputField } from "src/utils/format";
 import type { Agent } from "../types";
 
@@ -50,7 +50,7 @@ const props = defineProps<{
 defineEmits(useDialogPluginComponent.emits);
 
 // setup quasar dialog plugin
-const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
+const { dialogRef, onDialogHide } = useDialogPluginComponent();
 const $q = useQuasar();
 
 // setup reboot later logic
@@ -59,12 +59,20 @@ const state = reactive({
 });
 const loading = ref(false);
 
-function scheduleReboot() {
-  void scheduleAgentReboot(props.agent.agent_id, state);
-  $q.dialog({
-    title: "Reboot pending",
-    style: "width: 40vw",
-    message: `A reboot has been scheduled for ${state.datetime} on ${props.agent.hostname}. It can be cancelled from the Pending Actions menu until the scheduled time.`,
-  }).onDismiss(onDialogOK);
+async function scheduleReboot() {
+  loading.value = true;
+  try {
+    await scheduleAgentReboot(props.agent.agent_id, state);
+    refreshAgentSearch();
+    $q.dialog({
+      title: "Reboot pending",
+      style: "width: 40vw",
+      message: `A reboot has been scheduled for ${state.datetime} on ${props.agent.hostname}. It can be cancelled from the Pending Actions menu until the scheduled time.`,
+    });
+  } catch {
+    //
+  } finally {
+    loading.value = false;
+  }
 }
 </script>

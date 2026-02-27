@@ -27,7 +27,15 @@
           <q-btn label="New" dense flat push unelevated no-caps icon="add" @click="showAddSite" />
           <q-space />
 
-          <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm">
+          <q-input
+            v-model="search"
+            filled
+            label="Search"
+            dense
+            clearable
+            class="q-pr-sm"
+            style="width: 300px"
+          >
             <template #prepend>
               <q-icon name="search" />
             </template>

@@ -34,7 +34,15 @@
 
           <q-space />
 
-          <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm">
+          <q-input
+            v-model="search"
+            filled
+            label="Search"
+            dense
+            clearable
+            class="q-pr-sm"
+            style="width: 300px"
+          >
             <template #prepend>
               <q-icon name="search" />
             </template>
@@ -157,7 +165,6 @@ const columns = [
 ];
 
 defineEmits(useDialogPluginComponent.emits);
-
 
 // quasar dialog setup
 const { dialogRef, onDialogHide } = useDialogPluginComponent();

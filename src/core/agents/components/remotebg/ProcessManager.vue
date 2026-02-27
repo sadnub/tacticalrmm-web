@@ -108,10 +108,11 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
-import { useIntervalFn } from "@vueuse/core";
+import { useIntervalFn, useTimeoutFn } from "@vueuse/core";
 import { useAgentStore } from "src/stores/api";
 
-const { selectedAgent, agentProcesses, isLoading, getAgentProcesses, killAgentProcess, getAgent } = useAgentStore();
+const { selectedAgent, agentProcesses, isLoading, getAgentProcesses, killAgentProcess, getAgent } =
+  useAgentStore();
 import { bytes2Human } from "src/utils/format";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
@@ -199,6 +200,13 @@ const totalRamUsage = computed(() => {
     return acc + memory;
   }, 0);
 });
+
+// disable the live refresh if the agent is not responding after 10s
+useTimeoutFn(() => {
+  if (agentProcesses.value.length === 0) {
+    pause();
+  }
+}, 10000);
 
 onMounted(() => {
   getAgent(props.agentId);

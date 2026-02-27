@@ -94,7 +94,7 @@ function createUserStore() {
     isError.value = false;
 
     try {
-      const { data } = await axios.put<User>(`/accounts/users/ui/`, payload);
+      const { data } = await axios.patch<User>(`/accounts/users/ui/`, payload);
       const index = users.value.findIndex((user) => user.id === data.id);
       if (index !== -1) {
         users.value[index] = data;

@@ -190,7 +190,10 @@ function createDashboardStore() {
     if (data.date_format) dashboardSettings.dateFormat = data.date_format;
   }
 
-  const getDashInfo = useCachedAction(_getDashInfo, { key: "getDashInfo", duration: 1 * 60 * 1000 });
+  const getDashInfo = useCachedAction(_getDashInfo, {
+    key: "getDashInfo",
+    duration: 1 * 60 * 1000,
+  });
 
   function refreshDashboard() {
     const clientStore = useClientStore();
@@ -389,6 +392,8 @@ function createAuthStore() {
     name.value = null;
     ssoLoginProvider.value = null;
     provider_id.value = null;
+
+    dashboardStoreInstance = null;
   }
 
   async function setupTotp(): Promise<TOTPSetupResponse | false> {

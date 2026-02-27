@@ -2,13 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 60vw; height: 75vh">
       <q-bar>
-        <q-btn
-          class="q-mr-sm"
-          dense
-          flat
-          icon="refresh"
-          @click="getRoles({ force: true })"
-        />
+        <q-btn class="q-mr-sm" dense flat icon="refresh" @click="getRoles({ force: true })" />
         <q-space />Manage Roles
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
@@ -27,6 +21,7 @@
         column-select
         storage-key="permission-manager"
         :loading="isLoading"
+        :filter="search"
       >
         <template #top>
           <q-btn flat dense icon="add" label="New Role" @click="showAddRoleModal" />
@@ -133,7 +128,6 @@ defineEmits(useDialogPluginComponent.emits);
 // setup quasar
 const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
-
 
 const search = ref("");
 

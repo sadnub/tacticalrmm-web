@@ -2,7 +2,7 @@
 
 import type { QVueGlobals } from "quasar";
 import type { Router, RouteLocationNormalizedLoaded } from "vue-router";
-import { useReportingDataQueries } from "./ee/reporting/api/reporting";
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string;

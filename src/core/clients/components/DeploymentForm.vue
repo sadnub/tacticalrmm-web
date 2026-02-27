@@ -95,15 +95,15 @@ const state = reactive<Deployment>({
 });
 
 async function submit() {
-  if (state.expires) state.expires = formatDateStringwithTimezone(state.expires);
-
   try {
-    await addDeployment(state);
+    await addDeployment({
+      ...state,
+      expires: state.expires ? formatDateStringwithTimezone(state.expires) : "",
+    });
 
     onDialogOK();
   } catch {
-    if (state.expires) state.expires = formatDateInputField(state.expires);
-    return;
+    //
   }
 }
 </script>

@@ -69,7 +69,15 @@
           inline
         />
         <q-space />
-        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm">
+        <q-input
+          v-model="filter"
+          filled
+          label="Search"
+          dense
+          clearable
+          class="q-pr-sm"
+          style="width: 300px"
+        >
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -161,7 +169,6 @@ const props = defineProps<{
   agent?: string;
   modal: boolean;
 }>();
-
 
 const { debugLog, isLoading, getDebugLog, $reset } = useDebugLogStore();
 const { tabHeight, dashboardSettings, formatDate } = useDashboardStore();

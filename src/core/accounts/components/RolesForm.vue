@@ -1,6 +1,6 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
-    <q-card style="min-width: 75vw; max-height: 75vh" class="q-dialog-plugin">
+    <q-card style="min-width: 75vw" class="q-dialog-plugin">
       <q-bar>
         {{ localRole ? "Editing Role" : "Adding Role" }}
         <q-space />
