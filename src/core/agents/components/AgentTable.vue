@@ -250,6 +250,7 @@
         <q-tr
           :props="props"
           class="cursor-pointer"
+          :class="selectedAgentIds.includes(props.row.agent_id) ? ($q.dark.isActive ? 'highlight-dark' : 'highlight') : ''"
           @contextmenu="selectRow(props.row)"
           @click="selectRow(props.row)"
           @dblclick="selectSingleRow(props.row)"
