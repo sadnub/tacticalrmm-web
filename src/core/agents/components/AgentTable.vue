@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-none">
+  <div class="q-pa-none q-pl-xs">
     <tactical-table
       v-model:pagination="pagination"
       dense

@@ -72,6 +72,17 @@ a
   thead tr:first-child th
     background-color: #1d1d1d
 
+.q-table--dense
+  .q-table th,
+  .q-table td
+    padding: 4px 4px
+  .q-table th:first-child,
+  .q-table td:first-child
+    padding-left: 4px
+  .q-table th:last-child,
+  .q-table td:last-child
+    padding-right: 4px
+
 .bg-dark
   background-color: --q-page-dark
 
