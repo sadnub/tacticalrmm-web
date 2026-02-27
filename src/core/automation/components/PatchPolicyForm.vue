@@ -1,12 +1,12 @@
 <template>
   <q-card flat>
     <q-form @submit.prevent="submit">
-      <q-card-section class="row">
+      <div class="row items-center q-py-xs">
         <div class="col-3">Severity</div>
         <div class="col-4"></div>
         <div class="col-5">Action</div>
-      </q-card-section>
-      <q-card-section class="row">
+      </div>
+      <div class="row items-center q-py-xs">
         <div class="col-3">Critical:</div>
         <div class="col-4"></div>
         <q-select
@@ -18,8 +18,8 @@
           emit-value
           map-options
         />
-      </q-card-section>
-      <q-card-section class="row">
+      </div>
+      <div class="row items-center q-py-xs">
         <div class="col-3">Important:</div>
         <div class="col-4"></div>
         <q-select
@@ -31,8 +31,8 @@
           emit-value
           map-options
         />
-      </q-card-section>
-      <q-card-section class="row">
+      </div>
+      <div class="row items-center q-py-xs">
         <div class="col-3">Moderate:</div>
         <div class="col-4"></div>
         <q-select
@@ -44,8 +44,8 @@
           emit-value
           map-options
         />
-      </q-card-section>
-      <q-card-section class="row">
+      </div>
+      <div class="row items-center q-py-xs">
         <div class="col-3">Low:</div>
         <div class="col-4"></div>
         <q-select
@@ -57,8 +57,8 @@
           emit-value
           map-options
         />
-      </q-card-section>
-      <q-card-section class="row">
+      </div>
+      <div class="row items-center q-py-xs">
         <div class="col-3">Other:</div>
         <div class="col-4"></div>
         <q-select
@@ -70,12 +70,14 @@
           emit-value
           map-options
         />
-      </q-card-section>
-      <q-card-section>
+      </div>
+      <div>
         <!-- Installation Schedule -->
-        <div class="text-subtitle2">Installation Schedule</div>
+        <div class="row items-center q-mt-md q-mb-xs">
+          <div class="text-subtitle2">Installation Schedule</div>
+        </div>
         <q-separator />
-        <q-card-section class="row">
+        <div class="row items-center q-py-xs">
           <div class="col-3">Schedule Frequency:</div>
           <div class="col-4"></div>
           <q-select
@@ -87,8 +89,8 @@
             emit-value
             map-options
           />
-        </q-card-section>
-        <q-card-section v-if="winupdatepolicy.run_time_frequency === 'monthly'" class="row">
+        </div>
+        <div v-if="winupdatepolicy.run_time_frequency === 'monthly'" class="row items-center q-py-xs">
           <div class="col-3">Day of month to run:</div>
           <div class="col-4"></div>
           <q-select
@@ -100,8 +102,8 @@
             emit-value
             map-options
           />
-        </q-card-section>
-        <q-card-section v-show="winupdatepolicy.run_time_frequency !== 'inherit'" class="row">
+        </div>
+        <div v-show="winupdatepolicy.run_time_frequency !== 'inherit'" class="row items-center q-py-xs">
           <div class="col-3">Scheduled Time:</div>
           <div class="col-4"></div>
           <q-select
@@ -113,8 +115,8 @@
             emit-value
             map-options
           />
-        </q-card-section>
-        <q-card-section v-if="winupdatepolicy.run_time_frequency in ['inherit', 'daily']">
+        </div>
+        <div v-if="winupdatepolicy.run_time_frequency in ['inherit', 'daily']" class="row items-center q-py-xs">
           <div class="q-gutter-sm">
             <q-checkbox v-model="winupdatepolicy.run_time_days" :val="0" label="Monday" />
             <q-checkbox v-model="winupdatepolicy.run_time_days" :val="1" label="Tuesday" />
@@ -124,10 +126,12 @@
             <q-checkbox v-model="winupdatepolicy.run_time_days" :val="5" label="Saturday" />
             <q-checkbox v-model="winupdatepolicy.run_time_days" :val="6" label="Sunday" />
           </div>
-        </q-card-section>
-        <div class="text-subtitle2">Reboot After Installation</div>
+        </div>
+        <div class="row items-center q-mt-md q-mb-xs">
+          <div class="text-subtitle2">Reboot After Installation</div>
+        </div>
         <q-separator />
-        <q-card-section class="row">
+        <div class="row items-center q-py-xs">
           <div class="col-3"></div>
           <div class="col-4"></div>
           <q-select
@@ -139,18 +143,20 @@
             emit-value
             map-options
           />
-        </q-card-section>
-        <div class="text-subtitle2">Failed Patches</div>
+        </div>
+        <div class="row items-center q-mt-md q-mb-xs">
+          <div class="text-subtitle2">Failed Patches</div>
+        </div>
         <q-separator />
-        <q-card-section v-if="!policy" class="row">
+        <div v-if="!policy" class="row items-center q-py-xs">
           <div class="col-5">
             <q-checkbox
               v-model="winupdatepolicy.reprocess_failed_inherit"
               label="Inherit failed patch settings"
             />
           </div>
-        </q-card-section>
-        <q-card-section v-show="!winupdatepolicy.reprocess_failed_inherit" class="row">
+        </div>
+        <div v-show="!winupdatepolicy.reprocess_failed_inherit" class="row items-center q-py-xs">
           <div class="col-5">
             <q-checkbox
               v-model="winupdatepolicy.reprocess_failed"
@@ -173,8 +179,8 @@
             v-model="winupdatepolicy.email_if_fail"
             label="Send an email when patch installation fails"
           />
-        </q-card-section>
-      </q-card-section>
+        </div>
+      </div>
       <q-card-actions v-if="policy" align="left">
         <q-btn label="Submit" color="primary" type="submit" />
         <q-btn label="Cancel" @click="$emit('hide')" />

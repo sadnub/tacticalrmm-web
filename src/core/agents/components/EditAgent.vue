@@ -1,24 +1,24 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card style="min-width: 800px">
+    <q-card style="min-width: 80vw; height: 85vh">
       <q-bar>
         Edit {{ agent?.hostname ?? "Agent" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-inner-loading :showing="!agent" />
-      <q-splitter v-if="agent" v-model="splitterModel">
+      <q-splitter v-if="agent" v-model="splitterModel" style="height: calc(100% - 36px)">
         <template #before>
           <q-tabs v-model="tab" dense vertical class="text-primary">
             <q-tab name="general" label="General" />
-            <q-tab name="customfields" label="Custom Fields" />
             <q-tab name="patch" label="Patches" />
+            <q-tab name="customfields" label="Custom Fields" />
             <q-tab name="policies" label="Automation Policies" />
           </q-tabs>
         </template>
         <template #after>
-          <q-form @submit.prevent="submit">
-            <div class="scroll" style="height: 65vh; max-height: 65vh">
+          <q-form class="column" style="height: 100%" @submit.prevent="submit">
+            <q-scroll-area class="col">
               <q-tab-panels
                 v-model="tab"
                 animated
@@ -27,7 +27,7 @@
               >
                 <!-- general -->
                 <q-tab-panel name="general">
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">Site:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
@@ -38,8 +38,8 @@
                       map-options
                       filterable
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">Type:</div>
                     <div class="col-2"></div>
                     <q-select
@@ -50,13 +50,13 @@
                       :options="['server', 'workstation']"
                       class="col-8"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">Description:</div>
                     <div class="col-2"></div>
                     <q-input v-model="localAgent.description" filled dense class="col-8" />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">Timezone:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
@@ -68,14 +68,19 @@
                       :options="dashboardSettings.timezoneOptions"
                       class="col-8"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-mt-md q-mb-xs">
+                    <div class="text-subtitle2">Check Settings</div>
+                  </div>
+                  <q-separator />
+                  <div class="row items-center q-py-xs">
                     <div class="col-10">Run checks every:</div>
                     <q-input
                       v-model.number="localAgent.check_interval"
                       dense
                       type="number"
                       filled
+                      hide-bottom-space
                       label="Seconds"
                       class="col-2"
                       :rules="[
@@ -84,8 +89,8 @@
                         (val: number) => val <= 86400 || 'Maximum is 86400 seconds',
                       ]"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-10">
                       <q-icon
                         class="q-pr-sm"
@@ -101,6 +106,7 @@
                       dense
                       type="number"
                       filled
+                      hide-bottom-space
                       label="Minutes"
                       class="col-2"
                       :rules="[
@@ -109,8 +115,8 @@
                         (val: number) => val < 9999999 || 'Maximum is 9999999 minutes',
                       ]"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-10">
                       <q-icon
                         class="q-pr-sm"
@@ -126,6 +132,7 @@
                       dense
                       type="number"
                       filled
+                      hide-bottom-space
                       label="Minutes"
                       class="col-2"
                       :rules="[
@@ -134,8 +141,12 @@
                         (val: number) => val < 9999999 || 'Maximum is 9999999 minutes',
                       ]"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-mt-md q-mb-xs">
+                    <div class="text-subtitle2">Alerts</div>
+                  </div>
+                  <q-separator />
+                  <div class="row items-center q-py-xs">
                     <q-checkbox
                       v-model="localAgent.overdue_email_alert"
                       label="Get overdue email alerts"
@@ -148,7 +159,12 @@
                       v-model="localAgent.overdue_dashboard_alert"
                       label="Get overdue dashboard alerts"
                     />
-                  </q-card-section>
+                  </div>
+                </q-tab-panel>
+
+                <!-- patch -->
+                <q-tab-panel name="patch">
+                  <PatchPolicyForm :agent="agent" />
                 </q-tab-panel>
 
                 <!-- custom fields -->
@@ -161,11 +177,6 @@
                   <q-card-section v-for="field in agentCustomFields" :key="field.id">
                     <CustomField v-model="agentCustomFieldValues[field.name]" :field="field" />
                   </q-card-section>
-                </q-tab-panel>
-
-                <!-- patch -->
-                <q-tab-panel name="patch">
-                  <PatchPolicyForm :agent="agent" />
                 </q-tab-panel>
 
                 <!-- automation policies -->
@@ -316,8 +327,8 @@
                   </q-list>
                 </q-tab-panel>
               </q-tab-panels>
-            </div>
-            <q-card-section class="row items-center">
+            </q-scroll-area>
+            <q-card-section class="row items-center col-auto">
               <q-btn label="Save" color="primary" type="submit" />
             </q-card-section>
           </q-form>
@@ -353,7 +364,7 @@ const props = defineProps<{
 
 defineEmits(useDialogPluginComponent.emits);
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
-const splitterModel = ref(25);
+const splitterModel = ref(18);
 const tab = ref("general");
 
 const { siteOptions } = useSiteDropdown();
