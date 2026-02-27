@@ -1,13 +1,13 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
-    <q-card style="min-width: 60vw">
+    <q-card style="min-width: 60vw; height: 90vh">
       <q-inner-loading
         :showing="!coreSettings"
         label="Loading Settings..."
         label-class="text-teal"
         label-style="font-size: 1.1em"
       />
-      <q-splitter v-if="coreSettings" v-model="splitterModel">
+      <q-splitter v-if="coreSettings" v-model="splitterModel" style="height: 100%">
         <template #before>
           <q-tabs v-model="tab" dense vertical class="text-primary">
             <q-tab name="general" label="General" />
@@ -24,32 +24,32 @@
           </q-tabs>
         </template>
         <template #after>
-          <q-form @submit.prevent="submit">
-            <q-card-section class="row items-center">
+          <q-form class="column" style="height: 100%" @submit.prevent="submit">
+            <q-card-section class="row items-center col-auto">
               <div class="text-h6">Global Settings</div>
               <q-space />
               <q-btn v-close-popup icon="close" flat round dense />
             </q-card-section>
-            <q-scroll-area :thumb-style="thumbStyle" style="height: 60vh">
+            <q-scroll-area ref="scrollArea" :thumb-style="thumbStyle" class="col">
               <q-tab-panels
                 v-model="tab"
-                animated
-                transition-prev="jump-up"
-                transition-next="jump-up"
+                :animated="false"
               >
                 <!-- general -->
                 <q-tab-panel name="general">
-                  <div class="text-subtitle2">General</div>
+                  <div class="row items-center q-mb-xs">
+                    <div class="text-subtitle2">General</div>
+                  </div>
                   <q-separator />
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-xs">
                     <q-checkbox
                       v-model="coreSettings.agent_auto_update"
                       label="Enable agent automatic self update"
                     >
                       <q-tooltip> Runs at 35mins past every hour </q-tooltip>
                     </q-checkbox>
-                  </q-card-section>
-                  <q-card-section v-if="!hosted" class="row">
+                  </div>
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <q-checkbox
                       v-model="coreSettings.enable_server_scripts"
                       label="Enable server side scripts"
@@ -72,8 +72,8 @@
                       "
                     >
                     </q-btn>
-                  </q-card-section>
-                  <q-card-section v-if="!hosted" class="row">
+                  </div>
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <q-checkbox
                       v-model="coreSettings.enable_server_webterminal"
                       label="Enable web terminal"
@@ -93,8 +93,8 @@
                       "
                     >
                     </q-btn>
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Default agent timezone:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
@@ -106,8 +106,8 @@
                       :options="dashboardSettings.timezoneOptions"
                       class="col-6"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Default date format:</div>
                     <div class="col-2"></div>
                     <q-input v-model="coreSettings.date_format" filled dense class="col-6">
@@ -126,8 +126,8 @@
                         </q-btn>
                       </template>
                     </q-input>
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Default server policy:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
@@ -141,8 +141,8 @@
                       class="col-6"
                       filterable
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Default workstation policy:</div>
                     <div class="col-2"></div>
                     <tactical-dropdown
@@ -156,8 +156,8 @@
                       class="col-6"
                       filterable
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Default alert template:</div>
                     <div class="col-2"></div>
                     <q-select
@@ -171,8 +171,8 @@
                       :options="alertTemplateOptions"
                       class="col-6"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4 flex items-center">Receive notifications on:</div>
                     <div class="col-2"></div>
                     <q-checkbox
@@ -187,8 +187,8 @@
                       class="col-3"
                       label="Warning Alerts"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Agent Debug Level:</div>
                     <div class="col-2"></div>
                     <q-select
@@ -201,8 +201,8 @@
                       :options="logLevelOptions"
                       class="col-6"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">
                       Clear faults on agents that haven't checked in after (days):
                     </div>
@@ -215,12 +215,12 @@
                       class="col-6"
                       :rules="[(val: number) => val >= 0 || 'Minimum is 0']"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-4">Reset Patch Policy on Agents:</div>
                     <div class="col-2"></div>
                     <q-btn color="negative" label="Reset" @click="showResetPatchPolicy" />
-                  </q-card-section>
+                  </div>
                 </q-tab-panel>
                 <!-- email alerts -->
                 <q-tab-panel name="emailalerts">
@@ -239,7 +239,7 @@
                     </div>
                   </div>
                   <q-separator />
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-xs">
                     <div class="col-3">Recipients</div>
                     <div class="col-4"></div>
                     <div class="col-5">
@@ -265,11 +265,13 @@
                         </q-item-section>
                       </q-list>
                     </div>
-                  </q-card-section>
+                  </div>
                   <!-- smtp -->
-                  <div class="text-subtitle2">SMTP Settings</div>
+                  <div class="row items-center q-mb-xs">
+                    <div class="text-subtitle2">SMTP Settings</div>
+                  </div>
                   <q-separator />
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">From email:</div>
                     <div class="col-4"></div>
                     <q-input
@@ -279,8 +281,8 @@
                       class="col-6 q-pa-none"
                       :rules="[(val: string) => isValidEmail(val) || 'Invalid email']"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">From name:</div>
                     <div class="col-4"></div>
                     <q-input
@@ -289,8 +291,8 @@
                       dense
                       class="col-6 q-pa-none"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">Host:</div>
                     <div class="col-4"></div>
                     <q-input
@@ -299,8 +301,8 @@
                       dense
                       class="col-6 q-pa-none"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-2">Port:</div>
                     <div class="col-4"></div>
                     <q-input
@@ -311,15 +313,15 @@
                       class="q-pa-none"
                       :rules="[(val: number) => (val > 0 && val <= 65535) || 'Invalid Port']"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <q-checkbox
                       v-model="coreSettings.smtp_requires_auth"
                       label="My Server Requires Authentication"
                       class="q-pa-none"
                     />
-                  </q-card-section>
-                  <q-card-section v-show="coreSettings.smtp_requires_auth" class="row">
+                  </div>
+                  <div v-show="coreSettings.smtp_requires_auth" class="row items-center q-py-xs">
                     <div class="col-2">Username:</div>
                     <div class="col-4"></div>
                     <q-input
@@ -328,8 +330,8 @@
                       dense
                       class="col-6 q-pa-none"
                     />
-                  </q-card-section>
-                  <q-card-section v-show="coreSettings.smtp_requires_auth" class="row">
+                  </div>
+                  <div v-show="coreSettings.smtp_requires_auth" class="row items-center q-py-xs">
                     <div class="col-2">Password:</div>
                     <div class="col-4"></div>
                     <q-input
@@ -347,7 +349,7 @@
                         />
                       </template>
                     </q-input>
-                  </q-card-section>
+                  </div>
                 </q-tab-panel>
                 <!-- twilio sms alerts -->
                 <q-tab-panel name="smsalerts">
@@ -366,7 +368,7 @@
                     </div>
                   </div>
                   <q-separator />
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-xs">
                     <div class="col-3">Recipients</div>
                     <div class="col-4"></div>
                     <div class="col-5">
@@ -392,11 +394,13 @@
                         </q-item-section>
                       </q-list>
                     </div>
-                  </q-card-section>
+                  </div>
                   <!-- smtp -->
-                  <div class="text-subtitle2">Twilio Settings</div>
+                  <div class="row items-center q-mb-xs">
+                    <div class="text-subtitle2">Twilio Settings</div>
+                  </div>
                   <q-separator />
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-xs">
                     <div class="col-3">Twilio Number:</div>
                     <div class="col-3"></div>
                     <q-input
@@ -406,8 +410,8 @@
                       class="col-6 q-pa-none"
                       placeholder="+12131231234"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-3">Twilio Account SID:</div>
                     <div class="col-3"></div>
                     <q-input
@@ -416,8 +420,8 @@
                       dense
                       class="col-6 q-pa-none"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-xs">
                     <div class="col-3">Twilio Auth Token:</div>
                     <div class="col-3"></div>
                     <q-input
@@ -425,14 +429,25 @@
                       filled
                       dense
                       class="col-6 q-pa-none"
-                    />
-                  </q-card-section>
+                      :type="isTwilioPwd ? 'password' : 'text'"
+                    >
+                      <template #append>
+                        <q-icon
+                          :name="isTwilioPwd ? 'visibility_off' : 'visibility'"
+                          class="cursor-pointer"
+                          @click="isTwilioPwd = !isTwilioPwd"
+                        />
+                      </template>
+                    </q-input>
+                  </div>
                 </q-tab-panel>
                 <!-- meshcentral -->
                 <q-tab-panel name="meshcentral">
-                  <div class="text-subtitle2">MeshCentral Settings</div>
+                  <div class="row items-center q-mb-xs">
+                    <div class="text-subtitle2">MeshCentral Settings</div>
+                  </div>
                   <q-separator />
-                  <q-card-section v-if="!hosted" class="row">
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <div class="col-4">Username:</div>
                     <div class="col-2"></div>
                     <q-input
@@ -446,23 +461,37 @@
                           'Username must be all lowercase',
                       ]"
                     />
-                  </q-card-section>
-                  <q-card-section v-if="!hosted" class="row">
+                  </div>
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <div class="col-4">Mesh Site:</div>
                     <div class="col-2"></div>
                     <q-input v-model="coreSettings.mesh_site" dense filled class="col-6" />
-                  </q-card-section>
-                  <q-card-section v-if="!hosted" class="row">
+                  </div>
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <div class="col-4">Mesh Token:</div>
                     <div class="col-2"></div>
-                    <q-input v-model="coreSettings.mesh_token" dense filled class="col-6" />
-                  </q-card-section>
-                  <q-card-section v-if="!hosted" class="row">
+                    <q-input
+                      v-model="coreSettings.mesh_token"
+                      dense
+                      filled
+                      class="col-6"
+                      :type="isMeshTokenPwd ? 'password' : 'text'"
+                    >
+                      <template #append>
+                        <q-icon
+                          :name="isMeshTokenPwd ? 'visibility_off' : 'visibility'"
+                          class="cursor-pointer"
+                          @click="isMeshTokenPwd = !isMeshTokenPwd"
+                        />
+                      </template>
+                    </q-input>
+                  </div>
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <div class="col-4">Mesh Device Group Name:</div>
                     <div class="col-2"></div>
                     <q-input v-model="coreSettings.mesh_device_group" dense filled class="col-6" />
-                  </q-card-section>
-                  <q-card-section v-if="!hosted" class="row">
+                  </div>
+                  <div v-if="!hosted" class="row items-center q-py-xs">
                     <div class="col-4 flex items-center">
                       Sync Mesh Perms with TRMM:
                       <q-icon
@@ -485,9 +514,9 @@
                       class="col-6"
                       @update:model-value="confirmSyncChange"
                     />
-                  </q-card-section>
+                  </div>
 
-                  <q-card-section class="row items-center">
+                  <div class="row items-center q-py-xs">
                     <div class="col-4 flex items-center">
                       Company Name:
                       <q-icon
@@ -507,7 +536,7 @@
 
                     <q-input v-model="coreSettings.mesh_company_name" dense filled class="col-6">
                     </q-input>
-                  </q-card-section>
+                  </div>
                 </q-tab-panel>
 
                 <!-- custom fields -->
@@ -532,7 +561,7 @@
 
                 <!-- retention -->
                 <q-tab-panel name="retention">
-                  <q-card-section class="row">
+                  <div class="row items-center q-py-sm">
                     <div class="col-4">Check History (days):</div>
                     <div class="col-2"></div>
                     <q-input
@@ -542,8 +571,8 @@
                       class="col-6"
                       hint="Setting this value to 0 disables this feature"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-sm">
                     <div class="col-4">Resolved Alerts (days):</div>
                     <div class="col-2"></div>
                     <q-input
@@ -553,8 +582,8 @@
                       class="col-6"
                       hint="Setting this value to 0 disables this feature"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-sm">
                     <div class="col-4">Agent History (days):</div>
                     <div class="col-2"></div>
                     <q-input
@@ -564,8 +593,8 @@
                       class="col-6"
                       hint="Setting this value to 0 disables this feature"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-sm">
                     <div class="col-4">Debug Logs (days):</div>
                     <div class="col-2"></div>
                     <q-input
@@ -575,8 +604,8 @@
                       class="col-6"
                       hint="Setting this value to 0 disables this feature"
                     />
-                  </q-card-section>
-                  <q-card-section class="row">
+                  </div>
+                  <div class="row items-center q-py-sm">
                     <div class="col-4">Audit Logs (days):</div>
                     <div class="col-2"></div>
                     <q-input
@@ -586,7 +615,7 @@
                       class="col-6"
                       hint="Setting this value to 0 disables this feature"
                     />
-                  </q-card-section>
+                  </div>
                 </q-tab-panel>
 
                 <q-tab-panel name="apikeys">
@@ -636,7 +665,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { openURL, useDialogPluginComponent, useQuasar } from "quasar";
 import { useCoreStore, useDashboardStore } from "src/stores/api";
 
@@ -673,7 +702,12 @@ const logLevelOptions = [
 ];
 
 const tab = ref("general");
-const isPwd = ref(false);
+const scrollArea = ref();
+watch(tab, () => scrollArea.value?.setScrollPosition("vertical", 0));
+
+const isPwd = ref(true);
+const isTwilioPwd = ref(true);
+const isMeshTokenPwd = ref(true);
 const splitterModel = ref(20);
 const thumbStyle = {
   right: "2px",

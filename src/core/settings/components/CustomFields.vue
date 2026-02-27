@@ -31,94 +31,87 @@
       </q-tabs>
 
       <q-separator />
-      <q-scroll-area style="height: 50vh">
-        <q-tab-panels v-model="tab" :animated="false">
-          <q-tab-panel
-            v-for="t in ['client', 'site', 'agent']"
-            :key="t"
-            :name="t"
-            class="q-pa-none"
+      <q-tab-panels v-model="tab" :animated="false">
+        <q-tab-panel v-for="t in ['client', 'site', 'agent']" :key="t" :name="t" class="q-pa-none">
+          <tactical-table
+            v-model:pagination="pagination"
+            dense
+            :rows="customFields"
+            :columns="columns"
+            row-key="id"
+            binary-state-sort
+            hide-pagination
+            virtual-scroll
+            :rows-per-page-options="[0]"
+            no-data-label="No Custom Fields"
           >
-            <tactical-table
-              v-model:pagination="pagination"
-              dense
-              :rows="customFields"
-              :columns="columns"
-              row-key="id"
-              binary-state-sort
-              hide-pagination
-              virtual-scroll
-              :rows-per-page-options="[0]"
-              no-data-label="No Custom Fields"
-            >
-              <!-- body slots -->
-              <template #body="props">
-                <q-tr
-                  :props="props"
-                  class="cursor-pointer"
-                  @dblclick="editCustomFieldForm(props.row)"
-                >
-                  <!-- context menu -->
-                  <q-menu context-menu>
-                    <q-list dense style="min-width: 200px">
-                      <q-item v-close-popup clickable @click="editCustomFieldForm(props.row)">
-                        <q-item-section side>
-                          <q-icon name="edit" />
-                        </q-item-section>
-                        <q-item-section>Edit</q-item-section>
-                      </q-item>
-                      <q-item v-close-popup clickable @click="deleteCustomField(props.row)">
-                        <q-item-section side>
-                          <q-icon name="delete" />
-                        </q-item-section>
-                        <q-item-section>Delete</q-item-section>
-                      </q-item>
+            <!-- body slots -->
+            <template #body="props">
+              <q-tr
+                :props="props"
+                class="cursor-pointer"
+                @dblclick="editCustomFieldForm(props.row)"
+              >
+                <!-- context menu -->
+                <q-menu context-menu>
+                  <q-list dense style="min-width: 200px">
+                    <q-item v-close-popup clickable @click="editCustomFieldForm(props.row)">
+                      <q-item-section side>
+                        <q-icon name="edit" />
+                      </q-item-section>
+                      <q-item-section>Edit</q-item-section>
+                    </q-item>
+                    <q-item v-close-popup clickable @click="deleteCustomField(props.row)">
+                      <q-item-section side>
+                        <q-icon name="delete" />
+                      </q-item-section>
+                      <q-item-section>Delete</q-item-section>
+                    </q-item>
 
-                      <q-separator></q-separator>
+                    <q-separator></q-separator>
 
-                      <q-item v-close-popup clickable>
-                        <q-item-section>Close</q-item-section>
-                      </q-item>
-                    </q-list>
-                  </q-menu>
+                    <q-item v-close-popup clickable>
+                      <q-item-section>Close</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
 
-                  <q-td v-for="col in props.cols" :key="col.name" :props="props">
-                    <!-- name -->
-                    <template v-if="col.name === 'name'">
-                      {{ col.value }}
-                      <q-tooltip :delay="600">ID: {{ props.row.id }}</q-tooltip>
-                    </template>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  <!-- name -->
+                  <template v-if="col.name === 'name'">
+                    {{ col.value }}
+                    <q-tooltip :delay="600">ID: {{ props.row.id }}</q-tooltip>
+                  </template>
 
-                    <!-- hide in ui -->
-                    <template v-else-if="col.name === 'hide_in_ui'">
-                      <q-icon v-if="col.value" name="check" />
-                    </template>
+                  <!-- hide in ui -->
+                  <template v-else-if="col.name === 'hide_in_ui'">
+                    <q-icon v-if="col.value" name="check" />
+                  </template>
 
-                    <!-- hide in summary tab -->
-                    <template v-else-if="col.name === 'hide_in_summary'">
-                      <q-icon v-if="col.value" name="check" />
-                    </template>
+                  <!-- hide in summary tab -->
+                  <template v-else-if="col.name === 'hide_in_summary'">
+                    <q-icon v-if="col.value" name="check" />
+                  </template>
 
-                    <!-- default value -->
-                    <template v-else-if="col.name === 'default_value'">
-                      <truncate-text :text="col.value" />
-                    </template>
+                  <!-- default value -->
+                  <template v-else-if="col.name === 'default_value'">
+                    <truncate-text :text="col.value" />
+                  </template>
 
-                    <!-- required -->
-                    <template v-else-if="col.name === 'required'">
-                      <q-icon v-if="col.value" name="check" />
-                    </template>
+                  <!-- required -->
+                  <template v-else-if="col.name === 'required'">
+                    <q-icon v-if="col.value" name="check" />
+                  </template>
 
-                    <template v-else>
-                      {{ col.value }}
-                    </template>
-                  </q-td>
-                </q-tr>
-              </template>
-            </tactical-table>
-          </q-tab-panel>
-        </q-tab-panels>
-      </q-scroll-area>
+                  <template v-else>
+                    {{ col.value }}
+                  </template>
+                </q-td>
+              </q-tr>
+            </template>
+          </tactical-table>
+        </q-tab-panel>
+      </q-tab-panels>
     </div>
   </div>
 </template>
