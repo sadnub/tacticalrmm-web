@@ -17,7 +17,7 @@
     <q-separator />
     <q-table
       dense
-      :rows="urlActions"
+      :rows="props.type === 'web' ? webActions : restActions"
       :columns="columns"
       :pagination="{ rowsPerPage: 0, sortBy: 'name', descending: true }"
       row-key="id"
@@ -55,7 +55,7 @@
             </q-list>
           </q-menu>
 
-          <q-td v-for="col in bodyProps.cols" :key="col.name" :props="props">
+          <q-td v-for="col in bodyProps.cols" :key="col.name" :props="bodyProps">
             <template v-if="col.name === 'pattern'">
               <truncate-text :text="col.value" />
             </template>
@@ -76,7 +76,7 @@ import { onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useURLActionStore } from "src/stores/api";
 
-const { urlActions, isLoading, getURLActions, removeURLAction } = useURLActionStore();
+const { webActions, restActions, isLoading, getURLActions, removeURLAction } = useURLActionStore();
 
 // ui imports
 import URLActionsForm from "./URLActionsForm.vue";

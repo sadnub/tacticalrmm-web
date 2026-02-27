@@ -79,11 +79,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useGlobalKeyStore } from "src/stores/api";
 
-const { keys, isLoading, removeKey } = useGlobalKeyStore();
+const { keys, isLoading, getKeys, removeKey } = useGlobalKeyStore();
+
+onMounted(() => getKeys());
 
 // ui imports
 import KeyStoreForm from "./KeyStoreForm.vue";
