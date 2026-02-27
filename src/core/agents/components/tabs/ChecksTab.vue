@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
   <div v-else-if="selectedAgentIds.length > 1"></div>
-  <div v-else>
+  <div v-else class="q-pl-xs">
     <tactical-table
       v-model:pagination="pagination"
       dense
@@ -352,7 +352,7 @@
             <!-- more info -->
             <template v-else-if="col.name === 'moreinfo'">
               <span
-                v-if="props.row.check_result.id"
+                v-if="props.row.check_result?.id"
                 style="cursor: pointer; text-decoration: underline"
                 class="text-primary"
                 @click="showCheckGraphModal(props.row)"
@@ -360,7 +360,7 @@
               >
               &nbsp;&nbsp;&nbsp;
               <span
-                v-if="props.row.check_type === 'ping' && props.row.check_result.id"
+                v-if="props.row.check_type === 'ping' && props.row.check_result?.id"
                 style="cursor: pointer; text-decoration: underline"
                 class="text-primary"
                 @click="showPingInfo(props.row)"
@@ -369,14 +369,14 @@
                 }}</span
               >
               <span
-                v-else-if="props.row.check_type === 'script' && props.row.check_result.id"
+                v-else-if="props.row.check_type === 'script' && props.row.check_result?.id"
                 style="cursor: pointer; text-decoration: underline"
                 class="text-primary"
                 @click="showScriptOutput(props.row.check_result)"
                 >{{ processOutput(props.row.check_result) }}</span
               >
               <span
-                v-else-if="props.row.check_type === 'eventlog' && props.row.check_result.id"
+                v-else-if="props.row.check_type === 'eventlog' && props.row.check_result?.id"
                 style="cursor: pointer; text-decoration: underline"
                 class="text-primary"
                 @click="showEventInfo(props.row)"
@@ -385,9 +385,9 @@
               <span
                 v-else-if="
                   ['diskspace', 'cpuload', 'memory'].includes(props.row.check_type) ||
-                  (props.row.check_type === 'winsvc' && props.row.check_result.id)
+                  (props.row.check_type === 'winsvc' && props.row.check_result?.id)
                 "
-                >{{ props.row.check_result.more_info }}</span
+                >{{ props.row.check_result?.more_info }}</span
               >
             </template>
 
@@ -443,7 +443,6 @@ const columns: TacticalColumn[] = [
     label: "Description",
     align: "left",
     sortable: true,
-    required: true,
   },
   {
     name: "moreinfo",

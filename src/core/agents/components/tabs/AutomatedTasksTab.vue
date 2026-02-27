@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
   <div v-else-if="selectedAgentIds.length > 1"></div>
-  <div v-else>
+  <div v-else class="q-pl-xs">
     <tactical-table
       v-model:pagination="pagination"
       dense
@@ -230,7 +230,7 @@
 
             <!-- status icon -->
             <template v-else-if="col.name === 'status'">
-              <template v-if="Object.keys(props.row.task_result).length === 0"></template>
+              <template v-if="!props.row.task_result || Object.keys(props.row.task_result).length === 0"></template>
               <template v-else-if="props.row.task_result.status === 'passing'">
                 <q-icon style="font-size: 1.3rem" :color="dashPositiveColor" name="check_circle">
                   <q-tooltip>Passing</q-tooltip>
@@ -261,25 +261,25 @@
 
             <!-- sync status -->
             <template v-else-if="col.name === 'sync_status'">
-              <template v-if="props.row.task_result.sync_status === 'notsynced'"
+              <template v-if="props.row.task_result?.sync_status === 'notsynced'"
                 >Will sync on next agent checkin</template
               >
-              <template v-else-if="props.row.task_result.sync_status === 'synced'"
+              <template v-else-if="props.row.task_result?.sync_status === 'synced'"
                 >Synced with agent</template
               >
-              <template v-else-if="props.row.task_result.sync_status === 'pendingdeletion'"
+              <template v-else-if="props.row.task_result?.sync_status === 'pendingdeletion'"
                 >Pending deletion on agent</template
               >
               <template v-else>Waiting for task creation on agent</template>
             </template>
 
             <!-- more info -->
-            <template v-else-if="col.name === 'more_info'">
+            <template v-else-if="col.name === 'moreinfo'">
               <span
                 v-if="
-                  props.row.task_result.retcode !== null ||
-                  props.row.task_result.stdout ||
-                  props.row.task_result.stderr
+                  props.row.task_result?.retcode != null ||
+                  props.row.task_result?.stdout ||
+                  props.row.task_result?.stderr
                 "
                 style="cursor: pointer; text-decoration: underline"
                 class="text-primary"
@@ -351,7 +351,7 @@ const columns: TacticalColumn[] = [
   {
     name: "datetime",
     label: "Last Run Time",
-    field: (row) => row.task_result.last_run,
+    field: (row) => row.task_result?.last_run,
     align: "left",
     sortable: true,
     format: (val: string) => (val ? formatDate(val) : "Has not run yet"),
