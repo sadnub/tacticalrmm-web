@@ -19,6 +19,8 @@
         :rows-per-page-options="[0]"
         no-data-label="No Pending Actions"
         :loading="isLoading"
+        column-select
+        :storage-key="agent ? 'pending-actions-agent' : 'pending-actions-all'"
       >
         <template #top>
           <q-space />
