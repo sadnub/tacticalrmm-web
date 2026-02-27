@@ -1,15 +1,16 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="min-width: 70vw">
+    <q-card class="q-dialog-plugin" style="width: 90vw; max-width: 90vw; height: 90vh; max-height: 90vh">
       <q-bar>
         <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="refresh" />
-        {{ title.slice(0, 27) }}
+        {{ title }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <tactical-table
         v-model:pagination="pagination"
-        style="max-height: 50vh"
+        style="height: calc(90vh - 32px)"
+        class="q-pl-sm"
         :rows="data"
         :columns="columns"
         :rows-per-page-options="[0]"
@@ -31,6 +32,7 @@
         <template #top>
           <q-space />
           <q-input
+            ref="searchInputRef"
             v-model="filter"
             filled
             label="Search"
@@ -38,6 +40,7 @@
             clearable
             class="q-pr-sm"
             style="width: 300px"
+            @keydown.esc.stop="filter = ''"
           >
             <template #prepend>
               <q-icon name="search" color="primary" />
@@ -100,16 +103,17 @@
                 <span v-if="bodyProps.row.status === 'pending'"
                   >Awaiting First Synchronization</span
                 >
-                <span v-else-if="bodyProps.row.sync_status === 'notsynced'"
-                  >Will sync on next agent checkin</span
-                >
-                <span v-else-if="bodyProps.row.sync_status === 'synced'">Synced with agent</span>
-                <span v-else-if="bodyProps.row.sync_status === 'pendingdeletion'"
-                  >Pending deletion on agent</span
-                >
                 <span v-else-if="bodyProps.row.sync_status === 'initial'"
                   >Waiting for task creation on agent</span
                 >
+                <span v-else-if="bodyProps.row.sync_status === 'notsynced'"
+                  >Will sync on next agent checkin</span
+                >
+                <span v-else-if="bodyProps.row.sync_status === 'pendingdeletion'"
+                  >Pending deletion on agent</span
+                >
+                <span v-else-if="bodyProps.row.sync_status === 'synced'">Synced with agent</span>
+                <span v-else>{{ bodyProps.row.status }}</span>
               </template>
 
               <!-- more info -->
@@ -165,8 +169,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "vue";
-import { useQuasar, useDialogPluginComponent } from "quasar";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useQuasar, useDialogPluginComponent, QInput } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 
 const { isLoading, getCheckStatus, getTaskStatus } = usePolicyStore();
@@ -206,6 +210,20 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 const filter = ref("");
+const searchInputRef = ref<InstanceType<typeof QInput> | null>(null);
+
+function onGlobalKeydown(e: KeyboardEvent) {
+  if (e.ctrlKey && e.key === "f") {
+    const el = dialogRef.value?.$el as HTMLElement | undefined;
+    if (el && !el.contains(document.activeElement)) return;
+    e.preventDefault();
+    searchInputRef.value?.focus();
+  }
+}
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", onGlobalKeydown);
+});
 
 // state
 const data = ref<PolicyStatusItem[]>([]);
@@ -214,7 +232,7 @@ const allColumns = [
   {
     name: "agent",
     label: "Hostname",
-    field: "agent",
+    field: "hostname",
     align: "left" as const,
     sortable: true,
   },
@@ -232,11 +250,30 @@ const allColumns = [
     align: "left" as const,
     sortable: true,
   },
-  { name: "statusicon", label: "Status Icon", field: "statusicon", align: "left" as const },
+  {
+    name: "statusicon",
+    label: "Status Icon",
+    field: (row: PolicyStatusItem) => {
+      if (row.status === "passing") return 0;
+      if (row.status === "failing" && row.alert_severity === "info") return 1;
+      if (row.status === "failing" && row.alert_severity === "warning") return 2;
+      if (row.status === "failing") return 3;
+      return 4;
+    },
+    align: "left" as const,
+    sortable: true,
+  },
   {
     name: "status",
     label: "Status",
-    field: "status",
+    field: (row: PolicyStatusItem) => {
+      if (row.status === "pending") return 0;
+      if (row.sync_status === "initial") return 1;
+      if (row.sync_status === "notsynced") return 2;
+      if (row.sync_status === "pendingdeletion") return 3;
+      if (row.sync_status === "synced") return 4;
+      return 5;
+    },
     align: "left" as const,
     sortable: true,
   },
@@ -245,7 +282,6 @@ const allColumns = [
     label: "More Info",
     field: "more_info",
     align: "left" as const,
-    sortable: true,
   },
   {
     name: "datetime",
@@ -262,20 +298,9 @@ const columns = computed(() =>
 
 const pagination = ref({
   rowsPerPage: 0,
-  sortBy: "status",
-  descending: false,
+  sortBy: "statusicon",
+  descending: true,
 });
-
-// Use a visible column for default sort when type is check (status column hidden)
-watch(
-  () => props.type,
-  (type) => {
-    if (type === "check") {
-      pagination.value.sortBy = "agent";
-    }
-  },
-  { immediate: true },
-);
 
 // Computed
 const title = computed(() => {
@@ -347,5 +372,6 @@ onMounted(() => {
   } else {
     void getCheckData();
   }
+  window.addEventListener("keydown", onGlobalKeydown);
 });
 </script>

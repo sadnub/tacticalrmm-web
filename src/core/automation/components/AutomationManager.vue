@@ -6,12 +6,18 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
+      <q-splitter
+        v-model="splitterModel"
+        horizontal
+        style="height: calc(100vh - 32px)"
+      >
+        <template #before>
       <tactical-table
         v-model:pagination="pagination"
         :rows="policiesList"
         :columns="columns"
         :rows-per-page-options="[0]"
-        style="max-height: 45vh"
+        style="height: 100%"
         dense
         row-key="id"
         binary-state-sort
@@ -43,6 +49,7 @@
           />
           <q-space />
           <q-input
+            ref="searchInputRef"
             v-model="filter"
             filled
             label="Search"
@@ -50,6 +57,7 @@
             clearable
             class="q-pr-sm"
             style="width: 300px"
+            @keydown.esc.stop="filter = ''"
           >
             <template #prepend>
               <q-icon name="search" color="primary" />
@@ -230,53 +238,60 @@
           </q-tr>
         </template>
       </tactical-table>
+        </template>
 
-      <q-separator />
+        <template #separator>
+          <q-avatar color="primary" text-color="white" size="20px" icon="drag_indicator" />
+        </template>
 
-      <q-tabs
-        v-model="subtab"
-        dense
-        inline-label
-        class="text-grey"
-        active-color="primary"
-        indicator-color="primary"
-        align="left"
-        narrow-indicator
-        no-caps
-      >
-        <q-tab name="checks" icon="fas fa-check-double" label="Checks" />
-        <q-tab name="tasks" icon="fas fa-tasks" label="Tasks" />
-      </q-tabs>
-      <q-separator />
-      <q-tab-panels v-model="subtab" :animated="false" class="q-pa-none">
-        <q-tab-panel name="checks" class="q-pa-none">
-          <PolicyChecksTab
-            v-if="!!selectedPolicy"
-            :selected-policy="selectedPolicy.id"
-            style="max-height: 45vh"
-          />
-          <div v-else class="row justify-center items-center text-grey-6">
-            Select a policy above to view checks
-          </div>
-        </q-tab-panel>
-        <q-tab-panel name="tasks" class="q-pa-none">
-          <PolicyAutomatedTasksTab
-            v-if="!!selectedPolicy"
-            :selected-policy="selectedPolicy.id"
-            style="max-height: 45vh"
-          />
-          <div v-else class="row justify-center items-center text-grey-6">
-            Select a policy above to view tasks
-          </div>
-        </q-tab-panel>
-      </q-tab-panels>
+        <template #after>
+          <q-tabs
+            v-model="subtab"
+            dense
+            inline-label
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="left"
+            narrow-indicator
+            no-caps
+          >
+            <q-tab name="checks" icon="fas fa-check-double" label="Checks" />
+            <q-tab name="tasks" icon="fas fa-tasks" label="Tasks" />
+          </q-tabs>
+          <q-separator />
+          <q-tab-panels v-model="subtab" :animated="false" class="q-pa-none">
+            <q-tab-panel name="checks" class="q-pa-none">
+              <PolicyChecksTab
+                v-if="!!selectedPolicy"
+                :selected-policy="selectedPolicy.id"
+                style="height: 100%"
+              />
+              <div v-else class="row justify-center items-center text-grey-6">
+                Select a policy above to view checks
+              </div>
+            </q-tab-panel>
+            <q-tab-panel name="tasks" class="q-pa-none">
+              <PolicyAutomatedTasksTab
+                v-if="!!selectedPolicy"
+                :selected-policy="selectedPolicy.id"
+                style="height: 100%"
+              />
+              <div v-else class="row justify-center items-center text-grey-6">
+                Select a policy above to view tasks
+              </div>
+            </q-tab-panel>
+          </q-tab-panels>
+        </template>
+      </q-splitter>
     </q-card>
   </q-dialog>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
-import { useQuasar, useDialogPluginComponent } from "quasar";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useQuasar, useDialogPluginComponent, QInput } from "quasar";
+import { useStorage } from "@vueuse/core";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
 import PolicyForm from "./PolicyForm.vue";
@@ -297,8 +312,23 @@ const { policies, getPolicies, removePolicy, updatePolicy } = usePolicyStore();
 const { refreshDashboard } = useDashboardStore();
 
 // state
+const splitterModel = useStorage("automation-manager-splitter", 50);
 const subtab = ref("checks");
 const selectedPolicy = ref<Policy | null>(null);
+const searchInputRef = ref<InstanceType<typeof QInput> | null>(null);
+
+function onGlobalKeydown(e: KeyboardEvent) {
+  if (e.ctrlKey && e.key === "f") {
+    const el = dialogRef.value?.$el as HTMLElement | undefined;
+    if (el && !el.contains(document.activeElement)) return;
+    e.preventDefault();
+    searchInputRef.value?.focus();
+  }
+}
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", onGlobalKeydown);
+});
 const policiesList = computed(() => policies.value);
 const columns = [
   { name: "active", label: "Active", field: "active", align: "left" as const },
@@ -346,7 +376,7 @@ const columns = [
     align: "left" as const,
   },
 ];
-const pagination = ref({
+const pagination = useStorage("automation-manager-pagination", {
   rowsPerPage: 0,
   sortBy: "name",
   descending: true,
@@ -482,5 +512,6 @@ function rowSelectedClass(id: number, selectedPolicy: Policy | null) {
 
 onMounted(() => {
   getPolicies();
+  window.addEventListener("keydown", onGlobalKeydown);
 });
 </script>
