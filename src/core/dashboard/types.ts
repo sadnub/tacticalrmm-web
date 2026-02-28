@@ -41,6 +41,7 @@ export interface ClientTreeNode {
 
 export interface TacticalColumn extends QTableColumn {
   truncate?: boolean;
+  hiddenByDefault?: boolean;
 }
 
 // for tactical table export csv injected method

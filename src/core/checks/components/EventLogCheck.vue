@@ -63,7 +63,7 @@
           </q-card-section>
           <q-card-section>
             <q-input
-              v-model.number="localCheck.search_last_day"
+              v-model.number="localCheck.search_last_days"
               dense
               filled
               :readonly="readonly"
@@ -203,7 +203,7 @@ const localCheck = props.check
       event_message: null,
       event_type: "INFO",
       fail_when: "contains",
-      search_last_day: 1,
+      search_last_days: 1,
       fails_b4_alert: 1,
       number_of_events_b4_alert: 1,
       event_id_is_wildcard: false,

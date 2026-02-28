@@ -74,11 +74,13 @@ const localColumns = computed(() =>
   props.columnSelect ? [...props.columns, columnSelectCol] : [...props.columns],
 );
 
-const defaultNames = computed(() => localColumns.value.map((c) => c.name));
-
 const storedNames = props.storageKey
   ? useStorage<string[]>(`${props.storageKey}-columns`, [])
   : ref<string[]>([]);
+
+const defaultNames = computed(() =>
+  localColumns.value.filter((c) => !c.hiddenByDefault).map((c) => c.name),
+);
 
 const visibleColumns = computed<string[]>({
   get() {

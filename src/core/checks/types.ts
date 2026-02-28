@@ -75,7 +75,7 @@ export interface Check {
   event_source?: string | null;
   event_message?: string | null;
   fail_when?: string | null;
-  search_last_day?: number | null;
+  search_last_days?: number | null;
   number_of_events_b4_alert?: number | null;
   check_result?: CheckResult;
 }

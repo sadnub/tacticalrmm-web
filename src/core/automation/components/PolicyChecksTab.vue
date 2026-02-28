@@ -244,6 +244,7 @@ import EventLogCheck from "src/core/checks/components/EventLogCheck.vue";
 
 // types
 import type { Check } from "src/core/checks/types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 const props = defineProps<{
   selectedPolicy: number;
@@ -264,16 +265,325 @@ const columns = [
     name: "desc",
     field: "readable_desc",
     label: "Description",
-    align: "left" as const,
+    align: "left",
     sortable: true,
   },
-  { name: "status", label: "Status", field: "status", align: "left" as const },
+  { name: "status", label: "Status", field: "status", align: "left" },
   {
     name: "assigned_task",
     label: "Assigned Tasks",
     field: "assigned_task",
-    align: "left" as const,
+    align: "left",
     sortable: true,
+  },
+
+  // Common fields
+  {
+    name: "check_name",
+    label: "Name",
+    field: "name",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null) => val ?? "-",
+  },
+  {
+    name: "check_type",
+    label: "Check Type",
+    field: "check_type",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string) => {
+      const typeMap: Record<string, string> = {
+        diskspace: "Disk Space",
+        ping: "Ping",
+        cpuload: "CPU Load",
+        memory: "Memory",
+        winsvc: "Win Service",
+        script: "Script",
+        eventlog: "Event Log",
+      };
+      return typeMap[val] ?? val;
+    },
+  },
+  {
+    name: "alert_severity",
+    label: "Alert Severity",
+    field: "alert_severity",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null) => (val ? val.charAt(0).toUpperCase() + val.slice(1) : "-"),
+  },
+  {
+    name: "fails_b4_alert",
+    label: "Fails Before Alert",
+    field: "fails_b4_alert",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | undefined) => (val != null ? String(val) : "-"),
+  },
+  {
+    name: "run_interval",
+    label: "Run Interval",
+    field: "run_interval",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number) => {
+      if (!val) return "Inherited";
+      if (val < 60) return `${val}s`;
+      if (val < 3600) return `${Math.floor(val / 60)}m`;
+      return `${Math.floor(val / 3600)}h ${Math.floor((val % 3600) / 60)}m`;
+    },
+  },
+
+  // Threshold fields (disk, cpu, memory)
+  {
+    name: "error_threshold",
+    label: "Error Threshold",
+    field: "error_threshold",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | null, row: Check) =>
+      ["diskspace", "cpuload", "memory"].includes(row.check_type) && val ? `${val}%` : "-",
+  },
+  {
+    name: "warning_threshold",
+    label: "Warning Threshold",
+    field: "warning_threshold",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | null, row: Check) =>
+      ["diskspace", "cpuload", "memory"].includes(row.check_type) && val ? `${val}%` : "-",
+  },
+
+  // Disk check
+  {
+    name: "disk",
+    label: "Disk",
+    field: "disk",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "diskspace" ? (val ?? "-") : "-",
+  },
+
+  // Ping check
+  {
+    name: "ip",
+    label: "IP / Hostname",
+    field: "ip",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) => (row.check_type === "ping" ? (val ?? "-") : "-"),
+  },
+
+  // Script check
+  {
+    name: "script_args",
+    label: "Script Args",
+    field: "script_args",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: string[] | null, row: Check) =>
+      row.check_type === "script" && val?.length ? val.join(", ") : "-",
+  },
+  {
+    name: "env_vars",
+    label: "Env Variables",
+    field: "env_vars",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: string[] | null, row: Check) =>
+      row.check_type === "script" && val?.length ? val.join(", ") : "-",
+  },
+  {
+    name: "info_return_codes",
+    label: "Info Return Codes",
+    field: "info_return_codes",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: number[] | null, row: Check) =>
+      row.check_type === "script" && val?.length ? val.join(", ") : "-",
+  },
+  {
+    name: "warning_return_codes",
+    label: "Warning Return Codes",
+    field: "warning_return_codes",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: number[] | null, row: Check) =>
+      row.check_type === "script" && val?.length ? val.join(", ") : "-",
+  },
+  {
+    name: "success_return_codes",
+    label: "Success Return Codes",
+    field: "success_return_codes",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: number[] | null, row: Check) =>
+      row.check_type === "script" && val?.length ? val.join(", ") : "-",
+  },
+  {
+    name: "timeout",
+    label: "Timeout",
+    field: "timeout",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | null, row: Check) =>
+      row.check_type === "script" && val != null ? `${val}s` : "-",
+  },
+
+  // Windows Service check
+  {
+    name: "svc_name",
+    label: "Service Name",
+    field: "svc_name",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) => (row.check_type === "winsvc" ? (val ?? "-") : "-"),
+  },
+  {
+    name: "svc_display_name",
+    label: "Service Display Name",
+    field: "svc_display_name",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) => (row.check_type === "winsvc" ? (val ?? "-") : "-"),
+  },
+  {
+    name: "pass_if_start_pending",
+    label: "Pass if Start Pending",
+    field: "pass_if_start_pending",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: boolean | null, row: Check) =>
+      row.check_type === "winsvc" ? (val ? "Yes" : "No") : "-",
+  },
+  {
+    name: "pass_if_svc_not_exist",
+    label: "Pass if Not Exist",
+    field: "pass_if_svc_not_exist",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: boolean | undefined, row: Check) =>
+      row.check_type === "winsvc" ? (val ? "Yes" : "No") : "-",
+  },
+  {
+    name: "restart_if_stopped",
+    label: "Restart if Stopped",
+    field: "restart_if_stopped",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: boolean | null, row: Check) =>
+      row.check_type === "winsvc" ? (val ? "Yes" : "No") : "-",
+  },
+  {
+    name: "svc_policy_mode",
+    label: "Service Policy Mode",
+    field: "svc_policy_mode",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "winsvc"
+        ? val
+          ? val.charAt(0).toUpperCase() + val.slice(1)
+          : "Default"
+        : "-",
+  },
+
+  // Event Log check
+  {
+    name: "log_name",
+    label: "Log Name",
+    field: "log_name",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "eventlog" ? (val ?? "-") : "-",
+  },
+  {
+    name: "event_id",
+    label: "Event ID",
+    field: "event_id",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | null, row: Check) => {
+      if (row.check_type !== "eventlog") return "-";
+      if (row.event_id_is_wildcard) return "*";
+      return val != null ? String(val) : "-";
+    },
+  },
+  {
+    name: "event_type",
+    label: "Event Type",
+    field: "event_type",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "eventlog" ? (val ?? "-") : "-",
+  },
+  {
+    name: "event_source",
+    label: "Event Source",
+    field: "event_source",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "eventlog" ? (val ?? "-") : "-",
+  },
+  {
+    name: "event_message",
+    label: "Event Message",
+    field: "event_message",
+    align: "left",
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "eventlog" ? (val ?? "-") : "-",
+  },
+  {
+    name: "fail_when",
+    label: "Fail When",
+    field: "fail_when",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: string | null, row: Check) =>
+      row.check_type === "eventlog" ? (val ?? "-") : "-",
+  },
+  {
+    name: "search_last_days",
+    label: "Search Last Days",
+    field: "search_last_days",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | null, row: Check) =>
+      row.check_type === "eventlog" && val != null ? String(val) : "-",
+  },
+  {
+    name: "number_of_events_b4_alert",
+    label: "Events Before Alert",
+    field: "number_of_events_b4_alert",
+    align: "left",
+    sortable: true,
+    hiddenByDefault: true,
+    format: (val: number | null, row: Check) =>
+      row.check_type === "eventlog" && val != null ? String(val) : "-",
   },
 ];
 const pagination = ref({
