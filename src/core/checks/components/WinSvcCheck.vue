@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
-        {{ check ? `Edit Service Check` : "Add Service Check" }}
+        {{ readonly ? "View Service Check" : check ? "Edit Service Check" : "Add Service Check" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
@@ -15,12 +15,14 @@
               <q-radio
                 v-if="!check"
                 v-model="localCheck.svc_policy_mode"
+                :disable="readonly"
                 val="default"
                 label="Choose from defaults"
               />
               <q-radio
                 v-if="!check"
                 v-model="localCheck.svc_policy_mode"
+                :disable="readonly"
                 val="manual"
                 label="Enter manually"
               />
@@ -35,7 +37,7 @@
                 label="Service"
                 map-options
                 emit-value
-                :disable="!!check"
+                :disable="!!check || readonly"
               />
               <q-input
                 v-if="localCheck.svc_policy_mode === 'manual'"
@@ -43,6 +45,7 @@
                 :rules="[(val) => !!val || '*Required']"
                 filled
                 dense
+                :readonly="readonly"
                 label="Service Name"
               />
               <q-input
@@ -51,6 +54,7 @@
                 :rules="[(val) => !!val || '*Required']"
                 filled
                 dense
+                :readonly="readonly"
                 label="Display Name"
               />
             </div>
@@ -67,23 +71,26 @@
               label="Service"
               map-options
               emit-value
-              :disable="!!check"
+              :disable="!!check || readonly"
               filterable
             />
           </q-card-section>
           <q-card-section>
             <q-checkbox
               v-model="localCheck.pass_if_start_pending"
+              :disable="readonly"
               label="PASS if service is in 'Start Pending' mode"
             />
             <br />
             <q-checkbox
               v-model="localCheck.pass_if_svc_not_exist"
+              :disable="readonly"
               label="PASS if service doesn't exist"
             />
             <br />
             <q-checkbox
               v-model="localCheck.restart_if_stopped"
+              :disable="readonly"
               label="Restart service if it's stopped"
             />
           </q-card-section>
@@ -95,6 +102,7 @@
               options-dense
               map-options
               emit-value
+              :readonly="readonly"
               :options="severityOptions"
               label="Alert Severity"
             />
@@ -105,6 +113,7 @@
               filled
               dense
               options-dense
+              :readonly="readonly"
               :options="failOptions"
               label="Number of consecutive failures before alert"
             />
@@ -114,6 +123,7 @@
               v-model.number="localCheck.run_interval"
               dense
               filled
+              :readonly="readonly"
               type="number"
               label="Run this check every (seconds)"
               hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
@@ -121,8 +131,8 @@
           </q-card-section>
         </div>
         <q-card-actions align="right">
-          <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
+          <q-btn v-close-popup dense flat :label="readonly ? 'Close' : 'Cancel'" />
+          <q-btn v-if="!readonly" :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -145,6 +155,7 @@ const props = defineProps<{
   check?: Check;
   parent: { agent: string } | { policy: number };
   plat?: AgentPlat;
+  readonly?: boolean;
 }>();
 
 // Use the appropriate store based on context

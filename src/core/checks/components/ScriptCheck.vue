@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
-        {{ check ? `Edit Script Check` : "Add Script Check" }}
+        {{ readonly ? "View Script Check" : check ? "Edit Script Check" : "Add Script Check" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
@@ -20,7 +20,7 @@
             :options="filterByPlatformOptions"
             label="Select script"
             map-options
-            :disable="!!check"
+            :disable="!!check || readonly"
             filterable
           />
         </q-card-section>
@@ -28,6 +28,7 @@
           <q-select
             v-model="localCheck.script_args"
             dense
+            :readonly="readonly"
             label="Script Arguments (press Enter after typing each argument)"
             filled
             use-input
@@ -41,6 +42,7 @@
           <q-select
             v-model="localCheck.env_vars"
             dense
+            :readonly="readonly"
             :label="envVarsLabel"
             filled
             use-input
@@ -53,6 +55,7 @@
         <q-card-section>
           <tactical-dropdown
             v-model="localCheck.info_return_codes"
+            :readonly="readonly"
             label="Informational return codes (press Enter after typing each code)"
             filled
             multiple
@@ -66,6 +69,7 @@
         <q-card-section>
           <tactical-dropdown
             v-model="localCheck.warning_return_codes"
+            :readonly="readonly"
             label="Warning return codes (press Enter after typing each code)"
             filled
             use-input
@@ -79,6 +83,7 @@
         <q-card-section>
           <tactical-dropdown
             v-model="localCheck.success_return_codes"
+            :readonly="readonly"
             label="Success return codes (press Enter after typing each code)"
             filled
             use-input
@@ -94,6 +99,7 @@
             v-model.number="localCheck.timeout"
             filled
             dense
+            :readonly="readonly"
             label="Script Timeout (seconds)"
           />
         </q-card-section>
@@ -103,6 +109,7 @@
             filled
             dense
             options-dense
+            :readonly="readonly"
             :options="failOptions"
             label="Number of consecutive failures before alert"
           />
@@ -112,14 +119,15 @@
             v-model.number="localCheck.run_interval"
             filled
             dense
+            :readonly="readonly"
             type="number"
             label="Run this check every (seconds)"
             hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
+          <q-btn v-close-popup dense flat :label="readonly ? 'Close' : 'Cancel'" />
+          <q-btn v-if="!readonly" :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -146,6 +154,7 @@ const props = defineProps<{
   check?: Check;
   parent: { agent: string } | { policy: number };
   plat?: AgentPlat;
+  readonly?: boolean;
 }>();
 
 // Use the appropriate store based on context

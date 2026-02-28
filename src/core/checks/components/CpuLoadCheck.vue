@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
-        {{ check ? `Edit CPU Check` : "Add CPU Check" }}
+        {{ readonly ? "View CPU Check" : check ? "Edit CPU Check" : "Add CPU Check" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
@@ -13,6 +13,7 @@
               v-model.number="localCheck.warning_threshold"
               dense
               filled
+              :readonly="readonly"
               type="number"
               label="Warning Threshold (%)"
               :rules="[
@@ -26,6 +27,7 @@
               v-model.number="localCheck.error_threshold"
               dense
               filled
+              :readonly="readonly"
               type="number"
               label="Error Threshold (%)"
               :rules="[
@@ -40,6 +42,7 @@
               filled
               dense
               options-dense
+              :readonly="readonly"
               :options="failOptions"
               label="Number of consecutive failures before alert"
             />
@@ -49,6 +52,7 @@
               v-model.number="localCheck.run_interval"
               dense
               filled
+              :readonly="readonly"
               type="number"
               label="Run this check every (seconds)"
               hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
@@ -56,8 +60,8 @@
           </q-card-section>
         </div>
         <q-card-actions align="right">
-          <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
+          <q-btn v-close-popup dense flat :label="readonly ? 'Close' : 'Cancel'" />
+          <q-btn v-if="!readonly" :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -78,6 +82,7 @@ import { isAgent, type Check } from "../types";
 const props = defineProps<{
   check?: Check;
   parent: { agent: string } | { policy: number };
+  readonly?: boolean;
 }>();
 
 // Use the appropriate store based on context

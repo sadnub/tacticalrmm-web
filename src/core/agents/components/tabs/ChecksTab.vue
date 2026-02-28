@@ -176,21 +176,32 @@
         <q-tr
           :props="props"
           class="cursor-pointer"
-          @dblclick="showCheckModal(props.row.check_type, props.row)"
+          @dblclick="showCheckModal(props.row.check_type, props.row, !!props.row.policy)"
         >
           <!-- context menu -->
           <q-menu context-menu>
             <q-list dense style="min-width: 200px">
               <q-item
+                v-if="!props.row.policy"
                 v-close-popup
                 clickable
-                :disable="!!props.row.policy"
                 @click="showCheckModal(props.row.check_type, props.row)"
               >
                 <q-item-section side>
                   <q-icon name="edit" />
                 </q-item-section>
                 <q-item-section>Edit</q-item-section>
+              </q-item>
+              <q-item
+                v-else
+                v-close-popup
+                clickable
+                @click="showCheckModal(props.row.check_type, props.row, true)"
+              >
+                <q-item-section side>
+                  <q-icon name="visibility" />
+                </q-item-section>
+                <q-item-section>View</q-item-section>
               </q-item>
               <q-item
                 v-close-popup
@@ -624,9 +635,7 @@ function showPingInfo(check: Check) {
   });
 }
 
-function showCheckModal(type: CheckType, check?: Check) {
-  if (check && check.policy) return;
-
+function showCheckModal(type: CheckType, check?: Check, readonly = false) {
   let component;
 
   if (type === "diskspace") component = DiskSpaceCheck;
@@ -644,6 +653,7 @@ function showCheckModal(type: CheckType, check?: Check) {
       check: check,
       parent: { agent: selectedAgentId.value },
       plat: type === "script" ? selectedAgentPlatform.value : undefined,
+      readonly: readonly,
     },
   });
 }

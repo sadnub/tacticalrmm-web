@@ -2,7 +2,7 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="width: 60vw">
       <q-bar>
-        {{ check ? `Edit Ping Check` : "Add Ping Check" }}
+        {{ readonly ? "View Ping Check" : check ? "Edit Ping Check" : "Add Ping Check" }}
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
@@ -14,6 +14,7 @@
               v-model="localCheck.name"
               filled
               dense
+              :readonly="readonly"
               label="Descriptive Name"
               :rules="[(val) => !!val || '*Required']"
             />
@@ -23,6 +24,7 @@
               v-model="localCheck.ip"
               dense
               filled
+              :readonly="readonly"
               label="Hostname or IP"
               :rules="[(val) => !!val || '*Required']"
             />
@@ -35,6 +37,7 @@
               options-dense
               emit-value
               map-options
+              :readonly="readonly"
               :options="severityOptions"
               label="Alert Severity"
             />
@@ -47,6 +50,7 @@
               options-dense
               map-options
               emit-value
+              :readonly="readonly"
               :options="failOptions"
               label="Number of consecutive failures before alert"
             />
@@ -56,6 +60,7 @@
               v-model.number="localCheck.run_interval"
               filled
               dense
+              :readonly="readonly"
               type="number"
               label="Run this check every (seconds)"
               hint="Setting this value to anything other than 0 will override the 'Run checks every' setting on the agent"
@@ -63,8 +68,8 @@
           </q-card-section>
         </div>
         <q-card-actions align="right">
-          <q-btn v-close-popup dense flat label="Cancel" />
-          <q-btn :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
+          <q-btn v-close-popup dense flat :label="readonly ? 'Close' : 'Cancel'" />
+          <q-btn v-if="!readonly" :loading="isLoading" dense flat label="Save" color="primary" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -84,6 +89,7 @@ import { isAgent, type Check } from "../types";
 const props = defineProps<{
   check?: Check;
   parent: { agent: string } | { policy: number };
+  readonly?: boolean;
 }>();
 
 // Use the appropriate store based on context
