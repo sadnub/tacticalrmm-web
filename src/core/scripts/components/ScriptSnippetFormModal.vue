@@ -2,15 +2,17 @@
   <q-dialog
     ref="dialogRef"
     maximized
+    no-esc-dismiss
     @hide="onDialogHide"
     @show="loadEditor"
     @before-hide="unloadEditor"
+    @keydown.esc.stop="closeEditor"
   >
     <q-card class="q-dialog-plugin">
       <q-bar>
         <span class="q-pr-sm">{{ title }}</span>
         <q-space />
-        <q-btn v-close-popup dense flat icon="close" />
+        <q-btn dense flat icon="close" @click="closeEditor" />
       </q-bar>
       <div class="row">
         <q-input
@@ -44,7 +46,7 @@
       <div ref="snippetEditor" :style="{ height: `${$q.screen.height - 132}px` }"></div>
 
       <q-card-actions align="right">
-        <q-btn v-close-popup dense flat label="Cancel" />
+        <q-btn dense flat label="Cancel" @click="closeEditor" />
         <q-btn :loading="isLoading" dense flat label="Save" color="primary" @click="submit" />
       </q-card-actions>
     </q-card>
@@ -109,6 +111,9 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 const $q = useQuasar();
 
 
+// add are you sure prompt to unsaved snippet
+const edited = ref(false);
+
 // snippet form logic
 const localSnippet = props.snippet
   ? reactive<ScriptSnippet>(Object.assign({}, props.snippet))
@@ -168,6 +173,7 @@ function loadEditor() {
 
   editor.onDidChangeModelContent(() => {
     localSnippet.code = editor.getValue();
+    edited.value = true;
   });
 
   // watch for changes in language
@@ -176,9 +182,28 @@ function loadEditor() {
   });
 }
 
+watch(
+  () => [localSnippet.name, localSnippet.desc, localSnippet.shell],
+  () => {
+    edited.value = true;
+  },
+);
+
+function closeEditor() {
+  if (edited.value)
+    $q.dialog({
+      title: "You have unsaved changes. Are you sure you want to close?",
+      cancel: true,
+      ok: true,
+    }).onOk(() => {
+      unloadEditor();
+    });
+  else unloadEditor();
+}
+
 function unloadEditor() {
   editor.getModel()?.dispose();
   editor.dispose();
-  onDialogOK();
+  onDialogHide();
 }
 </script>
