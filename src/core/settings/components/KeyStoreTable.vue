@@ -10,7 +10,7 @@
         class="q-mr-sm"
         :label="isPwd ? 'Show values' : 'Hide values'"
         :icon="isPwd ? 'visibility_off' : 'visibility'"
-        @click="isPwd = !isPwd"
+        @click="toggleAllVisibility"
       />
       <q-btn
         size="sm"
@@ -65,7 +65,30 @@
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <!--  value -->
             <template v-if="col.name === 'value'">
-              {{ isPwd ? "****" : col.value }}
+              {{ hiddenKeys[props.row.id] === false ? col.value : "****" }}
+            </template>
+
+            <template v-else-if="col.name === 'actions'">
+              <q-btn
+                flat
+                round
+                dense
+                size="sm"
+                :icon="hiddenKeys[props.row.id] === false ? 'visibility' : 'visibility_off'"
+                @click.stop="toggleKeyVisibility(props.row.id)"
+              >
+                <q-tooltip>{{ hiddenKeys[props.row.id] === false ? "Hide" : "Show" }}</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                dense
+                size="sm"
+                icon="content_copy"
+                @click.stop="copyToClipboard(props.row.value)"
+              >
+                <q-tooltip>Copy to clipboard</q-tooltip>
+              </q-btn>
             </template>
 
             <template v-else>
@@ -105,12 +128,37 @@ const columns: TacticalColumn[] = [
     align: "left",
     sortable: true,
   },
+  {
+    name: "actions",
+    label: "",
+    field: "actions",
+    align: "right",
+    sortable: false,
+  },
 ];
 
 // setup stores
 const { keys, isLoading, getKeys, removeKey } = useGlobalKeyStore();
 
 const isPwd = ref(true);
+const hiddenKeys = ref<Record<number, boolean>>({});
+
+function toggleAllVisibility() {
+  isPwd.value = !isPwd.value;
+  for (const key of keys.value) {
+    hiddenKeys.value[key.id] = isPwd.value;
+  }
+}
+
+function toggleKeyVisibility(id: number) {
+  hiddenKeys.value[id] = hiddenKeys.value[id] === false ? true : false;
+}
+
+function copyToClipboard(value: string) {
+  void navigator.clipboard.writeText(value).then(() => {
+    $q.notify({ type: "positive", message: "Copied to clipboard", timeout: 1000 });
+  });
+}
 
 const pagination = ref({
   rowsPerPage: 0,
