@@ -12,6 +12,7 @@
       'column-bgcolor': !$q.dark.isActive && columnSelect,
       'sticky-header-right-column': columnSelect,
       'tbl-sticky': !columnSelect,
+      'tactical-table--dense': true,
     }"
     v-bind="$attrs"
     @update:selected="$emit('update:selected', $event)"
@@ -58,7 +59,7 @@ const props = withDefaults(
 );
 
 defineEmits<{
-  'update:selected': [value: readonly unknown[]];
+  "update:selected": [value: readonly unknown[]];
 }>();
 
 const columnSelectCol = {
@@ -154,4 +155,15 @@ defineExpose({
   tbody
     /* height of all previous header rows */
     scroll-margin-top: 48px
+
+.tactical-table--dense
+  .q-table th,
+  .q-table td
+    padding: 4px 4px
+  .q-table th:first-child,
+  .q-table td:first-child
+    padding-left: 4px
+  .q-table th:last-child,
+  .q-table td:last-child
+    padding-right: 4px
 </style>
