@@ -58,6 +58,7 @@
 import { ref, watch, reactive, computed } from "vue";
 import { useQuasar } from "quasar";
 import { useScriptSnippetStore } from "src/stores/api";
+import { useBeforeUnload } from "src/utils/useBeforeUnload";
 
 const { isLoading, updateScriptSnippet, addScriptSnippet } = useScriptSnippetStore();
 import { useDialogPluginComponent } from "quasar";
@@ -113,6 +114,7 @@ const $q = useQuasar();
 
 // add are you sure prompt to unsaved snippet
 const edited = ref(false);
+useBeforeUnload(edited);
 
 // snippet form logic
 const localSnippet = props.snippet

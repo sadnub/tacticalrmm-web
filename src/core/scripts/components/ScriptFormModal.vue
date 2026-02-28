@@ -219,6 +219,7 @@ import { ref, reactive, watch, computed } from "vue";
 import { useQuasar, useDialogPluginComponent } from "quasar";
 import { useAgentDropdown, agentPlatformOptions } from "src/core/agents/composables";
 import { notifyError } from "src/utils/notify";
+import { useBeforeUnload } from "src/utils/useBeforeUnload";
 import { useScriptStore, useDashboardStore } from "src/stores/api";
 
 const { isLoading, updateScript, addScript, getScriptContents } = useScriptStore();
@@ -431,6 +432,7 @@ function unloadEditor() {
 
 // add are you sure prompt to unsaved script
 const edited = ref(false);
+useBeforeUnload(edited);
 
 function closeEditor() {
   if (edited.value)

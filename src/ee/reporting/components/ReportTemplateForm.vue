@@ -251,6 +251,7 @@ import { until, useDebounceFn, useTimeoutFn } from "@vueuse/shared";
 import { useQuasar, useDialogPluginComponent, extend, type QSelectOption } from "quasar";
 import { useSharedReportTemplates, useSharedReportHTMLTemplates } from "../api/reporting";
 import { notifyError } from "src/utils/notify";
+import { useBeforeUnload } from "src/utils/useBeforeUnload";
 import * as monaco from "monaco-editor";
 import { parseDocument } from "yaml";
 
@@ -302,6 +303,7 @@ const state: ReportTemplate = props.reportTemplate
 
 // are you sure? close prompt if work isn't saved
 const edited = ref(false);
+useBeforeUnload(edited);
 
 // watch variables and set the edited variable
 watch(
