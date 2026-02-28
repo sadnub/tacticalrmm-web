@@ -4,7 +4,7 @@
   <div v-else-if="isLoading" class="q-pa-md flex flex-center">
     <q-circular-progress indeterminate size="50px" color="primary" class="q-ma-md" />
   </div>
-  <div v-else-if="selectedAgent" class="q-pa-sm">
+  <div v-else-if="selectedAgent" class="q-pa-sm" style="height: 100%; overflow: auto">
     <q-bar dense style="background-color: transparent">
       <q-btn dense flat size="md" class="q-mr-sm" icon="refresh" @click="refreshSummary" />
       <q-icon
