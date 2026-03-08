@@ -86,7 +86,7 @@
             v-close-popup
             dense
             clickable
-            @click="showRunScript(agent, script)"
+            @click="showRunScript(agent, script.value as number)"
           >
             <q-item-section>{{ script.label }}</q-item-section>
           </q-item>
@@ -251,7 +251,6 @@ import IntegrationsContextMenu from "src/core/dashboard/ui/IntegrationsContextMe
 import ConfirmYesDialog from "./ConfirmYesDialog.vue";
 
 import type { Agent } from "../types";
-import type { Script } from "src/core/scripts/types";
 
 defineProps<{
   agent: Agent;
@@ -290,7 +289,7 @@ function showSendCommand(agent: Agent) {
   });
 }
 
-function showRunScript(agent: Agent, script: Script | undefined = undefined) {
+function showRunScript(agent: Agent, script: number | undefined = undefined) {
   $q.dialog({
     component: RunScript,
     componentProps: {
