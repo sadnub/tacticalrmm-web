@@ -3,7 +3,7 @@
     <FileBar />
     <q-splitter
       :model-value="dashboardSettings.clientTreeSplitter"
-      :style="{ height: `${$q.screen.height - 50 - 40}px` }"
+      :style="{ height: `${$q.screen.height - 50 - 32}px` }"
       @update:model-value="(val: number) => setClientTreeSplitter(Math.floor(val))"
     >
       <template #before>
