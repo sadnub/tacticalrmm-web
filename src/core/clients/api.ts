@@ -207,6 +207,9 @@ function createSiteStore() {
       // add new site to this store
       sites.value.unshift(data);
 
+      // reload clients and agents for dashboard tree
+      dashboardStore.refreshDashboard();
+
       notifySuccess("Site was added successfully");
     } catch (e) {
       isError.value = true;
