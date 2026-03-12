@@ -143,7 +143,8 @@ const localUser = reactive<User>({
   first_name: props.user ? props.user.first_name : "",
   last_name: props.user ? props.user.last_name : "",
   password: "",
-  block_dashboard_login: false,
+  role: props.user?.role ?? null,
+  block_dashboard_login: props.user?.block_dashboard_login ?? false,
 });
 
 const isLoggedInUser = computed(() => props.user && localUser.username === loggedInUser.value);
