@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pb-sm">
+  <div>
     <q-bar>
       <q-btn-group flat>
         <q-btn size="md" dense no-caps flat label="File">
