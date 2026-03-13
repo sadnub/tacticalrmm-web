@@ -43,7 +43,6 @@
         </template>
 
         <q-input
-          ref="searchInputRef"
           v-model="search"
           style="width: 450px"
           label="Search"
@@ -493,7 +492,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import { useAgentStore, useDashboardStore } from "src/stores/api";
@@ -755,23 +754,8 @@ watchDebounced(
 );
 
 import { QInput } from "quasar";
-const searchInputRef = ref<InstanceType<typeof QInput> | null>(null);
 
-function onGlobalKeydown(e: KeyboardEvent) {
-  if (e.ctrlKey && e.key === "f") {
-    e.preventDefault();
-    searchInputRef.value?.focus();
-  }
-}
-
-onMounted(() => {
-  doSearch();
-  window.addEventListener("keydown", onGlobalKeydown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onGlobalKeydown);
-});
+onMounted(doSearch);
 
 // Select all checkbox logic
 const allSelected = computed(
