@@ -97,7 +97,8 @@ export type PendingActionType =
   | "runcmd"
   | "runscript"
   | "runpatchscan"
-  | "runpatchinstall";
+  | "runpatchinstall"
+  | "agentinstall";
 
 export interface PendingAction {
   id: number;
@@ -106,4 +107,9 @@ export interface PendingAction {
   action_type: PendingActionType;
   status: PendingActionStatus;
   details?: Record<string, any>;
+  hostname: string;
+  client: string;
+  site: string;
+  due: string;
+  description: string;
 }

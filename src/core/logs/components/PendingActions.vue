@@ -12,7 +12,6 @@
         style="max-height: 65vh"
         :rows="filteredActions"
         :columns="columns"
-        :visible-columns="visibleColumns"
         :pagination="{ rowsPerPage: 0, sortBy: 'status', descending: false }"
         row-key="id"
         virtual-scroll
@@ -75,18 +74,20 @@
                 </template>
               </template>
 
-              <!-- more details -->
-              <template v-else-if="col.name === 'details'">
+              <!-- description with optional output button -->
+              <template v-else-if="col.name === 'desc'">
+                {{ col.value }}
                 <q-btn
                   v-if="
                     bodyProps.row.action_type === 'chocoinstall' &&
                     bodyProps.row.status === 'completed'
                   "
+                  class="q-ml-sm"
                   color="primary"
                   icon="preview"
                   size="sm"
                   label="View output"
-                  @click="showOutput(col.value)"
+                  @click="showOutput(bodyProps.row.details?.output ?? '')"
                 />
               </template>
 
@@ -130,8 +131,8 @@ import type { Agent } from "src/core/agents/types";
 import type { PendingAction } from "../types";
 import type { TacticalColumn } from "src/core/dashboard/types";
 // static data
-const columns: TacticalColumn[] = [
-  { name: "status", field: "status", label: "Status" },
+const allColumns: TacticalColumn[] = [
+  { name: "status", field: "status", label: "Status", align: "left", sortable: true },
   {
     name: "type",
     label: "Type",
@@ -174,14 +175,6 @@ const columns: TacticalColumn[] = [
     sortable: true,
   },
   { name: "site", label: "Site", field: "site", align: "left", sortable: true },
-  {
-    name: "details",
-    field: "details",
-    label: "Details",
-    align: "left",
-    sortable: false,
-    required: true,
-  },
 ];
 
 const props = defineProps<{
@@ -208,9 +201,9 @@ const completedCount = computed(() => {
   }
 });
 
-const visibleColumns = computed(() => {
-  if (props.agent) return ["type", "due", "desc", "details"];
-  else return ["type", "due", "desc", "agent", "client", "site", "details"];
+const columns = computed(() => {
+  if (props.agent) return allColumns.filter((c) => !["agent", "client", "site"].includes(c.name));
+  return allColumns;
 });
 
 function refreshPendingActions() {
