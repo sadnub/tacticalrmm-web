@@ -29,7 +29,11 @@
       >
         <!-- header slots -->
         <template #header-cell-statusicon="headerProps">
-          <q-th auto-width :props="headerProps"></q-th>
+          <q-th auto-width :props="headerProps">
+            <q-icon name="info" size="1.5em">
+              <q-tooltip>Status</q-tooltip>
+            </q-icon>
+          </q-th>
         </template>
 
         <template #top>
