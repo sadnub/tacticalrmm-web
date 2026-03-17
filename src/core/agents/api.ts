@@ -379,8 +379,9 @@ function createAgentStore() {
         payload,
       );
       return data;
-    } catch {
+    } catch (e) {
       isError.value = true;
+      throw e;
     } finally {
       isLoading.value = false;
     }

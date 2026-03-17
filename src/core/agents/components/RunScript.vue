@@ -207,7 +207,6 @@ import ScriptOutputCopyClip from "src/core/scripts/components/ScriptOutputCopyCl
 import type { Agent } from "src/core/agents/types";
 import type { RunScriptRequest } from "../types";
 import type { Script, ScriptResult } from "src/core/scripts/types";
-import { isScriptResult } from "src/core/scripts/types";
 
 const hosted = computed(() => dashboardSettings.hosted);
 const serverScriptsEnabled = computed(() => dashboardSettings.serverScriptsEnabled);
@@ -284,12 +283,7 @@ async function sendScript() {
   try {
     const response = await runScript(props.agent.agent_id, state);
     if (response === undefined) return;
-
-    if (isScriptResult(response)) {
-      ret.value = response;
-    } else {
-      ret.value = response;
-    }
+    ret.value = response;
   } catch {
     //
   }
