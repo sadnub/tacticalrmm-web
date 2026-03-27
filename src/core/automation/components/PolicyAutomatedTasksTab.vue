@@ -234,10 +234,15 @@ const props = defineProps<{
 
 const $q = useQuasar();
 const columns = [
-  { name: "enabled", align: "left" as const, field: "enabled" },
-  { name: "smsalert", field: "text_alert", align: "left" as const },
-  { name: "emailalert", field: "email_alert", align: "left" as const },
-  { name: "dashboardalert", field: "dashboard_alert", align: "left" as const },
+  { name: "enabled", label: "Enabled", align: "left" as const, field: "enabled" },
+  { name: "smsalert", label: "SMS Alert", field: "text_alert", align: "left" as const },
+  { name: "emailalert", label: "Email Alert", field: "email_alert", align: "left" as const },
+  {
+    name: "dashboardalert",
+    label: "Dashboard Alert",
+    field: "dashboard_alert",
+    align: "left" as const,
+  },
   {
     name: "collector",
     label: "Collector",

@@ -62,7 +62,7 @@ defineEmits<{
   "update:selected": [value: readonly unknown[]];
 }>();
 
-const columnSelectCol = {
+const columnSelectCol: TacticalColumn = {
   name: "columnSelect",
   label: "Column Select",
   field: "columnSelect",
