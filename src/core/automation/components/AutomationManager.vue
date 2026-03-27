@@ -10,234 +10,234 @@
         v-model="splitterModel"
         horizontal
         style="height: calc(100vh - 32px)"
+        :limits="[20, 80]"
       >
         <template #before>
-      <tactical-table
-        v-model:pagination="pagination"
-        :rows="policiesList"
-        :columns="columns"
-        :rows-per-page-options="[0]"
-        style="height: 100%"
-        dense
-        row-key="id"
-        binary-state-sort
-        virtual-scroll
-        column-select
-        :filter="filter"
-        no-data-label="No Policies"
-        storage-key="automation-manager"
-      >
-        <template #top>
-          <q-btn
-            icon="add"
-            label="Add Policy"
-            no-caps
+          <tactical-table
+            v-model:pagination="pagination"
+            :rows="policies"
+            :columns="columns"
+            :rows-per-page-options="[0]"
+            style="height: 100%"
             dense
-            flat
-            push
-            class="q-mr-sm"
-            @click="showAddPolicyForm"
-          />
-          <q-btn
-            icon="remove_red_eye"
-            label="Policy Overview"
-            no-caps
-            dense
-            flat
-            push
-            @click="showPolicyOverview"
-          />
-          <q-space />
-          <q-input
-            ref="searchInputRef"
-            v-model="filter"
-            filled
-            label="Search"
-            dense
-            clearable
-            class="q-pr-sm"
-            style="width: 300px"
-            @keydown.esc.stop="filter = ''"
+            row-key="id"
+            binary-state-sort
+            virtual-scroll
+            column-select
+            :filter="filter"
+            no-data-label="No Policies"
+            storage-key="automation-manager"
           >
-            <template #prepend>
-              <q-icon name="search" color="primary" />
+            <template #top>
+              <q-btn
+                icon="add"
+                label="Add Policy"
+                no-caps
+                dense
+                flat
+                push
+                class="q-mr-sm"
+                @click="showAddPolicyForm"
+              />
+              <q-btn
+                icon="remove_red_eye"
+                label="Policy Overview"
+                no-caps
+                dense
+                flat
+                push
+                @click="showPolicyOverview"
+              />
+              <q-space />
+              <q-input
+                v-model="filter"
+                filled
+                label="Search"
+                dense
+                clearable
+                class="q-pr-sm"
+                style="width: 300px"
+                @keydown.esc.stop="filter = ''"
+              >
+                <template #prepend>
+                  <q-icon name="search" color="primary" />
+                </template>
+              </q-input>
+              <tactical-table-export />
             </template>
-          </q-input>
-          <tactical-table-export />
-        </template>
 
-        <!-- header slots -->
-        <template #header-cell-active="props">
-          <q-th :props="props" auto-width>
-            <q-icon name="power_settings_new" size="1.5em">
-              <q-tooltip>Enable Policy</q-tooltip>
-            </q-icon>
-          </q-th>
-        </template>
+            <!-- header slots -->
+            <template #header-cell-active="props">
+              <q-th :props="props" auto-width>
+                <q-icon name="power_settings_new" size="1.5em">
+                  <q-tooltip>Enable Policy</q-tooltip>
+                </q-icon>
+              </q-th>
+            </template>
 
-        <template #header-cell-enforced="props">
-          <q-th :props="props" auto-width>
-            <q-icon name="security" size="1.5em">
-              <q-tooltip>Enforce Policy (Will override Agent tasks/checks)</q-tooltip>
-            </q-icon>
-          </q-th>
-        </template>
+            <template #header-cell-enforced="props">
+              <q-th :props="props" auto-width>
+                <q-icon name="security" size="1.5em">
+                  <q-tooltip>Enforce Policy (Will override Agent tasks/checks)</q-tooltip>
+                </q-icon>
+              </q-th>
+            </template>
 
-        <!-- body slots -->
-        <template #body="props">
-          <q-tr
-            :props="props"
-            class="cursor-pointer"
-            :class="rowSelectedClass(props.row.id, selectedPolicy)"
-            @click="selectedPolicy = props.row"
-            @contextmenu="selectedPolicy = props.row"
-            @dblclick="showEditPolicyForm(props.row)"
-          >
-            <!-- context menu -->
-            <q-menu context-menu>
-              <q-list dense style="min-width: 200px">
-                <q-item v-close-popup clickable @click="showEditPolicyForm(props.row)">
-                  <q-item-section side>
-                    <q-icon name="edit" />
-                  </q-item-section>
-                  <q-item-section>Edit</q-item-section>
-                </q-item>
+            <!-- body slots -->
+            <template #body="props">
+              <q-tr
+                :props="props"
+                class="cursor-pointer"
+                :class="rowSelectedClass(props.row.id, selectedPolicy)"
+                @click="selectedPolicy = props.row"
+                @contextmenu="selectedPolicy = props.row"
+                @dblclick="showEditPolicyForm(props.row)"
+              >
+                <!-- context menu -->
+                <q-menu context-menu>
+                  <q-list dense style="min-width: 200px">
+                    <q-item v-close-popup clickable @click="showEditPolicyForm(props.row)">
+                      <q-item-section side>
+                        <q-icon name="edit" />
+                      </q-item-section>
+                      <q-item-section>Edit</q-item-section>
+                    </q-item>
 
-                <q-item v-close-popup clickable @click="showCopyPolicyForm(props.row)">
-                  <q-item-section side>
-                    <q-icon name="content_copy" />
-                  </q-item-section>
-                  <q-item-section>Copy</q-item-section>
-                </q-item>
+                    <q-item v-close-popup clickable @click="showCopyPolicyForm(props.row)">
+                      <q-item-section side>
+                        <q-icon name="content_copy" />
+                      </q-item-section>
+                      <q-item-section>Copy</q-item-section>
+                    </q-item>
 
-                <q-item v-close-popup clickable @click="deletePolicy(props.row)">
-                  <q-item-section side>
-                    <q-icon name="delete" />
-                  </q-item-section>
-                  <q-item-section>Delete</q-item-section>
-                </q-item>
+                    <q-item v-close-popup clickable @click="deletePolicy(props.row)">
+                      <q-item-section side>
+                        <q-icon name="delete" />
+                      </q-item-section>
+                      <q-item-section>Delete</q-item-section>
+                    </q-item>
 
-                <q-separator></q-separator>
+                    <q-separator></q-separator>
 
-                <q-item v-close-popup clickable @click="showRelations(props.row)">
-                  <q-item-section side>
-                    <q-icon name="account_tree" />
-                  </q-item-section>
-                  <q-item-section>Show Relations</q-item-section>
-                </q-item>
+                    <q-item v-close-popup clickable @click="showRelations(props.row)">
+                      <q-item-section side>
+                        <q-icon name="account_tree" />
+                      </q-item-section>
+                      <q-item-section>Show Relations</q-item-section>
+                    </q-item>
 
-                <q-item v-close-popup clickable @click="showPolicyExclusions(props.row)">
-                  <q-item-section side>
-                    <q-icon name="rule" />
-                  </q-item-section>
-                  <q-item-section>Policy Exclusions</q-item-section>
-                </q-item>
+                    <q-item v-close-popup clickable @click="showPolicyExclusions(props.row)">
+                      <q-item-section side>
+                        <q-icon name="rule" />
+                      </q-item-section>
+                      <q-item-section>Policy Exclusions</q-item-section>
+                    </q-item>
 
-                <q-item v-close-popup clickable @click="showPatchPolicyForm(props.row)">
-                  <q-item-section side>
-                    <q-icon name="system_update" />
-                  </q-item-section>
-                  <q-item-section>{{ patchPolicyText(props.row) }}</q-item-section>
-                </q-item>
+                    <q-item v-close-popup clickable @click="showPatchPolicyForm(props.row)">
+                      <q-item-section side>
+                        <q-icon name="system_update" />
+                      </q-item-section>
+                      <q-item-section>{{ patchPolicyText(props.row) }}</q-item-section>
+                    </q-item>
 
-                <q-item v-close-popup clickable @click="showAlertTemplateAdd(props.row)">
-                  <q-item-section side>
-                    <q-icon name="warning" />
-                  </q-item-section>
-                  <q-item-section>{{ alertTemplateText(props.row) }}</q-item-section>
-                </q-item>
+                    <q-item v-close-popup clickable @click="showAlertTemplateAdd(props.row)">
+                      <q-item-section side>
+                        <q-icon name="warning" />
+                      </q-item-section>
+                      <q-item-section>{{ alertTemplateText(props.row) }}</q-item-section>
+                    </q-item>
 
-                <q-separator></q-separator>
+                    <q-separator></q-separator>
 
-                <q-item v-close-popup clickable>
-                  <q-item-section>Close</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
+                    <q-item v-close-popup clickable>
+                      <q-item-section>Close</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
 
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              <!-- active -->
-              <template v-if="col.name === 'active'">
-                <q-checkbox
-                  v-model="props.row.active"
-                  dense
-                  @update:model-value="(val) => toggleCheckbox(props.row, 'active', val)"
-                />
-              </template>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  <!-- active -->
+                  <template v-if="col.name === 'active'">
+                    <q-checkbox
+                      v-model="props.row.active"
+                      dense
+                      @update:model-value="(val) => toggleCheckbox(props.row, 'active', val)"
+                    />
+                  </template>
 
-              <!-- enforced -->
-              <template v-else-if="col.name === 'enforced'">
-                <q-checkbox
-                  v-model="props.row.enforced"
-                  dense
-                  @update:model-value="(val) => toggleCheckbox(props.row, 'enforced', val)"
-                />
-              </template>
+                  <!-- enforced -->
+                  <template v-else-if="col.name === 'enforced'">
+                    <q-checkbox
+                      v-model="props.row.enforced"
+                      dense
+                      @update:model-value="(val) => toggleCheckbox(props.row, 'enforced', val)"
+                    />
+                  </template>
 
-              <!-- name -->
-              <template v-else-if="col.name === 'name'">
-                {{ props.row.name }}
-                <q-chip
-                  v-if="props.row.default_server_policy"
-                  color="primary"
-                  text-color="white"
-                  size="sm"
-                  >Default Server</q-chip
-                >
-                <q-chip
-                  v-if="props.row.default_workstation_policy"
-                  color="primary"
-                  text-color="white"
-                  size="sm"
-                  >Default Workstation</q-chip
-                >
-              </template>
+                  <!-- name -->
+                  <template v-else-if="col.name === 'name'">
+                    {{ props.row.name }}
+                    <q-chip
+                      v-if="props.row.default_server_policy"
+                      color="primary"
+                      text-color="white"
+                      size="sm"
+                      >Default Server</q-chip
+                    >
+                    <q-chip
+                      v-if="props.row.default_workstation_policy"
+                      color="primary"
+                      text-color="white"
+                      size="sm"
+                      >Default Workstation</q-chip
+                    >
+                  </template>
 
-              <!-- desc -->
-              <template v-else-if="col.name === 'desc'">
-                {{ props.row.desc }}
-              </template>
+                  <!-- desc -->
+                  <template v-else-if="col.name === 'desc'">
+                    {{ props.row.desc }}
+                  </template>
 
-              <!-- relations -->
-              <template v-else-if="col.name === 'relations'">
-                <span class="text-primary" @click="showRelations(props.row)">{{
-                  `Show Relations (${props.row.agents_count})`
-                }}</span>
-              </template>
+                  <!-- relations -->
+                  <template v-else-if="col.name === 'relations'">
+                    <span class="text-primary" @click="showRelations(props.row)">{{
+                      `Show Relations (${props.row.agents_count})`
+                    }}</span>
+                  </template>
 
-              <!-- exclusions -->
-              <template v-else-if="col.name === 'exclusions'">
-                <span class="text-primary" @click="showPolicyExclusions(props.row)">{{
-                  `Show Policy Exclusions (${
-                    props.row.excluded_agents.length +
-                    props.row.excluded_clients.length +
-                    props.row.excluded_sites.length
-                  })`
-                }}</span>
-              </template>
+                  <!-- exclusions -->
+                  <template v-else-if="col.name === 'exclusions'">
+                    <span class="text-primary" @click="showPolicyExclusions(props.row)">{{
+                      `Show Policy Exclusions (${
+                        props.row.excluded_agents.length +
+                        props.row.excluded_clients.length +
+                        props.row.excluded_sites.length
+                      })`
+                    }}</span>
+                  </template>
 
-              <!-- winupdatepolicy -->
-              <template v-else-if="col.name === 'winupdatepolicy'">
-                <span class="text-primary" @click="showPatchPolicyForm(props.row)">{{
-                  patchPolicyText(props.row)
-                }}</span>
-              </template>
+                  <!-- winupdatepolicy -->
+                  <template v-else-if="col.name === 'winupdatepolicy'">
+                    <span class="text-primary" @click="showPatchPolicyForm(props.row)">{{
+                      patchPolicyText(props.row)
+                    }}</span>
+                  </template>
 
-              <!-- alert_template -->
-              <template v-else-if="col.name === 'alert_template'">
-                <span class="text-primary" @click="showAlertTemplateAdd(props.row)">{{
-                  alertTemplateText(props.row)
-                }}</span>
-              </template>
+                  <!-- alert_template -->
+                  <template v-else-if="col.name === 'alert_template'">
+                    <span class="text-primary" @click="showAlertTemplateAdd(props.row)">{{
+                      alertTemplateText(props.row)
+                    }}</span>
+                  </template>
 
-              <!-- default fallback -->
-              <template v-else>
-                {{ col.value }}
-              </template>
-            </q-td>
-          </q-tr>
-        </template>
-      </tactical-table>
+                  <!-- default fallback -->
+                  <template v-else>
+                    {{ col.value }}
+                  </template>
+                </q-td>
+              </q-tr>
+            </template>
+          </tactical-table>
         </template>
 
         <template #separator>
@@ -289,9 +289,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent, QInput } from "quasar";
-import { useStorage } from "@vueuse/core";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 import DialogWrapper from "src/core/dashboard/ui/DialogWrapper.vue";
 import PolicyForm from "./PolicyForm.vue";
@@ -312,24 +311,10 @@ const { policies, getPolicies, removePolicy, updatePolicy } = usePolicyStore();
 const { refreshDashboard } = useDashboardStore();
 
 // state
-const splitterModel = useStorage("automation-manager-splitter", 50);
+const splitterModel = ref(50);
 const subtab = ref("checks");
 const selectedPolicy = ref<Policy | null>(null);
-const searchInputRef = ref<InstanceType<typeof QInput> | null>(null);
 
-function onGlobalKeydown(e: KeyboardEvent) {
-  if (e.ctrlKey && e.key === "f") {
-    const el = dialogRef.value?.$el as HTMLElement | undefined;
-    if (el && !el.contains(document.activeElement)) return;
-    e.preventDefault();
-    searchInputRef.value?.focus();
-  }
-}
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onGlobalKeydown);
-});
-const policiesList = computed(() => policies.value);
 const columns = [
   { name: "active", label: "Active", field: "active", align: "left" as const },
   {
@@ -376,7 +361,7 @@ const columns = [
     align: "left" as const,
   },
 ];
-const pagination = useStorage("automation-manager-pagination", {
+const pagination = ref({
   rowsPerPage: 0,
   sortBy: "name",
   descending: true,
@@ -512,6 +497,5 @@ function rowSelectedClass(id: number, selectedPolicy: Policy | null) {
 
 onMounted(() => {
   getPolicies();
-  window.addEventListener("keydown", onGlobalKeydown);
 });
 </script>
