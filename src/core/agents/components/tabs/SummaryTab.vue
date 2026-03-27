@@ -35,6 +35,7 @@
       &bull; {{ selectedAgent.operating_system }} &bull; Agent v{{ selectedAgent.version }}
       <q-space />
       <q-btn
+        v-if="!isAgentRoute"
         dense
         flat
         label="Popout"
@@ -201,7 +202,11 @@
 <script lang="ts" setup>
 // composition imports
 import { computed, watch, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { useAgentStore, useCustomFieldStore, useDashboardStore } from "src/stores/api";
+
+const route = useRoute();
+const isAgentRoute = computed(() => route.name === "Agent");
 
 const {
   selectedAgent,
