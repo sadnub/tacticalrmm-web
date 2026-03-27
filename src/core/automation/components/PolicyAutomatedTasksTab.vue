@@ -227,13 +227,14 @@ const {
 
 // types
 import type { AutomatedTaskUI } from "src/core/tasks/types";
+import type { TacticalColumn } from "src/core/dashboard/types";
 
 const props = defineProps<{
   selectedPolicy: number;
 }>();
 
 const $q = useQuasar();
-const columns = [
+const columns: TacticalColumn[] = [
   { name: "enabled", label: "Enabled", align: "left" as const, field: "enabled" },
   { name: "smsalert", label: "SMS Alert", field: "text_alert", align: "left" as const },
   { name: "emailalert", label: "Email Alert", field: "email_alert", align: "left" as const },

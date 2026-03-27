@@ -252,7 +252,7 @@ const props = defineProps<{
 
 const $q = useQuasar();
 
-const columns = [
+const columns: TacticalColumn[] = [
   { name: "smsalert", label: "SMS Alert", field: "text_alert", align: "left" as const },
   { name: "emailalert", label: "Email Alert", field: "email_alert", align: "left" as const },
   {
