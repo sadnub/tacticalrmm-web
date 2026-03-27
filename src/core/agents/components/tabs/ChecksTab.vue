@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
   <div v-else-if="selectedAgentIds.length > 1"></div>
-  <div v-else class="q-pl-xs">
+  <div v-else>
     <tactical-table
       v-model:pagination="pagination"
       dense
@@ -408,7 +408,16 @@ import { useQuasar } from "quasar";
 import { useAgentStore, useCheckStore, useDashboardStore } from "src/stores/api";
 
 const { selectedAgentId, selectedAgentIds, selectedAgentPlatform } = useAgentStore();
-const { checks, isLoading, getAgentChecks, runAgentChecks, updateCheck, removeCheck, resetCheck, resetAllAgentChecks } = useCheckStore();
+const {
+  checks,
+  isLoading,
+  getAgentChecks,
+  runAgentChecks,
+  updateCheck,
+  removeCheck,
+  resetCheck,
+  resetAllAgentChecks,
+} = useCheckStore();
 const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 import { notifyWarning } from "src/utils/notify";
 

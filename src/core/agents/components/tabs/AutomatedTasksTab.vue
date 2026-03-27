@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedAgentIds.length === 0" class="q-pa-sm">No agent selected</div>
   <div v-else-if="selectedAgentIds.length > 1"></div>
-  <div v-else class="q-pl-xs">
+  <div v-else>
     <tactical-table
       v-model:pagination="pagination"
       dense
@@ -31,7 +31,15 @@
 
         <q-space />
 
-        <q-input v-model="search" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+        <q-input
+          v-model="search"
+          filled
+          label="Search"
+          dense
+          clearable
+          class="q-pr-sm"
+          style="width: 300px"
+        >
           <template #prepend>
             <q-icon name="search" />
           </template>
@@ -230,7 +238,9 @@
 
             <!-- status icon -->
             <template v-else-if="col.name === 'status'">
-              <template v-if="!props.row.task_result || Object.keys(props.row.task_result).length === 0"></template>
+              <template
+                v-if="!props.row.task_result || Object.keys(props.row.task_result).length === 0"
+              ></template>
               <template v-else-if="props.row.task_result.status === 'passing'">
                 <q-icon style="font-size: 1.3rem" :color="dashPositiveColor" name="check_circle">
                   <q-tooltip>Passing</q-tooltip>
