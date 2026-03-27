@@ -1,6 +1,9 @@
 <template>
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="width: 90vw; max-width: 90vw; height: 90vh; max-height: 90vh">
+    <q-card
+      class="q-dialog-plugin"
+      style="width: 90vw; max-width: 90vw; height: 90vh; max-height: 90vh"
+    >
       <q-bar>
         <q-btn class="q-mr-sm" dense flat push icon="refresh" @click="refresh" />
         {{ title }}
@@ -32,7 +35,6 @@
         <template #top>
           <q-space />
           <q-input
-            ref="searchInputRef"
             v-model="filter"
             filled
             label="Search"
@@ -40,7 +42,6 @@
             clearable
             class="q-pr-sm"
             style="width: 300px"
-            @keydown.esc.stop="filter = ''"
           >
             <template #prepend>
               <q-icon name="search" color="primary" />
@@ -169,7 +170,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent, QInput } from "quasar";
 import { usePolicyStore, useDashboardStore } from "src/stores/api";
 
@@ -199,7 +200,7 @@ interface PolicyStatusItem {
   name: string;
 }
 
-// Props and emits
+// props
 const props = defineProps<{
   item: PolicyStatusItem;
   type: "task" | "check";
@@ -210,20 +211,6 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide } = useDialogPluginComponent();
 
 const filter = ref("");
-const searchInputRef = ref<InstanceType<typeof QInput> | null>(null);
-
-function onGlobalKeydown(e: KeyboardEvent) {
-  if (e.ctrlKey && e.key === "f") {
-    const el = dialogRef.value?.$el as HTMLElement | undefined;
-    if (el && !el.contains(document.activeElement)) return;
-    e.preventDefault();
-    searchInputRef.value?.focus();
-  }
-}
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onGlobalKeydown);
-});
 
 // state
 const data = ref<PolicyStatusItem[]>([]);
@@ -367,11 +354,6 @@ function refresh() {
 
 // Lifecycle
 onMounted(() => {
-  if (props.type === "task") {
-    void getTaskData();
-  } else {
-    void getCheckData();
-  }
-  window.addEventListener("keydown", onGlobalKeydown);
+  refresh();
 });
 </script>
