@@ -33,7 +33,12 @@
       <q-separator />
       <q-scroll-area style="height: 50vh">
         <q-tab-panels v-model="tab" :animated="false">
-          <q-tab-panel v-for="t in ['client', 'site', 'agent']" :key="t" :name="t" class="q-pa-none">
+          <q-tab-panel
+            v-for="t in ['client', 'site', 'agent']"
+            :key="t"
+            :name="t"
+            class="q-pa-none"
+          >
             <tactical-table
               v-model:pagination="pagination"
               dense
@@ -122,11 +127,7 @@
 import { computed, ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useCustomFieldStore } from "src/stores/api";
-
-const { customFields: allCustomFields, getCustomFields, removeCustomField } = useCustomFieldStore();
 import { capitalize } from "src/utils/format";
-
-onMounted(() => getCustomFields());
 
 // ui imports
 import CustomFieldsForm from "./CustomFieldsForm.vue";
@@ -181,12 +182,14 @@ const columns: TacticalColumn[] = [
   },
 ];
 
-
 const pagination = ref({
   rowsPerPage: 0,
   sortBy: "name",
   descending: true,
 });
+
+// setup stores
+const { customFields: allCustomFields, getCustomFields, removeCustomField } = useCustomFieldStore();
 
 const $q = useQuasar();
 
@@ -221,4 +224,6 @@ function deleteCustomField(field: CustomField) {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => void removeCustomField(field.id));
 }
+
+onMounted(() => getCustomFields());
 </script>

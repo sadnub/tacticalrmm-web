@@ -2,7 +2,7 @@
   <div>
     <div class="row">
       <div class="text-subtitle2">
-        {{ props.type === "web" ? "URL Actions" : "Web Hooks for Alert Failure/Resolved Actions" }}
+        {{ type === "web" ? "URL Actions" : "Web Hooks for Alert Failure/Resolved Actions" }}
       </div>
       <q-space />
       <q-btn
@@ -10,7 +10,7 @@
         color="grey-5"
         icon="fas fa-plus"
         text-color="black"
-        :label="`Add ${props.type === 'web' ? 'URL Action' : 'Web Hook'}`"
+        :label="`Add ${type === 'web' ? 'URL Action' : 'Web Hook'}`"
         @click="addURLAction"
       />
     </div>
@@ -76,8 +76,6 @@ import { onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useURLActionStore } from "src/stores/api";
 
-const { webActions, restActions, isLoading, getURLActions, removeURLAction } = useURLActionStore();
-
 // ui imports
 import URLActionsForm from "./URLActionsForm.vue";
 
@@ -87,6 +85,9 @@ import type { TacticalColumn } from "src/core/dashboard/types";
 
 // define props
 const props = defineProps<{ type: URLActionType }>();
+
+// setup stores
+const { webActions, restActions, isLoading, getURLActions, removeURLAction } = useURLActionStore();
 
 // setup quasar
 const $q = useQuasar();
@@ -141,5 +142,6 @@ function deleteURLAction(action: URLAction) {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => void removeURLAction(action.id));
 }
+
 onMounted(() => getURLActions());
 </script>

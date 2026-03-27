@@ -83,10 +83,6 @@ import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useGlobalKeyStore } from "src/stores/api";
 
-const { keys, isLoading, getKeys, removeKey } = useGlobalKeyStore();
-
-onMounted(() => getKeys());
-
 // ui imports
 import KeyStoreForm from "./KeyStoreForm.vue";
 
@@ -110,6 +106,9 @@ const columns: TacticalColumn[] = [
     sortable: true,
   },
 ];
+
+// setup stores
+const { keys, isLoading, getKeys, removeKey } = useGlobalKeyStore();
 
 const isPwd = ref(true);
 
@@ -143,4 +142,6 @@ function deleteKey(key: GlobalKey) {
     ok: { label: "Delete", color: "negative" },
   }).onOk(() => void removeKey(key.id));
 }
+
+onMounted(() => getKeys());
 </script>
