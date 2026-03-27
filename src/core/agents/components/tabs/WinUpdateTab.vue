@@ -50,7 +50,15 @@
         />
         <q-space />
 
-        <q-input v-model="filter" filled label="Search" dense clearable class="q-pr-sm" style="width: 300px">
+        <q-input
+          v-model="filter"
+          filled
+          label="Search"
+          dense
+          clearable
+          class="q-pr-sm"
+          style="width: 300px"
+        >
           <template #prepend>
             <q-icon name="search" color="primary" />
           </template>
@@ -60,6 +68,16 @@
 
       <template #loading>
         <q-inner-loading showing color="primary" />
+      </template>
+
+      <template #header-cell-action="scope">
+        <q-th :props="scope" auto-width>{{ scope.col.label }}</q-th>
+      </template>
+      <template #header-cell-installed="scope">
+        <q-th :props="scope" auto-width>{{ scope.col.label }}</q-th>
+      </template>
+      <template #header-cell-severity="scope">
+        <q-th :props="scope" auto-width>{{ scope.col.label }}</q-th>
       </template>
 
       <template #body="props">
@@ -145,7 +163,7 @@
 
             <!-- title -->
             <template v-else-if="col.name === 'title'">
-              <truncate-text :text="col.value" />
+              <truncate-text :text="col.value" :width="650" />
             </template>
 
             <!-- description -->
@@ -155,7 +173,7 @@
                 class="text-primary"
                 @click="showUpdateDetails(props.row)"
               >
-                <truncate-text :text="col.value" />
+                <truncate-text :text="col.value" :width="500" />
               </span>
             </template>
 
@@ -176,7 +194,14 @@ import { useQuasar } from "quasar";
 import { useAgentStore, useWindowsUpdateStore, useDashboardStore } from "src/stores/api";
 
 const { selectedAgentPlatform, selectedAgentId, selectedAgentIds } = useAgentStore();
-const { updates, isLoading, getAgentUpdates, runAgentUpdateScan, runAgentUpdateInstall, updateAgentUpdate } = useWindowsUpdateStore();
+const {
+  updates,
+  isLoading,
+  getAgentUpdates,
+  runAgentUpdateScan,
+  runAgentUpdateInstall,
+  updateAgentUpdate,
+} = useWindowsUpdateStore();
 const { dashboardSettings, tabHeight, formatDate } = useDashboardStore();
 
 // ui imports
