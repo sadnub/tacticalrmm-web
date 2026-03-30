@@ -36,7 +36,6 @@
           />
           <q-space />
           <q-input
-            ref="searchInputRef"
             v-model="search"
             filled
             label="Search"
@@ -44,7 +43,6 @@
             clearable
             class="q-pr-sm"
             style="width: 300px"
-            @keydown.esc.stop="search = ''"
           >
             <template #prepend>
               <q-icon name="search" />
@@ -121,7 +119,7 @@
 
 <script lang="ts" setup>
 // composition imports
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useQuasar, useDialogPluginComponent, QInput } from "quasar";
 import { usePendingActionStore, useDashboardStore } from "src/stores/api";
 import { useAgentStore } from "src/stores/api";
@@ -209,7 +207,6 @@ const actionsSource = computed(() =>
 );
 
 const search = ref("");
-const searchInputRef = ref<InstanceType<typeof QInput> | null>(null);
 const showCompleted = ref(false);
 const completedCount = computed(() => {
   try {
@@ -260,21 +257,7 @@ function cancelPendingAction(action: PendingAction) {
   });
 }
 
-function onGlobalKeydown(e: KeyboardEvent) {
-  if (e.ctrlKey && e.key === "f") {
-    const el = dialogRef.value?.$el as HTMLElement | undefined;
-    if (el && !el.contains(document.activeElement)) return;
-    e.preventDefault();
-    searchInputRef.value?.focus();
-  }
-}
-
 onMounted(() => {
   refreshPendingActions();
-  window.addEventListener("keydown", onGlobalKeydown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onGlobalKeydown);
 });
 </script>
