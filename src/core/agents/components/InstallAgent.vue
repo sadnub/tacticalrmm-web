@@ -138,9 +138,9 @@ const agentTypeOptions = [
 ];
 
 const installMethodOptions = [
-  { label: "Dynamically generated exe", value: "exe" },
+  { label: "Standard EXE", value: "manual" },
   { label: "Powershell", value: "powershell" },
-  { label: "Manual", value: "manual" },
+  { label: "Generated EXE", value: "exe" },
 ];
 
 const props = defineProps<{ site?: number }>();
@@ -167,7 +167,7 @@ const agentInstallRequest = reactive({
   ping: false,
   showAgentDownload: false,
   info: {},
-  installMethod: "exe",
+  installMethod: "manual",
   goarch: GOARCH_AMD64,
   plat: "windows",
   api: getBaseUrl(),
@@ -178,7 +178,7 @@ watch(
   (newValue) => {
     if (newValue === "windows") {
       agentInstallRequest.goarch = GOARCH_AMD64;
-      agentInstallRequest.installMethod = "exe";
+      agentInstallRequest.installMethod = "manual";
     } else if (newValue === "linux") {
       agentInstallRequest.goarch = GOARCH_AMD64;
       agentInstallRequest.installMethod = "bash";
@@ -255,24 +255,50 @@ function submit() {
           });
         });
     } else if (agentInstallRequest.installMethod === "exe") {
-      $q.loading.show({ message: "Generating executable..." });
+      $q.dialog({
+        title: "Warning",
+        style: {
+          width: "40vw",
+          maxWidth: "50vw",
+        },
+        message: `
+              This installation method may trigger Antivirus (AV), Windows SmartScreen, or Untrusted Publisher warnings.<br><br>
+              We strongly recommend using the Standard EXE or PowerShell installer instead.<br><br>
+              This method may also expose your environment to the risk of unauthorized or unexpected agents appearing. Please read <a target="_blank" rel="noopener noreferrer" href="https://docs.tacticalrmm.com/faq/#help-ive-been-hacked-and-there-are-weird-agents-appearing-in-my-tactical-rmm">this guidance</a> before continuing.<br><br>
+              Proceed only if you understand and accept these risks.
+              `,
+        color: "negative",
+        ok: {
+          label: "Yes, continue",
+          color: "negative",
+          unelevated: true,
+        },
+        cancel: {
+          label: "Cancel",
+          color: "grey",
+        },
+        persistent: true,
+        html: true,
+      }).onOk(() => {
+        $q.loading.show({ message: "Generating executable..." });
 
-      axios
-        .post("/agents/installer/", agentInstallRequest, { responseType: "blob" })
-        .then((r) => {
-          $q.loading.hide();
-          const blob = new Blob([r.data], {
-            type: "application/vnd.microsoft.portable-executable",
+        axios
+          .post("/agents/installer/", agentInstallRequest, { responseType: "blob" })
+          .then((r) => {
+            $q.loading.hide();
+            const blob = new Blob([r.data], {
+              type: "application/vnd.microsoft.portable-executable",
+            });
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            showDLMessage();
+          })
+          .catch(() => {
+            $q.loading.hide();
           });
-          const link = document.createElement("a");
-          link.href = window.URL.createObjectURL(blob);
-          link.download = fileName;
-          link.click();
-          showDLMessage();
-        })
-        .catch(() => {
-          $q.loading.hide();
-        });
+      });
     } else if (
       agentInstallRequest.installMethod === "powershell" ||
       agentInstallRequest.installMethod === "bash"
