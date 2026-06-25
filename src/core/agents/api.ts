@@ -17,6 +17,7 @@ import type {
   AgentServiceStartType,
   WebVNCUrl,
   MeshUrls,
+  TerminalDefaults,
   AgentRecoveryMode,
   RunBulkActionRequest,
   RunScriptRequest,
@@ -275,6 +276,20 @@ function createAgentStore() {
 
     try {
       const { data } = await axios.get<MeshUrls>(`/agents/${agentId}/meshcentral/`);
+      return data;
+    } catch {
+      isError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function getAgentTerminalDefaults(agentId: string) {
+    isLoading.value = true;
+    isError.value = false;
+
+    try {
+      const { data } = await axios.get<TerminalDefaults>(`/agents/${agentId}/terminal-defaults/`);
       return data;
     } catch {
       isError.value = true;
@@ -710,6 +725,7 @@ function createAgentStore() {
     runTakeControl,
     runWebVNC,
     getAgentMeshCentralUrls,
+    getAgentTerminalDefaults,
     getAgentWebVNCUrl,
     openAgentWindow,
     runRemoteBackground,

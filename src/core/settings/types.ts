@@ -38,6 +38,13 @@ export interface CoreSettings {
   open_ai_model: string;
   enable_server_scripts: boolean;
   enable_server_webterminal: boolean;
+  terminal_mode: "new" | "legacy";
+  default_shell_windows: string;
+  default_shell_windows_custom: string;
+  default_shell_linux: string;
+  default_shell_linux_custom: string;
+  default_shell_darwin: string;
+  default_shell_darwin_custom: string;
   notify_on_info_alerts: boolean;
   notify_on_warning_alerts: boolean;
   block_local_user_logon: boolean;

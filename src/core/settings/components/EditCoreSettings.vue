@@ -216,6 +216,93 @@
                       :rules="[(val: number) => val >= 0 || 'Minimum is 0']"
                     />
                   </div>
+                  <div class="row items-start q-py-xs">
+                    <div class="col-4">Terminal Experience:</div>
+                    <div class="col-2"></div>
+                    <div class="col-6">
+                      <q-option-group
+                        v-model="coreSettings.terminal_mode"
+                        class="q-gutter-lg"
+                        :options="terminalModeOptions"
+                        type="radio"
+                        inline
+                        dense
+                      />
+                    </div>
+                  </div>
+                  <div class="row items-start q-py-xs">
+                    <div class="col-4">Windows Default Terminal:</div>
+                    <div class="col-2"></div>
+                    <div class="col-6">
+                      <q-option-group
+                        v-model="coreSettings.default_shell_windows"
+                        class="q-gutter-lg"
+                        :options="windowsShellOptions"
+                        type="radio"
+                        inline
+                        dense
+                      />
+                      <q-input
+                        v-if="coreSettings.default_shell_windows === 'custom'"
+                        v-model="coreSettings.default_shell_windows_custom"
+                        class="q-mt-md"
+                        dense
+                        outlined
+                        placeholder="Enter custom shell path"
+                        bottom-slots
+                      >
+                        <template #hint>
+                          <span style="font-size: 1.2em">
+                            Enter custom shell path (e.g. C:\Program Files\PowerShell\7\pwsh.exe)
+                          </span>
+                        </template>
+                      </q-input>
+                    </div>
+                  </div>
+                  <div class="row items-start q-py-xs">
+                    <div class="col-4">Linux Default Terminal:</div>
+                    <div class="col-2"></div>
+                    <div class="col-6">
+                      <q-option-group
+                        v-model="coreSettings.default_shell_linux"
+                        class="q-gutter-lg"
+                        :options="linuxShellOptions"
+                        type="radio"
+                        inline
+                        dense
+                      />
+                      <q-input
+                        v-if="coreSettings.default_shell_linux === 'custom'"
+                        v-model="coreSettings.default_shell_linux_custom"
+                        class="q-mt-md"
+                        dense
+                        outlined
+                        placeholder="Enter custom shell path (e.g. /usr/bin/fish)"
+                      />
+                    </div>
+                  </div>
+                  <div class="row items-start q-py-xs">
+                    <div class="col-4">macOS Default Terminal:</div>
+                    <div class="col-2"></div>
+                    <div class="col-6">
+                      <q-option-group
+                        v-model="coreSettings.default_shell_darwin"
+                        class="q-gutter-lg"
+                        :options="darwinShellOptions"
+                        type="radio"
+                        inline
+                        dense
+                      />
+                      <q-input
+                        v-if="coreSettings.default_shell_darwin === 'custom'"
+                        v-model="coreSettings.default_shell_darwin_custom"
+                        class="q-mt-md"
+                        dense
+                        outlined
+                        placeholder="Enter custom shell path (e.g. /bin/zsh)"
+                      />
+                    </div>
+                  </div>
                   <div class="row items-center q-py-xs">
                     <div class="col-4">Reset Patch Policy on Agents:</div>
                     <div class="col-2"></div>
@@ -699,6 +786,27 @@ const logLevelOptions = [
   { label: "Warning", value: "warning" },
   { label: "Error", value: "error" },
   { label: "Critical", value: "critical" },
+];
+
+const terminalModeOptions = [
+  { label: "Use new terminal", value: "new" },
+  { label: "Use legacy terminal", value: "legacy" },
+];
+
+const windowsShellOptions = [
+  { label: "CMD", value: "cmd" },
+  { label: "PowerShell", value: "powershell" },
+  { label: "Custom", value: "custom" },
+];
+
+const linuxShellOptions = [
+  { label: "Bash", value: "bash" },
+  { label: "Custom", value: "custom" },
+];
+
+const darwinShellOptions = [
+  { label: "Bash", value: "bash" },
+  { label: "Custom", value: "custom" },
 ];
 
 const tab = ref("general");

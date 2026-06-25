@@ -33,8 +33,14 @@
     <q-separator />
     <q-tab-panels v-model="tab">
       <q-tab-panel name="terminal" class="q-pa-none">
+        <TerminalManager
+          v-if="terminalMode === 'new'"
+          :agent-id="agentId"
+          :agent-platform="agentPlatform"
+          :terminal-defaults="terminalDefaults"
+        />
         <iframe
-          v-if="meshCentralURLs.terminal"
+          v-else-if="meshCentralURLs.terminal"
           allow="clipboard-read; clipboard-write"
           :src="meshCentralURLs.terminal"
           :style="{
@@ -77,17 +83,18 @@ import { useRoute } from "vue-router";
 import { useQuasar, useMeta } from "quasar";
 import { useAgentStore } from "src/stores/api";
 
-const { getAgentMeshCentralUrls } = useAgentStore();
+const { getAgentMeshCentralUrls, getAgentTerminalDefaults } = useAgentStore();
 
 // ui imports
 import ProcessManager from "src/core/agents/components/remotebg/ProcessManager.vue";
 import ServicesManager from "src/core/agents/components/remotebg/ServicesManager.vue";
 import EventLogManager from "src/core/agents/components/remotebg/EventLogManager.vue";
 import RegistryManager from "src/core/agents/components/remotebg/RegistryManager.vue";
+import TerminalManager from "src/core/agents/components/remotebg/TerminalManager.vue";
 import registryIcon from "src/assets/windows-registry.png";
 
 // type imports
-import type { MeshUrls } from "src/core/agents/types";
+import type { MeshUrls, TerminalDefaults } from "src/core/agents/types";
 
 // setup quasar
 const $q = useQuasar();
@@ -110,9 +117,41 @@ const meshCentralURLs = ref<MeshUrls>({
   site: "",
 });
 
+const terminalMode = ref<"new" | "legacy">("legacy");
+const terminalDefaults = ref<TerminalDefaults | null>(null);
+
 useMeta(() => ({
   title: `${meshCentralURLs.value.hostname} - ${meshCentralURLs.value.client} - ${meshCentralURLs.value.site} | Remote Background`,
 }));
+
+async function getTerminalDefaults() {
+  const data = await getAgentTerminalDefaults(agentId.value);
+
+  if (!data) {
+    terminalMode.value = "legacy";
+    return;
+  }
+
+  terminalDefaults.value = data;
+
+  // TODO remove this after a few releases as all agents should be updated by then
+  const wantsNewTerminal = data.terminal_mode === "new";
+  const supportsNewTerminal = data.supports_new_terminal === true;
+
+  if (wantsNewTerminal && !supportsNewTerminal) {
+    terminalMode.value = "legacy";
+
+    $q.notify({
+      type: "warning",
+      message:
+        "New terminal mode requires agent version 2.11.0 or higher. Reverting to legacy terminal mode. Please update the agent to use the new terminal.",
+      timeout: 6000,
+    });
+    return;
+  }
+
+  terminalMode.value = wantsNewTerminal ? "new" : "legacy";
+}
 
 onMounted(async () => {
   if (agentId.value && typeof agentId.value === "string") {
@@ -121,6 +160,7 @@ onMounted(async () => {
     if (result) {
       meshCentralURLs.value = result;
     }
+    await getTerminalDefaults();
   }
 });
 </script>

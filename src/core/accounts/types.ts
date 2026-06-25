@@ -55,6 +55,7 @@ export interface Role {
   can_manage_procs: boolean;
   can_view_eventlogs: boolean;
   can_send_cmd: boolean;
+  can_use_terminal: boolean;
   can_reboot_agents: boolean;
   can_install_agents: boolean;
   can_run_scripts: boolean;

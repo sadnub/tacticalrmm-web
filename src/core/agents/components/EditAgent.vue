@@ -69,6 +69,36 @@
                       class="col-8"
                     />
                   </div>
+                  <div class="row items-start q-py-xs">
+                    <div class="col-2">Default Terminal:</div>
+                    <div class="col-2"></div>
+                    <div class="col-8">
+                      <q-option-group
+                        v-if="agent && agent.plat"
+                        v-model="localAgent.default_shell"
+                        class="q-gutter-lg"
+                        :options="defaultShellOptions"
+                        type="radio"
+                        inline
+                        dense
+                      />
+                      <q-input
+                        v-if="localAgent.default_shell === 'custom'"
+                        v-model="localAgent.default_shell_custom"
+                        class="q-mt-md"
+                        dense
+                        outlined
+                        placeholder="Enter custom shell path"
+                        bottom-slots
+                      >
+                        <template #hint>
+                          <span style="font-size: 1.2em">
+                            {{ customShellPlaceholder }}
+                          </span>
+                        </template>
+                      </q-input>
+                    </div>
+                  </div>
                   <div class="row items-center q-mt-md q-mb-xs">
                     <div class="text-subtitle2">Check Settings</div>
                   </div>
@@ -382,6 +412,8 @@ const localAgent = reactive<UpdateAgentRequest>({
   overdue_email_alert: false,
   overdue_text_alert: false,
   overdue_dashboard_alert: false,
+  default_shell: "use_global",
+  default_shell_custom: "",
 });
 
 // Initialize localAgent when agent data is loaded
@@ -401,10 +433,46 @@ watch(
       localAgent.overdue_email_alert = newAgent.overdue_email_alert;
       localAgent.overdue_text_alert = newAgent.overdue_text_alert;
       localAgent.overdue_dashboard_alert = newAgent.overdue_dashboard_alert;
+      localAgent.default_shell = newAgent.default_shell ?? "use_global";
+      localAgent.default_shell_custom = newAgent.default_shell_custom ?? "";
     }
   },
   { immediate: true },
 );
+
+const defaultShellOptions = computed(() => {
+  const plat = agent.value?.plat;
+  if (!plat) return [];
+
+  const inheritText = "Inherit from Global Setting";
+  if (plat === "windows") {
+    return [
+      { label: inheritText, value: "use_global" },
+      { label: "CMD", value: "cmd" },
+      { label: "PowerShell", value: "powershell" },
+      { label: "Custom", value: "custom" },
+    ];
+  }
+
+  if (plat === "linux" || plat === "darwin") {
+    return [
+      { label: inheritText, value: "use_global" },
+      { label: "Bash", value: "bash" },
+      { label: "Custom", value: "custom" },
+    ];
+  }
+
+  return [];
+});
+
+const customShellPlaceholder = computed(() => {
+  const plat = agent.value?.plat;
+  const start = "Enter custom shell path (e.g. ";
+  if (plat === "windows") return start + "C:\\Program Files\\PowerShell\\7\\pwsh.exe)";
+  else if (plat === "linux") return start + "/usr/bin/fish)";
+  else if (plat === "darwin") return start + "/bin/zsh)";
+  return "Enter custom shell path";
+});
 
 const agentCustomFieldValues = computed(() => {
   const mapped_custom_fields = {} as Record<string, unknown>;

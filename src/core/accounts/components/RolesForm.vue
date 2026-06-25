@@ -60,6 +60,7 @@
               <q-checkbox v-model="localRole.can_manage_procs" label="Manage Processes" />
               <q-checkbox v-model="localRole.can_view_eventlogs" label="View Event Logs" />
               <q-checkbox v-model="localRole.can_send_cmd" label="Send Command" />
+              <q-checkbox v-model="localRole.can_use_terminal" label="Use Terminal" />
               <q-checkbox v-model="localRole.can_reboot_agents" label="Shutdown / Reboot Agents" />
               <q-checkbox v-model="localRole.can_send_wol" label="Wake-Up (WoL) Agents" />
               <q-checkbox v-model="localRole.can_install_agents" label="Install Agents" />
@@ -302,6 +303,7 @@ const localRole = props.role
       can_manage_procs: false,
       can_view_eventlogs: false,
       can_send_cmd: false,
+      can_use_terminal: false,
       can_reboot_agents: false,
       can_install_agents: false,
       can_run_scripts: false,

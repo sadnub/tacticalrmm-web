@@ -83,6 +83,51 @@ interface WSReturn {
   data: unknown;
 }
 
+interface TerminalWSReturn {
+  action?: string;
+  data?: {
+    output?: string;
+    done?: boolean;
+    messageId?: string;
+    error?: string;
+  };
+  message?: string;
+  error?: string;
+}
+
+export function useTerminalWSConnection(agentId: string, sessionId: string) {
+  const { token } = useAuthStore();
+
+  const path = `agent/${agentId}/terminal/${sessionId}`;
+  const url = getWSUrl(path, token.value);
+
+  const connection = useWebSocket(url);
+  const { status, data, send, open, close } = connection;
+  const parsedData = ref<TerminalWSReturn | null>(null);
+
+  watch(data, (newValue) => {
+    if (!newValue) return;
+
+    try {
+      parsedData.value = JSON.parse(newValue) as TerminalWSReturn;
+    } catch {
+      parsedData.value = {
+        action: "",
+        data: {},
+        error: "Invalid websocket payload",
+      };
+    }
+  });
+
+  return {
+    status,
+    data: parsedData,
+    send,
+    open,
+    close,
+  };
+}
+
 let WSConnection: UseWebSocketReturn<string> | undefined = undefined;
 export function useDashWSConnection() {
   const { token } = useAuthStore();

@@ -46,6 +46,8 @@ export interface Agent {
   maintenance_mode: boolean;
   block_policy_inheritance: boolean;
   alert_template?: AlertTemplate;
+  default_shell?: string;
+  default_shell_custom?: string;
   site_name: string;
   site: number;
   client: number;
@@ -127,6 +129,17 @@ export interface MeshUrls {
   hostname: string;
   client: string;
   site: string;
+}
+
+export interface TerminalDefaults {
+  agent_id: string;
+  hostname: string;
+  plat: string;
+  default_shell: string;
+  resolved_default_shell: string;
+  effective_default_shell: string;
+  terminal_mode: "new" | "legacy";
+  supports_new_terminal?: boolean;
 }
 
 export interface WebVNCUrl {
@@ -290,6 +303,8 @@ export interface UpdateAgentRequest {
   overdue_dashboard_alert: boolean;
   custom_fields?: AgentCustomFieldValue[] | undefined;
   maintenance_mode?: boolean;
+  default_shell?: string;
+  default_shell_custom?: string;
 }
 
 // Registry types
