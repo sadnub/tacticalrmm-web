@@ -107,6 +107,8 @@ export default defineBoot(({ app, router }) => {
               const [key, value] = entries[0];
               if (key && Array.isArray(value) && value.length > 0) {
                 text = `${key}: ${value[0]}`;
+              } else if (key && value != null) {
+                text = `${key}: ${String(value)}`;
               }
             }
           }

@@ -110,6 +110,7 @@
             :shell="state.shell"
             :custom-shell="state.custom_shell"
             :timeout="state.timeout"
+            :run-as-user="state.run_as_user"
             @update-output="(val) => (streamOutput = val)"
             @stream-loaded="loading = false"
             @stream-closed="loading = false"

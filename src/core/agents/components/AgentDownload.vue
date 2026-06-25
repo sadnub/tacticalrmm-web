@@ -2,14 +2,14 @@
   <q-dialog ref="dialogRef" no-backdrop-dismiss @hide="onDialogHide">
     <q-card style="min-width: 70vw">
       <q-bar>
-        Manual Install Instructions
+        Install Instructions
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
       <q-card-section>
         <p v-if="info.plat === 'windows'" class="text-subtitle1">
-          Download the agent then run the following command from an elevated command prompt on the
-          device you want to add.
+          Download the installer then run the following command from an elevated command prompt on
+          the device you want to add.
         </p>
         <p v-else-if="info.plat === 'darwin'" class="text-subtitle1">
           Run the following command from a terminal
@@ -46,21 +46,6 @@
             </q-badge>
             <span>Do not popup any message boxes during install</span>
           </div>
-          <div v-if="info.plat === 'windows'" class="q-pa-xs q-gutter-xs">
-            <q-badge class="text-caption q-mr-xs" color="grey" text-color="black">
-              <code>-local-mesh "C:\\&lt;some folder or path&gt;\\meshagent.exe"</code>
-            </q-badge>
-            <span> To skip downloading the Mesh Agent during the install.</span>
-          </div>
-          <div v-if="info.plat === 'windows'" class="q-pa-xs q-gutter-xs">
-            <q-badge class="text-caption q-mr-xs" color="grey" text-color="black">
-              <code>-meshdir "C:\Program Files\Your Company Name\Mesh Agent"</code>
-            </q-badge>
-            <span
-              >Specify full path to the directory containing MeshAgent.exe if using custom agent
-              branding</span
-            >
-          </div>
           <div class="q-pa-xs q-gutter-xs">
             <q-badge class="text-caption q-mr-xs" color="grey" text-color="black">
               <code>-nomesh</code>
@@ -87,7 +72,13 @@
           </div>
         </q-expansion-item>
         <br />
-        <p class="text-italic">
+        <p v-if="info.plat === 'windows'">
+          Note: The auth token above is valid for {{ info.expires }} hours.<br />The installer
+          executable itself is generic and can be reused for future installations.<br />If the token
+          expires, simply generate a new installation command rather than downloading the installer
+          again.
+        </p>
+        <p v-else class="text-italic">
           Note: the auth token above will be valid for {{ info.expires }} hours.
         </p>
         <q-btn

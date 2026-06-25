@@ -30,6 +30,19 @@
         Select Agent
         <br />
         <q-separator />
+        <q-input
+          v-model="state.search"
+          dense
+          outlined
+          clearable
+          debounce="100"
+          placeholder="Search"
+          class="q-my-sm"
+        >
+          <template #prepend>
+            <q-icon name="search" />
+          </template>
+        </q-input>
         <q-checkbox
           v-model="state.selectAll"
           label="Select All"
@@ -76,14 +89,25 @@ const state = reactive({
   agents: [] as Agent[],
   group: [] as string[],
   selectAll: false,
+  search: "",
 });
 
-const agentIds = computed(() => {
-  return state.agents.map((agent) => agent.agent_id);
+const filteredAgents = computed(() => {
+  const term = state.search?.toLowerCase().trim();
+
+  if (!term) return state.agents;
+
+  return state.agents.filter((agent) =>
+    [agent.hostname, agent.client, agent.site, agent.agent_id].join(" ").toLowerCase().includes(term),
+  );
+});
+
+const filteredAgentIds = computed(() => {
+  return filteredAgents.value.map((agent) => agent.agent_id);
 });
 
 const agentOptions = computed(() => {
-  const options = state.agents.map((i) => ({
+  const options = filteredAgents.value.map((i) => ({
     label: `${i.hostname} (${i.client} > ${i.site})`,
     value: i.agent_id,
   }));
@@ -91,7 +115,7 @@ const agentOptions = computed(() => {
 });
 
 function selectAllAction() {
-  if (state.selectAll) state.group = agentIds.value;
+  if (state.selectAll) state.group = filteredAgentIds.value;
   else state.group = [];
 }
 

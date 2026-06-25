@@ -22,6 +22,7 @@ const props = defineProps<{
   shell: string;
   customShell?: string | null;
   timeout?: number;
+  runAsUser?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -69,7 +70,7 @@ onMounted(() => {
       shell: props.shell,
       cmd: props.cmd,
       timeout: props.timeout ?? 10,
-      run_as_user: false,
+      run_as_user: props.runAsUser ?? false,
       custom_shell: props.customShell,
       stream: true,
       cmd_id: cmdId,

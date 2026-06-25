@@ -14,6 +14,7 @@
                 v-model="credentials.username"
                 filled
                 label="Username"
+                autocomplete="username"
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || 'This field is required']"
               />
@@ -22,6 +23,7 @@
                 filled
                 :type="showPassword ? 'password' : 'text'"
                 label="Password"
+                autocomplete="current-password"
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || 'This field is required']"
               >
@@ -74,6 +76,7 @@
                   autofocus
                   filled
                   autocomplete="one-time-code"
+                  inputmode="numeric"
                   :rules="[(val) => (val && val.length > 0) || 'This field is required']"
                 />
               </q-card-section>

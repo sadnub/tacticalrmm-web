@@ -240,7 +240,7 @@ const hosted = computed(() => dashboardSettings.hosted);
 function bulkRecoverAgents() {
   $q.dialog({
     title: "Bulk Recover All Agents?",
-    message: "This will restart the Tactical and Mesh Agent services on all agents",
+    message: "This will attempt to reinstall/repair the Tactical and Mesh Agents on all endpoints.",
     cancel: true,
   }).onOk(() => void bulkAgentRecovery());
 }
