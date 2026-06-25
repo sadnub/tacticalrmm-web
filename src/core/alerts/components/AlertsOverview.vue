@@ -260,6 +260,14 @@ const columns = [
     field: "severity",
     align: "left" as const,
     sortable: true,
+    sort: (a: AlertSeverity, b: AlertSeverity) => {
+      const severityRank: Record<AlertSeverity, number> = {
+        error: 0,
+        warning: 1,
+        info: 2,
+      };
+      return severityRank[a] - severityRank[b];
+    },
   },
   { name: "message", label: "Message", field: "message", align: "left" as const, sortable: true },
   {

@@ -250,7 +250,13 @@
         <q-tr
           :props="props"
           class="cursor-pointer"
-          :class="selectedAgentIds.includes(props.row.agent_id) ? ($q.dark.isActive ? 'highlight-dark' : 'highlight') : ''"
+          :class="
+            selectedAgentIds.includes(props.row.agent_id)
+              ? $q.dark.isActive
+                ? 'highlight-dark'
+                : 'highlight'
+              : ''
+          "
           @contextmenu="selectRow(props.row)"
           @click="selectRow(props.row)"
           @dblclick="selectSingleRow(props.row)"
@@ -522,7 +528,7 @@ import PendingActions from "src/core/logs/components/PendingActions.vue";
 import AgentActionMenu from "./AgentActionMenu.vue";
 
 // type imports
-import type { Agent, AgentSearchParams, AgentPagination, AgentMonitoringType } from "../types";
+import type { Agent, AgentSearchParams, AgentPagination, AgentMonitoringType, AgentStatus } from "../types";
 import type { TacticalColumn } from "src/core/dashboard/types";
 
 const $q = useQuasar();
@@ -545,7 +551,21 @@ const filterRebootNeeded = ref(false);
 
 const columns: TacticalColumn[] = [
   { name: "selection", field: "", align: "left", label: "", sortable: false, required: true },
-  { name: "status", field: "status", align: "left", label: "Agent Status", sortable: true },
+  {
+    name: "status",
+    field: "status",
+    align: "left",
+    label: "Agent Status",
+    sortable: true,
+    sort: (a: AgentStatus, b: AgentStatus) => {
+      const statusRank: Record<string, number> = {
+        online: 0,
+        offline: 1,
+        overdue: 2,
+      };
+      return (statusRank[a ?? ""] ?? 3) - (statusRank[b ?? ""] ?? 3);
+    },
+  },
   { name: "smsalert", align: "left", label: "SMS Alert", field: "", sortable: false },
   { name: "emailalert", align: "left", label: "Email Alert", field: "", sortable: false },
   { name: "dashboardalert", align: "left", label: "Dashboard Alert", field: "", sortable: false },
