@@ -6,7 +6,7 @@
         <q-space />
         <q-btn v-close-popup dense flat icon="close" />
       </q-bar>
-      <q-card-section style="height: 70vh" class="scroll">
+      <q-card-section style="min-height: 70vh" class="q-pa-md">
         <q-inner-loading :showing="isLoading">
           <q-spinner size="50px" color="primary" />
         </q-inner-loading>
@@ -22,12 +22,12 @@
           <div v-if="scriptTestResult.stdout">
             <script-output-copy-clip label="Standard Output" :data="scriptTestResult.stdout" />
             <q-separator />
-            <pre>{{ scriptTestResult.stdout }}</pre>
+            <pre class="scroll" style="max-height: 65vh">{{ scriptTestResult.stdout }}</pre>
           </div>
           <div v-if="scriptTestResult.stderr">
             <script-output-copy-clip label="Standard Error" :data="scriptTestResult.stderr" />
             <q-separator />
-            <pre>{{ scriptTestResult.stderr }}</pre>
+            <pre class="scroll" style="max-height: 65vh">{{ scriptTestResult.stderr }}</pre>
           </div>
         </template>
       </q-card-section>

@@ -154,15 +154,11 @@
           <q-btn v-close-popup label="Cancel" />
           <q-btn :loading="isLoading" label="Run" color="primary" type="submit" />
         </q-card-actions>
-        <q-card-section
-          v-if="ret"
-          class="q-pl-md q-pr-md q-pt-none q-ma-none scroll"
-          style="max-height: 50vh"
-        >
+        <q-card-section v-if="ret" class="q-pl-md q-pr-md q-pt-none q-ma-none">
           <script-output-copy-clip v-if="!state.run_on_server" label="Output" :data="String(ret)" />
-          <q-separator />
-          <pre v-if="!state.run_on_server">{{ ret }}</pre>
-          <q-card-section v-if="typeof ret === 'object'" class="scroll">
+          <q-separator v-if="!state.run_on_server" />
+          <pre v-if="!state.run_on_server" class="scroll" style="max-height: 45vh">{{ ret }}</pre>
+          <q-card-section v-if="state.run_on_server && typeof ret === 'object'" class="q-pa-none">
             <div>
               Run Time:
               <code>{{ ret.execution_time }} seconds</code>
@@ -174,12 +170,12 @@
             <div v-if="ret.stdout">
               <script-output-copy-clip label="Standard Output" :data="ret.stdout" />
               <q-separator />
-              <pre>{{ ret.stdout }}</pre>
+              <pre class="scroll" style="max-height: 30vh">{{ ret.stdout }}</pre>
             </div>
             <div v-if="ret.stderr">
               <script-output-copy-clip label="Standard Error" :data="ret.stderr" />
               <q-separator />
-              <pre>{{ ret.stderr }}</pre>
+              <pre class="scroll" style="max-height: 30vh">{{ ret.stderr }}</pre>
             </div>
           </q-card-section>
         </q-card-section>
